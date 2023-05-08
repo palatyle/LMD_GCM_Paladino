@@ -1,0 +1,16 @@
+# @ job_name=gcm_3D
+# @ output = $(job_name).$(jobid)
+# @ error = $(output)
+# @ job_type = serial
+# @ class = D
+# @ queue
+
+#grep "^# @" $0
+#set -vx
+#
+
+echo "Running for multiple years to reach equilibrium."
+cp -f run_normal.def run.def
+
+run0
+

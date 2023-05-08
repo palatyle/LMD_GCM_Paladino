@@ -1,0 +1,264 @@
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Definitions de Macros pour Make
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# Repertoires :
+
+GCM     = /donnees/aslmd/MODELES/WRFV3/mars_lmd
+MACHINE = sun4
+LIBF    = $(GCM)/libf
+LIBO    = $(LIBOGCM)/$(MACHINE)
+LOCAL_DIR=/donnees/aslmd/MODELES/WRFV3/mars_lmd
+BIBIO    = $(LIBF)/bibio
+AERONOMARS    = $(LIBF)/aeronomars
+FILTRE   = filtre
+PHYS  = 
+DYN  = dyn 
+LIBPHY = $(LIBO)/libphy$(PHYS).a
+DIRMAIN=dyn$(DIM)d
+RM=rm
+
+OPLINK = 
+
+# Les differentes librairies pour l"edition des liens:
+
+dyn3d      = $(LIBO)/libdyn3d.a $(LIBO)/lib$(FILTRE).a
+dyn2d      = $(LIBO)/libdyn2d.a
+dyn1d      = $(LIBO)/libdyn1d.a
+L_DYN      = -ldyn$(DIM)d
+L_FILTRE   = -l$(FILTRE)
+L_PHY = -lphy$(PHYS) 
+L_BIBIO    = -lbibio
+L_AERONOMARS    = -laeronomars
+L_ADJNT    =
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Option de compilation FORTRAN
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+COMPILE90 = $(F90) $(OPTIM90) $(INCLUDE) -c
+LINK    = 
+AR      = 
+
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Creation des differents executables
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# Executables:
+# ------------
+
+PROG = code
+
+main : $(DYN) bibio phys aeronomars $(OPTION_DEP) 
+	cd $(LIBO) ; $(RANLIB) lib*.a ; cd $(GCM) ;\
+	cd $(LOCAL_DIR); \
+	$(COMPILE90) $(LIBF)/$(DIRMAIN)/$(PROG).F -o $(PROG).o ; \
+	$(LINK) $(PROG).o -L$(LIBO) $(L_DYN) $(L_ADJNT) $(L_FILTRE) $(L_AERONOMARS) $(L_PHY) $(L_BIBIO) $(L_DYN) $(L_AERONOMARS) $(OPLINK) $(OPTION_LINK) -o $(LOCAL_DIR)/$(PROG).e ; $(RM) $(PROG).o 
+
+dyn : $(LIBO)/libdyn$(DIM)d.a $(FILTRE)$(DIM)d
+
+phys : $(LIBPHY)
+
+bibio : $(LIBO)/libbibio.a
+
+aeronomars : $(LIBO)/libaeronomars.a
+
+adjnt : $(LIBO)/libadjnt.a
+
+$(FILTRE)3d : $(LIBO)/lib$(FILTRE).a
+
+$(FILTRE)2d :
+
+$(FILTRE)1d :
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Contenu des differentes bibliotheques
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+#=======================================================================
+# Contenu de la bibliotheque correspondant au Directory aeronomars
+#=======================================================================
+
+$(LIBO)/libaeronomars.a :  $(LIBO)/libaeronomars.a(calchim.o)
+
+$(LIBO)/libaeronomars.a :  $(LIBO)/libaeronomars.a(chemthermos.o)
+
+$(LIBO)/libaeronomars.a :  $(LIBO)/libaeronomars.a(ch.o)
+
+$(LIBO)/libaeronomars.a :  $(LIBO)/libaeronomars.a(column.o)
+
+$(LIBO)/libaeronomars.a :  $(LIBO)/libaeronomars.a(concentrations.o)
+
+$(LIBO)/libaeronomars.a :  $(LIBO)/libaeronomars.a(conduction.o)
+
+$(LIBO)/libaeronomars.a :  $(LIBO)/libaeronomars.a(dtridgl.o)
+
+$(LIBO)/libaeronomars.a :  $(LIBO)/libaeronomars.a(euvheat.o)
+
+$(LIBO)/libaeronomars.a :  $(LIBO)/libaeronomars.a(flujo.o)
+
+$(LIBO)/libaeronomars.a :  $(LIBO)/libaeronomars.a(getch.o)
+
+$(LIBO)/libaeronomars.a :  $(LIBO)/libaeronomars.a(hrtherm.o)
+
+$(LIBO)/libaeronomars.a :  $(LIBO)/libaeronomars.a(inichim.o)
+
+$(LIBO)/libaeronomars.a :  $(LIBO)/libaeronomars.a(inichim_newstart.o)
+
+$(LIBO)/libaeronomars.a :  $(LIBO)/libaeronomars.a(inichim_readcallphys.o)
+
+$(LIBO)/libaeronomars.a :  $(LIBO)/libaeronomars.a(init_chimie_B.o)
+
+$(LIBO)/libaeronomars.a :  $(LIBO)/libaeronomars.a(interpfast.o)
+
+$(LIBO)/libaeronomars.a :  $(LIBO)/libaeronomars.a(intrplf.o)
+
+$(LIBO)/libaeronomars.a :  $(LIBO)/libaeronomars.a(inv.o)
+
+$(LIBO)/libaeronomars.a :  $(LIBO)/libaeronomars.a(jthermcalc.o)
+
+$(LIBO)/libaeronomars.a :  $(LIBO)/libaeronomars.a(moldiffcoeff.o)
+
+$(LIBO)/libaeronomars.a :  $(LIBO)/libaeronomars.a(moldiff.o)
+
+$(LIBO)/libaeronomars.a :  $(LIBO)/libaeronomars.a(molvis.o)
+
+$(LIBO)/libaeronomars.a :  $(LIBO)/libaeronomars.a(paramfoto.o)
+
+$(LIBO)/libaeronomars.a :  $(LIBO)/libaeronomars.a(param_read.o)
+
+$(LIBO)/libaeronomars.a :  $(LIBO)/libaeronomars.a(perosat.o)
+
+$(LIBO)/libaeronomars.a :  $(LIBO)/libaeronomars.a(phdisrate.o)
+
+$(LIBO)/libaeronomars.a :  $(LIBO)/libaeronomars.a(photochemist_B.o)
+
+$(LIBO)/libaeronomars.a :  $(LIBO)/libaeronomars.a(thermosphere.o)
+
+.PRECIOUS	: $(LIBO)/libaeronomars.a
+
+
+# Compilation des membres de la bibliotheque libaeronomars.a
+
+$(LIBO)/libaeronomars.a(calchim.o) : $(LIBF)/aeronomars/calchim.F \
+$(LIBF)/grid/dimensions.h \
+$(LIBF)/phymars/dimphys.h \
+$(LIBF)/aeronomars/chimiedata.h \
+$(LIBF)/phymars/tracer.h \
+$(LIBF)/phymars/comcstfi.h \
+$(LIBF)/phymars/callkeys.h \
+$(LIBF)/phymars/fisice.h \
+$(LIBF)/aeronomars/conc.h
+	cd $(LOCAL_DIR); \
+	$(COMPILE90) $(LIBF)/aeronomars/calchim.F ; \
+	$(AR) r $(LIBO)/libaeronomars.a calchim.o ; $(RM) calchim.o ; \
+	cd $(GCM)
+
+$(LIBO)/libaeronomars.a(chemthermos.o) : $(LIBF)/aeronomars/chemthermos.F \
+$(LIBF)/grid/dimensions.h \
+$(LIBF)/phymars/dimphys.h \
+$(LIBF)/phymars/comcstfi.h \
+$(LIBF)/phymars/callkeys.h \
+$(LIBF)/phymars/comdiurn.h \
+$(LIBF)/aeronomars/param.h \
+$(LIBF)/aeronomars/param_v3.h \
+$(LIBF)/aeronomars/chimiedata.h \
+$(LIBF)/aeronomars/conc.h
+	cd $(LOCAL_DIR); \
+	$(COMPILE90) $(LIBF)/aeronomars/chemthermos.F ; \
+	$(AR) r $(LIBO)/libaeronomars.a chemthermos.o ; $(RM) chemthermos.o ; \
+	cd $(GCM)
+
+$(LIBO)/libaeronomars.a(ch.o) : $(LIBF)/aeronomars/ch.F
+	cd $(LOCAL_DIR); \
+	$(COMPILE90) $(LIBF)/aeronomars/ch.F ; \
+	$(AR) r $(LIBO)/libaeronomars.a ch.o ; $(RM) ch.o ; \
+	cd $(GCM)
+
+$(LIBO)/libaeronomars.a(column.o) : $(LIBF)/aeronomars/column.F
+	cd $(LOCAL_DIR); \
+	$(COMPILE90) $(LIBF)/aeronomars/column.F ; \
+	$(AR) r $(LIBO)/libaeronomars.a column.o ; $(RM) column.o ; \
+	cd $(GCM)
+
+$(LIBO)/libaeronomars.a(concentrations.o) : $(LIBF)/aeronomars/concentrations.F \
+$(LIBF)/grid/dimensions.h \
+$(LIBF)/phymars/dimphys.h \
+$(LIBF)/phymars/comcstfi.h \
+$(LIBF)/phymars/callkeys.h \
+$(LIBF)/phymars/comdiurn.h \
+$(LIBF)/aeronomars/chimiedata.h \
+$(LIBF)/phymars/tracer.h \
+$(LIBF)/aeronomars/conc.h
+	cd $(LOCAL_DIR); \
+	$(COMPILE90) $(LIBF)/aeronomars/concentrations.F ; \
+	$(AR) r $(LIBO)/libaeronomars.a concentrations.o ; $(RM) concentrations.o ; \
+	cd $(GCM)
+
+$(LIBO)/libaeronomars.a(conduction.o) : $(LIBF)/aeronomars/conduction.F \
+$(LIBF)/grid/dimensions.h \
+$(LIBF)/phymars/dimphys.h \
+$(LIBF)/phymars/comcstfi.h \
+$(LIBF)/phymars/surfdat.h \
+$(LIBF)/aeronomars/chimiedata.h \
+$(LIBF)/aeronomars/conc.h
+	cd $(LOCAL_DIR); \
+	$(COMPILE90) $(LIBF)/aeronomars/conduction.F ; \
+	$(AR) r $(LIBO)/libaeronomars.a conduction.o ; $(RM) conduction.o ; \
+	cd $(GCM)
+
+$(LIBO)/libaeronomars.a(dtridgl.o) : $(LIBF)/aeronomars/dtridgl.F
+	cd $(LOCAL_DIR); \
+	$(COMPILE90) $(LIBF)/aeronomars/dtridgl.F ; \
+	$(AR) r $(LIBO)/libaeronomars.a dtridgl.o ; $(RM) dtridgl.o ; \
+	cd $(GCM)
+
+$(LIBO)/libaeronomars.a(euvheat.o) : $(LIBF)/aeronomars/euvheat.F \
+$(LIBF)/grid/dimensions.h \
+$(LIBF)/phymars/dimphys.h \
+$(LIBF)/phymars/comcstfi.h \
+$(LIBF)/phymars/callkeys.h \
+$(LIBF)/phymars/comdiurn.h \
+$(LIBF)/aeronomars/param.h \
+$(LIBF)/aeronomars/param_v3.h \
+$(LIBF)/aeronomars/chimiedata.h \
+$(LIBF)/phymars/tracer.h \
+$(LIBF)/aeronomars/conc.h
+	cd $(LOCAL_DIR); \
+	$(COMPILE90) $(LIBF)/aeronomars/euvheat.F ; \
+	$(AR) r $(LIBO)/libaeronomars.a euvheat.o ; $(RM) euvheat.o ; \
+	cd $(GCM)
+
+$(LIBO)/libaeronomars.a(flujo.o) : $(LIBF)/aeronomars/flujo.F
+	cd $(LOCAL_DIR); \
+	$(COMPILE90) $(LIBF)/aeronomars/flujo.F ; \
+	$(AR) r $(LIBO)/libaeronomars.a flujo.o ; $(RM) flujo.o ; \
+	cd $(GCM)
+
+$(LIBO)/libaeronomars.a(getch.o) : $(LIBF)/aeronomars/getch.F
+	cd $(LOCAL_DIR); \
+	$(COMPILE90) $(LIBF)/aeronomars/getch.F ; \
+	$(AR) r $(LIBO)/libaeronomars.a getch.o ; $(RM) getch.o ; \
+	cd $(GCM)
+
+$(LIBO)/libaeronomars.a(hrtherm.o) : $(LIBF)/aeronomars/hrtherm.F
+	cd $(LOCAL_DIR); \
+	$(COMPILE90) $(LIBF)/aeronomars/hrtherm.F ; \
+	$(AR) r $(LIBO)/libaeronomars.a hrtherm.o ; $(RM) hrtherm.o ; \
+	cd $(GCM)
+
+$(LIBO)/libaeronomars.a(inichim.o) : $(LIBF)/aeronomars/inichim.F \
+$(LIBF)/grid/dimensions.h \
+$(LIBF)/phymars/dimphys.h \
+$(LIBF)/aeronomars/chimiedata.h \
+$(LIBF)/phymars/tracer.h \
+$(LIBF)/phymars/comcstfi.h \
+$(LIBF)/phymars/callkeys.h \
+$(LIBF)/phymars/datafile.h
+	cd $(LOCAL_DIR); \
+	$(COMPILE90) $(LIBF)/aeronomars/inichim.F ; \

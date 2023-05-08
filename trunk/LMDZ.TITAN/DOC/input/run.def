@@ -1,0 +1,104 @@
+Parametres de controle du run:                                          
+------------------------------                                          
+
+- Nombre de jours d'integration                                         
+    nday
+  47
+
+- nombre de pas par jour (multiple de iperiod)                          
+day_step
+  960.
+
+- periode pour le pas Matsuno (en pas)                                  
+ iperiod
+  5
+
+- periode de sortie des variables de controle (en pas)                 
+ iconser
+  120
+
+- periode d'ecriture du fichier histoire (en jour)                      
+   iecri
+  10
+
+- periode de stockage fichier histmoy (en jour)                         
+ periodav
+  1
+
+- periode de la dissipation (en pas)                                    
+ idissip
+  5
+
+- choix de l'operateur de dissipation (star ou  non star )
+  lstardis
+  F
+
+- nombre d'iterations de l'operateur de dissipation   gradiv
+  nitergdiv
+  1
+ 
+- nombre d'iterations de l'operateur de dissipation  nxgradrot
+  nitergrot
+  2
+ 
+- nombre d'iterations de l'operateur de dissipation  divgrad
+  niterh
+  2
+ 
+- temps de dissipation des plus petites long.d ondes pour u,v (gradiv)
+  tetagdiv
+  5500.
+ 
+- temps de dissipation des plus petites long.d ondes pour u,v (nxgradrot)
+  tetagrot
+  3600.
+ 
+- temps de dissipation des plus petites long.d ondes pour   h
+  tetatemp
+  3600.
+ 
+- coefficient pour gamdissip
+ coefdis
+  0.
+ 
+- periode de la physique (en pas)                                       
+  iphysiq
+  20
+
+- choix du shema d'integration temporelle (Matsuno ou Matsuno-leapfrog) 
+ purmats
+  F
+
+- choix d'une grille reguliere                                          
+  grireg
+  T
+
+- avec ou sans physique                                                 
+  physic
+  T
+
+- frequence (en  pas !! ) de l'ecriture du fichier diagfi
+  ecritphy
+  960.
+
+- longitude en degres du centre du zoom
+  clon
+  0.
+
+- latitude en degres du centre du zoom
+  clat
+  0.
+
+- facteur de grossissement du zoom,selon longitude
+  alphax
+  0.
+
+- facteur de grossissement du zoom ,selon latitude
+  alphay
+  0.
+
+-  Fonction  f(y)  hyperbolique ( si .true. )  ou   sinusoidale
+ fxyhypb
+ F
+
+.

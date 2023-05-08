@@ -1,0 +1,643 @@
+#! /bin/bash
+
+#########################################################
+# runmeso :                                             #
+# utility to combine compilation + preprocessing + run  #
+#########################################################
+###############################
+# Author: A. Spiga            #
+# New version : December 2008 #
+# Modified    : 2009-2010     #
+# New physics : 2011          #
+###############################
+
+# TODO: - GCM compile
+#       - NETCDF 
+#       - (modif registry)
+#       - quick restart
+
+
+###########################################
+###########################################
+###########################################
+
+
+i_want_to_compile=1
+scenario=""
+#scenario="storm"
+
+###########################################
+###########################################
+
+fresh=0
+while getopts "f" options; do
+  case $options in
+   f ) fresh=1;;        
+  esac
+done   
+
+if [[ "${MESO}" = "" ]]
+then
+    echo "Please initialize the variable MESO in your environnement (or modify scripts)"
+    exit
+fi
+####################################
+# A FEW DEFINITIONS YOU CAN MODIFY #
+####################################
+main_folder=$MESO
+meso_folder=${main_folder}'/LMD_MM_MARS'
+calendar=${main_folder}'/LMD_MM_MARS/SIMU/calendar'
+simu_folder=$PWD
+
+################
+# WELCOME USER #
+################
+echo '**********************************************'
+echo '**** LMD Martian Mesoscale Model launcher ****'
+echo '**********************************************'
+echo '** User                  >>> '$(whoami)
+echo '** Hostname              >>> '$(hostname)
+echo '** Hardware              >>> '$(uname -m)
+echo '** Processor             >>> '$(uname -p)
+echo '**********************************************'
+
+       ######## NEWPHYS ???
+       if [[ ! ( -f "run.def" ) ]]
+       then
+         newphys=0
+       else
+         echo '** New LMD physics       >>> YES [run.def is here]'
+         echo '**********************************************'
+         newphys=1
+	 if [[ ! ("${scenario}" == "") ]]
+	 then	  
+	    echo '** Scenario              >>>' ${scenario}
+	    echo '**********************************************'
+         fi
+       fi
+
+##########################
+# GET INFO FROM NAMELIST #
+##########################
+#echo '***********************'
+#echo '**** Your settings ****'
+#echo '***********************'
+echo '** Simulation directory  >>> '${simu_folder} 
+if [[ ! ( -f "namelist.input" ) ]]
+then
+   echo 'no namelist.input file !'
+   exit
+fi
+#
+# READ INFO NEEDED FOR INIT
+#
+year=$(more ${simu_folder}/namelist.input | grep start_year | awk '{print $3}' | sed s+','+''+g)
+month=$(more ${simu_folder}/namelist.input | grep start_month | awk '{print $3}' | sed s+','+''+g)
+day=$(more ${simu_folder}/namelist.input | grep start_day | awk '{print $3}' | sed s+','+''+g)
+hour=$(more ${simu_folder}/namelist.input | grep start_hour | awk '{print $3}' | sed s+','+''+g)
+wrf_date=${year}'-'${month}'-'${day}'_00:00:00'
+daygcm=$(more ${calendar} | grep ${wrf_date} | awk '{print $2}')
+lsubs=$(more ${calendar} | grep ${wrf_date} | awk '{print $3}')
+eyear=$(more ${simu_folder}/namelist.input | grep end_year | awk '{print $3}' | sed s+','+''+g)
+emonth=$(more ${simu_folder}/namelist.input | grep end_month | awk '{print $3}' | sed s+','+''+g)
+eday=$(more ${simu_folder}/namelist.input | grep end_day | awk '{print $3}' | sed s+','+''+g)
+ehour=$(more ${simu_folder}/namelist.input | grep end_hour | awk '{print $3}' | sed s+','+''+g)
+ewrf_date=${eyear}'-'${emonth}'-'${eday}'_00:00:00'
+edaygcm=$(more ${calendar} | grep ${ewrf_date} | awk '{print $2}')
+elsubs=$(more ${calendar} | grep ${ewrf_date} | awk '{print $3}')
+echo '** Start date            >>> '${year}'-'${month}'-'${day}" [sol="${daygcm}", Ls="${lsubs}"]" 
+echo '** End date              >>> '${eyear}'-'${emonth}'-'${eday}" [sol="${edaygcm}", Ls="${elsubs}"]"
+#
+# READ INFO NEEDED FOR DOMAIN
+#
+interval_seconds="$(more ${simu_folder}/namelist.input | grep -e '[^!]*interval_seconds *=')"
+if [[ "${interval_seconds}" = "" ]] 
+then 
+     interval_seconds="interval_seconds = 3700 !! (p2) Frequency of large-scale fields update (s)" 
+fi
+#
+max_dom="$(more ${simu_folder}/namelist.input | grep -e '[^!]*max_dom *=')"
+if [[ "${max_dom}" = "" ]]
+then
+     max_dom="max_dom = 1 !! (r)(n)(p2) Total number of domains"
+fi
+#
+parent_id="$(more ${simu_folder}/namelist.input | grep -e '[^!]*parent_id *=')"
+if [[ "${parent_id}" = "" ]]
+then
+     parent_id="parent_id = 0, !! (n)(p2) Associated parent domain"
+fi
+#
+i_parent_start="$(more ${simu_folder}/namelist.input | grep -e '[^!]*i_parent_start *=')"
+if [[ "${i_parent_start}" = "" ]]
+then
+     i_parent_start="i_parent_start = 0, !! (n)(p2) x-position of the bottom-left nest corner"
+fi
+#
+j_parent_start="$(more ${simu_folder}/namelist.input | grep -e '[^!]*j_parent_start *=')"
+if [[ "${j_parent_start}" = "" ]]
+then
+     j_parent_start="j_parent_start = 0, !! (n)(p2) y-position of the bottom-left nest corner"
+fi
+#
+parent_grid_ratio="$(more ${simu_folder}/namelist.input | grep -e '[^!]*parent_grid_ratio *=')"
+if [[ "${parent_grid_ratio}" = "" ]]
+then
+     parent_grid_ratio="parent_grid_ratio = 1, !! (n)(p2) Ratio of horizontal resolution parent/nest"
+fi
+#
+e_we="$(more ${simu_folder}/namelist.input | grep -e '[^!]*e_we *=')"
+e_sn="$(more ${simu_folder}/namelist.input | grep -e '[^!]*e_sn *=')"
+#
+dx="$(more ${simu_folder}/namelist.input | grep -e '[^!]*dx *=' | awk '{print $3}' | sed s+','+''+g)"
+dy="$(more ${simu_folder}/namelist.input | grep -e '[^!]*dy *=' | awk '{print $3}' | sed s+','+''+g)"
+
+#
+# READ INFO NEEDED FOR COMPILATION
+#
+nx=$(more ${simu_folder}/namelist.input | grep -e '[^!]*e_we *=' | awk '{print $3}' | sed s+','+''+g)
+ny=$(more ${simu_folder}/namelist.input | grep -e '[^!]*e_sn *=' | awk '{print $3}' | sed s+','+''+g)
+nz=$(more ${simu_folder}/namelist.input | grep -e '[^!]*e_vert *=' | awk '{print $3}' | sed s+','+''+g)
+nest=$(more ${simu_folder}/namelist.input | grep -e '[^!]*max_dom *=' | awk '{print $3}' | sed s+','+''+g)
+  if [[ "${nest}" = "" ]] 
+  then 
+     nest='1' 
+  fi
+  numcallphys=$(ls callphys*def | wc -l)
+  if [[ ${numcallphys} -lt ${nest} ]]
+  then
+        echo '**********'
+        echo You should have ${nest} callphys.def' file(s)' !!
+        exit
+  fi
+mars_scenario=$(more ${simu_folder}/namelist.input | grep mars | awk '{print $3}' | sed s+','+''+g)
+
+if [[ ${newphys} -eq 1 ]]
+then
+  tracers='999'
+  nx='999'
+  ny='999'
+  nz='999'
+else
+  case ${mars_scenario} in
+      0) tracers='1' ;;
+      1) tracers='2' ;;
+      2) tracers='1' ;;
+      3) tracers='2' ;;
+     10) tracers='1' ;;
+     11) tracers='4' ;;
+     12) tracers='6' ;;
+     42) tracers='18' ;;
+      *) tracers='1' ;;
+  esac
+fi
+echo '** Domain(s)             >>> '${nest} 
+echo '** Tracer(s)             >>> '${tracers}
+echo '** Grid points           >>> '${nx}" x "${ny}" x "${nz}
+echo '** Horizontal resolution >>> '${dx}
+
+###########
+# ACTIONS #
+###########
+echo '**********************************************'
+echo "** The runmeso script does it for you !"
+echo '**********************************************'
+echo "** Step 0: compile the model if not done yet"
+echo "** Step 1: run GCM and prepare inputs"
+echo "** Step 2: interpolate on domain horizontal grid"
+echo "** Step 3: interpolate on chosen vertical levels"
+echo "** Step 4: run the model"
+echo "************************* Please make a choice"
+echo " 1 --> Perform steps 0 1 2 3 4  [ -1: step 0 skipped]" 
+echo " 2 --> Perform steps 0 2 3 4    [ -2: step 0 skipped]"
+echo " 3 --> Perform steps 0 3 4      [ -3: step 0 skipped]" 
+echo " 4 --> Perform steps 0 4        [ -4: step 0 skipped]"
+echo "11 --> Perform steps 0 1 2 3    [-11: step 0 skipped]" 
+echo "12 --> Perform steps 0 2 3      [-12: step 0 skipped]" 
+echo "13 --> Perform steps 0 3        [-13: step 0 skipped]"
+echo " 0 --> Perform step  0 only"
+echo "99 --> Oops ! Exit now please."
+echo '**********************************************'
+echo "What is your choice? " ; read step
+if [[ ${step} -lt 0 ]]
+then
+	step=$(expr 0 - ${step})
+	i_want_to_compile=0
+        echo ".... ok, I skip the compiling & linking step. you'll just be asked the compiler you previously defined."
+fi
+case ${step} in
+        99) exit ;;
+        0)  gcmstep=0 ; wpsstep=0 ; realstep=0 ; wrfstep=0 ;;
+        1)  gcmstep=1 ; wpsstep=1 ; realstep=1 ; wrfstep=1 ;;
+        2)  gcmstep=0 ; wpsstep=1 ; realstep=1 ; wrfstep=1 ;;
+        3)  gcmstep=0 ; wpsstep=0 ; realstep=1 ; wrfstep=1 ;;
+        4)  gcmstep=0 ; wpsstep=0 ; realstep=0 ; wrfstep=1 ;;
+        11) gcmstep=1 ; wpsstep=1 ; realstep=1 ; wrfstep=0 ;;
+        12) gcmstep=0 ; wpsstep=1 ; realstep=1 ; wrfstep=0 ;;
+        13) gcmstep=0 ; wpsstep=0 ; realstep=1 ; wrfstep=0 ;;
+        *)  echo "** I guess you do not know what to do. Let's start from the beginning."  
+            gcmstep=1 ; wpsstep=1 ; realstep=1 ; wrfstep=1 ;;
+esac
+
+
+###################################
+# LINK THE EXECUTABLES OR COMPILE #
+###################################
+ echo '**********************************************'
+ echo "** Compiling option "
+ echo "**      <1> pgf90"
+ echo "**      <2> g95"
+ echo "**      <3> mpi+pgf90"
+ echo "**      <4> ifort"
+ echo "**      <5> mpi+ifort"
+ echo "**      .... more in makemeso ...."
+ echo '**********************************************' 
+ echo "Your choice ? (1-5)" ; read compilo
+   if [[ "${compilo}" == "" || ${compilo} -lt 1 || ${compilo} -gt 5 ]]
+   then
+       echo "** well, let's try g95"
+       compilo=2
+   fi
+   if [[ ${newphys} -eq 0 ]]
+   then
+    if [[ ${compilo} -eq 3 || ${compilo} -eq 5 ]]
+    then
+       echo How many processors ? e.g. 1, 2, 4, 6, 8, 12, 16, 20, 24, 32, 64, 128 ; read numproc
+    else
+       numproc=1 
+    fi
+   else
+    numproc=999
+   fi
+#if [[ ${i_want_to_compile} -ge 1 ]]
+#then
+ cd ${meso_folder}
+ echo ${compilo} > tmp
+   if [[ ${compilo} -eq 3 ]]
+   then
+	echo ${numproc} >> tmp
+   fi 
+ echo ${nest} >> tmp
+
+ if [[ ${newphys} -eq 0 ]]
+ then
+ ./makemeso -d < tmp > /dev/null
+ else
+   if [[ "${scenario}" == "" ]]
+   then
+   ./makemeso -d -p < tmp > /dev/null
+   else
+   ./makemeso -d -p -s ${scenario} < tmp > /dev/null
+   fi
+ fi
+ \rm tmp 2> /dev/null
+ work_folder=${meso_folder}'/'$(more what_folder)
+ echo 'work_folder : '${work_folder}
+ \rm what_folder 2> /dev/null
+
+ ##################### NB: define the domain if was not done yet 
+   if [[ -f "${simu_folder}/namelist.wps" ]]
+   then
+     happy='y'
+   else
+     happy=''
+   fi
+           if [[ ${step} -eq 1 || ${step} -eq 2 || ${step} -eq 11 || ${step} -eq 12 ]]
+	   then
+           while [[ "${happy}" != "y" ]]
+           do
+             #vi ${simu_folder}/namelist.input
+                if [[ ! ( -d "${work_folder}/WPS" ) ]]
+                then
+                    echo 'no WPS. you need to install it for your architecture'
+		    exit
+                fi
+             \rm ${simu_folder}/namelist.wps 2> /dev/null
+             echo '**********************************************'
+             echo "    !!!   NO namelist.wps FILE FOUND   !!!"   
+             echo '**********************************************'
+             echo 'Please define the domain : '
+             echo " - 1/4 Projection: polar lambert mercator ? previous is "${proj} ; read proj
+             echo " - 2/4 Data source (multiple if nests): gcm 32ppd 64ppd 64ppd_noHRti 32ppd_HRalb ? previous is "${data_source} ; read data_source
+             echo " - 3/4 North Latitude of domain centre ? previous is "${lat} ; read lat
+             echo " - 4/4 East  Longitude of domain centre ? previous is "${lon} ; read lon
+             #####
+             sed s+"__INTERVAL_SECONDS__"+"${interval_seconds}"+g ${meso_folder}/SIMU/namelist.wps.template | sed s+"__MAX_DOM__"+"${max_dom}"+g | sed s+"__PARENT_ID__"+"${parent_id}"+g |  sed s+"__PARENT_GRID_RATIO__"+"${parent_grid_ratio}"+g |  sed s+"__I_PARENT_START__"+"${i_parent_start}"+g | sed s+"__J_PARENT_START__"+"${j_parent_start}"+g | sed s+"__E_WE__"+"${e_we}"+g | sed s+"__E_SN__"+"${e_sn}"+g | sed s+"__DX__"+"${dx}"+g | sed s+"__DY__"+"${dy}"+g | sed s+"__PROJ__"+"${proj}"+g | sed s+"__DATA_SOURCE__"+"${data_source}"+g | sed s+"__LAT__"+"${lat}"+g | sed s+"__LON__"+"${lon}"+g | sed s+'0000-00-00_00:00:00'+${year}'-'${month}'-'${day}'_'${hour}':00:00'+g | sed s+'1111-11-11_11:11:11'+${eyear}'-'${emonth}'-'${eday}'_'${ehour}':00:00'+g > ${simu_folder}/namelist.wps
+             ####
+             if [[ ${nest} -gt 1 ]]
+             then
+                 echo '**********************************************'
+                 echo "USEFUL RULES for NESTS :"
+                 echo "* parent_grid_ratio divides (e_we-s_we+1)"
+                 echo "* nproc divides e_we-1"
+                 echo "* nproc divides e_we-1"
+             fi
+             if [[ ${nest} -ge 4 ]]
+             then 
+                 echo more than 3 nests, not supported.
+                 echo ...but not difficult to implement, cf. user manual.
+                 exit
+             fi
+             ####
+             ln -sf ${simu_folder}/namelist.wps ${work_folder}/WPS/namelist.wps
+             echo '**********************************************'
+             echo OK, thank you. Please wait... ncview will pop up soon !
+             cd ${work_folder}/WPS/
+             \rm geo_em.d0*.nc 2> /dev/null
+             ./geogrid.exe #> /dev/null 2> /dev/null 
+             ncview geo_em.d01.nc > /dev/null 2> /dev/null &
+                if [[ -f "geo_em.d02.nc" ]]
+                then
+                     ncview geo_em.d02.nc > /dev/null 2> /dev/null &
+                fi
+                if [[ -f "geo_em.d03.nc" ]]
+                then
+                     ncview geo_em.d03.nc > /dev/null 2> /dev/null &
+                fi
+             cd       ${simu_folder}/
+             echo     '**********************************************'  
+             echo     'Are you happy with the results ? type y if yes, any key if no' ; read happy
+            done
+            fi
+ #####################
+ if [[ ${i_want_to_compile} -ge 1 ]]
+ then
+ cd ${simu_folder}
+     ## corresponding executables
+    wrfexe=${work_folder}/wrf_x${nx}_y${ny}_z${nz}_d${nest}_t${tracers}_p${numproc}.exe
+    realexe=${work_folder}/real_x${nx}_y${ny}_z${nz}_d${nest}_t${tracers}_p${numproc}.exe
+ if [[ ${fresh} -eq 0 && -f ${wrfexe} ]]
+ then
+     echo '**********************************************'
+     echo "    !!!   wrf.exe exists in ${work_folder}"
+     echo '**********************************************'
+     echo "Recompile ? ('yes' to accept, any key to refuse)" ; read reply
+ else
+     reply='yes'
+ fi
+ echo '********************************************** OK thanks. Now please wait...'
+ echo '                                       ' 
+ if [[ "${reply}" == "yes" ]]
+ then
+ #####################
+ echo "** "Begin compilation process...
+ \rm ${wrfexe} 2> /dev/null
+ \rm ${realexe} 2> /dev/null
+   #
+   # CREATE makemeso_input
+   #
+   \rm ${simu_folder}/makemeso_input 2> /dev/null
+   touch ${simu_folder}/makemeso_input
+   echo ${compilo} >> ${simu_folder}/makemeso_input
+   if [[ ${newphys} -eq 0 ]]
+   then
+     if [[ "${compilo}" = "3" || "${compilo}" = "5" ]]
+     then
+         echo ${numproc} >> ${simu_folder}/makemeso_input
+     fi
+     echo ${nx} >> ${simu_folder}/makemeso_input
+     echo ${ny} >> ${simu_folder}/makemeso_input
+     echo ${nz} >> ${simu_folder}/makemeso_input
+   fi
+   echo ${nest} >> ${simu_folder}/makemeso_input
+   if [[ ${newphys} -eq 0 ]]
+   then
+     echo ${tracers} >> ${simu_folder}/makemeso_input
+   fi
+   #
+   # COMPILE THE MODEL
+   #
+   cd ${meso_folder}
+                      #if [[ "${changeregis}" = "1" ]]
+                      #then
+                      #    cd ${work_folder}/WRFV2/Registry
+                      #    \rm Registry 2> /dev/null
+                      #    ./Registry.bash
+                      #    cd ../../..
+                      #fi 
+   if [[ ${fresh} -eq 0 ]]
+   then
+     ##******
+     if [[ ${newphys} -eq 0 ]]
+     then
+       ./makemeso -r < ${simu_folder}/makemeso_input
+     else
+         if [[ "${scenario}" == "" ]]
+         then
+          ./makemeso -r -p < ${simu_folder}/makemeso_input
+         else
+          ./makemeso -r -p -s ${scenario} < ${simu_folder}/makemeso_input
+         fi
+     fi
+     ##******
+   else
+     ##******
+     if [[ ${newphys} -eq 0 ]]
+     then
+       ./makemeso -r -f < ${simu_folder}/makemeso_input
+     else
+         if [[ "${scenario}" == "" ]]
+         then
+          ./makemeso -r -p -f < ${simu_folder}/makemeso_input
+         else
+          ./makemeso -r -p -f -s ${scenario} < ${simu_folder}/makemeso_input
+         fi
+     fi
+     ##******
+   fi
+
+   if [[ -f ${wrfexe} ]]
+   then
+       echo "** "seems OK ... linking executables
+       ln -sf ${wrfexe} ${simu_folder}/wrf.exe
+       ln -sf ${realexe} ${simu_folder}/real.exe
+       chmod a+x ${realexe} ${wrfexe} ## sait-on jamais
+       cd $simu_folder
+   else
+       echo no ${wrfexe}
+       echo problem with the compilation
+       exit
+   fi
+ else
+     #echo simply linking existing executables...
+     ln -sf ${wrfexe} ${simu_folder}/wrf.exe
+     ln -sf ${realexe} ${simu_folder}/real.exe
+     chmod a+x ${realexe} ${wrfexe} ## sait-on jamais
+ fi
+fi
+
+######################################
+# 1. RUN GCM FOR INIT/BDY CONDITIONS #
+######################################
+if [ ${gcmstep} -eq 1 ]
+then
+ echo '************************************'
+ echo '**** Step 1: Prepare GCM inputs ****'
+ echo '************************************'
+        #
+	# run GCM
+	#
+        if [[ ${newphys} -eq 0 ]]
+        then
+	  cd ${main_folder}'/LMDZ.MARS/' 
+        else
+          cd ${main_folder}'/LMDZ.MARS.new/'
+        fi
+        if [[ ! ( -f "gcm.e" ) ]]
+        then
+          echo "Oops. There is no gcm.e, you shall compile the GCM first."
+          exit
+        fi
+        cd myGCM
+        echo ${daygcm} | ./launch_gcm
+        if [[ ! -d startbase ]]
+        then
+          echo "I guess I should stop here."
+          exit
+        fi
+	#
+	# prepare files for WPS
+	#
+        cd ${work_folder}
+        if [[ -f ${work_folder}/PREP_MARS/create_readmeteo.exe && -f ${work_folder}/PREP_MARS/readmeteo.exe ]]
+        then
+              ### This is now generic so PREP_MARS could be moved out of DIRCOMPs files
+              cd ${work_folder}/PREP_MARS/ 
+              if [[ ${compilo} -eq 1 || ${compilo} -eq 3 ]]
+              then
+                 ln -sf compile_pgf compile
+              fi
+              if [[ ${compilo} -eq 2 ]]
+              then
+                 ln -sf compile_g95 compile
+              fi
+              if [[ ${compilo} -eq 4 || ${compilo} -eq 5 ]]
+              then
+                 ln -sf compile_ifort compile
+              fi
+              if [[ ${compilo} -gt 5 ]]
+              then
+                 echo "please adapt compile in PREP_MARS"
+              fi
+              ./compile_and_exec
+              #echo 1 | ./create_readmeteo.exe
+              #./readmeteo.exe < readmeteo.def
+        else
+              echo please compile the PREP_MARS utilities in ${work_folder}
+              exit
+        fi
+fi	
+
+###################################
+# 2. RUN WRF PREPROCESSING SYSTEM #
+###################################
+if [ ${wpsstep} -eq 1 ]
+then
+ echo '*****************************************'
+ echo '**** Step 2: Perform WPS interpolations *'
+ echo '*****************************************'
+        if [[ -f ${work_folder}/WPS/geogrid.exe && -f ${work_folder}/WPS/metgrid.exe ]]
+        then
+	      \rm -rf ${simu_folder}/met_em 2> /dev/null
+	      mkdir ${simu_folder}/met_em
+              cd ${work_folder}/WPS/
+              \rm -rf ${work_folder}/WPS/WRFFEED/current 2> /dev/null
+              mkdir ${work_folder}/WPS/WRFFEED/current
+              ln -sf ${simu_folder}/namelist.wps ${work_folder}/WPS/namelist.wps
+              #mv namelist.wps namelist.wps.tmp
+              #sed s+'0000-00-00_00:00:00'+${year}'-'${month}'-'${day}'_'${hour}':00:00'+g namelist.wps.tmp | sed s+'1111-11-11_11:11:11'+${eyear}'-'${emonth}'-'${eday}'_'${ehour}':00:00'+g > namelist.wps 
+              ./geogrid.exe
+              ./metgrid.exe
+              #mv namelist.wps ${simu_folder}
+              #mv namelist.wps.tmp namelist.wps  
+              namedata=$(date +simu_%d%h%Y_%H%M)
+              mv ${work_folder}/WPS/WRFFEED/current ${work_folder}'/WPS/WRFFEED/'${namedata}
+              echo met_em files in $namedata
+              cd ${simu_folder}/met_em
+	      ln -sf ${work_folder}/WPS/WRFFEED/${namedata}/* .
+              cd ${simu_folder}
+        else
+              echo please compile the WPS utilities in ${work_folder}
+              exit
+        fi
+fi      
+
+###################
+# 3. RUN REAL.EXE #
+###################
+if [ ${realstep} -eq 1 ]
+then
+ echo '*******************************'
+ echo '**** Step 3: Execute real.exe *'
+ echo '*******************************'
+	cd ${simu_folder}
+	if [[ ! -d met_em ]]
+	then 
+		ls
+		echo "PB: no met_em files:"
+		echo "mkdir met_em folder then link met_em** files !"
+		exit
+	fi
+	cd ${simu_folder}/met_em
+        ln -sf ${simu_folder}/namelist.input .
+        ln -sf ${simu_folder}/real.exe .
+        ln -sf ${simu_folder}/levels .
+        rm -rf ${simu_folder}/met_em/wrfbdy* 2> /dev/null
+        rm -rf ${simu_folder}/met_em/wrfinput* 2> /dev/null
+        if [[ ${compilo} -eq 3 || ${compilo} -eq 5 ]]
+        then
+                rm -rf ${simu_folder}/met_em/rsl.* 2> /dev/null
+		echo "check in "${simu_folder}"/met_em/rsl.out.0000"
+        	./real.exe 
+                tail -n 4 ${simu_folder}"/met_em/rsl.out.0000"
+        else
+                rm -rf ${simu_folder}/met_em/log* 2> /dev/null 
+                echo "check in "${simu_folder}"/met_em/log_real"
+                real.exe > log_real
+		tail -n 4 ${simu_folder}"/met_em/log_real"
+        fi
+        if [[ -f ${simu_folder}/met_em/wrfinput_d01 && -f ${simu_folder}/met_em/wrfbdy_d01 ]]
+	then
+		echo ok... link ini and bdy conditions
+                cd ${simu_folder}
+		ln -sf ${simu_folder}/met_em/wrf*_d0* .
+        else
+                echo mmm... there was a problem, see log files in met_em 
+		exit
+	fi
+fi
+
+##################
+# 4. RUN WRF.EXE #
+##################
+if [ ${wrfstep} -eq 1 ]
+then
+ echo '******************************'
+ echo '**** Step 4: Execute wrf.exe *'
+ echo '******************************'
+        cd ${simu_folder} 
+        rm -rf ${simu_folder}/wrfout*
+        if [[ ${compilo} -eq 5 ]]
+        then
+                ulimit -s unlimited
+        fi
+        if [[ ${compilo} -eq 3 || ${compilo} -eq 5 ]]
+        then
+		rm -rf ${simu_folder}/rsl.* 2> /dev/null
+#                ${WHERE_MPI}/mpirun -host smith -np ${numproc} wrf.exe < /dev/null &
+                nohup ${WHERE_MPI}/mpirun -np ${numproc} wrf.exe < /dev/null > log_wrf_mpirun &
+        else
+                rm -rf ${simu_folder}/log* 2> /dev/null 
+                nohup wrf.exe > log_wrf &
+        fi
+echo OK ! Simulation should be running now ! 
+echo Check with the command: "ps -e -o '%u %p %C %x %c' | grep wrf.exe"
+echo '******************************'
+echo '**** End.' 
+
+fi
+xeyes &
+exit
+
+
+

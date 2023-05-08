@@ -1,0 +1,14 @@
+ROOT=$PWD
+
+NETCDF_LIBDIR="-L/opt/netcdf/pgf/lib"
+NETCDF_LIB="-lnetcdf"
+NETCDF_INCDIR="-I/opt/netcdf/pgf/include"
+
+IOIPSL_INCDIR="-I/home/spiga/IOIPSL_SVN/modipsl/lib"
+IOIPSL_LIBDIR="-L/home/spiga/IOIPSL_SVN/modipsl/lib"
+IOIPSL_LIB="-lioipsl"
+
+XIOS_INCDIR="-I$ROOT/../XIOS/inc"
+XIOS_LIBDIR="-L$ROOT/../XIOS/lib"
+XIOS_LIB="-lxios -lstdc++"
+

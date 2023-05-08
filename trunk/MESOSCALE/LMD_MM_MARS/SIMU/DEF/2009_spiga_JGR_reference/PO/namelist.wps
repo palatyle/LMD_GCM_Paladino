@@ -1,0 +1,36 @@
+&share
+ wrf_core = 'ARW',
+ max_dom = 1,
+ start_date = '2024-04-01_02:00:00'
+ end_date   = '2024-04-12_00:00:00'
+ interval_seconds = 7400
+ io_form_geogrid = 2,
+ debug_level = 0,
+ opt_output_from_geogrid_path='./'
+/
+
+
+&geogrid
+ parent_id         =   1, 
+ parent_grid_ratio =   1, 
+ i_parent_start    =   1, 
+ j_parent_start    =   1, 
+ e_we              =  201,
+ e_sn              =  201,
+ geog_data_res     = '32ppd'
+ dx = 40000
+ dy = 40000
+ map_proj = 'polar',
+ ref_lat   =  -90,
+ ref_lon   =  0,
+ truelat1  =  -90.0,
+ truelat2  =  0.0,
+ stand_lon =  180.00,
+ geog_data_path = './WPS_GEOG',
+/
+
+&metgrid
+ fg_name = './WPSFEED/LMD'
+ io_form_metgrid = 2,
+ opt_output_from_metgrid_path='./WRFFEED/current'
+/

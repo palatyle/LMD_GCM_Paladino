@@ -1,0 +1,31 @@
+# -----------------------------------------------------------------
+# Spectral Radiative properties of the Martian dust
+# -----------------------------------------------------------------
+
+# Visible range: Clancy and Lee, 1991
+# -----------------------------------
+
+# Number of wavelengths (nlong):
+2
+
+# Number of particle sizes (nsize):
+1
+
+# Wavelength axis (long):
+ 2.100000E-07 4.148000E-06
+
+# Particle size axis (radius):
+2.75E-07
+
+# Extinction coefficient Qext (ep):
+ 2.500000E+00 2.500000E+00
+
+# Single Scattering Albedo (omeg):
+ 9.200000E-01 9.200000E-01
+
+# Assymetry Factor (gfactor):
+ 5.500000E-01 5.500000E-01
+
+# Ratio solsir = Tau(vis) / Tau (9 microns)
+# -----------------------------------------
+2.000000E+00

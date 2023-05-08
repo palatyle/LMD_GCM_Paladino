@@ -1,0 +1,84 @@
+####################################
+## README.INSTALL                 ##
+## if you are outside LMD or IPSL ##
+## e.g. on your laptop            ##
+####################################
+
+This README describes the required steps to install the necessary python distribution and packages.
+This is only an example. The necessary python libraries (numpy, matplotlib, etc...) can also be installed one by one.
+
+----------------
+Step 1/- GET EPD
+----------------
+
+"The Enthought Python Distribution (EPD) provides scientists with a comprehensive set of tools to perform rigorous data analysis and visualization."
+EPD includes a distribution of Python and a set of libraries for plots and data analysis. It is free for academics.
+
+e.g. different versions are available. 
+64 bit version for linux: epd-7.1-2-rh5-x86_64.sh (recommended)
+32 bit version for linux is also available if the above fails: epd-7.1-2-rh5-x86.sh
+64 bit version for MacOSX has also been successfully tested: epd-7.1-2-macosx-x86_64.dmg
+
+--------------------
+Step 2/- INSTALL EPD
+--------------------
+
+Simply put the .sh file you downloaded where you want to install python and run "bash epd-7.1-2-rh5-x86_64.sh" (or whatever version you got from the website)
+
+-------------------------
+Step 3/- SET ENVIRONNMENT
+-------------------------
+
+You must put the path to the /bin of EPD in your $PATH. For exemple, if EPD is installed in:
+/u/bwhitelmd/san0/Python/64bits/epd-7.1-2-rh5-x86_64/
+
+Then you must add to your $PATH in your .env_pers.ksh:
+export PATH=/u/bwhitelmd/san0/Python/64bits/epd-7.1-2-rh5-x86_64/bin:$PATH
+
+Note that a version of python was probably already installed on your machine, in /usr/bin/. Make sure that "which python" gets you the correct path to EPD python after you sourced your .env_pers.ksh.
+
+###################################
+## README.INSTALL                ##
+## if you are inside LMD or IPSL ##
+## e.g. on your laptop           ##
+###################################
+
+If you work on LMD or IPSL computers, you don't necessarily need to install EPD.
+
+-------------------------
+account on lmd.jussieu.fr
+-------------------------
+
+A. Spiga installed on his account a version of EPD.
+--> Add the following lines to your env_pers.ksh, then source the file. You're OK! 
+
+#####################################
+if [ `uname` = 'Linux' ] ;then
+  if [ `uname -m` = 'x86_64' ] ;then
+  PATH="/donnees/aslmd/PY/epd-7.0-2-rh3-x86_64/bin/:$PATH"
+  else
+  PATH="/donnees/aslmd/PY/epd-7.0-2-rh5-x86/bin/:$PATH"
+  fi
+fi
+#####################################
+
+---------------------------------
+account on ciclad.ipsl.jussieu.fr
+---------------------------------
+
+P. Weill installed on the system a version of EPD (and mencoder for movie capabilities)
+--> Just add the following lines to your .bashrc, then source the file. You're OK!
+
+######################################
+PATH="/opt/epd-7.1-1/bin/:$PATH"
+PYTHONPATH=/home/spiga/MODELES/UTIL/PYTHON/
+export PYTHONPATH
+PATH=$PYTHONPATH:$PATH
+######################################
+
+-----------------------------------------------------------
+-----------------------------------------------------------
+-----------------------------------------------------------
+-----------------------------------------------------------
+Authors : A. Colaitis and A. Spiga
+

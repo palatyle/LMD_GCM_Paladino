@@ -1,0 +1,5 @@
+#! /bin/bash
+tar czvf $1_def.tar.gz namelist.* *.def makemeso* launch* levels* 2> /dev/null
+tar tzvf $1_def.tar.gz
+mv $1_def.tar.gz $MMM/SIMU/DEF/
+ls $MMM/SIMU/DEF/

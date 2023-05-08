@@ -1,0 +1,17 @@
+
+IBM iDataPlex Linux #1.2.6.16.60-0.21-smp LOAD LEVELER 3.5.0.5
+STEP n201.68272.0 STARTED Thu Nov 25 12:23:46 CET 2010
+PROCESSOR LIST n137 
+********************************************************************************
+
+
+********************************************************************************
+STEP n201.68272.0 TERMINATED Thu Nov 25 19:09:00 CET 2010
+User   CPU time :     6.69 h.
+System CPU time :     0.01 h.
+Total  CPU time :     6.71 h.
+Elapsed time    :     6.75 h.
+CPU utilization :    99.28%
+Major page faults (I/O required) per cpu second : 0.000
+Virtual memory  maximum :    21.207 Mb  average :    21.150 Mb
+Resident size   maximum :    15.266 Mb  average :    15.208 Mb

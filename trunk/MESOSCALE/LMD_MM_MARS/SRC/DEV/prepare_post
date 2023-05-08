@@ -1,0 +1,29 @@
+#! /bin/bash
+
+mkdir ARWpost/
+cd ARWpost
+
+ln -sf $LMDMOD/LMD_MM_MARS/SRC/ARWpost/clean .
+ln -sf $LMDMOD/LMD_MM_MARS/SRC/ARWpost/compile .
+ln -sf $LMDMOD/LMD_MM_MARS/SRC/ARWpost/configure .
+ln -sf $LMDMOD/LMD_MM_MARS/SRC/ARWpost/arch .
+ln -sf $LMDMOD/LMD_MM_MARS/SRC/ARWpost/clean .
+ln -sf $LMDMOD/LMD_MM_MARS/SRC/ARWpost/change_bottom* .
+ln -sf $LMDMOD/LMD_MM_MARS/SRC/ARWpost/idl/* .
+
+mkdir src
+cd src
+ln -sf $LMDMOD/LMD_MM_MARS/SRC/ARWpost/src/* .
+cd ..
+
+cp $LMDMOD/LMD_MM_MARS/SRC/g95.tar.gz .
+tar xzf g95.tar.gz
+more g95/fix* | sed s+"LIBVIS5D"+"#LIBVIS5D"+g | sed s+"-DV5D"+"#-DV5D"+g >> arch/configure.defaults
+rm -rf g95*
+
+#configure
+#compile
+#change rm *.png in gw.pro
+#save gw.def	
+#modif ps2png	
+#change demo

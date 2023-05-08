@@ -1,0 +1,7 @@
+NETCDF_LIBDIR="-Wl,-rpath -Wl,/san/common/umr8539/bigDATA_netcdf.4.0.1_aymeric/lib -L/san/common/umr8539/bigDATA_netcdf.4.0.1_aymeric/lib"
+NETCDF_LIB="-lnetcdf -lnetcdff" 
+NETCDF_INCDIR="-I/san/common/umr8539/bigDATA_netcdf.4.0.1_aymeric/include"
+
+IOIPSL_INCDIR="-I/san/common/umr8539/bigDATA_ioipsl_aymeric/modipsl/lib"
+IOIPSL_LIBDIR="-L/san/common/umr8539/bigDATA_ioipsl_aymeric/modipsl/lib"
+IOIPSL_LIB="-lioipsl"

@@ -1,0 +1,69 @@
+#! /bin/bash
+
+#PBS -S  /bin/bash
+#PBS -j  oe
+#PBS -q  week
+#PBS -N  run
+#PBS -l  nodes=1:ppn=4
+#PBS -l  mem=64gb
+#PBS -l  vmem=64gb
+#PBS -v  step=1
+
+#### NB: "qsub -v step=XX launch" overrides value above
+
+#### PREAMBLE
+ulimit -s unlimited
+
+#### STEP 1
+if [[ ${step} -le 1 ]] ; then
+  cd $PBS_O_WORKDIR/gcm
+  #
+  year=$(more namelist.input | grep start_year | awk '{print $3}' | sed s+','+''+g)
+  month=$(more namelist.input | grep start_month | awk '{print $3}' | sed s+','+''+g)
+  day=$(more namelist.input | grep start_day | awk '{print $3}' | sed s+','+''+g)
+  hour=$(more namelist.input | grep start_hour | awk '{print $3}' | sed s+','+''+g)
+  wrf_date=${year}'-'${month}'-'${day}'_00:00:00'
+  daygcm=$(more calendar | grep ${wrf_date} | awk '{print $2}')
+  echo ${daygcm} | ./launch_gcm
+  #
+  gcm.e > log_gcm
+  #
+  cd $PBS_O_WORKDIR/prep
+  echo 1 | create_readmeteo.exe
+  readmeteo.exe < readmeteo.def
+fi
+
+##### STEP 2
+if [[ ${step} -le 2 ]] ; then
+  cd $PBS_O_WORKDIR/geogrid
+  \rm geo_em.*
+  geogrid.exe
+  #
+  cd $PBS_O_WORKDIR/metgrid
+  \rm met_em.*
+  metgrid.exe
+fi
+
+##### STEP 3
+if [[ ${step} -le 3 ]] ; then
+  cd $PBS_O_WORKDIR/
+  \rm wrfi* wrfb*
+  real.exe
+fi
+
+##### STEP 4
+if [[ ${step} -le 4 ]] ; then
+  rm -rf $PBS_O_WORKDIR/$PBS_JOBNAME
+  mkdir $PBS_O_WORKDIR/$PBS_JOBNAME
+  mv rsl.error.0000 $PBS_O_WORKDIR/$PBS_JOBNAME/real_rsl.error.0000
+  mv rsl.out.0000 $PBS_O_WORKDIR/$PBS_JOBNAME/real_rsl.out.0000
+  cp -rfL  $PBS_O_WORKDIR/callphys*.def   $PBS_O_WORKDIR/$PBS_JOBNAME/
+  cp -rfL  $PBS_O_WORKDIR/titus.def       $PBS_O_WORKDIR/$PBS_JOBNAME/
+  cp -rfL  $PBS_O_WORKDIR/wrf.exe*        $PBS_O_WORKDIR/$PBS_JOBNAME/
+  cp -rfL  $PBS_O_WORKDIR/namelist.input  $PBS_O_WORKDIR/$PBS_JOBNAME/
+  cp -rfL  $PBS_O_WORKDIR/namelist.wps    $PBS_O_WORKDIR/$PBS_JOBNAME/
+  cp -rfL  $PBS_O_WORKDIR/wrfi*           $PBS_O_WORKDIR/$PBS_JOBNAME/
+  cp -rfL  $PBS_O_WORKDIR/wrfb*           $PBS_O_WORKDIR/$PBS_JOBNAME/
+  cd $PBS_O_WORKDIR/$PBS_JOBNAME/
+  mpirun wrf.exe
+fi

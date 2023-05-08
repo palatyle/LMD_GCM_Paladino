@@ -1,0 +1,956 @@
+#!/bin/bash
+#
+# $Id $
+#
+#
+########################################################################
+# for debug, uncomment line below
+#set -xv
+########################################################################
+# options par defaut pour la commande make
+########################################################################
+dim="96x72x19"
+physique=lmd
+code=gcm
+filtre=filtrez
+grille=reg
+couple=false
+veget=false
+chimie=false
+parallel=none
+paramem="par"
+compil_mod=prod
+io=ioipsl
+LIBPREFIX=""
+fcm_path=none
+cosp=false
+sisvat=false
+rrtm=false
+dust=false
+strataer=false
+bands=""
+scatterers=""
+full=''
+
+arch_defined="FALSE"
+arch_path="arch"
+arch_default_path="arch"
+
+# guess a default 'arch'
+arch="local" # start with assuming we're on a local machine with local arch file
+arch_defined="TRUE" # and thus also set arch_defined to true 
+## try to recognise machine and infer arch from it
+machine=`hostname`
+if [[ "${machine:0:3}" == "ada" ]]
+then
+  arch="X64_ADA"
+fi
+if [[ "${machine:0:7}" == "platine" ]]
+then
+  arch="IA64_PLATINE"
+fi
+if [[ "${machine:0:6}" == "titane" ]]
+then
+  arch="X64_TITANE"
+fi
+if [[ "${machine:0:8}" == "mercure1" ]]
+then
+  arch="SX8_MERCURE"
+fi
+if [[ "${machine:0:8}" == "mercure2" ]]
+then
+  arch="SX9_MERCURE"
+fi
+
+LMDGCM=`pwd -P`
+LIBFGCM=$LMDGCM/libf
+LIBOGCM=$LMDGCM/libo
+if [[ ! -d $LIBOGCM ]]
+then
+  # create the directory
+  mkdir $LIBOGCM
+  if [[ ! $? ]]
+  then
+  echo "Failed to create directory $LIBOGCM"
+  exit
+  fi
+fi
+COSP_PATH=$LMDGCM/.void_dir
+
+
+
+localdir=`pwd -P`
+########################################################################
+#  Quelques initialisations de variables du shell.
+########################################################################
+
+CPP_KEY="" 
+INCLUDE='-I$(LIBF)/grid -I$(LIBF)/misc -I$(LIBF)/filtrez -I. '
+LIB=""
+adjnt=""
+##COMPIL_FFLAGS="%PROD_FFLAGS"
+PARA_FFLAGS=""
+PARA_LD=""
+EXT_SRC=""
+#src_dirs: directories containing source files 
+src_dirs="grid misc" 
+ccompiler=""
+OPTIMC=""
+INCLUDEC=""
+
+########################################################################
+# lecture des options
+########################################################################
+
+while (($# > 0))
+  do
+  case $1 in
+      "-h") cat <<fin
+manuel complet sur http://...
+Usage :
+makeldmz [options] -arch arch exec
+[-h]                       : brief help
+[-d [[IMx]JMx]LM]          : IM, JM, LM are the dimensions in x, y, z (default: $dim)
+[-s nscat]                 : (Generic) Number of radiatively active scatterers
+[-b IRxVIS]                : (Generic) Number of infrared (IR) and visible (VIS) bands for radiative transfer
+[-p PHYS]                  : set of physical parametrizations (in libf/phyPHYS), (default: lmd)
+[-prod / -dev / -debug]    : compilation mode production (default) / developement / debug .
+[-c false/MPI1/MPI2]       : (Earth) coupling with ocean model : MPI1/MPI2/false (default: false)
+[-v false/orchidee2.0/orchidee1.9/true] : version of the vegetation model to include (default: false)
+          false       : no vegetation model
+          orchidee2.0 : compile using ORCHIDEE 2.0 (or more recent version)
+          orchidee1.9 : compile using ORCHIDEE up to the version including OpenMP in ORCHIDEE : tag 1.9-1.9.5(version AR5)-1.9.6
+          true        : (obsolete; for backward compatibility) use ORCHIDEE tag 1.9-1.9.6
+
+[-chimie INCA/false]       : (Earth) with INCA chemistry model or without (default: false)
+[-cosp cosp/false]         : (Earth) add the cosp model (default: false)
+[-sisvat true/false]  : (Earth) compile with/without sisvat package (default: false)
+[-rrtm true/false]    : (Earth) compile with/without rrtm package (default: false)
+[-dust true/false]    : (Earth) compile with/without the dust package from Boucher et al. (default: false)
+[-strataer true/false]    : (Earth) compile with/without the strat aer package from Boucher et al. (default: false)
+[-parallel none/mpi/omp/mpi_omp] : parallelism (default: none) : mpi, openmp or mixted mpi_openmp
+[-g GRI]                   : grid configuration in dyn3d/GRI_xy.h  (default: reg, inclues a zoom)
+[-io ioipsl/mix/xios]                   : Input/Output library (default: ioipsl)
+[-include INCLUDES]        : extra include path to add
+[-cpp CPP_KEY]             : additional preprocessing definitions
+[-adjnt]                   : adjoint model, not operational ...
+[-mem]                     : reduced memory dynamics (if in parallel mode)
+[-filtre NOMFILTRE]        : use filtre from libf/NOMFILTRE (default: filtrez)
+[-link LINKS]              : additional links with other libraries
+[-full]                    : full (re-)compilation (from scratch)
+[-ext_src path]            : path to an additional set of routines to compile with the model
+[-arch_path path]          : path to architecture files (default: $arch_default_path)
+ -arch arch                : target architecture 
+ exec                      : executable to build
+fin
+	  exit;;
+      "-d")
+	  dim=$2 ; shift ; shift ;;
+      
+      "-p")
+	  physique="$2" ; shift ; shift ;;
+
+      "-s")
+	  scatterers=$2 ; shift ; shift ;;
+
+      "-b")
+	  bands=$2 ; shift ; shift ;;
+
+      "-g")
+	  grille="$2" ; shift ; shift ;;
+
+      "-c")
+	  couple="$2" ; shift ; shift ;;
+
+      "-prod")
+	  compil_mod="prod" ; shift ;;
+
+      "-dev")
+	  compil_mod="dev" ; shift ;;
+
+      "-debug")
+	  compil_mod="debug" ; shift ;;
+
+      "-io")
+	  io="$2" ; shift ; shift ;;
+
+      "-v")
+	  veget="$2" ; shift ; shift ;;
+
+      "-chimie")
+	  chimie="$2" ; shift ; shift ;;
+
+      "-parallel")
+	  parallel="$2" ; shift ; shift ;;
+      
+      "-include")
+	  INCLUDE="$INCLUDE -I$2" ; shift ; shift ;;
+
+      "-cpp")
+	  CPP_KEY="$CPP_KEY $2" ; shift ; shift ;;
+
+      "-cosp")
+          cosp="$2" ; shift ; shift ;;
+      
+      "-sisvat")
+          sisvat="$2" ; shift ; shift ;;
+      
+      "-rrtm")
+          rrtm="$2" ; shift ; shift ;;
+      
+      "-dust")
+          dust="$2" ; shift ; shift ;;
+      
+      "-strataer")
+          strataer="$2" ; shift ; shift ;;
+      
+      "-mem")
+          paramem="mem" ; shift ;;
+
+      "-filtre")
+	  filtre=$2 ; shift ; shift ;;
+
+      "-link")
+	  LIB="$LIB $2" ; shift ; shift ;;
+
+      "-full")
+	  full="full" ; shift ;;
+
+      "-ext_src")
+	  EXT_SRC=$2 ; shift ; shift ;;
+
+      "-arch")
+	  arch=$2 ; arch_defined="TRUE" ; shift ; shift ;;
+
+      "-arch_path")
+	  arch_path=$2 ; arch_path_defined="TRUE"; shift ; shift ;;
+
+      *)
+	  code="$1" ; shift ;;
+  esac
+done
+
+###############################################################
+# lecture des chemins propres \`a l'architecture de la machine #
+###############################################################
+rm -f .void_file
+echo > .void_file
+rm -rf .void_dir
+mkdir .void_dir
+
+if [[ "$arch_defined" == "TRUE" ]]
+then
+  rm -f arch.path
+  rm -f arch.fcm
+  rm -f arch.env
+
+  if test -f $arch_path/arch-${arch}.path
+  then
+    ln -s $arch_path/arch-${arch}.path arch.path
+  elif test -f $arch_default_path/arch-${arch}.path
+  then
+    ln -s $arch_default_path/arch-${arch}.path arch.path
+  fi
+        
+  if test -f $arch_path/arch-${arch}.fcm
+  then
+    ln -s $arch_path/arch-${arch}.fcm arch.fcm
+  elif test -f $arch_default_path/arch-${arch}.fcm
+  then
+    ln -s $arch_default_path/arch-${arch}.fcm arch.fcm
+  fi
+
+  if test -f $arch_path/arch-${arch}.env
+  then
+    ln -s $arch_path/arch-${arch}.env arch.env
+  elif test -f $arch_default_path/arch-${arch}.env
+  then
+    ln -s $arch_default_path/arch-${arch}.env arch.env
+  else
+    ln -s .void_file arch.env
+  fi
+  # source architecture PATH and ENV files
+  source arch.env
+  source arch.path
+else
+  echo "You must define a target architecture"
+  exit 1
+fi
+
+########################################################################
+# Definition des clefs CPP, des chemins des includes et modules
+#  et des libraries
+########################################################################
+
+# basic compile flags from arch.fcm file
+archfileline=$( grep -i '^%BASE_FFLAGS' arch.fcm )
+COMPIL_FFLAGS=$( echo ${archfileline##%BASE_FFLAGS} )
+
+# other compile flags, depending on compilation mode
+if [[ "$compil_mod" == "prod" ]]
+then
+## read COMPIL_FFLAGS from arch.fcm file
+  archfileline=$( grep -i '^%PROD_FFLAGS' arch.fcm )
+  archfileopt=$( echo ${archfileline##%PROD_FFLAGS} )
+  COMPIL_FFLAGS="${COMPIL_FFLAGS} ${archfileopt}"
+elif [[ "$compil_mod" == "dev" ]]
+then
+## read %DEV_FFLAGS from arch.fcm file
+  archfileline=$( grep -i '^%DEV_FFLAGS' arch.fcm )
+  archfileopt=$( echo ${archfileline##%DEV_FFLAGS} )
+  COMPIL_FFLAGS="${COMPIL_FFLAGS} ${archfileopt}"
+elif [[ "$compil_mod" == "debug" ]]
+then
+## read %DEBUG_FFLAGS from arch.fcm file
+  archfileline=$( grep -i '^%DEBUG_FFLAGS' arch.fcm )
+  archfileopt=$( echo ${archfileline##%DEBUG_FFLAGS} )
+  COMPIL_FFLAGS="${COMPIL_FFLAGS} ${archfileopt}"
+fi
+
+# add CPP_KEY defined in arch.fcm file
+archfileline=$( grep -i '^%FPP_DEF' arch.fcm )
+archfileopt=$( echo ${archfileline##%FPP_DEF} )
+CPP_KEY="$CPP_KEY ${archfileopt}"
+
+# get compiler name from arch.fcm file
+archfileline=$( grep -i '^%COMPILER' arch.fcm )
+fcompiler=$( echo ${archfileline##%COMPILER} )
+
+# get linker name from arch.fcm file
+archfileline=$( grep -i '^%LINK' arch.fcm )
+linker=$( echo ${archfileline##%LINK} )
+
+# get ar command from arch.fcm file
+archfileline=$( grep -i '^%AR' arch.fcm )
+arcommand=$( echo ${archfileline##%AR} )
+
+# get make utility from arch.fcm file
+archfileline=$( grep -i '^%MAKE' arch.fcm )
+makecommand=$( echo ${archfileline##%MAKE} )
+
+# get basic libraries to link with arch.fcm file
+archfileline=$( grep -i '^%BASE_LD' arch.fcm )
+archfileopt=$( echo ${archfileline##%BASE_LD} )
+LIB="$LIB  ${archfileopt}"
+
+#NB some -I... might be located in the %FPP_FLAGS section of the arch file
+archfileline=$( grep -i '^%FPP_FLAGS' arch.fcm )
+for inc in $archfileline ; do INCLUDE="$INCLUDE `echo $inc | grep '\-I'`" ; done
+
+phys_root=$physique
+if [[ "${physique:0:3}" == "lmd" ]] ; then phys_root=lmd ; fi
+if [[ "${physique:0:3}" == "mar" ]] ; then phys_root=mar ; fi
+if [[ "${physique:0:4}" == "mars" ]] ; then phys_root=mars ; fi
+if [[ "${physique:0:3}" == "std" ]] ; then phys_root=std ; fi
+if [[ "${physique:0:5}" == "venus" ]] ; then phys_root=venus ; fi
+if [[ "${physique:0:5}" == "titan" ]] ; then phys_root=titan ; fi
+if [[ "${physique:0:3}" == "dev" ]] ; then phys_root=dev ; fi
+
+if [[ "$physique" != "nophys" ]]
+then
+   #We'll use some physics
+   src_dirs="$src_dirs phy_common phy$physique"
+   LIBPHY='$(LIBO)/libphy'"$physique"'.a'
+   LIBPHY_COMMON='$(LIBO)/libphy_common.a'
+   lib_phy='-lphy'"$physique"' -lphy_common'
+   CPP_KEY="$CPP_KEY CPP_PHYS"
+   if [[ "${phys_root}" == "lmd" ]]
+   then
+   #For lmd physics, default planet type is Earth
+   CPP_KEY="$CPP_KEY CPP_EARTH"
+   fi
+fi
+
+######### CAS PARTICULIER CHIMIE TITAN
+if [[ "$physique" == "titan" ]]
+then
+   INCLUDE="$INCLUDE"' -I$(LIBF)/chim'"$physique"
+   LIB="$LIB -l${LIBPREFIX}chim$physique"
+   opt_dep="$opt_dep chim$physique"
+   src_dirs="$src_dirs chim$physique"
+# get C compiler name and optim from arch.fcm file
+   archfileline=$( grep -i '^%C_COMPILER' arch.fcm )
+   ccompiler=$( echo ${archfileline##%C_COMPILER} )
+   archfileline=$( grep -i '^%C_OPTIM' arch.fcm )
+   coptim=$( echo ${archfileline##%C_OPTIM} )
+   OPTIMC="${coptim}"
+   INCLUDEC='-I$(LIBF)/grid -I.'
+fi
+#########
+
+######### CAS PARTICULIER NUAGES VENUS
+if [[ "$physique" == "venus" ]]
+then
+   src_dirs="$src_dirs phy${physique}/cloudvenus"
+fi
+#########
+
+# for Mars (but could be used by others as well), there is also "aeronomars"
+if [[ -d ${LIBFGCM}/aerono${physique} ]]
+then
+   src_dirs="$src_dirs aerono$physique"
+   INCLUDE="$INCLUDE -I${LIBFGCM}/aerono${physique}"
+   LIB="$LIB -l${LIBPREFIX}aerono$physique"
+   opt_dep="$opt_dep aerono$physique"
+if [[ "$physique" == "mars" ]]
+then
+   laeronomars="-l${LIBPREFIX}aeronomars"
+fi
+if [[ "$physique" == "std" ]]
+then
+   laeronostd="-l${LIBPREFIX}aeronostd"
+fi
+fi
+
+if [[ "$chimie" == "INCA" ]]
+then
+   CPP_KEY="$CPP_KEY INCA"
+   INCLUDE="$INCLUDE -I${INCA_INCDIR}"
+   LIB="$LIB -L${INCA_LIBDIR} ${INCA_LIB}"
+   libchimie=" -L${INCA_LIBDIR} ${INCA_LIB}"
+fi
+
+if [[ "$couple" != "false" ]]
+then
+   CPP_KEY="$CPP_KEY CPP_COUPLE"
+   INCLUDE="$INCLUDE -I${OASIS_INCDIR}"
+   LIB="$LIB -L${OASIS_LIBDIR} ${OASIS_LIB}"
+fi
+
+if [[ "$parallel" != "none" && \
+     ( "$code" == "newstart" || "$code" == "start2archive" ) ]]
+then
+    echo "newstart or start2archive utilities should be run in serial!"
+    echo " Compile without -parallel [mpi|omp|mpi_omp] option!"
+    exit
+fi
+
+if [[ "$parallel" == "none" ]]
+then
+  FLAG_PARA=''
+else
+  FLAG_PARA="$paramem"
+fi
+
+if [[ "$parallel" == "mpi" ]]
+then
+   CPP_KEY="$CPP_KEY CPP_PARA CPP_MPI"
+  # MPI additional compilation options 
+  archfileline=$( grep -i '^%MPI_FFLAGS' arch.fcm )
+  PARA_FFLAGS=$( echo ${archfileline##%MPI_FFLAGS} )
+  # MPI additional links
+  archfileline=$( grep -i '^%MPI_LD' arch.fcm )
+  PARA_LD=$( echo ${archfileline##%MPI_LD} )
+elif [[ "$parallel" == "omp" ]]
+then
+   CPP_KEY="$CPP_KEY CPP_PARA CPP_OMP"
+  # OMP additional compilation options 
+  archfileline=$( grep -i '^%OMP_FFLAGS' arch.fcm )
+  PARA_FFLAGS=$( echo ${archfileline##%OMP_FFLAGS} )
+  # OMP additional links
+  archfileline=$( grep -i '^%OMP_LD' arch.fcm )
+  PARA_LD=$( echo ${archfileline##%OMP_LD} )
+elif [[ "$parallel" == "mpi_omp" ]]
+then
+   CPP_KEY="$CPP_KEY CPP_PARA CPP_MPI CPP_OMP"
+  # MPI additional compilation options 
+  archfileline=$( grep -i '^%MPI_FFLAGS' arch.fcm )
+  PARA_FFLAGS=$( echo ${archfileline##%MPI_FFLAGS} )
+  # OMP additional compilation options 
+  archfileline=$( grep -i '^%OMP_FFLAGS' arch.fcm )
+  PARA_FFLAGS="${PARA_FFLAGS} "$( echo $archfileopt ${archfileline##%OMP_FFLAGS} )
+  # MPI additional links
+  archfileline=$( grep -i '^%MPI_LD' arch.fcm )
+  PARA_LD=$( echo ${archfileline##%MPI_LD} )
+  # OMP additional links
+  archfileline=$( grep -i '^%OMP_LD' arch.fcm )
+  PARA_LD="${PARA_LD} "$( echo $archfileopt ${archfileline##%OMP_LD} )
+fi
+
+if [[ ( "$parallel" == "omp" || "$parallel" == "mpi_omp" ) \
+   && "$compil_mod" == "debug" ]]
+then
+    echo "Usually, parallelization with OpenMP requires some optimization."
+    echo "We suggest switching to \"-dev\"."
+fi
+
+if [ "$veget" = "true" -o "$veget" = "orchidee1.9" -o "$veget" = "orchidee2.0" ]
+then
+
+   INCLUDE="${INCLUDE} ${ORCHIDEE_INCDIR}"
+   CPP_KEY="$CPP_KEY CPP_VEGET"
+# temporary, for Orchidee versions 1.9.* (before openmp activation)
+   if [[ "$veget" == "orchidee1.9" ]] ; then
+      CPP_KEY="$CPP_KEY ORCHIDEE_NOOPENMP"
+   fi
+   if [[ "$veget" == "orchidee2.0" ]] ; then
+      orch_libs="sechiba parameters stomate parallel orglob orchidee"
+   else
+      orch_libs="sechiba parameters stomate parallel orglob"
+   fi
+   LIB="${LIB} -L${ORCHIDEE_LIBDIR} ${ORCHIDEE_LIB}"
+elif [[ "$veget" != "false" ]] ; then
+   echo "Option -v $veget does not exist"
+   echo "Use ./makelmdz -h for more information"
+   exit 
+fi
+
+if [[ $io == ioipsl ]]
+then
+   CPP_KEY="$CPP_KEY CPP_IOIPSL"
+   INCLUDE="$INCLUDE ${IOIPSL_INCDIR}"
+   LIB="$LIB ${IOIPSL_LIBDIR} ${IOIPSL_LIB}"
+elif [[ $io == mix ]]
+then
+   # For now, xios implies also using ioipsl
+   CPP_KEY="$CPP_KEY CPP_IOIPSL CPP_XIOS"
+   INCLUDE="$INCLUDE ${IOIPSL_INCDIR} ${XIOS_INCDIR}"
+   LIB="$LIB ${IOIPSL_LIBDIR} ${IOIPSL_LIB} ${XIOS_LIBDIR} ${XIOS_LIB}"
+elif [[ $io == xios ]]
+then
+   # For now, xios implies also using ioipsl
+   CPP_KEY="$CPP_KEY CPP_IOIPSL CPP_XIOS CPP_IOIPSL_NO_OUTPUT"
+   INCLUDE="$INCLUDE ${IOIPSL_INCDIR} ${XIOS_INCDIR}"
+   LIB="$LIB ${IOIPSL_LIBDIR} ${IOIPSL_LIB} ${XIOS_LIBDIR} ${XIOS_LIB}"
+fi
+
+if [[ "$cosp" == "true" ]]
+then
+   CPP_KEY="$CPP_KEY CPP_COSP"
+   COSP_PATH="$LIBFGCM/cosp"
+   src_dirs="$src_dirs cosp"
+#   LIB="${LIB} -l${LIBPREFIX}cosp"
+   opt_dep="$opt_dep cosp"
+   lcosp="-l${LIBPREFIX}cosp"
+   INCLUDE="$INCLUDE"' -I$(LIBF)/cosp'
+fi
+
+if [[ "$sisvat" == "true" ]]
+then
+   CPP_KEY="$CPP_KEY CPP_SISVAT"
+   src_dirs="$src_dirs phy${physique}/sisvat"
+fi
+
+if [[ "$rrtm" == "true" ]]
+then
+   CPP_KEY="$CPP_KEY CPP_RRTM"
+   src_dirs="$src_dirs phy${physique}/rrtm"
+fi
+
+if [[ "$dust" == "true" ]]
+then
+   CPP_KEY="$CPP_KEY CPP_Dust"
+   src_dirs="$src_dirs phy${physique}/Dust"
+fi
+
+if [[ "$strataer" == "true" ]]
+then
+   CPP_KEY="$CPP_KEY CPP_StratAer"
+   src_dirs="$src_dirs phy${physique}/StratAer"
+fi
+
+# NETCDF library include/library paths
+INCLUDE="$INCLUDE ${NETCDF_INCDIR}"
+LIB="$LIB ${NETCDF_LIBDIR} ${NETCDF_LIB}"
+
+########################################################################
+# calcul du nombre de dimensions
+########################################################################
+
+
+dim_full=$dim
+dim=`echo $dim | sed -e 's/[^0-9]/ /g'` 
+set $dim
+dimc=$#
+echo calcul de la dimension
+echo dim $dim
+echo dimc $dimc
+
+
+########################################################################
+# Gestion des dimensions du modele.
+# on cree ou remplace le fichier des dimensions
+########################################################################
+
+cd $LIBFGCM/grid
+if [[ -f dimensions.h ]]
+then
+  echo 'ATTENTION: vous etes sans doute en train de compiler le modele par ailleurs'
+  echo "Attendez que la premiere compilation soit terminee pour relancer la suivante."
+  echo "Si vous etes sur que vous ne compilez pas le modele par ailleurs,"
+  echo  vous pouvez continuer en repondant oui.
+  echo "Voulez-vous vraiment continuer?"
+  echo ""
+  echo "WARNING: you are probably already compiling the model somewhere else."
+  echo "Wait until the first compilation is finished before launching this one."
+  echo "If you are sure that you are not compiling elsewhere, just answer "
+  echo "yes (or 'oui') to the question below to proceed."
+  echo "Do you wish to continue?"
+  read reponse
+  if [[ $reponse == "oui" || $reponse == "yes" ]]
+  then
+    \rm -f $LIBFGCM/grid/dimensions.h
+  else
+    exit
+  fi
+fi
+
+
+cd $LIBFGCM/grid/dimension
+./makdim $dim
+if (($? != 0))
+then
+    exit 1
+fi
+
+cat $LIBFGCM/grid/dimensions.h
+cd $LMDGCM
+
+if [[ "$bands" != "" ]]
+then
+  # Generic model, recreate bands.h (IR & VIS bands for radiative transfer)
+  bands=$(echo $bands | sed -e 's/[^0-9]/ /g')
+  cd $LIBFGCM/phy$physique/bands
+  ./makbands $bands
+  cat $LIBFGCM/phy$physique/bands.h
+  cd $LMDGCM
+fi
+
+if [[ "$scatterers" != "" ]]
+then
+  # Generic model, recreate scatterers.h
+  cd $LIBFGCM/phy$physique/scatterers
+  ./make_scatterers $scatterers
+  cat $LIBFGCM/phy$physique/scatterers.h
+  cd $LMDGCM
+fi
+
+
+########################################################################
+# Differentes dynamiques (3d, 2d, 1d)
+########################################################################
+
+if (( $dimc == 3 )) ; then
+   src_dirs="$src_dirs $filtre dyn3d_common dyn3d${FLAG_PARA}"
+   if [[ $physique != "nophys" ]] ; then
+     src_dirs="$src_dirs dynphy_lonlat dynphy_lonlat/phy${phys_root}"
+     libdyn_phy="-ldynphy_lonlat"
+     LIBDYN_PHYS='$(LIBO)/libdynphy_lonlat.a'
+     INCLUDE="$INCLUDE "'-I$(LIBF)/dynphy_lonlat'
+     INCLUDE="$INCLUDE "'-I$(LIBF)/dynphy_lonlat/phy'"${phys_root}"
+   fi
+  cd $LIBFGCM/grid
+  \rm fxyprim.h
+  cp -p fxy_${grille}.h fxyprim.h
+  filtre="FILTRE=$filtre"
+  INCLUDE="$INCLUDE "'-I$(LIBF)/dyn3d${FLAG_PARA} -I$(LIBF)/dyn3d_common '
+elif (( $dimc == 2 )) ; then
+   src_dirs="$src_dirs dyn2d"
+   filtre="FILTRE= L_FILTRE= "
+   INCLUDE="$INCLUDE "'-I$(LIBF)/dyn2d'
+elif (( $dimc == 1 )) ; then
+   ## Sanity check: 1D models should be used in serial
+   if [[ $parallel != "none" ]]
+   then
+     echo "Error: a 1D model should not be compiled with "
+     echo "       -parallel [mpi|omp|mpi_omp] option!"
+     exit
+   fi
+   echo pas de dynamique
+   src_dirs="$src_dirs phy${physique}/dyn1d"
+   CPP_KEY="$CPP_KEY CPP_1D"
+   filtre="L_DYN= DYN= FILTRE= L_FILTRE= "
+   #INCLUDE="$INCLUDE "'-I$(LIBF)/dyn3d -I$(LIBF)/dyn3d_common ' # Pas tres propre
+   INCLUDE="$INCLUDE "' -I$(LIBF)/phy'"$physique"'/dyn1d'
+else
+   echo Dimension dimc=$dimc pas prevu ; exit
+fi
+
+cd $LMDGCM
+
+########################################################################
+# library directory name:
+########################################################################
+
+nomlib=`echo ${arch}_${physique}_${dim_full}_${grille}_${compil_mod}_parall${parallel}_${CPP_KEY}_${FLAG_PARA} | sed -e 's/ //g' -e 's/-//g ' | sed -e 's/CPP_//g'`
+echo "Path to library: "$nomlib
+
+########################################################################
+#  Cleanup for a full recompilation, if requested
+########################################################################
+
+if [[ $full == "full" ]]
+then
+# remove makefile and libraries
+  echo "-full option: recompiling from scratch"
+  \rm -f makefile
+  \rm -rf "${LIBOGCM}/${nomlib}"
+fi
+
+########################################################################
+#  Avant de lancer le make, on recree le makefile si necessaire
+########################################################################
+########################################################################
+# c'est a dire dans 3 cas:
+# 1. si la liste des fichiers .F et .h a ete modifiee depuis la
+#    derniere creation du makefile
+# 2. si le fichier contenant cette liste "liste_des_sources"
+#    n'existe pas.
+# 3. Si le makefile n'existe pas.
+########################################################################
+cd $LMDGCM
+
+
+if [[ -r .makelmdz ]]
+then
+old_lmdz_configuration=$(cat .makelmdz )
+else
+old_lmdz_configuration=""
+fi
+lmdz_configuration="$src_dirs"
+if [[ "$lmdz_configuration" != "$old_lmdz_configuration" ]]
+then
+  configuration_change="true"
+else
+  configuration_change="false"
+fi
+
+mkdir -p make_dir
+suf_make=`echo $src_dirs | sed -e 's/\//_/g' -e 's/ /_/g'`
+echo suf_make $suf_make
+
+\rm tmp77 tmp90
+for dir in $src_dirs ; do
+find libf/$dir -name '*.[Fh]' -print | sort >> tmp77
+find libf/$dir -name '*.F90' -print | sort >> tmp90
+######### CAS PARTICULIER CHIMIE TITAN
+if [[ "$physique" == "titan" ]]
+then 
+  find libf -name '*.[ch]' -print | sort > tmpC
+fi
+#########
+done
+
+liste77=make_dir/liste_des_sources_f77_$suf_make
+liste90=make_dir/liste_des_sources_f90_$suf_make
+if [[ "$physique" == "titan" ]] ; then
+listeC=make_dir/liste_des_sources_C_$suf_make
+fi
+makefile=make_dir/makefile_$suf_make
+
+if [[ $configuration_change == "true" || ! ( -r makefile ) || ! ( -r $liste90 ) || ! ( -r $liste77 ) || ` diff tmp77 $liste77 | wc -w ` -ne 0 || ` diff tmp90 $liste90 | wc -w ` -ne 0 ]]
+then
+  echo "les fichiers suivants ont ete crees ou detruits"
+  echo "ou les fichiers suivants sont passes ou ne sont plus en Fortran 90"
+  diff $liste77  tmp77
+  diff $liste90 tmp90
+  \cp -f tmp77 $liste77
+  \cp -f tmp90 $liste90
+######### CAS PARTICULIER CHIMIE TITAN
+  if [[ "$physique" == "titan" ]]
+  then 
+  diff $listeC tmpC
+  \cp -f tmpC $listeC
+  fi
+#########
+  echo "Recreating the makefile"
+  echo "src_dirs: $src_dirs"
+  ./create_make_gcm $src_dirs > tmp 
+  \mv -f tmp $makefile
+  echo "New makefile created"
+######### CAS PARTICULIER CHIMIE TITAN
+else if [[ "$physique" == "titan" ]]
+ then
+   if [[ ! ( -r $listeC ) || ` diff tmpC $listeC | wc -w ` -ne 0 ]]
+   then
+     diff $listeC tmpC
+     \cp -f tmpC $listeC
+     echo "on recree le makefile"
+     ./create_make_gcm $src_dirs > tmp 
+     \mv -f tmp $makefile
+     echo "Nouveau makefile cree"
+   fi
+ fi
+#########
+fi
+
+ln -sf $makefile makefile
+
+#Create a .makelmdz file containing main compilation option for later comparisons
+echo "$lmdz_configuration" > .makelmdz
+
+#################################################################
+# Preparation de l'execution de la commande make
+#################################################################
+
+# find code suffix and directory where code is located
+if [[ -r $LMDGCM/libf/dyn${dimc}d${FLAG_PARA}/${code}.F ]]
+then
+  source_code=${code}.F
+  dirmain=dyn${dimc}d${FLAG_PARA}
+else
+  if [[ -r $LMDGCM/libf/dyn${dimc}d${FLAG_PARA}/${code}.F90 ]]
+  then
+    source_code=${code}.F90
+    dirmain=dyn${dimc}d${FLAG_PARA}
+  else
+    if [[ -r $LMDGCM/libf/phy${physique}/${code}.F ]]
+    then
+      source_code=${code}.F
+      dirmain=phy${physique}
+    else
+      if [[ -r $LMDGCM/libf/phy${physique}/${code}.F90 ]]
+      then
+        source_code=${code}.F90
+        dirmain=phy${physique}
+      else
+        if [[ -r $LMDGCM/libf/dynphy_lonlat/phy$phys_root/${code}.F ]] 
+        then
+          source_code=${code}.F
+          dirmain="dynphy_lonlat/phy${phys_root}"
+        else
+          if [[ -r $LMDGCM/libf/phy$physique/dyn1d/${code}.F ]]
+          then
+            source_code=${code}.F
+            dirmain=phy$physique/dyn1d
+          else
+            echo "Error: cannot find ${code}.F[90]"
+            echo " neither in dyn${dimc}d${FLAG_PARA} nor in phy${physique}"
+            exit
+          fi
+        fi
+      fi
+    fi
+  fi
+fi
+
+if [[ ! -d "${LIBOGCM}/${nomlib}" ]]
+then
+  mkdir ${LIBOGCM}/${nomlib}
+  # check we indeed managed to create the directory
+  if [[ ! $? ]]
+  then
+    echo "Error: could not create directory ${LIBOGCM}/${nomlib}"
+    exit
+  fi
+fi
+
+# where module files are created 
+mod_loc_dir=$localdir
+
+if [[ "$physique" != "nophys" ]]
+then
+  INCLUDE="$INCLUDE"' -I$(LIBF)/phy'"$physique"
+#  phys="PHYS=$physique"
+#else
+#  # trick to avoid having a physics-related library in the makefile
+#  phys="L_PHY= LIBPHY="
+fi
+INCLUDE="$INCLUDE"' -I'${LIBOGCM}/${nomlib}
+#if (( $dimension == 1 ))
+#then
+# INCLUDE="$INCLUDE"' -I$(LIBF)/dyn3d -I'${LIBOGCM}/${nomlib}
+#else
+#INCLUDE="$INCLUDE"' -I$(LIBF)/dyn'${dimc}'d'$FLAG_PARA' -I'${LIBOGCM}/${nomlib}
+#fi
+
+# ranlib utility (check it exists or else default to ls)
+if [[ `which ranlib > /dev/null 2>&1 ; echo $?` -eq 0 ]]
+then
+  ranlib="ranlib"
+else
+  ranlib="ls"
+fi
+
+# add CPP keys to COMPIL_FLAGS
+# (but first add -D before all CPP_KEY items)
+cpp_definitions=`echo $CPP_KEY | sed -e 's/[A-Za-z_=0-9]*/-D&/g'`
+# (but add a -WF,-D before all CPP_KEY items) => for xlf on Vargas
+if [[ "${fcompiler:0:3}" == "xlf" ]]
+then
+cpp_definitions=`echo $CPP_KEY | sed -e 's/[A-Za-z_=0-9]*/-WF,-D&/g'`
+fi
+COMPIL_FFLAGS="${COMPIL_FFLAGS} ${cpp_definitions}"
+
+#################################################################
+# Execution du make
+#################################################################
+echo $makecommand RANLIB=$ranlib -f $LMDGCM/makefile \
+OPTION_DEP="$opt_dep" OPTION_LINK="$LIB ${PARA_LD}" \
+OPTIM90="${COMPIL_FFLAGS} ${PARA_FFLAGS}" \
+OPTIMTRU90="${COMPIL_FFLAGS} ${PARA_FFLAGS}" \
+OPTIM="${COMPIL_FFLAGS} ${PARA_FFLAGS}" \
+OPTIMC="$OPTIMC" \
+INCLUDE="$INCLUDE" \
+INCLUDEC="$includec" \
+$filtre \
+LIBO=${LIBOGCM}/${nomlib} \
+"PHYS=$physique" \
+LIBPHY=${LIBPHY} \
+LIBPHY_COMMON=${LIBPHY_COMMON} \
+LIBDYN_PHYS=${LIBDYN_PHYS} \
+DIM=$dimc \
+FLAG_PARA=$FLAG_PARA \
+L_PHY="$lib_phy" \
+L_DYN_PHY="$libdyn_phy" \
+L_ADJNT=$adjnt \
+L_COSP="$lcosp" \
+L_AERONOMARS="$laeronomars" \
+L_AERONOSTD="$laeronostd" \
+L_CHIMIE="$libchimie" \
+LOCAL_DIR="$localdir"  \
+F77="$fcompiler" \
+F90="$fcompiler" \
+CCC="$ccompiler" \
+OPLINK="$LIB" \
+LINK="$linker" \
+GCM="$LMDGCM" \
+MOD_LOC_DIR=$mod_loc_dir \
+MOD_SUFFIX="mod" \
+AR=$arcommand \
+DIRMAIN=$dirmain \
+SOURCE=$source_code \
+PROG=$code
+
+$makecommand RANLIB=$ranlib -f $LMDGCM/makefile \
+OPTION_DEP="$opt_dep" OPTION_LINK="$LIB ${PARA_LD}" \
+OPTIM90="${COMPIL_FFLAGS} ${PARA_FFLAGS}" \
+OPTIMTRU90="${COMPIL_FFLAGS} ${PARA_FFLAGS}" \
+OPTIM="${COMPIL_FFLAGS} ${PARA_FFLAGS}" \
+OPTIMC="$OPTIMC" \
+INCLUDE="$INCLUDE" \
+INCLUDEC="$includec" \
+$filtre \
+LIBO=${LIBOGCM}/${nomlib} \
+"PHYS=$physique" \
+LIBPHY=${LIBPHY} \
+LIBPHY_COMMON=${LIBPHY_COMMON} \
+LIBDYN_PHYS=${LIBDYN_PHYS} \
+DIM=$dimc \
+FLAG_PARA=$FLAG_PARA \
+L_PHY="$lib_phy" \
+L_DYN_PHY="$libdyn_phy" \
+L_ADJNT="$adjnt" \
+L_COSP="$lcosp" \
+L_AERONOMARS="$laeronomars" \
+L_AERONOSTD="$laeronostd" \
+L_CHIMIE="$libchimie" \
+LOCAL_DIR="$localdir"  \
+F77="$fcompiler" \
+F90="$fcompiler" \
+CCC="$ccompiler" \
+OPLINK="$LIB" \
+LINK="$linker" \
+GCM="$LMDGCM" \
+MOD_LOC_DIR=$mod_loc_dir \
+MOD_SUFFIX="mod" \
+AR=$arcommand \
+DIRMAIN=$dirmain \
+SOURCE=$source_code \
+PROG=$code
+
+if [[ -r $LIBFGCM/grid/dimensions.h ]]
+then
+  # Cleanup: remove dimension.h file
+  \rm -f $LIBFGCM/grid/dimensions.h
+fi

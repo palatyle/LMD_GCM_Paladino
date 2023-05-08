@@ -1,0 +1,63 @@
+21,25d20
+< #tracers=1
+< #nx=64
+< #ny=48
+< #nz=32
+< ##################
+Only in /donnees/aslmd/SVN/trunk/mesoscale/LMD_MM_MARS/SIMU/in_lmdz_mars_new/myGCM: .svn
+diff myGCM/callphys.def /donnees/aslmd/SVN/trunk/mesoscale/LMD_MM_MARS/SIMU/in_lmdz_mars_new/myGCM/callphys.def
+5d4
+< ##true???
+17c16
+< stats =.false.
+---
+> stats =.true.
+116,122d114
+< ## albedoes of CO2 ice caps from TES ?
+< TESicealbedo=.true.
+< ## Coefficient for Northern cap albedoes
+< TESice_Ncoef=1.4
+< ## Coefficient for Southern cap albedoes
+< TESice_Scoef=1.4
+< 
+diff myGCM/launch_gcm /donnees/aslmd/SVN/trunk/mesoscale/LMD_MM_MARS/SIMU/in_lmdz_mars_new/myGCM/launch_gcm
+15,19c15
+< #startbase='../../STARTS/'
+< #startbase='/d2/emlmd/run_LMDZ.MARS.BETA.TASI/tau1/'
+< #startbase='/tmp7/aslmd/flush/'
+< #startbase='/tmp7/aslmd/flush2/'
+< startbase='/d6/vblmd/MERIDIANI_EXOMARS/starts_en_cours/tau05/'
+---
+> startbase='../../STARTS/'
+26,29d21
+< if [[ "$daygcm" == 0 ]]
+< then
+< daygcm=669 
+< fi
+5d4
+< ##true???
+17c16
+< stats =.false.
+---
+> stats =.true.
+116,122d114
+< ## albedoes of CO2 ice caps from TES ?
+< TESicealbedo=.true.
+< ## Coefficient for Northern cap albedoes
+< TESice_Ncoef=1.4
+< ## Coefficient for Southern cap albedoes
+< TESice_Scoef=1.4
+< 
+15,19c15
+< #startbase='../../STARTS/'
+< #startbase='/d2/emlmd/run_LMDZ.MARS.BETA.TASI/tau1/'
+< #startbase='/tmp7/aslmd/flush/'
+< #startbase='/tmp7/aslmd/flush2/'
+< startbase='/d6/vblmd/MERIDIANI_EXOMARS/starts_en_cours/tau05/'
+---
+> startbase='../../STARTS/'
+26,29d21
+< if [[ "$daygcm" == 0 ]]
+< then
+< daygcm=669 
+< fi

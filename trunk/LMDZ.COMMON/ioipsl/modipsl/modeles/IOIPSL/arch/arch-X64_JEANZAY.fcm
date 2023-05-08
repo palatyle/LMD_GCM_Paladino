@@ -1,0 +1,15 @@
+%COMPILER            mpiifort
+%LINK                mpiifort
+%AR                  ar
+%MAKE                gmake
+%FPP_FLAGS           -P -traditional
+%FPP_DEF              
+%BASE_FFLAGS         -integer-size 32 -real-size 64 -align all -fp-model precise 
+%PROD_FFLAGS         -O3
+%DEV_FFLAGS          -g -O2 -traceback -fp-stack-check -ftrapuv -check bounds
+%DEBUG_FFLAGS        -fpe0 -O0 -g -traceback -fp-stack-check -ftrapuv -check bounds -check all -init=arrays -init=snan
+%MPI_FFLAGS
+%OMP_FFLAGS          -qopenmp
+%BASE_LD             
+%MPI_LD
+%OMP_LD              -qopenmp

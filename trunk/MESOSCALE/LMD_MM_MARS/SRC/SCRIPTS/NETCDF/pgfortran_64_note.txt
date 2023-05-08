@@ -1,0 +1,13 @@
+Linux, Portland Group version 6 compilers
+
+For netCDF version 3.6.1, Jason Elsom reports that he needed to use -mcmodel=medium flags when compiling a netCDF client program with pgf90 for a 64-bit target platform using version 6 PGI compilers, in order to access more than 2 GB of memory. In addition, he compiled the netCDF library with -fpic -Mlarge_arrays "to avoid an inconsistent addressing problem". Here are the specific environment variables he used to build the netCDF libraries:
+
+CC		= pgcc
+CXX		= pgCC
+FC		= pgf90
+F90		= pgf90
+CFLAGS		= -O2 -Msignextend -fpic -Mlarge_arrays
+CXXFLAGS	= -fpic -Mlarge_arrays
+FFLAGS		= -O2 -w  -fpic -Mlarge_arrays
+F90FLAGS	= -O2 -w -fpic -Mlarge_arrays
+

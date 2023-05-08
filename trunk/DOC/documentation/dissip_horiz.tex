@@ -1,0 +1,139 @@
+\documentclass[a4paper,10pt]{article}
+%\usepackage{graphicx}
+\usepackage{natbib}  % si appel à bibtex
+%\usepackage[francais]{babel}
+%\usepackage[latin1]{inputenc}  % accents directs (é...), avec babel
+%\usepackage{rotating}
+
+\setlength{\hoffset}{-1.in}
+\setlength{\oddsidemargin}{3.cm}
+\setlength{\textwidth}{15.cm}
+\setlength{\marginparsep}{0.mm}
+\setlength{\marginparwidth}{0.mm}
+
+\setlength{\voffset}{-1.in}
+\setlength{\topmargin}{0.mm}
+\setlength{\headheight}{0.mm}
+\setlength{\headsep}{30.mm}
+\setlength{\textheight}{24.cm}
+\setlength{\footskip}{1.cm}
+
+\setlength{\parindent}{0.mm}
+\setlength{\parskip}{1 em}
+\newcommand{\ten}[1]{$\times 10^{#1}$~} 
+\renewcommand{\baselinestretch}{1.}
+
+\begin{document}
+\pagestyle{plain}
+
+\begin{center}
+{\bf \LARGE 
+Documentation for LMDZ, Planets version
+
+\vspace{1cm}
+\Large
+The horizontal dissipation
+}
+
+\vspace{1cm}
+S\'ebastien Lebonnois
+
+\vspace{1cm}
+Latest version: \today
+\end{center}
+
+\section{Theoretical aspects}
+
+To be written
+
+\section{Pratical aspects in the code}
+
+The horizontal dissipation parameters are chosen in \textsf{gcm.def}.
+
+{\bf Parameters related to the operators}
+
+\begin{itemize}
+\item \textsf{idissip}: timestep for dissipation. 
+Should be equal to \textsf{iperiod}. 
+\item \textsf{lstardis}: boolean that indicates 
+whether to use a star operator (or not). Usually set to {\em True}.
+\item \textsf{nitergdiv}: number of iterations for the {\em gradiv} operator
+\item \textsf{nitergrot}: number of iterations for the {\em nxgradrot} operator
+\item \textsf{niterh}:  number of iterations for the {\em divgrad} operator
+\end{itemize}
+ 
+{\bf Parameters related to timescales}
+
+\begin{itemize}
+\item \textsf{tetagdiv}: time scale (in s) for the {\em gradiv} operator. 
+It corresponds to the attenuation of the smallest wavelengths for u and v 
+perturbations.
+\item \textsf{tetagrot}: time scale (in s) for the {\em nxgradrot} operator. 
+It corresponds to the attenuation of the smallest wavelengths for u and v 
+perturbations.
+\item \textsf{tetatemp}: time scale (in s) for the {\em divgrad} operator. 
+It corresponds to the attenuation of the smallest wavelengths for h 
+perturbations.
+\end{itemize}
+These timescales are the one for the deep atmosphere. 
+However, they are modified by some factors as the pressure decreases. 
+For these factors, two steps are implemented: \textsf{dissip\_fac\_mid} and
+\textsf{dissip\_fac\_up} (also chosen in \textsf{gcm.def}). 
+The first step is always applied, the second is
+applied only when \textsf{ok\_strato} is set to {\em True}.
+Timescales are divided by the factor $f$ computed as detailed below. 
+
+For \textsf{dissip\_fac\_mid} (which is usually equal to 2.), transition is 
+computed with:
+\[
+         x = 1. - \frac{{\rm preff}}{p}
+\]
+\[
+         f_1 = {\rm dissip\_fac\_mid} -
+           \frac{{\rm dissip\_fac\_mid}-1.}{1.+x^2}
+\]
+
+When applied (\textsf{ok\_strato} set to {\em True}), the transition from
+\textsf{dissip\_fac\_mid} to \textsf{dissip\_fac\_up} is done with a 
+$\tanh$ function, using further parameters:
+\begin{itemize}
+\item \textsf{dissip\_deltaz}: altitude range (in km) for the transition.
+\item \textsf{dissip\_hdelta}: scale height (in km) at the altitude of the transition.
+\item \textsf{dissip\_pupstart}: pressure (in Pa) corresponding to the bottom 
+of the transition region.
+\end{itemize}
+The function used is:
+\[
+         f_2 = \left[ 1+
+     \left( \frac{{\rm dissip\_fac\_up}}{{\rm dissip\_fac\_mid}} - 1. \right)
+     \times \left( 1 - \frac{1 + \tanh X}{2} \right) \right]
+\]
+with
+\[
+    X = \frac{6.\times {\rm dissip\_hdelta}}{{\rm dissip\_deltaz}}
+      \log \frac{p}{{\rm dissip\_pupstart} \times 
+     \exp \left( \frac{-{\rm dissip\_deltaz}}{2 {\rm dissip\_hdelta}} \right)}
+%      = \frac{6.\times {\rm dissip\_hdelta}}{{\rm dissip\_deltaz}}
+%      \log \frac{p}{{\rm dissip\_pupstart}} + 3.
+\]
+
+{\bf A last parameter\dots}
+
+There is one last coefficient in \textsf{gcm.def} related to dissipation: 
+\textsf{coefdis}. 
+It is used in \textsf{inigeom.F} to compute \textsf{gamdi\_gdiv, gamdi\_grot, 
+gamdi\_h}. Usually put to 0... Should be explained here...
+
+
+
+
+%\begin{thebibliography}{2}
+%\providecommand{\natexlab}[1]{#1}
+%\expandafter\ifx\csname urlstyle\endcsname\relax
+%  \providecommand{\doi}[1]{doi:\discretionary{}{}{}#1}\else
+%  \providecommand{\doi}{doi:\discretionary{}{}{}\begingroup
+%  \urlstyle{rm}\Url}\fi
+
+%\end{thebibliography}
+
+\end{document}

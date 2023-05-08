@@ -1,0 +1,46 @@
+c Info sur la grille physique
+      tab_cntrl(1) = float(ngridmx)  ! nombre de points de la grille physique
+      tab_cntrl(2) = float(nlayermx) ! nombre de couches
+      tab_cntrl(3) = float(idayref)  ! jour 0
+ 
+c Info sur la Planete Mars pour la dynamique et la physique
+      tab_cntrl(5) = rad      ! rayon de mars(m) ~3397200
+      tab_cntrl(6) = omeg     ! vitesse de rotation (rad.s-1)
+      tab_cntrl(7) = g        ! gravite (m.s-2) ~3.72
+      tab_cntrl(8) = mugaz    ! Masse molaire de l'atm (g.mol-1) ~43.49
+      tab_cntrl(9) = rcp      !  = r/cp  ~0.256793 (=kappa dans dynamique)
+      tab_cntrl(10) = daysec  ! duree du sol (s)  ~88775
+ 
+      tab_cntrl(11) = dtphys  ! pas de temps de la physique 
+      tab_cntrl(12) = 0.
+      tab_cntrl(13) = 0.
+ 
+c Info sur la Planete Mars pour la physique uniquement
+      tab_cntrl(14) = year_day  ! duree de l'annee (sols) ~668.6
+      tab_cntrl(15) = periheli  ! dist.min. soleil-mars (Mkm) ~206.66
+      tab_cntrl(16) = aphelie   ! dist.max. soleil-mars (Mkm) ~249.22
+      tab_cntrl(17) = peri_day  ! date du perihelie (sols depuis printemps)
+      tab_cntrl(18) = obliquit  ! Obliquite de la planete (deg) ~23.98
+ 
+c Couche limite et Turbulence
+      tab_cntrl(19) = z0        ! surface roughness (m) ~0.01
+      tab_cntrl(20) = lmixmin   ! longueur de melange ~100
+      tab_cntrl(21) = emin_turb ! energie minimale ~1.e-8
+ 
+c propriete optiques des calottes et emissivite du sol
+      tab_cntrl(22) = albedice(1)  ! Albedo calotte nord ~0.5
+      tab_cntrl(23) = albedice(2)  ! Albedo calotte sud ~0.5
+      tab_cntrl(24) = emisice(1)   ! Emissivite calotte nord ~0.95
+      tab_cntrl(25) = emisice(2)   ! Emissivite calotte sud ~0.95
+      tab_cntrl(26) = emissiv      ! Emissivite du sol martien ~.95
+      tab_cntrl(31) = iceradius(1) ! mean scat radius of CO2 snow (north)
+      tab_cntrl(32) = iceradius(2) ! mean scat radius of CO2 snow (south)
+      tab_cntrl(33) = dtemisice(1) ! time scale for snow metamorphism (north)
+      tab_cntrl(34) = dtemisice(2) ! time scale for snow metamorphism (south)
+ 
+c Proprietes des poussiere aerosol
+      tab_cntrl(27) = tauvis      ! profondeur optique visible moyenne
+ 
+      tab_cntrl(28) = 0.
+      tab_cntrl(29) = 0.
+      tab_cntrl(30) = 0.

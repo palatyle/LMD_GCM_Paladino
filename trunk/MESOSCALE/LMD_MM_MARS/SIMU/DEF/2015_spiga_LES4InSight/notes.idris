@@ -1,0 +1,14 @@
+
+REMOVE -static from
+MESOSCALE/LMD_MM_MARS/SRC/WRFV2/mars_lmd/makegcm_mpifort
+
+
+had to set the I_MPI_F90 environment variable
+
+do not mix seq and mpi librairies
+
+wget -r -l1 --no-parent http://www.lmd.jussieu.fr/~lmdz/planets/mars/datadir
+
+
+
+pas de lien symbolique vers home ?

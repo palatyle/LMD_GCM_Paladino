@@ -1,0 +1,75 @@
+#! /bin/bash
+
+cd WPS_GEOG
+
+cp -rf res/albedo_TES .
+cd albedo_TES
+echo get TES albedo from PDS
+echo 1/2
+wget http://pds-geosciences.wustl.edu/mgs/mgs-m-tes-special-v1/global_albedo_8ppd.img . > /dev/null 2>&1
+echo 2/2
+wget http://pds-geosciences.wustl.edu/mgs/mgs-m-tes-special-v1/global_albedo_8ppd.lbl . > /dev/null 2>&1
+ls -l ./ | grep global_albedo*
+echo building... please wait
+./tesalbedo_build.m
+\rm global_albedo*
+cd ..
+
+cp -rf res/thermal_TES .
+cd thermal_TES
+echo get TES thermal inertia from Univ. Colorado
+echo 1/2
+wget http://lasp.colorado.edu/inertia/2007/NBmap2007.bin . > /dev/null 2>&1
+echo 2/2
+wget http://lasp.colorado.edu/inertia/2007/NBmap2007s.jpg . > /dev/null 2>&1
+ls -l ./ | grep NBmap2007*
+echo building... please wait
+./testhermal_build.m
+\rm NBmap2007*
+cd ..
+
+cp -rf res/mola_topo32 .
+cd mola_topo32
+echo get MOLA 32 topography from PDS ... this could be long
+echo 1/2
+wget http://pds-geosciences.wustl.edu/mgs/mgs-m-mola-5-megdr-l3-v1/mgsl_300x/meg032/megt90n000fb.img . > /dev/null 2>&1
+echo 2/2
+wget http://pds-geosciences.wustl.edu/mgs/mgs-m-mola-5-megdr-l3-v1/mgsl_300x/meg032/megt90n000fb.lbl . > /dev/null 2>&1
+ls -l ./ | grep megt*
+echo building... please wait
+./mola_build.m
+\rm megt*
+cd ..
+
+### remove this line if you want to generate MOLA 64 
+exit
+
+cp -rf res/mola_topo64 .
+cd mola_topo64
+echo get MOLA 64 topography from PDS ... this could be very long
+ls -l ./ | grep megt*
+echo 1/8
+wget http://pds-geosciences.wustl.edu/mgs/mgs-m-mola-5-megdr-l3-v1/mgsl_300x/meg064/megt90n000gb.img . > /dev/null 2>&1
+echo 2/8
+wget http://pds-geosciences.wustl.edu/mgs/mgs-m-mola-5-megdr-l3-v1/mgsl_300x/meg064/megt90n000gb.lbl . > /dev/null 2>&1
+echo 3/8
+wget http://pds-geosciences.wustl.edu/mgs/mgs-m-mola-5-megdr-l3-v1/mgsl_300x/meg064/megt90n180gb.img . > /dev/null 2>&1
+echo 4/8
+wget http://pds-geosciences.wustl.edu/mgs/mgs-m-mola-5-megdr-l3-v1/mgsl_300x/meg064/megt90n180gb.lbl . > /dev/null 2>&1
+echo 5/8
+wget http://pds-geosciences.wustl.edu/mgs/mgs-m-mola-5-megdr-l3-v1/mgsl_300x/meg064/megt00n000gb.img . > /dev/null 2>&1
+echo 6/8
+wget http://pds-geosciences.wustl.edu/mgs/mgs-m-mola-5-megdr-l3-v1/mgsl_300x/meg064/megt00n000gb.lbl . > /dev/null 2>&1
+echo 7/8
+wget http://pds-geosciences.wustl.edu/mgs/mgs-m-mola-5-megdr-l3-v1/mgsl_300x/meg064/megt00n180gb.img . > /dev/null 2>&1
+echo 8/8
+wget http://pds-geosciences.wustl.edu/mgs/mgs-m-mola-5-megdr-l3-v1/mgsl_300x/meg064/megt00n180gb.lbl . > /dev/null 2>&1
+echo building... please wait
+./mola_buildNE.m  
+./mola_buildNW.m  
+./mola_buildSE.m  
+./mola_buildSW.m
+\rm megt*
+cd ..
+
+exit

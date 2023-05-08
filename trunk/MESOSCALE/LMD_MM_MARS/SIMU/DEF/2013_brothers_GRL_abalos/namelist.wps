@@ -1,0 +1,36 @@
+&share
+ wrf_core = 'ARW',
+ max_dom = 3,
+ start_date = '2024-02-23_06:00:00', '2024-02-23_06:00:00', '2024-02-23_06:00:00', 
+ end_date   = '2024-02-60_06:00:00', '2024-02-23_06:00:00', '2024-02-23_06:00:00', 
+ interval_seconds = 14800
+ io_form_geogrid = 2,
+ debug_level = 0,
+ opt_output_from_geogrid_path='./'
+/
+
+&geogrid
+ parent_id         =        0,           1,            2,                   
+ parent_grid_ratio =        1,           3,            3,                      !!! parent_grid_ratio divides (e_we-s_we+1) 
+ i_parent_start    =        0,          13,           44,         
+ j_parent_start    =        0,          30,           44,         
+ e_we              =      117,         121,          121,                      !!! nproc divides e_we-1
+ e_sn              =      117,         121,          121,                      !!! nproc divides e_we-1
+ geog_data_res     =  'custom',   'custom',     'custom',     
+! geog_data_res     =  '64ppd',      '64ppd',     '64ppd',
+ dx = 20000,
+ dy = 20000,
+ map_proj = 'polar',            !! map projection: 'mercator', 'lambert' or 'polar'
+ ref_lat   =  90,              !! north latitude of the center of the domain
+ ref_lon   =  0.1,            !! east longitude of the center of the domain
+ truelat1  =  90,              !! (lambert or polar) lat position of projection cone
+ truelat2  =  0.0,              !!   [do not modify]
+ stand_lon =  0.1,            !! (lambert or polar) lon position of projection cone
+ geog_data_path = './WPS_GEOG',
+/
+
+&metgrid
+ fg_name = './WPSFEED/LMD'
+ io_form_metgrid = 2,
+ opt_output_from_metgrid_path='./WRFFEED/current'
+/

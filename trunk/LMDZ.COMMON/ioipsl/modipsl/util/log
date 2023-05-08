@@ -1,0 +1,12 @@
+06/03/20 13:55:53 ./model IOIPSL_PLUS
+--- Model        : IOIPSL_PLUS
+--- Action       : checkout
+--- Mode         : silencious
+--- Mail address : foujols@ipsl.jussieu.fr
+---
+--- Component  : IOIPSL/tags/v2_2_5
+--- Tag        : HEAD
+--- System     : svn
+--- Server     : http://forge.ipsl.jussieu.fr/igcmg/svn
+--- Directory  : IOIPSL
+--- Local Dir  : modeles

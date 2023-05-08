@@ -1,0 +1,72 @@
+ &time_control
+ start_year       = 2024, 2024, 2024
+ start_month      = 09, 09, 09
+ start_day        = 05, 05, 05
+ start_hour       = 00, 00, 00
+ start_minute     = 00, 00, 00
+ start_second     = 00, 00, 00
+ end_year         = 2024, 2024, 2024
+ end_month        = 09, 09, 09
+ end_day          = 10, 10, 10
+ end_hour         = 00, 00, 00
+ history_interval_s    = 1850, 1850, 1850 
+ frames_per_outfile  = 48, 48, 48
+ restart          = .false. 
+ restart_interval = 360 
+ io_form_history  = 2      
+ io_form_restart  = 2          
+ io_form_input    = 2      
+ io_form_boundary = 2       
+ debug_level      = 0
+ !!!! OPT  
+ interval_seconds = 3700         !Freq of GCM update
+
+ /
+
+ &domains
+ time_step   = 40
+ dx = 135000, 45000,  15000,
+ dy = 135000, 45000,  15000, 
+ e_we   = 57, 61, 61
+ e_sn   = 57, 61, 61
+ e_vert = 61, 61, 61
+ p_top_requested = 5       
+ max_dom = 3
+ grid_id                = 1,   2,   3,
+ parent_id              = 0,   1,   2,
+ i_parent_start         = 0,  19,  20,
+ j_parent_start         = 0,  19,  25,
+ parent_grid_ratio      = 1,   3,   3,
+ parent_time_step_ratio = 1,   3,   3, ! ok in non_hydrostatic/hydrostatic with time_step  = 20, and feedback=0 ! essayer 1,2,2 sans feedback pour voir ?
+ feedback               = 1            !voir aussi smooth_option et blend_width
+ smooth_option          = 2            ! =0 nan au bout de quelques heures
+/
+
+ &physics
+ radt = 1,      ! call each half hour with radt = 1850/dt
+ mars = 0,      ! IF YOU CHANGE THIS YOU MUST RECOMPILE THE PHYSICS
+ num_soil_layers     = 18      !!! NOUVELLE PHYSIQUE
+ /
+
+ &fdda
+ /
+
+ &dynamics
+ diff_6th_factor = 0.2, 0.2, 0.2
+ non_hydrostatic = T, T, T
+ /
+
+ &grib2
+ /
+
+ &bdy_control
+ specified = T, F, F
+ nested    = F, T, T
+ /
+
+!! DO NOT MODIFY
+ &namelist_quilt
+ nio_tasks_per_group = 0,
+ nio_groups = 1,
+ /
+!! DO NOT MODIFY

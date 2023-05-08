@@ -1,0 +1,57 @@
+ &time_control
+ start_year       = 2024,
+ start_month      = 09, 
+ start_day        = 23,
+ start_hour       = 00,
+ end_year         = 2024,
+ end_month        = 09,
+ end_day          = 26, 
+ end_hour         = 00, 
+ history_interval    = 74,   ! *100s : 74 is each 2 MH, 37 is each MH  
+ frames_per_outfile  = 12, 
+ restart          = .false.
+ restart_interval = 8880,
+ io_form_history  = 2
+ io_form_restart  = 2
+ io_form_input    = 2
+ io_form_boundary = 2
+ debug_level      = 0
+ /
+
+ &domains
+!!! time_step   = 1,    ! 2 crashe, meme en baissant le top, 1 aussi au bout d'un moment
+ time_step   = 0
+ time_step_fract_num                 = 1,
+ time_step_fract_den                 = 2,
+ dx = 500, !1000,
+ dy = 500, !1000,
+ e_we   = 181,               ! IF YOU CHANGE THIS YOU MUST RECOMPILE THE PHYSICS
+ e_sn   = 181,               ! IF YOU CHANGE THIS YOU MUST RECOMPILE THE PHYSICS
+ e_vert = 31,                ! IF YOU CHANGE THIS YOU MUST RECOMPILE THE PHYSICS
+ p_top_requested = 50
+ /
+
+ &physics
+ radt = 20, !5	! call each half hour with radt = 1850/dt
+ mars = 0,      ! IF YOU CHANGE THIS YOU MUST RECOMPILE THE PHYSICS
+ /
+
+ &fdda
+ /
+
+ &dynamics
+ pd_scalar = F   !! no water cycle (mars = 0)
+ /
+
+ &grib2
+ /
+
+ &bdy_control
+ /
+
+!! DO NOT MODIFY
+ &namelist_quilt
+ nio_tasks_per_group = 0,
+ nio_groups = 1,
+ /
+!! DO NOT MODIFY

@@ -1,0 +1,18 @@
+%COMPILER            /opt/intel2/composer_xe_2011_sp1.6.233/bin/intel64/ifort
+%LINK                /opt/intel2/composer_xe_2011_sp1.6.233/bin/intel64/ifort
+%AR                  ar
+%MAKE                make
+%FPP_FLAGS           -P -traditional
+%CPP_FLAGS           -P
+%FPP_DEF             NC_DOUBLE LAPACK BLAS SGEMV=DGEMV SGEMM=DGEMM FFT_FFTW
+%BASE_FFLAGS         -auto -real-size 64 -ip -mkl=parallel -fp-model precise -align common -mcmodel=large -shared-intel
+%PROD_FFLAGS         -O2
+%DEV_FFLAGS          -O2
+%DEBUG_FFLAGS        -g -no-ftz -check -traceback -ftrapuv -fp-stack-check
+%C_COMPILER          gcc
+%C_OPTIM             -O3
+%MPI_FFLAGS          -I/opt/intel2/impi/4.0.3.008/include
+%OMP_FFLAGS          -openmp
+%BASE_LD             -mkl=parallel
+%MPI_LD              -L/opt/intel2/impi/4.0.3.008/lib64 -lmpiif -lmpi -lmkl_core -lfftw3
+%OMP_LD              -openmp

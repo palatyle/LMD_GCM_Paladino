@@ -1,0 +1,1104 @@
+#!/bin/csh -f
+#
+# $Id: makegcm 1478 2011-01-27 14:31:34Z fairhead $
+#
+#set verbose echo
+########################################################################
+# options par defaut pour la commande make
+########################################################################
+set dim="96x71x19"
+set physique=lmd
+set phys="PHYS=$physique"
+set include='-I$(LIBF)/grid -I$(LIBF)/bibio -I$(LIBF)/filtrez -I. '
+set filtre=filtrez
+set grille=reg
+set couple=false
+set veget=false
+set chimie=false
+set psmile=true
+set parallel=false
+set vampir=false
+set OPT_STACK='-Wf,-init stack=nan'
+set OPT_STACK=' '
+set OPTIMI='-C debug -eC '
+set OPTIMI=' -ftrace '
+set OPT_LINUX='-O3'
+set OPT_LINUX="-i4 -r8 -O3"
+set io=ioipsl
+set cosp=false
+
+set FC_LINUX=g95
+set FC_LINUX=gfortran
+#set FC_LINUX=pgf90
+if ( $FC_LINUX == g95 ) then
+   set OPT_LINUX="-O3"
+   set OPT_LINUX="-O3"
+else if ( $FC_LINUX == gfortran ) then
+   set OPT_LINUX="-fdefault-real-8 -O3"
+#   set OPT_LINUX="-O3 -fno-second-underscore"
+   set OPT_LINUX="-O3 "
+else
+   # pgf90 options
+   set OPT_LINUX="-i4 -r8 -O2 -Munroll -Mnoframe -Mautoinline -Mcache_align"
+endif
+
+########################################################################
+# path a changer contenant les sources et les objets du modele
+########################################################################
+
+###### VERSION LMDZ.4
+set INCALIB=../INCA3/config/lib
+set LMDGCM="`pwd`"
+setenv LIBOGCM $LMDGCM/libo
+#
+#
+setenv IOIPSLDIR /d4/fairhead/gfortran/ioipsl_v2_1_9
+setenv MODIPSLDIR /d4/fairhead/gfortran/ioipsl_v2_1_9
+setenv NCDFINC /d4/fairhead/gfortran_4.4/netcdf-4.1.1/include
+setenv NCDFLIB /d4/fairhead/gfortran_4.4/netcdf-4.1.1/lib
+
+
+
+
+
+setenv localdir "`pwd`"
+set MODIPSL=0
+echo $localdir | grep modipsl >& /dev/null
+if ( ! $status ) then
+  set MODIPSL=1
+  setenv LMDGCM $localdir
+  cd ../..
+  setenv LIBOGCM "`pwd`/lib"
+  setenv IOIPSLDIR $LIBOGCM
+  setenv MODIPSLDIR $LIBOGCM
+  cd $localdir
+  if ( `hostname` == rhodes ) then
+    set NCDFINC=`grep sxnec ../../util/AA_make.gdef| grep NCDF_INC|sed -e "s/^.* =//"`
+    set NCDFLIB=`grep sxnec ../../util/AA_make.gdef| grep NCDF_LIB|sed -e 's/^.* =//'`
+  else
+    if ( `hostname` == nymphea0 ) then
+      set NCDFINC=`grep fjvpp ../../util/AA_make.gdef| grep NCDF_INC|sed -e "s/^.* =//"`
+      set NCDFLIB=`grep fjvpp ../../util/AA_make.gdef| grep NCDF_LIB|sed -e 's/^.* =//'`
+    else if ( `hostname` == mercure ) then
+      set NCDFINC=`grep sx6nec ../../util/AA_make.gdef| grep NCDF_INC|sed -e "s/^.* =//"`
+      set NCDFLIB=`grep sx6nec ../../util/AA_make.gdef| grep NCDF_LIB|sed -e 's/^.* =//'`
+    else  if ( `hostname` == brodie ) then
+      set NCDFINC=`grep sx8brodie ../../util/AA_make.gdef| grep NCDF_INC|sed -e "s/^.* =//"`
+      set NCDFLIB=`grep sx8brodie ../../util/AA_make.gdef| grep NCDF_LIB|sed -e 's/^.* =//'`
+    else
+      echo 'Probleme de definition des variables NCDFINC et NCDFLIB'
+    endif 
+  endif 
+else
+  if ( ! $?LMDGCM ) then
+    echo You must initialize the variable LMDGCM in your environnement
+    echo for instance: "setenv LMDGCM /usr/myself/supergcm" in .cshrc
+    exit
+  endif
+  if ( ! $?LIBOGCM ) then
+    set LIBOGCM=$LMDGCM/libo
+  endif
+  if ( ! $?IOIPSLDIR ) then
+    echo You must initialize the variable IOIPSLDIR in your environnement
+    echo for instance: "setenv IOIPSLDIR /usr/myself/ioipsl" in .cshrc
+    exit
+  else
+      setenv MODIPSLDIR $IOIPSLDIR
+  endif
+  if ( ! $?NCDFLIB ) then
+    echo You must initialize the variable NCDFLIB in your environnement
+    echo for instance: "setenv NCDFLIB /usr/myself/netcdf" in .cshrc
+    exit
+  endif
+  if ( ! $?NCDFINC ) then
+    echo You must initialize the variable NCDFINC in your environnement
+    echo for instance: "setenv NCDFINC /usr/myself/netcdf" in .cshrc
+    exit
+  endif
+endif
+set model=$LMDGCM
+set libo=$LIBOGCM
+
+########################################################################
+#  Les differentes platformes reconnues
+########################################################################
+
+set HP=0
+set IBM=0
+set SUN=0
+set VPP=0
+set CRAY=0
+set DEC=0
+set LINUX=0
+set NEC=0
+set XNEC=0
+set X6NEC=0
+set X8BRODIE=0
+if ( `uname` == HP-UX ) then
+   set machine=HP
+   set HP=1
+else if (`uname` == UNIX_System_V ) then
+   set machine=VPP
+   set VPP=1
+else if (`uname` == SunOS ) then
+   set machine=SUN
+   set SUN=1
+else if ( `uname` == AIX ) then
+   set machine=IBM
+   set IBM=1
+else if ( `uname` == OSF1 ) then
+   set machine=ALPHA
+   set DEC=1
+else if ( `uname` == Linux && `hostname` != mercure  && `hostname` != brodie ) then
+   set machine=LINUX
+   set LINUX=1
+else if ( `hostname` == atlas || `hostname` == axis  || `hostname` == etoile ) then
+   set machine=CRAY
+   set CRAY=1
+else if ( `uname` == SUPER-UX ) then
+   set machine=NEC
+   set NEC=1
+else if ( `hostname` == rhodes) then
+   set machine=XNEC
+   set XNEC=1
+else if ( `hostname` == mercure) then
+   set machine=X6NEC
+   set X6NEC=1
+else if ( `hostname` == brodie) then
+   set machine=X8BRODIE
+   set X8BRODIE=1
+else
+   echo Vous travaillez sur une machine non prevue par le reglement
+   exit
+endif
+
+if ( ! -d $libo )  then
+   mkdir $libo
+endif
+
+
+if $VPP then
+set netcdf=netcdf_v
+else 
+set netcdf=netcdf
+endif
+########################################################################
+#  Quelques initialisations de variables du shell.
+########################################################################
+
+set dyn=
+set opt_link=""
+set adjnt=""
+set lcosp=""
+set opt_dep=""
+set libchimie=""
+
+set optim=""
+set optimbis=""
+set optim90=""
+set oplink=""
+
+########################################################################
+#  Optimisations par defaut suivant les machines
+########################################################################
+
+echo "Optimisations par defaut suivant les machines"
+set libf=$model/libf
+#setenv localdir "LOCAL_DIR=`pwd`"
+#setenv localdir "`pwd`"
+cd $model
+#############
+if $CRAY then
+#############
+#   set optim="-Wf'-ei' -dp -Wf'-a static'"
+   set optimbis=" -DCRAY "
+   set optim90="-Wp'-P' -DCRAY -p$IOIPSLDIR "'-p$(LIBO) -eiv '
+   set optim="$optim90"
+   if ( $io == "ioipsl" ) then
+     set oplink="-Wl'-DSTACK=128 -f indef' -L$IOIPSLDIR -lioipsl  -L$NCDFLIB -lnetcdf "
+   else
+     set oplink="-Wl'-DSTACK=128 -f indef' -L$IOIPSLDIR -L$NCDFLIB -lnetcdf "
+   endif
+   set mod_loc_dir=" "
+   set mod_suffix=" "
+#################
+else if $SUN then
+#################
+   set optim=" -fast "
+   set optimbis=" "
+   set optim90=" -fast -fixed "
+   set optimtru90=" -fast -free "
+   if ( $io == "ioipsl" ) then
+     set opt_link="-lf77compat -L$MODIPSLDIR -lsechiba -lparameters -lstomate -lioipsl -L$NCDFLIB -lnetcdf "
+   else
+     set opt_link="-lf77compat -L$MODIPSLDIR -lsechiba -lparameters -lstomate -L$NCDFLIB -lnetcdf "
+   endif
+   set mod_loc_dir=$localdir
+   set mod_suffix=mod
+#################
+else if $HP then
+#################
+   set optim=" +U77 -O +E1 "
+   set optimbis=" "
+#################
+else if $IBM then
+#################
+   set optim=" -O3 -qtune=pwr2 -qarch=pwr2"
+   set optimbis=" "
+#################
+else if $VPP then
+#################
+#   set optim="-Dasuxm  -On, -g -Ad -Potilax -Eciplume -Si"
+#   set optimbis="  -Wv,-m3 -Wp,-DVPP -Z $LMDGCM/listage"
+   set optimbis=" -Wp,-DNC_DOUBLE -Ad -Z $LMDGCM/listage -X9"
+   set optim90="$optim $optimbis -X9 -w"
+   set mod_loc_dir=$MODIPSLDIR
+   set mod_suffix=mod
+#################
+else if $DEC then
+#################
+   set optim=" "
+   set optimbis=" "
+#################
+else if $LINUX then
+#################
+   if ( $FC_LINUX == pgf90 || $FC_LINUX == g95 || $FC_LINUX == gfortran ) then
+     set optim=" $OPT_LINUX "
+     set optim90=" $OPT_LINUX "
+     set optimtru90=" $OPT_LINUX "
+   else
+     echo 'compilateur linux non reconnu'
+     exit
+   endif
+   set mod_loc_dir=$MODIPSLDIR
+   set mod_suffix=mod
+#################
+else if $NEC then
+#################
+   set optim90=' -clear -C hopt -float0 -ew -P static -Wf,"-pvctl fullmsg noassume "'
+   set optimtru90=' -clear -f4 -C hopt -float0 -ew -P static -Wf,"-pvctl fullmsg noassume "'
+   set optim="$optim90"
+   set optimbis=" "
+   if ( $io == "ioipsl" ) then
+     set opt_link=" -C hopt -float0 -ew -P static -L$MODIPSLDIR -lioipsl  $NCDFLIB -lnetcdf_i8r8_v "
+   else
+     set opt_link=" -C hopt -float0 -ew -P static -L$MODIPSLDIR $NCDFLIB -lnetcdf_i8r8_v "
+   endif
+   set mod_loc_dir="."
+   set mod_suffix="mod"
+#################
+else if $XNEC then
+#################
+   set optdbl='-dw -Wf\"-A dbl4\"'
+   set optim90=' -clear -float0 -f3 -Ep -DNC_DOUBLE -dw -Wf\"-A dbl4\" -R5 -Wf,"-pvctl loopcnt=40000 fullmsg noassume "'
+   set optimtru90=' -clear -f4 -float0 -Ep -DNC_DOUBLE -dw -Wf\"-A dbl4\" -R2 -R3 -R4 -R5 -Wf,"-pvctl loopcnt=40000 fullmsg noassume"'
+   set optim="$optim90"
+   set optimbis=" "
+   set mod_suffix="mod"
+   set mod_loc_dir="./"
+#################
+else if $X6NEC then
+#################
+   set optdbl='-dw -Wf\"-A dbl4\"'  
+   set optim90=' -clear -float0 -size_t64 -P stack -Wf "-ptr byte -init stack=nan -init heap=nan" -Ep -DNC_DOUBLE -dw -Wf\"-A dbl4\" -R5 -Wf,"-pvctl loopcnt=40000 fullmsg noassume "'
+   set optimtru90=' -clear -f4 -float0 -size_t64 -P stack -Wf "-ptr byte -init stack=nan -init heap=nan" -Ep -DNC_DOUBLE -dw -Wf\"-A dbl4\" -R2 -R3 -R4 -R5 -Wf,"-pvctl loopcnt=40000 fullmsg noassume"'
+   set optim="$optim90"
+   set optimbis=" "
+   set mod_suffix="mod"
+   set mod_loc_dir="./"
+#################
+else if $X8BRODIE then
+##################
+   set optdbl='-dw -Wf\"-A dbl4\"'  
+#   set optim90='-P stack -Wf,-pvctl res=whole,-A dbl4,-init stack=nan,-init heap=nan,-ptr byte -EP -R5 -float0 -dw -Wf,"-pvctl loopcnt=999999 fullmsg noassume" -I/SX/usr/include'
+   set optim90='-C vopt -Wf,-pvctl res=whole,-A dbl4,-init stack=nan,-init heap=nan,-ptr byte -EP -DNC_DOUBLE -R5 -float0 -dw -Wf,"-pvctl loopcnt=999999 noassume" -I/SX/usr/include'
+#   set optim90='-C vsafe -P stack -Wf,-pvctl res=whole,-A dbl4,-ptr byte -EP -R5 -float0 -dw -Wf,"-pvctl loopcnt=999999 fullmsg noassume" -I/SX/usr/include'
+   set optimtru90="$optim90"
+   set optim90="$optim90"
+   set optim="$optim90"
+   set optimbis=" "
+   set mod_suffix="mod"
+   set mod_loc_dir="./"
+else
+   set optim=""
+   set optimbis=" "
+endif
+
+set nomlib=$machine
+
+########################################################################
+# lecture des options de mymake
+########################################################################
+
+top:
+if ($#argv > 0) then
+    switch ($1:q)
+
+    case -h:
+
+########################################################################
+# Manuel en ligne
+########################################################################
+more <<eod
+
+
+makegcm [Options] prog
+
+
+
+
+Par default, la commande makegcm:
+---------------------------------
+
+1. compile une serie de sous programmes se trouvant dans des sous-repertoires
+de $LMDGCM/libf.
+Les sous programmes sont ensuite stokes sur dans des librairies FORTRAN
+sur $LIBOGCM.
+
+2. Ensuite, makegcm compile le programme prog.f se trouvant par default sur
+$LMDGCM/libf/dyn3d et effectue le lien avec l ensemble des librairies.
+
+La variable '$LMDGCM' doit etre initialisee dans votre .cshrc ou en dur
+dans la comande makegcm.
+
+La commande makegcm est faite pour permettre de gerer en parallele des
+versions differentes du modele, compilees avec des options de compilation
+et des dimensions differentes sans avoir a chaque fois a recompiler tout
+le modele.
+
+Les librairies FORTRAN sont stoquees sur le directory $LIBOGCM.
+
+
+OPTIONS:
+--------
+
+Les options suivantes peuvent etre definies soit par defaut en editant le
+"script" makegcm, soit en interactif:
+
+-d imxjmxlm  ou im, jm, et lm sont resp. le nombre de longitudes, latitudes
+             et couches verticales. 
+             L'effet des options -d est d'ecraser le fichier 
+             $LMDGCM/libf/grid/dimensions.h
+             qui contient sous forme de 3 PARAMETER FORTRAN les 3 dimensions
+             de la grille horizontale im, jm et verticale lm, par un nouveu fichier
+             $LMDGCM/libf/grid/dimension/dimensions.im.jm.lm
+             Si ce fichier n'existe pas encore, il est cree par le script
+             $LMDGCM/libf/grid/dimension/makdim
+
+-p PHYS    pour selectionner le jeu de parametrisations physiques avec
+           lequel on veut compiler le modele.
+           Le modele sera alors compile en prenant les sources des
+           parametrisations physiques dans le repertoire:
+            $LMDGCM/libf/phyPHYS
+
+-c false|true
+           pour selectionner le mode force (par defaut) ou couple
+
+-io ioipsl|noioipsl
+           pour selectionner le logiciel IO : IOIPSL par defaut
+
+-psmile false|true
+           pour selectionner le mode psmile ou non (par defaut)
+
+-parallel  false|true
+           pour selectionner le mode parallele ou non (false par defaut)
+
+-v true|false
+           pour selectionner la vegetation (par defaut) ou non
+
+-chimie INCA|false
+	   pour selectionner ou non la chimie (par defaut sans)
+
+-g grille  selectionne le type de grille qu'on veut utiliser.
+           L'effet de cette option est d'ecraser le fichier
+           $LMDGCM/libf/grid/fxyprim.h
+           avec le fichier
+           $LMDGCM/libf/grid/fxy_grille.h
+           grille peut prendre les valeurs:
+           1. reg pour la grille reguliere
+           2. sin pour avoir des points equidistants en sinus de la latitude
+           3. new pour pouvoir zoomer sur une partie du globe
+
+-O "optimisation fortran" ou les optimisations fortran sont les options de la
+            commande f77
+
+-include path
+           Dans le cas ou on a dans des sous programmes des fichiers 
+           #include (cpp) qui se trouve sur des repertoires non references
+           par defaut
+
+-adjnt     Pour compiler la l'adjoint du code dynamique
+
+-cosp true|false      
+           Pour compiler avec cosp
+
+-filtre  filtre
+           Pour choisir le filtre en longitude dans les regions polaires.
+           "filtre" correspond au nom d'un repertoire se trouvant sur
+           $LMDGCM/libf. Le filtre standard du modele est "filtrez" qui peut
+           etre utilise aussi bien pour une grille reguliere que pour une 
+           grille zoomee en longitude.
+
+-link "-Ldir1 -lfile1 -Ldir2 -lfile2 ..."
+          Pour rajouter un lien avec les librairies FORTRAN
+          libfile1.a, libfile2.a ... se trouvant respectivement sur les
+          repertoires dir1, dir2 ...
+          Si dirn est un repertoire dont le chemin est automatique (comme
+          par exemple /usr/lib ...) il n'est pas besoin de specifier -Ldirn.
+
+Auteur: Frederic Hourdin  (hourdin@lmd.jussieu.fr)
+eod
+exit
+
+########################################################################
+# Lecture des differentes options
+########################################################################
+
+    case -d:
+        set dim=$2 ; shift ; shift ; goto top
+                        
+    case -O:
+        set optim="$2" ; shift ; shift ; goto top
+
+     case -p
+        set physique="$2" ; set phys="PHYS=$physique" ; shift ; shift ; goto top
+
+     case -g
+        set grille="$2" ; shift ; shift ; goto top
+
+     case -c
+        set couple="$2" ; shift ; shift ; goto top
+
+     case -io
+        set io="$2" ; shift ; shift ; goto top
+
+     case -v
+        set veget="$2" ; shift ; shift ; goto top
+
+     case -chimie
+	set chimie="$2" ; shift ; shift ; goto top
+
+     case -parallel
+        set parallel="$2" ; shift ; shift ; goto top
+  
+     case -include
+        set include="$include -I$2" ; shift ; shift ; goto top
+
+     case -adjnt
+        set opt_dep="$opt_dep adjnt" ; set adjnt="-ladjnt -ldyn3d "
+        set optim="$optim -Dadj" ; shift ; goto top
+
+     case -cosp
+        set cosp="$2"; shift ; shift ; goto top
+
+     case -filtre
+        set filtre=$2 ; shift ; shift ; goto top
+
+     case -link
+        set opt_link="$opt_link $2" ; shift ; shift ; goto top
+
+     case -debug
+        if $HP then
+           set optim=" -g "
+        else if $SUN then
+           setenv PARALLEL 2
+# Il faut rajouter l'option -dalign a -g pour pouvoir editer les liens
+# avec des programmes compiles avec -fast
+           set optim=" -g -dalign "
+           set optim90=" -fixed -g "
+           set optimtru90=" -free -g -C -dalign "
+        else if $CRAY then
+           set optim="$optim"" -g "
+           set optim90="$optim90"" -G1 "
+        else if $LINUX then
+           if ( $FC_LINUX == "pgf90" ) then
+             set optim="$optim"" -g -C -Mbounds "
+             set optim90="$optim90"" -g -C -Mbounds "
+             set optimtru90="$optimtru90"" -g -C -Mbounds "
+           else if ( $FC_LINUX == 'g95' ) then
+             set optim="$optim"" -g -fbounds-check "
+             set optim90="$optim90"" -g -fbounds-check "
+             set optimtru90="$optimtru90"" -g -fbounds-check "
+           else
+             echo 'compilateur linux non reconnu'
+             exit
+           endif
+        else 
+           echo pas d option debug predefinie pour cette machine
+           exit
+        endif
+        shift ; goto top
+
+     default
+        set code="$1" ; shift ; goto top
+
+   endsw
+endif
+
+########################################################################
+# Definition des clefs CPP
+########################################################################
+
+set cppflags=''
+
+if $X8BRODIE then
+  set cppflags="$cppflags -DNC_DOUBLE -DBLAS -DSGEMV=DGEMV -DSGEMM=DGEMM"
+endif
+
+if ( $io == ioipsl ) then
+   set cppflags="$cppflags -DCPP_IOIPSL"
+endif
+
+if ( "$cosp" == 'true' ) then
+    set cppflags="$cppflags -DCPP_COSP"
+    set include="$include"' -I$(LIBF)/cosp '
+    set opt_dep="$opt_dep cosp"
+#    set lcosp="-lcosp -lphy$physique "
+     set lcosp="-lcosp "
+   if ( $XNEC || $X8BRODIE || $X6NEC) then
+#    set lcosp="-lsxcosp -lsxphy$physique "
+     set lcosp="-lsxcosp "
+   endif
+endif
+
+if ( "$physique" == 'nophys' ) then
+   set phys="L_PHY= LIBPHY="
+else
+   #Default planet type is Earth
+   set cppflags="$cppflags -DCPP_EARTH"
+endif
+
+set link_veget=" "
+if ( "$veget" == 'true' ) then
+   set cppflags="$cppflags -DCPP_VEGET"
+#   set link_veget=" -lsechiba -lparameters -lstomate -lorglob -lparallel"
+   set link_veget=" -lsechiba -lparameters -lstomate"
+   if ( $XNEC || $X8BRODIE || $X6NEC) then
+#      set link_veget=" -lsxsechiba -lsxparameters -lsxstomate -lsxorglob -lsxparallel"
+      set link_veget=" -lsxsechiba -lsxparameters -lsxstomate "
+   endif
+endif
+
+if ( "$chimie" == 'INCA' ) then
+    set cppflags="$cppflags -DINCA" 
+    set libchimie=" -L$INCALIB -lchimie"
+    set opt_link="$opt_link  -L$INCALIB -lchimie"
+endif
+    
+if ( "$couple" == 'true' ) then
+   set cppflags="$cppflags -DCPP_COUPLE"
+endif
+
+set FLAG_PARA=''
+if ( "$parallel" == 'true' ) then
+   set cppflags="$cppflags -DCPP_PARA"
+   set FLAG_PARA='par'
+endif
+
+set optim="$optim $cppflags"
+set optim90="$optim90 $cppflags"
+set optimtru90="$optimtru90 $cppflags"
+
+
+########################################################################
+# cas special sans physique
+########################################################################
+if ( "$physique" == 'nophys' ) then
+   set phys="L_PHY= LIBPHY="
+endif
+
+########################################################################
+#subtilites sur le nom de la librairie
+########################################################################
+
+\rm -f tmp ; touch tmp
+\rm -f tmp90 ; touch tmp90
+foreach i ( $optim )
+   echo $i | sed -e 's/\"//g' -e "s/\'//g" -e 's/-//g'  >> tmp
+end
+set suf=
+foreach i ( `sort tmp | uniq ` )
+   set suf=$suf$i
+end
+if ( ! $IBM ) then
+   set nomlib="$nomlib$suf"
+endif
+if ( $DEC ) then
+   set nomlib=DEC
+endif
+if ( $IBM ) then
+   set dim=`echo $dim | sed -en 's/[^0-9]/ /g'`
+   set dim_=`echo $dim | sed -en 's/[^0-9]/_/g'`
+else if ( $SUN ) then
+   set dim=`echo $dim | sed -e 's/[^0-9]/ /g'` 
+   set dim_=`echo $dim | sed -e 's/[^0-9]/_/g'`
+else
+   set dim_=`echo $dim | sed -e 's/[^0-9]/_/g'`
+   set dim=`echo $dim | sed -e 's/[^0-9]/ /g'`
+endif
+set nomlib=${nomlib}${physique}_${dim_}_$grille
+## M-A-F nomlib trop long sur CRAY pour ar
+if ( $CRAY ) then
+    set nomlib=F90_${dim_}
+endif
+if ( $NEC || $XNEC || $X6NEC || $X8BRODIE ) then
+    set nomlib=F90_${dim_}_'phy'${physique}${FLAG_PARA}
+endif
+echo calcul de la dimension
+set dimc=`echo $dim | wc -w`
+
+if ( "$dimc" == "2" ) then
+set include="$include "'-I$(LIBF)/dyn2d '
+set dimh=$dim
+else
+set include="$include "'-I$(LIBF)/dyn3d${FLAG_PARA} '
+set dimh=`echo $dim | awk ' { print $1 "." $2 } '`
+endif
+echo $dimc
+
+########################################################################
+# path pour les #include
+########################################################################
+
+if ( $XNEC ) then
+  set include="$include -I$NCDFINC -I$IOIPSLDIR"
+else
+  set include="$include -I$NCDFINC -I$IOIPSLDIR"
+endif
+echo $include
+
+########################################################################
+# Gestion des dimensions du modele.
+# on cree ou remplace le fichier des dimensions
+########################################################################
+
+cd $libf/grid
+if ( -f dimensions.h ) then
+echo 'ATTENTION: vous etes sans doute en train de compiler le modele par ailleurs'
+echo "Attendez que la premiere compilation soit terminee pour relancer la suivante."
+echo "Si vous etes sur que vous ne compilez pas le modele par ailleurs,"
+echo  vous pouvez continuer en repondant oui.
+echo "Voulez-vous vraiment continuer?"
+if ( $< == "oui" ) then
+\rm -f $libf/grid/dimensions.h
+else
+exit
+endif
+endif
+
+cd dimension
+./makdim $dim
+cat $libf/grid/dimensions.h
+
+cd $LMDGCM
+set libo=$libo/$nomlib
+if ( ! -d $libo )  then
+   mkdir $libo
+   cd $model
+endif
+
+########################################################################
+# Differentes dynamiques (3d, 2d, 1d)
+########################################################################
+
+set dimension=`echo $dim | wc -w`
+echo dimension $dimension
+if ( $dimension == 1 ) then
+echo pas de dynamique
+set dyn="L_DYN= DYN= L_FILTRE= DIRMAIN=phy$physique "
+endif
+endif
+cd $model
+if ( $dimension == 3 ) then
+cd libf/grid
+\rm fxyprim.h
+cp -p fxy_${grille}.h fxyprim.h
+endif
+
+######################################################################
+#   Traitement special pour le nouveau rayonnement de Laurent Li.
+######################################################################
+
+#if ( -f $libf/phy$physique/raddim.h ) then
+# if ( -f $libf/phy$physique/raddim.$dimh.h ) then
+#  \rm -f $libf/phy$physique/raddim.h
+#  cp -p $libf/phy$physique/raddim.$dimh.h $libf/phy$physique/raddim.h
+#  echo $libf/phy$physique/raddim.$dimh.h 
+#  cat $libf/phy$physique/raddim.$dimh.h 
+#  cat $libf/phy$physique/raddim.h
+# else
+#  echo On peut diminuer la taille de l executable en creant
+#  echo le fichier $libf/phy$physique/raddim.$dimh.h
+#  \cp -p $libf/phy$physique/raddim.defaut.h $libf/phy$physique/raddim.h
+# endif
+#endif
+
+######################################################################
+# Gestion du filtre qui n'existe qu'en 3d.
+######################################################################
+
+if ( `expr $dimc \> 2` == 1 ) then
+   set filtre="FILTRE=$filtre"
+else
+   set filtre="FILTRE= L_FILTRE= "
+endif
+echo MACRO FILTRE $filtre
+
+echo $dimc
+
+########################################################################
+#  Avant de lancer le make, on recree le makefile si necessaire
+########################################################################
+########################################################################
+# c'est a dire dans 3 cas:
+# 1. si la liste des fichiers .F et .h a ete modifiee depuis la
+#    derniere creation du makefile
+# 2. si le fichier contenant cette liste "liste_des_sources"
+#    n'existe pas.
+# 3. Si le makefile n'existe pas.
+########################################################################
+##########################################
+# On adapte d'abord certains include à F90
+##########################################
+##########################################
+cd $model
+find libf -name '*.[Fh]' -print | sort >! tmp77
+find libf -name '*.[Fh]' -exec egrep -i " *use *ioipsl" {} \; -print | sort >! tmp90
+find libf -name '*.[Fh]90' -print | sort >> tmp90
+
+if (    `diff tmp77 liste_des_sources_f77 | wc -w` \
+     || `diff tmp90 liste_des_sources_f90 | wc -w` \
+     || ! -f makefile \
+     || ! -f liste_des_sources_f90 \
+     || ! -f liste_des_sources_f77 ) then
+        echo les fichiers suivants ont ete crees ou detruits
+        echo ou les fichiers suivants sont passes ou ne sont plus en Fortran 90
+        diff liste_des_sources_f77 tmp77
+        diff liste_des_sources_f90 tmp90
+        \cp tmp77 liste_des_sources_f77
+        \cp tmp90 liste_des_sources_f90
+        echo On recree le makefile
+        ./create_make_gcm >! tmp
+        \mv tmp makefile
+        echo Nouveau makefile cree.
+endif
+
+########################################################################
+#  Execution de la comande make
+########################################################################
+
+echo PHYSIQUE $phys
+echo dynamique $dyn $dimension
+echo OPTIM="$optim" $filtre LIBO=$libo $dyn PHYS=$phys DIM=$dimc PROG=$code
+echo PATH pour les fichiers INCLUDE $include
+echo OPLINK="$oplink"
+
+#################
+if $HP then
+#################
+   set f77='fort77 +OP'
+   set f90='jensaisrien'
+   set opt_link="$opt_link -lm"
+#################
+else  if $VPP then
+#################
+   set f77=frt
+   set f90=$f77
+   if ($couple == true) then
+     set opt_link="-Wg,-c $MODIPSLDIR/liboasis2.4_mpi2.a /usr/lang/mpi2/lib64/libmpi.a /usr/lang/mpi2/lib64/libmp.a -L$MODIPSLDIR -lioipsl /usr/local/lib/lib64/libnetcdf_cc_31.a"
+     set oplink="-Wl,-t,-P,-dy "
+   else
+     set opt_link="-Wg,-c -L$MODIPSLDIR -lioipsl /usr/local/lib/lib64/libnetcdf_cc_31.a"
+     set oplink="-Wl,-t,-dy "
+   endif
+   if ($veget == true) then
+     set opt_link="$opt_link $link_veget -lioipsl /usr/local/lib/lib64/libnetcdf_cc_31.a"
+   endif
+#################
+else if $CRAY then
+#################
+   set f77=f90
+   set f90=f90
+#################
+else if $LINUX then
+#################
+#   set f77=pgf90
+#   set f90=pgf90
+   set f77=$FC_LINUX
+   set f90=$FC_LINUX
+   if ( $FC_LINUX == 'pgf90' ) then
+     if ( $io == "ioipsl" ) then
+       set opt_link=" -L$MODIPSLDIR $link_veget -L$NCDFLIB -lioipsl -lnetcdf "
+     else
+       set opt_link=" -L$MODIPSLDIR $link_veget -L$NCDFLIB -lnetcdf "
+     endif
+   else if ($FC_LINUX == 'g95' || $FC_LINUX == 'gfortran' ) then
+     if ( $io == "ioipsl" ) then
+       set opt_link="-L$MODIPSLDIR $link_veget -lioipsl -L$NCDFLIB -lnetcdf -lioipsl -lnetcdf "
+     else
+       set opt_link="-L$MODIPSLDIR $link_veget -lioipsl -L$NCDFLIB -lnetcdf -lnetcdf "
+     endif
+   else
+     set opt_link=" "
+   endif
+#################
+else if $SUN then
+#################
+   set f77=f90
+   set f90=f90
+   if ( $io == "ioipsl" ) then
+     set opt_link="-lf77compat -L$MODIPSLDIR $link_veget -lioipsl -L$NCDFLIB -lnetcdf "
+   else
+     set opt_link="-lf77compat -L$MODIPSLDIR $link_veget -L$NCDFLIB -lnetcdf "
+   endif
+#################
+else if $NEC then
+#################
+   set f77=f90 -ftrace
+   set f90=f90 -ftrace
+   set opt_link="-L$MODIPSLDIR"
+   if ($veget == true) then
+     set opt_link="$opt_link $link_veget"
+   endif
+   if ($couple == true) then
+     set opt_link="$opt_link -lioipsl -loasis2.4_mpi2 -float0 -ew -P static $NCDFLIB "
+   else
+     set opt_link="$opt_link -L$MODIPSLDIR -lioipsl -float0 -ew -P static $NCDFLIB "
+   endif
+   set mod_loc_dir="./"
+#################
+else if $XNEC then
+#################
+   set f77="sxmpif90 -ftrace"
+   set f90="sxmpif90 -ftrace"
+   if $MODIPSL then
+     set opt_link="-L$MODIPSLDIR"
+     if ($veget == true) then
+       set opt_link="$opt_link $link_veget"
+     endif
+     if ($couple == true) then
+       if ($psmile == true) then
+       set opt_link="$opt_link -lsxioipsl -float0 $optdbl -P static $NCDFLIB "
+       else
+       set opt_link="$opt_link -lsxioipsl -loasis2.4_mpi2 -float0 $optdbl -P static $NCDFLIB "
+       endif
+     else
+       set opt_link="$opt_link -lsxioipsl -float0 $optdbl -P static $NCDFLIB "
+     endif
+   else
+     if ($couple == true) then
+       set opt_link="-L$MODIPSLDIR"
+       set opt_link="$opt_link $link_veget -lsxioipsl -loasis2.4_mpi2 -float0 $optdbl -P static $NCDFLIB "
+     else
+       set opt_link=" -C hopt -float0 $optdbl -P static -L$MODIPSLDIR $link_veget -lsxioipsl $NCDFLIB "
+     endif
+   endif
+   set mod_loc_dir="./"
+##################
+else if $X6NEC then
+##################
+   set f77=sxmpif90
+   set f90=sxmpif90
+   if $MODIPSL then
+     set opt_link="$opt_link -L$MODIPSLDIR"
+     if ($veget == true) then
+       set opt_link="$opt_link $link_veget"
+     endif
+     if ($couple == true) then
+	if ($psmile == true) then
+	set opt_link="$opt_link -lsxioipsl -float0 -size_t64 $optdbl -P static $NCDFLIB "
+	else
+	set opt_link="$opt_link -lsxioipsl -loasis2.4_mpi2 -float0 -size_t64 $optdbl -P static $NCDFLIB "
+	endif
+     else
+       set opt_link="$opt_link -lsxioipsl -float0 -size_t64 $optdbl -P static $NCDFLIB "
+     endif
+   else
+#     set opt_link=" -float0 -size_t64 $optdbl -P static -L$MODIPSLDIR -lsxsechiba -lsxparameters -lsxstomate -lsxioipsl $NCDFLIB "
+     set opt_link=" $opt_link -float0 -size_t64 $optdbl -P static -L$MODIPSLDIR -lsxioipsl $NCDFLIB "
+
+   endif
+   set mod_loc_dir="./"
+##################
+else if $X8BRODIE then
+##################
+   set f77=sxmpif90
+   set f90=sxmpif90 
+   if $MODIPSL then
+     set opt_link="$opt_link -float0 -Wf,-A dbl4 -L$MODIPSLDIR -lblas"
+     if ($veget == true) then
+       set opt_link="$opt_link $link_veget"
+     endif
+     if ($couple == true) then
+       set opt_link="$opt_link -lsxioipsl -float0 $optdbl -P static $NCDFLIB "
+     else
+       set opt_link="$opt_link -lsxioipsl -float0 $optdbl -P static $NCDFLIB "
+     endif
+   else
+#     set opt_link=" -float0 $optdbl -P static -L$MODIPSLDIR -lsxsechiba -lsxparameters -lsxstomate -lsxioipsl $NCDFLIB "
+     set opt_link=" -float0 $optdbl -P static -L$MODIPSLDIR -lsxioipsl $NCDFLIB -lblas"
+
+   endif
+   set mod_loc_dir="./"
+#################
+else
+#################
+   set f77=f77
+   set f90=f90
+endif
+
+cd $model
+
+if $VPP then
+set make="gmake RANLIB=ls"
+else if $CRAY then
+set make="make RANLIB=ls"
+else if $NEC then
+set make="make RANLIB=ls"
+else if $LINUX then
+set make="make -k RANLIB=ranlib"
+else if $XNEC then
+set make="gmake RANLIB=ls"
+else if $X6NEC then
+set make="gmake RANLIB=ls"
+else if $X8BRODIE then
+set make="gmake RANLIB=ls"
+else
+set make="make RANLIB=ranlib"
+endif
+
+
+
+
+#
+# etat0_netcdf a besoin d'info de la physique
+# A revoir
+set include="$include"' -I$(LIBF)/phy'"$physique"
+#
+# le programme principal create_limit a besoin de l'info du module
+# startvar: on met donc libo dans les include pour Nec
+set include="$include"' -I$(LIBO)'
+
+
+#################################################################
+# Execution de la comande make... ENFIN!
+#################################################################
+
+if $VPP then
+  set optim90=" $optim90 -Am -M$libo"
+  set optimtru90="$optim90"
+ \cp $IOIPSLDIR/*.mod $libo
+else if $SUN then
+ set optim90=" $optim90 -M$libo -M$MODIPSLDIR "
+ set optimtru90=" $optimtru90 -M$libo -M$MODIPSLDIR "
+ set optim="$optim90"
+ \cp $IOIPSLDIR/*.mod $libo
+else if $NEC then
+ set optim90=" $optim90 -I$libo "
+else if $XNEC then
+ set optim90=" $optim90 -I$libo "
+ set optimtru90=" $optimtru90 -I$libo "
+else if $X6NEC then
+ set optim90=" $optim90 -I$libo "
+ set optimtru90=" $optimtru90 -I$libo "
+else if $X8BRODIE then
+ set optim90=" $optim90 -I$libo "
+ set optimtru90=" $optimtru90 -I$libo "
+else if $LINUX then
+ if ( $FC_LINUX == "pgf90" ) then
+   set optimtru90=" $optimtru90 -module $libo "
+   set optim90=" $optim90 -module $libo "
+ else if ( $FC_LINUX == 'g95' ) then
+   set optimtru90=" $optimtru90 -fmod=$libo  "
+   set optim90=" $optim90 -fmod=$libo  "
+ else if ( $FC_LINUX == 'gfortran' ) then
+   set optimtru90=" $optimtru90 -M $libo  "
+   set optim90=" $optim90 -M $libo  "
+ endif
+ set optim="$optim90"
+ set mod_loc_dir=$libo
+# \cp /d3/fairhead/sechiba/ioipsl/*.mod $libo
+# \cp $IOIPSLDIR/*.mod $libo
+endif
+
+set link="$f90 $optim90"
+
+set ar=ar
+
+if $XNEC then
+  set link="sxld $opt_link"
+  set link="$f90 "
+  set ar=sxar
+else if $X6NEC then
+  set link="sxld $opt_link"
+  set link="$f90 -Wl,-hlib_cyclic "
+  set ar=sxar
+else if $X8BRODIE then
+  set link="sxld $opt_link"
+  set link="$f90 -Wl,-hlib_cyclic "
+  set ar=sxar
+endif
+
+
+cd $localdir
+
+set source_code=${code}.F
+if ( -f $LMDGCM/libf/dyn${dimc}d${FLAG_PARA}/${code}.F90 ) then
+  set source_code=${code}.F90
+endif
+
+echo $make -f $LMDGCM/makefile \
+OPTION_DEP="$opt_dep" OPTION_LINK="$opt_link" \
+OPTIM90="$optim90" \
+OPTIMTRU90="$optimtru90" \
+OPTIM="$optim$optimbis" \
+INCLUDE="$include" \
+$filtre \
+LIBO=$libo \
+$dyn \
+$phys \
+DIM=$dimc \
+FLAG_PARA="$FLAG_PARA"\
+L_ADJNT="$adjnt" \
+L_COSP="$lcosp" \
+L_CHIMIE="$libchimie" \
+LOCAL_DIR="$localdir"  \
+F77="$f77" \
+F90="$f90" \
+OPLINK="$oplink" \
+LINK="$link" \
+GCM="$LMDGCM" \
+MOD_LOC_DIR=$mod_loc_dir \
+MOD_SUFFIX=$mod_suffix \
+AR=$ar \
+SOURCE=$source_code \
+PROG=$code
+
+$make -f $LMDGCM/makefile \
+OPTION_DEP="$opt_dep" OPTION_LINK="$opt_link" \
+OPTIM90="$optim90" \
+OPTIMTRU90="$optimtru90" \
+OPTIM="$optim$optimbis" \
+INCLUDE="$include" \
+$filtre \
+LIBO=$libo \
+$dyn \
+$phys \
+DIM=$dimc \
+FLAG_PARA="$FLAG_PARA"\
+L_ADJNT="$adjnt" \
+L_COSP="$lcosp" \
+L_CHIMIE="$libchimie" \
+LOCAL_DIR="$localdir"  \
+F77="$f77" \
+F90="$f90" \
+OPLINK="$oplink" \
+LINK="$link" \
+GCM="$LMDGCM" \
+MOD_LOC_DIR=$mod_loc_dir \
+MOD_SUFFIX=$mod_suffix \
+AR=$ar \
+SOURCE=$source_code \
+PROG=$code
+
+\rm -f $libf/grid/dimensions.h

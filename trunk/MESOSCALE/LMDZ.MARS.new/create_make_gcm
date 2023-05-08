@@ -1,0 +1,253 @@
+#!/bin/sh
+#set -xv
+#
+# Ehouarn: added the following feature:
+#          create_make_gcm must be called with list of directories
+#          which contain header (or modules) which should be scanned
+#          by create_make_gcm when checking dependencies.
+#          Example:
+#          create_make_gcm dyn3d grid
+#          means that header/modules will be looked for in directories
+#          ., dyn3d and grid
+#
+machine=`hostname`
+os=`uname`
+gcm=`pwd`
+libf=$gcm/libf
+libo=$gcm/libo
+CRAY=0
+if [ "$machine" = "atlas" -o "$machine" = "etoile" -o "$machine" = "axis" ] ; then
+  CRAY=1
+fi
+XNEC=0
+if [ "$machine" = "rhodes" ] ; then
+  XNEC=1
+fi
+VPP=0
+if [ "$machine" = "nymphea0" ] ; then
+  VPP=1
+fi
+#
+echo "#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+echo "# Definitions de Macros pour Make"
+echo "#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+echo 
+echo "# create_make_gcm arguments: $*"
+echo
+echo "# Repertoires :"
+echo
+echo "GCM     = "$gcm
+if [ "$CRAY" = '0' ] ; then
+   echo "MACHINE = sun4"
+fi
+echo 'LIBF    = $(GCM)/libf'
+if [ "$CRAY" = '0' ] ; then
+#   echo 'LIBO    = $(GCM)/libo/$(MACHINE)'
+   echo 'LIBO    = $(LIBOGCM)/$(MACHINE)'
+else
+   echo 'LIBO    = $(GCM)/libo'
+fi
+#echo 'LOCAL_DIR=$(GCM)'
+#echo $localdir
+echo "LOCAL_DIR=`echo $localdir`"
+echo 'BIBIO    = $(LIBF)/bibio'
+echo 'AERONOMARS    = $(LIBF)/aeronomars'
+echo "FILTRE   = filtre"
+echo "PHYS  = "
+echo 'DYN  = $(DYNTYPE)'
+echo 'LIBPHY = $(LIBO)/libphy$(PHYS).a'
+echo 'DIRMAIN= $(DYN)$(DIM)d'
+echo 'RM=rm'
+echo
+echo "OPLINK = "
+echo
+echo '# Les differentes librairies pour l"edition des liens:'
+echo
+if [ "$XNEC" = '1' ] ; then
+  echo 'dyn3d      = $(LIBO)/libsxdyn3d.a $(LIBO)/libsx$(FILTRE).a'
+  echo 'dyn2d      = $(LIBO)/libsxdyn2d.a'
+  echo 'dyn1d      = $(LIBO)/libsxdyn1d.a'
+  echo 'L_DYN      = -lsxdyn$(DIM)d'
+  echo 'L_FILTRE   = -lsx$(FILTRE)'
+  echo 'L_PHY = -lsxphy$(PHYS) '
+  echo 'L_BIBIO    = -lsxbibio'
+  echo 'L_AERONOMARS    = -lsxaeronomars'
+  echo 'L_ADJNT    ='
+else
+  echo 'dyn3d      = $(LIBO)/libdyn3d.a $(LIBO)/lib$(FILTRE).a'
+  echo 'dyn2d      = $(LIBO)/libdyn2d.a'
+  echo 'dyn1d      = $(LIBO)/libdyn1d.a'
+  echo 'L_DYN      = -l$(DYN)$(DIM)d'
+  echo 'L_FILTRE   = -l$(FILTRE)'
+  echo 'L_PHY = -lphy$(PHYS) '
+  echo 'L_BIBIO    = -lbibio'
+  echo 'L_AERONOMARS    = -laeronomars'
+  echo 'L_ADJNT    ='
+fi
+echo
+echo "#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+echo "# Option de compilation FORTRAN"
+echo "#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+echo
+   echo 'COMPILE = $(F77) $(OPTIM) $(INCLUDE) -c'
+   echo 'COMPILE90 = $(F90) $(OPTIM90) $(INCLUDE) -c'
+   echo 'COMPTRU90 = $(F90) $(OPTIMTRU90) $(INCLUDE) -c'
+   echo "LINK    = $LINK"
+   echo "AR      = $AR"
+echo
+echo
+echo "#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+echo "# Creation des differents executables"
+echo "#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+echo
+echo "# Executables:"
+echo "# ------------"
+echo
+echo "PROG = code"
+echo
+echo 'main : $(DYN) bibio phys aeronomars $(OPTION_DEP) '
+echo '	cd $(LIBO) ; $(RANLIB) lib*.a ; cd $(GCM) ;\'
+echo '	cd $(LOCAL_DIR); \'
+echo '	$(COMPILE90) $(LIBF)/$(DIRMAIN)/$(PROG).F -o $(PROG).o ; \'
+if [ "$CRAY" = '0' ] ; then
+echo '	$(LINK) $(PROG).o -L$(LIBO) $(L_DYN) $(L_ADJNT) $(L_FILTRE) $(L_AERONOMARS) $(L_PHY) $(L_BIBIO) $(L_DYN) $(L_AERONOMARS) $(OPLINK) $(OPTION_LINK) -o $(LOCAL_DIR)/$(PROG).e ; $(RM) $(PROG).o '
+else
+echo '	$(LINK) $(PROG).o -L$(LIBO) $(L_DYN) $(L_ADJNT) $(L_FILTRE) $(L_AERONOMARS) $(L_PHY) $(L_BIBIO) $(L_DYN) $(L_AERONOMARS) $(OPLINK) $(OPTION_LINK) -o $(LOCAL_DIR)/$(PROG).e ; $(RM) $(PROG).o '
+fi
+echo
+echo 'dyn : $(LIBO)/libdyn$(DIM)d.a $(FILTRE)$(DIM)d'
+echo
+echo 'olddyn : $(LIBO)/libolddyn$(DIM)d.a $(FILTRE)$(DIM)d'
+echo
+echo 'phys : $(LIBPHY)'
+echo
+echo 'bibio : $(LIBO)/libbibio.a'
+echo
+echo 'aeronomars : $(LIBO)/libaeronomars.a'
+echo
+echo 'adjnt : $(LIBO)/libadjnt.a'
+echo
+echo '$(FILTRE)3d : $(LIBO)/lib$(FILTRE).a'
+echo
+echo '$(FILTRE)2d :'
+echo
+echo '$(FILTRE)1d :'
+echo
+echo "#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+echo "# Contenu des differentes bibliotheques"
+echo "#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+echo
+echo
+cd $libf >/dev/null 2>&1
+for diri in ` ls `
+do
+   if [ -d $diri ] ; then
+   if [ "`ls $diri/*.F`" != "" ] || [ "`ls $diri/*.F90`" != "" ]  ; then 
+      cd $diri >/dev/null 2>&1
+      echo
+      listlib=""
+      for i in `ls *.F`
+      do
+         fili=`basename $i .F`
+         test=` (  head $i | grep '      PROGRAM' ) `
+         if [ "$test" = "" ] ; then 
+            listlib=$listlib" "$fili
+         fi
+      done
+      for i in `ls *.F90`
+      do
+         fili=`basename $i .F90`
+         test=` (  head $i | grep '      PROGRAM' ) `
+         if [ "$test" = "" ] ; then
+            listlib=$listlib" "$fili
+         fi 
+      done
+#
+      echo
+      echo
+      echo "#======================================================================="
+      echo "# Contenu de la bibliotheque correspondant au Directory "$diri
+      echo "#======================================================================="
+      echo
+      for fili in $listlib
+      do
+         echo '$(LIBO)/lib'$diri".a : " '$(LIBO)/lib'$diri".a("$fili".o)"
+         echo
+      done
+      echo '.PRECIOUS	: $(LIBO)/lib'$diri'.a'
+      echo
+      echo
+      echo "# Compilation des membres de la bibliotheque lib"$diri".a"
+      echo
+      for fili in $listlib
+      do
+         if [ -f $fili.F90 ] ; then
+           trufile=$fili.F90
+         else
+           trufile=$fili.F
+         fi
+         F90=0 ; egrep -i '^ *use ' $trufile > /dev/null 2>&1 && F90=1
+                 egrep -i '^ *module ' $trufile > /dev/null 2>&1 && F90=1
+                 egrep -i '#include*.inc ' $trufile > /dev/null 2>&1 && F90=1
+         str1='$(LIBO)/lib'$diri'.a('$fili'.o) : $(LIBF)/'$diri/$trufile
+         [ "$fili" = "chem.subs" ] && str1=$str1' $(LIBF)/'$diri/chem.mods.F
+         for stri in ` ( sed -n "/\#include/s/\#include//p" $trufile | sed 's/\"//g' ; egrep -i '^ *use ' $trufile | sed -e 's/,/ /' | awk ' { print $2 } ' ) `
+         do
+            stri=`echo $stri | tr [A-Z] [a-z]`
+            if [ -f $stri ] ; then
+               echo $str1 \\
+               str1='$(LIBF)/'$diri'/'$stri
+            else
+               if [ -f $stri.F ] || [ -f $stri.F90 ] ; then
+                  echo $str1 \\
+                  str1='$(LIBO)/lib'$diri'.a('$stri'.o)'
+               else
+#                  for dirinc in dyn3d grid bibio aeronomars phymars
+                  for dirinc in $*
+                  do
+                     if [ -f ../$dirinc/$stri ] ; then
+                        echo $str1 \\
+                        str1='$(LIBF)/'`cd .. ; ls */$stri | head -1`
+                     fi
+                     if [ -f ../$dirinc/$stri.F90 ] ; then
+                        echo $str1 \\
+                        str1='$(LIBO)/lib'$dirinc'.a('$stri'.o)'
+                     fi
+                  done
+               fi
+            fi
+         done
+         echo $str1
+	 if [ "$F90" -eq '0' ] ; then
+           echo '	cd $(LOCAL_DIR); \'
+	   echo '	$(COMPILE) $(LIBF)/'$diri'/'$trufile' ; \'
+	 else
+           echo '	cd $(LOCAL_DIR); \'
+           if [ -f $fili.F90 ] ; then
+	      echo '	$(COMPTRU90) $(LIBF)/'$diri'/'$trufile' ; \'
+           else
+	      echo '	$(COMPILE90) $(LIBF)/'$diri'/'$trufile' ; \'
+           fi
+           MODU=0; egrep -i '^ *module ' $trufile> /dev/null 2>&1 && MODU=1
+            if [ "$MODU" -eq '1' -a "$CRAY" != '1' ] ; then
+              if [ "$os" = 'UNIX_System_V' ] ; then
+                echo '	cp $(MOD_LOC_DIR)/*.$(MOD_SUFFIX) $(LIBO)/ ; \'
+              else
+                echo '	mv $(MOD_LOC_DIR)/'$fili'.$(MOD_SUFFIX) $(LIBO)/'$fili'.$(MOD_SUFFIX) ; \'
+#                echo '	if [ "$(MOD_LOC_DIR)" ne "$(LIBO)" ] ; then mv $(MOD_LOC_DIR)/'*'.$(MOD_SUFFIX) $(LIBO) ; fi ; \'
+              fi
+            fi
+	 fi
+	 if ( [ "$XNEC" -eq '1' ] || [ "$X6NEC" = '1' ] || [ "$X8BRODIE" = '1' ] ) ; then
+           echo '	sxar r $(LIBO)/libsx'$diri'.a '$fili'.o ; \'
+         fi
+         echo '	$(AR) r $(LIBO)/lib'$diri'.a '$fili'.o ; $(RM) '$fili'.o ; \'
+         echo '	cd $(GCM)'
+	 echo
+      done
+#	 
+      echo
+   cd $libf
+   fi
+   fi
+done

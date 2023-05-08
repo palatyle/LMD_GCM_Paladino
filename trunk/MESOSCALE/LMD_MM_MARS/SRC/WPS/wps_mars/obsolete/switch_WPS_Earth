@@ -1,0 +1,24 @@
+rm namelist.wps
+ln -s namelist.wps_Earth namelist.wps 
+
+cd geogrid
+rm GEOGRID.TBL
+ln -s ../wps_mars/geogrid/GEOGRID.TBL.ARW_Earth GEOGRID.TBL
+cd src
+rm constants_module.f90
+ln -s ../../wps_mars/geogrid/constants_module_Earth.f90 constants_module.f90
+rm process_tile_module.F90
+ln -s ../../wps_mars/geogrid/process_tile_module_Earth.F90 process_tile_module.F90 
+cd ../..
+
+cd metgrid
+\rm METGRID.TBL
+ln -s ../wps_mars/geogrid/METGRID.TBL.ARW_Earth METGRID.TBL
+cd src
+rm module_date_pack.f90
+ln -s ../../wps_mars/metgrid/module_date_pack_Earth.f90 module_date_pack.f90
+rm process_domain_module.F90
+ln -s ../../wps_mars/metgrid/process_domain_module_Earth.F90 process_domain_module.F90
+cd ../..
+
+echo 'ok'

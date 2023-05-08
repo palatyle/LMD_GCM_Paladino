@@ -1,0 +1,60 @@
+ &time_control
+ start_year       = 2024,
+ start_month      = 04, 
+ start_day        = 01,
+ start_hour       = 02,
+ end_year         = 2024,
+ end_month        = 04,
+ end_day          = 12, 
+ end_hour         = 00, 
+ history_interval    = 74,   ! *100s : 74 is each 2 MH, 37 is each MH  
+ frames_per_outfile  = 12, 
+ restart          = .false.
+ restart_interval = 8880,
+ io_form_history  = 2
+ io_form_restart  = 2
+ io_form_input    = 2
+ io_form_boundary = 2
+ debug_level      = 0
+ interval_seconds = 7400
+ /
+
+ &domains
+ time_step   = 37, 
+ dx = 40000,
+ dy = 40000,
+ e_we   = 201,               ! IF YOU CHANGE THIS YOU MUST RECOMPILE THE PHYSICS
+ e_sn   = 201,               ! IF YOU CHANGE THIS YOU MUST RECOMPILE THE PHYSICS
+ e_vert = 61,                ! IF YOU CHANGE THIS YOU MUST RECOMPILE THE PHYSICS
+ p_top_requested = 10
+ /
+
+ &physics
+ radt =  1,      ! 1 is the best (change iradia in callphys)
+ mars =  0,      ! IF YOU CHANGE THIS YOU MUST RECOMPILE THE PHYSICS (AND CHANGE CALLPHYS.DEF)
+ /
+
+ &fdda
+ /
+
+ &dynamics
+ non_hydrostatic = F
+ diff_6th_opt =      2,      !! NECESSAIRE
+ diff_6th_factor =   0.2,    !! NECESSAIRE
+ diff_opt = 1,
+ km_opt = 4,
+ pd_scalar = F   !! no water cycle (mars = 0)
+ /
+
+ &grib2
+ /
+
+ &bdy_control
+ /
+
+!! DO NOT MODIFY
+ &namelist_quilt
+ nio_tasks_per_group = 0,
+ nio_groups = 1,
+ /
+!! DO NOT MODIFY

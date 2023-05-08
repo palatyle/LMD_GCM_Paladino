@@ -1,0 +1,221 @@
+\chapter{The physical parameterizations of the Martian model: some references}
+
+\label{sc:phymars}
+
+\section{General}
+
+The Martian General Circulation Model uses a large number of physical
+parameterizations based on various scientific theories
+and some generated using specific numerical methods.
+
+A list of these parameterizations is given below, along with the most
+appropriate
+references for each one. Most of these documents can be consulted at:
+\verb+http://www-mars.lmd.jussieu.fr/mars/publi.html+.
+
+
+\paragraph{General references:}
+A document attempts to give a complete scientific description of the current
+version of the GCM (a version without tracers): 
+\begin{itemize}
+\item  {\it Forget et al.} [1999] (article
+published in JGR) 
+\end{itemize}
+
+\nocite{Forg:99}
+
+\section{Radiative transfer}
+
+The radiative transfer parameterizations are used to calculate the heating
+and cooling ratios in the atmosphere and the radiative flux at the surface.
+
+\subsection{\bf CO$_2$ gas absorption/emission:}
+\subsubsection*{Thermal IR radiation} (\verb+ lwmain+)
+\begin{itemize}
+\item New numerical method, solution for the radiative transfer equation:
+{\it Dufresne et al.} [2005]. 
+\item Model validation and inclusion of the ``Doppler'' effect
+(but using an old numerical formulation):
+{\it Hourdin} [1992] (article).
+\nocite{Hour:92,Hour:00b,Dufr:05}
+
+\item At high altitudes, parameterization of the thermal radiative transfer
+({\tt nltecool}) when the local thermodynamic balance is no longer valid
+(e.g. within 0.1 Pa) : Lopez-Valverde et al. [2001] :
+Report for the ESA available on the web
+as: ``CO2 non-LTE cooling rate at
+15-um and its parameterization for the Mars atmosphere''.
+
+\end{itemize}
+
+\subsubsection*{Absorption of near-infrared radiation}
+ (\verb+ nirco2abs+)
+\begin{itemize}
+\item {\it Forget et al.} [1999]
+\end{itemize}
+
+\subsection{\bf Absorption/emission and diffusion by dust:}
+
+\subsubsection*{Dust spatial distribution}
+ (\verb+ aeropacity+)
+
+\begin{itemize}
+\item The method for semi-interactive dust vertical distribution
+is detailed in {\it Madeleine et al.} [2011]
+\item Vertical distribution and description of ``MGS'' and ``Viking'' scenarios
+in the ESA report {\it Mars Climate Database V3.0 Detailed Design Document}
+by Lewis et al. (2001), available on the web.
+\item For the ``MY24''-``MY26'' scenarios, the dust distributions were
+derived from observations made by
+TES data is used. See technical note WP12.2.1 of ESA contract
+Ref~ESA 11369/95/NL/JG(SC) "New dust scenarios for the Mars Climate Model : Martian Years
+24-29", available online at
+\verb+http://www-mars.lmd.jussieu.fr/WP2011/wp12.1.1.pdf+
+
+\end{itemize}
+\nocite{Lewi:99,Made:11}
+
+\subsubsection*{Thermal IR radiation}
+ (\verb+ lwmain+)
+\begin{itemize}
+\item Numerical method:  {\it Toon et al.} [1989] 
+\item Optical properties of dust:  {\it Madeleine et al.} [2011] 
+\nocite{Toon:89,Made:11}
+\end{itemize}
+
+\subsubsection*{Solar radiation}
+ (\verb+ swmain+)
+\begin{itemize}
+\item Numerical method: {\it Toon et al.} [1989]
+\nocite{Toon:89}
+
+\item Optical properties of dust: 
+see the discussion in {\it Madeleine et al.} [2011], which quotes
+properties from {\it Wolff et al.} [2009].
+\nocite{Made:11,Wolf:09}
+\end{itemize}
+
+\section{Subgrid atmospheric dynamical processes}
+
+\subsection{Turbulent diffusion in the upper layer}
+ (\verb+ vdifc+)
+
+\begin{itemize}
+\item Implicit numerical scheme in the vertical:
+see the thesis of Laurent Li (LMD, Universit\'e Paris 7, 1990), Appendix C2.
+
+\item Calculation of the turbulent diffusion coefficients:
+{\it Forget et al. } [1999].
+
+\item fluxes in the near-surface layer: {\it Colaitis et al.} [2012],
+technical note WP13.1.3d of ESA contract
+Ref~ESA 11369/95/NL/JG(SC) "New Mars Climate Model:
+d) New convection and boundary layer schemes and their impact on
+Mars meteorology", available online at 
+\verb+http://www-mars.lmd.jussieu.fr/WP2011/wp13.1.3d.pdf+
+
+\end{itemize}
+
+\subsection{Convection}
+ (\verb+ convadj+)
+\begin{itemize}
+\item For some details on the convective adjustement,
+see {\it Hourdin et al.} [1993]
+\item The thermals' mass flux scheme is described in
+{\it Colaitis et al.} [2012],
+technical note WP13.1.3d of ESA contract
+Ref~ESA 11369/95/NL/JG(SC) "New Mars Climate Model:
+d) New convection and boundary layer schemes and their impact on
+Mars meteorology", available online at 
+\verb+http://www-mars.lmd.jussieu.fr/WP2011/wp13.1.3d.pdf+
+\end{itemize}
+\nocite{Hour:93}
+ 
+\subsection{Effects of subgrid orography and gravity waves}
+ (\verb+ calldrag_noro+ ,  \verb+ drag_noro+ )
+
+See {\it Forget et al. } [1999] and {\it Lott and Miller} [1997]
+\nocite{Lott:97}
+
+\section{Surface thermal conduction}
+ (\verb+soil+)
+
+The numerical scheme is described in section 2 of technical note
+WP11.1 of ESA contract
+Ref~ESA 11369/95/NL/JG(SC) "Improvement of the high latitude
+processes in the Mars Global Climate Model", available online at
+\verb+http://www-mars.lmd.jussieu.fr/WP2008/Polar_processes.pdf+
+ 
+\section{CO$_2$ Condensation}
+
+\begin{itemize}
+\item In {\it Forget et al.} [1998] (article published in Icarus):
+ \begin{itemize}
+  \item Numerical method for calculating the condensation and sublimation levels
+at the surface and in the atmosphere (\verb+ newcondens+)
+ explained in the appendix.
+  \item Description of the numerical scheme for calculating the evolution of CO$_2$
+snow emissivity (\verb+co2snow+) explained in section 4.1
+  \end{itemize}
+\nocite{Forg:98}
+\item Noncondensable gaz treatment: see {\it Forget et al.} [2008],
+available online at
+\verb+http://www.lpi.usra.edu/meetings/modeling2008/pdf/9106.pdf+
+\item Inclusion of sub-surface water ice table thermal effect, varying albedo
+of polar caps and tuning of the CO2 cycle are descibed in technical note
+WP13.1.3e of ESA contract
+Ref~ESA 11369/95/NL/JG(SC) "New Mars Global Climate Model:
+e) Improved CO2 cycle and seasonal pressure variations", available online at
+\verb+http://www-mars.lmd.jussieu.fr/WP2011/wp13.1.3e.pdf+
+\end{itemize}
+
+
+\section{Tracer transport and sources} 
+\begin{itemize}
+\item ``Van-Leer'' transport scheme used in the dynamical part
+(\verb+ tracvl+ and  \verb+ vlsplt+ in the dynamical part):
+{\it Hourdin and Armengaud} [1999] \nocite{Hour:99}
+
+\item Transport by turbulent diffusion  (in \verb+ vdifc+), convection
+(in  \verb+ convadj+), sedimentation  (\verb+ sedim+),
+dust lifting by winds (\verb+ dustlift+) :
+see note ``Preliminary design of dust lifting and transport in the Model''
+(ESA contract, Work Package 4, 1998, available on the web). 
+
+\item Dust transport by the ``Mass mixing ratio /
+Number mixing ratio'' method for grain size evolution: see article by {\it
+Madeleine et al.} [2011]
+\nocite{Made:11}
+
+%\item Simplified water cycle (source in {\tt vdifc}, {\tt
+%watercloud}) : and also see the Maitrise study by Delphine Nobileau, LMD, 2000.
+\item {\bf Watercycle}, see {\it Montmessin et al.} [2004]
+and technical note
+WP13.1.3c of ESA contract
+Ref~ESA 11369/95/NL/JG(SC) "New Mars Climate Model: c) Inclusion of cloud
+microphysics, dust scavenging and improvement of the water cycle",
+available online at
+\verb+http://www-mars.lmd.jussieu.fr/WP2011/wp13.1.3c.pdf+
+\nocite{Mont:04jgr}
+
+\item Radiative effect of clouds: see technical note
+WP13.1.3b of ESA contract Ref~ESA 11369/95/NL/JG(SC)
+"New Mars Climate Model: b) Radiative effects of water
+ice clouds and impact on temperatures", available online at
+\verb+http://www-mars.lmd.jussieu.fr/WP2011/wp13.1.3b.pdf+
+
+%\item Chemistry, thermosphere, clouds: currently being published.
+\item {\bf Chemistry}, see {\it Lef\`evre et al.} [2004]
+and {\it Lef\`evre et al. [2008]}
+\nocite{Lefe:04,Lefe:08}
+\end{itemize}
+
+\section{Thermosphere}
+\begin{itemize}
+\item A general description of the model is given in
+{\it Gonz{\'a}lez-Galindo et al.} [2009]
+\item Details on photochemistry and EUV radiative transfer can be found in
+{\it Angelats i Coll et al.} [2005] and
+{\it Gonz{\'a}lez-Galindo et al.} [2005]
+\end{itemize}
+\nocite{Gonz:09a,Gonz:09b,Gonz:05,Ange:05}

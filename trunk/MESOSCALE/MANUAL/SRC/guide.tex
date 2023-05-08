@@ -1,0 +1,128 @@
+\chapter{A quick guide to running a complete mesoscale simulation}\label{complete}
+
+\vk
+In this chapter, we assume that the user has followed all the installation/compilation steps in the previous chapters. Probably it was a bit of an effort to do so; now the reward is that complete mesoscale simulations, i.e. all steps referred to in section~\ref{steps}, can be run. This chapter is thus meant to be a permanent reference for users once all tasks described in the previous chapters have been successfully achieved.
+
+\mk
+\section{A summary of the complete set of commands to run a mesoscale simulation}\label{zecommands}
+
+\sk
+It is assumed here that the user is working in a directory named \ttt{/a\_place/MY\_SIMU} mounted on a disk with enough free space to host the \ttt{wrfout*} output files. 
+
+\sk
+\paragraph{Prerequisites} Prepare parameter files (copy templates or pre-existing files); Edit those files; Use \ttt{\$MMM/SIMU/calendar} (or cf. appendix) to choose simulation dates and fill the namelists; Pay attention to correspondances between \ttt{namelist.input} and \ttt{namelist.wps}. \emph{See~\ref{zeparam} and~\ref{wps} for further details}.
+\begin{verbatim}
+cd /a_place/MY_SIMU
+cp $MMM/SIMU/namelist.input_minim namelist.input  
+cp $MMM/SIMU/callphys.def .
+cp $MMM/SRC/WPS/wps_mars/namelist.wps_TEST namelist.wps
+[edit those three files and set your parameters]
+\end{verbatim}
+
+\sk
+\paragraph{Step 0} Compile the model. \emph{See~\ref{sc:makemeso} for further details}.
+\begin{verbatim}
+cd $MMM
+makemeso
+[answers to the questions must be compliant with information in namelist.input]
+[check in your_compdir that executables real.exe and wrf.exe are here]
+cd /a_place/MY_SIMU
+ln -sf $MMM/your_compdir/wrf_suffix_reflecting_your_choices.exe wrf.exe
+ln -sf $MMM/your_compdir/real_suffix_reflecting_your_choices.exe real.exe
+[NB: executables can be copied instead of linked]
+\end{verbatim}
+
+\sk
+\paragraph{Step 1} Run the LMD Global Circulation Model (GCM) to provide initial and boundary conditions for the mesoscale model. \emph{See~\ref{gcmini} for further details}.
+\begin{verbatim}
+cd $MESO/LMDZ.MARS/myGCM
+launch_gcm
+[answer: sol number corresponding to chosen dates (use $MMM/SIMU/calendar)]
+[wait for GCM simulation to end]
+cd $MMM/your_compdir/PREP_MARS
+[check that the link input_diagfi.nc points toward the GCM output diagfi.nc]
+echo 1 | create_readmeteo.exe
+readmeteo.exe < readmeteo.def
+[check that WPSFEED contains data files which prefix is LMD:]
+\end{verbatim}
+
+\sk
+\paragraph{Step 2} Create the mesoscale limited-area domain of simulation. Run preprocessing programs to horizontally interpolate GCM meteorological fields and static data (topography, soil properties) to the chosen simulation domain. \emph{See~\ref{wps} for further details}.
+\begin{verbatim}
+cd $MMM/your_compdir/WPS
+geogrid.exe
+[check that geo_em* netCDF files are created in the current directory]
+mkdir WRFFEED/current
+metgrid.exe
+[check that met_em* netCDF files are created in the WRFFEED/current directory]
+\end{verbatim}
+
+\sk
+\paragraph{Step 3} Run preprocessing programs to vertically interpolate GCM meteorological fields and generate the initial and boundary conditions directly used by the mesoscale model. \emph{See~\ref{real.exe} for further details}.
+\begin{verbatim}
+cd /a_place/MY_SIMU
+ln -sf $MMM/your_compdir/WPS/WRFFEED/current/met_em* .
+real.exe
+[check that wrfinput* wrfbdy* netCDF files are created]
+\end{verbatim}
+
+\sk
+\paragraph{Step 4} Run the LMD Martian Mesoscale Model. See~\ref{sc:arsia} for further details.
+\begin{verbatim}
+cd /a_place/MY_SIMU
+wrf.exe [or use a MPI instance for parallel computations]
+[check that wrfout* netCDF files are created and filled by simulation results]
+[once wrf.exe is running met_em* links can be deleted]
+\end{verbatim}
+
+\mk
+\section{The \ttt{runmeso} script}
+
+\sk
+The serie of commands detailed in section~\ref{zecommands} has to be repeated each time the user would like to run a new simulation with the LMD Martian Mesoscale Model. This is usually simple if the user simply want to change, e.g., the integration timestep, because only the few commands detailed at step~$4$ have to be used. On the contrary, if the user wants to run a new simulation in which, e.g., both the simulated season and the number of grid points are changed, every step from~$0$ to~$4$ have to be repeated (see e.g. section~\ref{changeparam}). Not only it can be tedious to type all commands again and again, but there is a quite high probability that the user (even the most experienced one) will face one or several of the following problems, which would waste the user's time, or prevent the simulation from running correctly, from running at all, or from computing reasonable results:
+\begin{citemize}
+\item A parameter labelled \ttt{(r)} in \ttt{namelist.input} (see chapter~\ref{zeparam}) is changed, but the sources have not been recompiled accordingly; 
+\item The answers to \ttt{makemeso} are not compliant with information in \ttt{namelist.input};
+\item The common information in \ttt{namelist.input} and \ttt{namelist.wps} are inconsistent;
+\item The input sol in \ttt{launch\_gcm} does not correspond to the dates in \ttt{namelist.input} and \ttt{namelist.wps} (in accordance with the \ttt{calendar} table, cf. appendix);
+\item One or several of the various files used as input/output in step~$1$, $2$, $3$ are not correctly linked;
+\item The wrong executable is used because the right model executables are not correctly linked;
+\item Large domain simulations yield long computations of step~$2$ and~$3$, so the user have to wait a long time between each commands to type.
+\end{citemize}
+
+\sk
+In those circumstances, using the \ttt{bash} script \ttt{runmeso} located in \ttt{\$MMM/SIMU} is probably a good idea when the commands listed in section~\ref{zecommands} has been successfully followed \emph{at least once}. The purpose of the \ttt{runmeso} script is to perform all commands and tests about links, executables, etc... described in section~\ref{zecommands}. To put it in a nutshell, after all the efforts made in the previous chapters to install, compile, test the LMD Martian Mesoscale Model and its initialization routines, the user can now rely on \ttt{runmeso} to easily launch a simulation with the LMD Martian Mesoscale Model! The serie of commands listed in the previous section~\ref{zecommands} is replaced by a simple user-friendly method:
+\begin{citemize}
+\item set a simulation directory containing the parameter files \ttt{namelist.input} and \ttt{callphys.def};
+\item edit the \ttt{namelist.input} file with your settings;
+\item edit the \ttt{callphys.def} file with your settings;
+\item run the \ttt{runmeso} script in the simulation folder by typing \ttt{\$MMM/SIMU/runmeso} (or only \ttt{runmeso} if you add \ttt{\$MMM/SIMU} in your \ttt{PATH} environment variable);
+\item make a choice about which step to start with.
+\end{citemize}
+Note that only one instance of \ttt{runmeso} must be run at the same time, otherwise conflicting versions of initial conditions (and simulation outputs) will be obtained. If running several versions of the model are needed, it is recommended to duplicate a runmeso script for each version and modify those to be linked towards the correct model folder.
+
+\sk
+When executing the \ttt{runmeso} script, useful information about the simulation, and the system in which you plan to run it, are prompted before an invitation appears about the choice of step(s) to process with:
+
+\footnotesize
+\codesource{runmeso_output}
+\normalsize
+
+\sk
+\begin{finger}
+\item A first test of \ttt{runmeso} can be carried out with the test case of section~\ref{sc:arsia}. Please create a directory (e.g. \ttt{test}) and copy the files \ttt{namelist.input}, \ttt{callphys.def} and \ttt{namelist.wps} referring to this Arsia Mons test case in this directory. Then run \ttt{runmeso} and make choice~$1$, i.e. going through all steps detailed in \ref{steps} and \ref{zecommands}. 
+\item The execution of \ttt{runmeso} stops if an error is encountered: e.g., the environment variable \ttt{MESO} is not defined, one of the two files~\ttt{namelist.input} or~\ttt{callphys.def} are not present in the working directory, etc...
+\item If \ttt{namelist.wps} is not present in the simulation directory, the \ttt{runmeso} script will propose to create it and will prompt $4$~additional questions about map projection, data source, latitude for center of domain, longitude for center of domain. The remaining information to be set in \ttt{namelist.wps} (cf. section~\ref{wps}) is then copied from \ttt{namelist.input} to ensure all common parameters between the two files are the same. The program \ttt{geogrid.exe} is then run and, if \ttt{ncview} is installed on your system, this program is prompted so that you can explore the file \ttt{geo\_em.d01.nc} file to check the newly created domain.
+\item An \ttt{xeyes} session is prompted when the \ttt{runmeso} script has finished processing required steps.
+\item If \ttt{runmeso} went well through steps~$1$ and~$2$, but encountered an error in~$3$, once the error has been corrected \ttt{runmeso} is not required to perform steps~$1$ and~$2$ again and can be started directly at step~$3$ (by typing~$3$, see possible choices above).
+\item The \ttt{LMD:*} files created by a \ttt{runmeso} call which features step~$1$ are kept in \ttt{WPSFEED} (located in \ttt{\$MESO/TMPDIR}). Those files will be overwritten by subsequent calls to \ttt{runmeso} if you choose to re-run the GCM at similar dates.
+\item The \ttt{met\_em*} files created by a \ttt{runmeso} call which features step~$2$ are kept in a directory in \ttt{WRFFEED} (located in \ttt{\$MESO/TMPDIR}) which name refers to precise date and time, so that it will not be overwritten by subsequent calls to \ttt{runmeso} for other simulations. In the simulation directory, \ttt{runmeso} creates a \ttt{met\_em} directory which contains links towards the \ttt{met\_em*} files. 
+\item The contents of directories in \ttt{\$MESO/TMPDIR} (i.e. \ttt{GCMINI}, \ttt{WPSFEED}, \ttt{WRFFEED}) might grow large as you launch more and more simulations with \ttt{runmeso}. It is probably a good idea to clean up from time to time files referring to old obsolete simulations.   
+\end{finger}
+
+%%%% FRESH START OPTION WITH runmeso
+
+%\mk
+%\section{Examples of parameter files}
+
+\clearemptydoublepage

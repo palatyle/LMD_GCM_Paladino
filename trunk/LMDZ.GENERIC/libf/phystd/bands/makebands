@@ -1,0 +1,41 @@
+#!/bin/bash
+
+for i in $* ; do
+   list=$list.$i
+done
+fichdim=bands${list}
+
+if [ ! -f $fichdim ] ; then
+# if the file doesn't exist, we create it
+
+ if [ $# -ge 2 ] ; then
+      NBinfrared=$1
+      NBvisible=$2
+ else
+      echo "you need bands in IR and in the visible"
+      exit
+ fi
+
+cat << EOF > $fichdim
+!-----------------------------------------------------------------------
+!   INCLUDE 'bands.h'
+!
+!   bands.h contains the visible & infrared bands in the model
+!
+!   NBinfrared = L_NSPECTI in the model
+!   NBvisible  = L_NSPECTV in the model
+!-----------------------------------------------------------------------
+
+      INTEGER, parameter :: NBinfrared=$NBinfrared
+      INTEGER, parameter :: NBvisible=$NBvisible
+
+
+!-----------------------------------------------------------------------
+EOF
+
+else
+ echo "bands file already exists!"
+fi
+
+\rm ../bands.h
+tar cf - $fichdim | ( cd .. ; tar xf - ; mv $fichdim bands.h )

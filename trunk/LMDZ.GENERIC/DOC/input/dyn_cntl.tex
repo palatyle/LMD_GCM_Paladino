@@ -1,0 +1,32 @@
+{\footnotesize
+\begin{verbatim}
+       tab_cntrl(1)  = FLOAT(iim) ! number of nodes along longitude
+       tab_cntrl(2)  = FLOAT(jjm) ! number of nodes along latitude
+       tab_cntrl(3)  = FLOAT(llm) ! number of atmospheric layers
+       tab_cntrl(4)  = FLOAT(idayref) ! initial day 
+       tab_cntrl(5)  = rad   ! radius of the planet
+       tab_cntrl(6)  = omeg  ! rotation of the planet (rad/s)
+       tab_cntrl(7)  = g     ! gravity (m/s2) ~3.72 for Mars
+       tab_cntrl(8)  = cpp 
+       tab_cntrl(9) = kappa   ! = r/cp
+       tab_cntrl(10) = daysec ! lenght of a sol (s) ~88775
+       tab_cntrl(11) = dtvr   ! dynamical time step (s)
+       tab_cntrl(12) = etot0  ! total energy
+       tab_cntrl(13) = ptot0  ! total pressure
+       tab_cntrl(14) = ztot0  ! total enstrophy
+       tab_cntrl(15) = stot0  ! total enthalpy
+       tab_cntrl(16) = ang0   ! total angular momentum
+       tab_cntrl(17) = pa     
+       tab_cntrl(18) = preff  ! reference pressure (Pa)
+       tab_cntrl(19)  = clon  ! longitude of center of zoom
+       tab_cntrl(20)  = clat  ! latitude of center of zoom
+       tab_cntrl(21)  = grossismx ! zooming factor, along longitude
+       tab_cntrl(22)  = grossismy ! zooming factor, along latitude
+
+       tab_cntrl(24) = dzoomx ! extention (in longitude) of zoom
+       tab_cntrl(25) = dzoomy ! extention (in latitude) of zoom
+
+       tab_cntrl(27) = taux ! stiffness factor of zoom in longitude
+       tab_cntrl(28) = tauy ! stiffness factor of zoom in latitude
+\end{verbatim}
+}

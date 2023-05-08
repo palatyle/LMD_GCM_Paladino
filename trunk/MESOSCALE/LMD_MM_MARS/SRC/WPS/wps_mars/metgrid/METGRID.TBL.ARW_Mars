@@ -1,0 +1,148 @@
+========================================
+name=GHT
+        output=no
+        interp_option=sixteen_pt+four_pt+average_4pt
+        fill_missing=0.
+#        fill_lev=200100:SOILHGT(200100)
+        fill_lev=200100:HGT_M(1)
+========================================
+name=HGTT
+        output=no
+        interp_option=nearest_neighbor
+========================================
+name=ST000010
+        output=no
+#        interp_option=sixteen_pt+four_pt+average_4pt+search
+        masked=water
+        interp_mask=LANDSEA(0)
+        fill_missing=285.
+        flag_in_output=FLAG_ST000010
+========================================
+name=ST010040
+        output=no
+#        interp_option=sixteen_pt+four_pt+average_4pt+search
+        masked=water
+        interp_mask=LANDSEA(0)
+        fill_missing=285.
+        flag_in_output=FLAG_ST010040
+========================================
+name=ST040100
+        output=no
+#        interp_option=sixteen_pt+four_pt+average_4pt+search
+        masked=water
+        interp_mask=LANDSEA(0)
+        fill_missing=285.
+        flag_in_output=FLAG_ST040100
+========================================
+name=ST100200
+        output=no
+#        interp_option=sixteen_pt+four_pt+average_4pt+search
+        masked=water
+        interp_mask=LANDSEA(0)
+        fill_missing=285.
+        flag_in_output=FLAG_ST100200
+========================================
+name=LANDSEA 
+        output=no
+        interp_option=nearest_neighbor
+        fill_missing=-1.
+        fill_lev=200100:LANDMASK(1)
+========================================
+name=SKINTEMP
+#        interp_option=sixteen_pt+four_pt+wt_average_4pt+wt_average_16pt+search
+        mandatory=yes    # MUST HAVE THIS FIELD
+#        masked=both
+#        interp_land_mask  = LANDSEA(1)
+#        interp_water_mask = LANDSEA(0)
+        fill_missing=-2000.
+========================================
+name=SM000010
+        output=no
+#        interp_option=sixteen_pt+four_pt+average_4pt+search
+        masked=water
+        interp_mask=LANDSEA(0)
+        fill_missing=1.
+        flag_in_output=FLAG_SM000010
+========================================
+name=SM010040
+        output=no
+#        interp_option=sixteen_pt+four_pt+average_4pt+search
+        masked=water
+        interp_mask=LANDSEA(0)
+        fill_missing=1.
+        flag_in_output=FLAG_SM010040
+========================================
+name=SM040100
+        output=no
+#        interp_option=sixteen_pt+four_pt+average_4pt+search
+        masked=water
+        interp_mask=LANDSEA(0)
+        fill_missing=1.
+        flag_in_output=FLAG_SM040100
+========================================
+name=SM100200
+        output=no
+#        interp_option=sixteen_pt+four_pt+average_4pt+search
+        masked=water
+        interp_mask=LANDSEA(0)
+        fill_missing=1.
+        flag_in_output=FLAG_SM100200
+========================================
+name=TAVGSFC
+        interp_option=four_pt
+        fill_missing=0.
+        fill_lev=200100:TT(200100)
+        flag_in_output=FLAG_TAVGSFC
+========================================
+name=PSFC
+#        interp_option=four_pt+average_4pt
+#        interp_option=sixteen_pt+average_16pt
+#careful: inputs from the GCMs are in a "polygonal" world !
+        interp_option=sixteen_pt+four_pt+average_4pt
+        fill_lev=200100:const(200100.)
+        flag_in_output=FLAG_PSFC
+========================================
+name=PRES
+        z_dim_name=num_metgrid_levels
+        derived=yes
+        mandatory=yes    # MUST HAVE THIS FIELD
+        fill_lev=all:PRESSURE
+        fill_lev=200100:PSFC(200100)
+        fill_lev=all:vertical_index; level_template=TT
+========================================
+name=T ; output_name=TT  # If we get T, use entry from TT and
+                         #   write the field out as TT
+========================================
+name=TT
+        mandatory=yes    # MUST HAVE THIS FIELD
+#        interp_option=four_pt+average_4pt
+#careful: inputs from the GCMs are in a "polygonal" world !
+        interp_option=sixteen_pt+four_pt+average_4pt
+        fill_missing=0.
+========================================
+name=U ; output_name=UU  # If we get U, use entry from UU and
+                         #   write the field out as UU
+========================================
+name=UU
+        mandatory=yes    # MUST HAVE THIS FIELD
+        interp_option=sixteen_pt+four_pt+average_4pt
+        is_u_field=yes
+        output_stagger=U
+        fill_missing=0.
+========================================
+name=V ; output_name=VV  # If we get V, use entry from VV and
+                         #   write the field out as VV
+========================================
+name=VV
+        mandatory=yes    # MUST HAVE THIS FIELD
+        interp_option=sixteen_pt+four_pt+average_4pt
+        is_v_field=yes
+        output_stagger=V
+        fill_missing=0.
+========================================
+name=RH
+        interp_option=sixteen_pt+four_pt+average_4pt
+        fill_missing=0.
+        fill_lev=200100:const(0.)
+========================================
+

@@ -1,0 +1,228 @@
+#! /bin/bash
+
+##########################################################
+laphysiq="mars_lmd" ## default value
+config="" ## default value
+while getopts "p:c:" options; do
+  case $options in
+   p ) laphysiq="${OPTARG}";;     ## choose physics
+   c ) config="${OPTARG}";;     ## choose config
+  esac
+done
+##########################################################
+echo '*** copying physics: '$laphysiq
+##########################################################
+
+echo '*** linking sources from ...'
+WRFSRC=$PWD/SRC/
+if [[ "${config}" == "les" ]]
+then
+  WRFSRC=$PWD/SRC/LES/
+fi
+echo $WRFSRC
+echo '*** to ...'
+HERE=$PWD
+echo $HERE
+
+
+#mkdir WPS
+#cd WPS
+#ln -sf $WRFSRC/WPS/wps_mars .
+#ln -sf $WRFSRC/WPS/switch_WPS_Mars .
+#cd ..
+
+mkdir zeWRFV2
+#ln -sf $WRFSRC/prepare_ini .
+cd zeWRFV2 
+
+echo '*** start defining folders and links'
+ln -sf $WRFSRC/WRFV2/clean . 
+ln -sf $WRFSRC/WRFV2/compile .
+#ln -sf $WRFSRC/WRFV2/makemeso .
+ln -sf $WRFSRC/WRFV2/configure .
+ln -sf $WRFSRC/WRFV2/Makefile .
+#ln -sf $WRFSRC/WRFV2/mars.sed* .
+ln -sf $WRFSRC/WRFV2/*.h .
+ln -sf $WRFSRC/WRFV2/configure.defaults.* .
+ln -sf $WRFSRC/WRFV2/call_meso_inifis?.inc .
+ln -sf $WRFSRC/WRFV2/call_meso_physiq?.inc .
+
+#\rm meso_dimphys.h
+#cp $WRFSRC/WRFV2/meso_dimphys.h .
+#cp $WRFSRC/WRFV2/call_*.inc .
+#cp $WRFSRC/WRFV2/custom*.inc .
+mkdir Registry
+ln -sf $WRFSRC/WRFV2/Registry/* Registry/
+  ### this is to allow one to change Registry somewhere without it being changed everywhere !
+  rm Registry/Registry.EM
+  cp $WRFSRC/WRFV2/Registry/Registry.EM Registry/
+mkdir arch
+ln -sf $WRFSRC/WRFV2/arch/* arch/
+mkdir dyn_em
+ln -sf $WRFSRC/WRFV2/dyn_em/* dyn_em/
+mkdir dyn_exp
+ln -sf $WRFSRC/WRFV2/dyn_exp/* dyn_exp/
+mkdir dyn_nmm
+ln -sf $WRFSRC/WRFV2/dyn_nmm/* dyn_nmm/
+mkdir frame
+ln -sf $WRFSRC/WRFV2/frame/* frame/
+mkdir inc
+ln -sf $WRFSRC/WRFV2/inc/* inc/
+mkdir main
+ln -sf $WRFSRC/WRFV2/main/* main/
+mkdir phys
+ln -sf $WRFSRC/WRFV2/phys/* phys/
+echo $laphysiq
+ln -sf $WRFSRC/WRFV2/phys/dynphy_wrf_$laphysiq/* phys/
+mkdir run
+ln -sf $WRFSRC/WRFV2/run/* run/
+mkdir share
+ln -sf $WRFSRC/WRFV2/share/* share/
+mkdir tools
+ln -sf $WRFSRC/WRFV2/tools/* tools/
+\rm tools/DOMAIN_TIME_TEST
+\rm tools/CodeBase
+mkdir tools/DOMAIN_TIME_TEST
+ln -sf $WRFSRC/WRFV2/tools/DOMAIN_TIME_TEST/* tools/DOMAIN_TIME_TEST/
+mkdir tools/CodeBase
+ln -sf $WRFSRC/WRFV2/tools/CodeBase/* tools/CodeBase/
+mkdir external
+ln -sf $WRFSRC/WRFV2/external/Makefile external/
+mkdir external/io_int
+ln -sf $WRFSRC/WRFV2/external/io_int/* external/io_int/
+mkdir external/esmf_time_f90
+ln -sf $WRFSRC/WRFV2/external/esmf_time_f90/* external/esmf_time_f90/
+mkdir external/io_netcdf
+ln -sf $WRFSRC/WRFV2/external/io_netcdf/* external/io_netcdf/
+mkdir external/io_grib1
+ln -sf $WRFSRC/WRFV2/external/io_grib1/* external/io_grib1/
+\rm external/io_grib1/MEL_grib1
+\rm external/io_grib1/WGRIB
+\rm external/io_grib1/build
+\rm external/io_grib1/grib1_util
+mkdir external/io_grib1/MEL_grib1
+ln -sf $WRFSRC/WRFV2/external/io_grib1/MEL_grib1/* external/io_grib1/MEL_grib1/
+mkdir external/io_grib1/WGRIB
+ln -sf $WRFSRC/WRFV2/external/io_grib1/WGRIB/* external/io_grib1/WGRIB/
+mkdir external/io_grib1/grib1_util
+ln -sf $WRFSRC/WRFV2/external/io_grib1/grib1_util/* external/io_grib1/grib1_util/
+mkdir external/io_grib1/build
+mkdir external/io_grib_share
+ln -sf $WRFSRC/WRFV2/external/io_grib_share/* external/io_grib_share/
+\rm external/io_grib_share/build
+mkdir external/io_grib_share/build
+ln -sf $WRFSRC/WRFV2/external/io_grib_share/build/* external/io_grib_share/build/
+mkdir external/ioapi_share
+ln -sf $WRFSRC/WRFV2/external/ioapi_share/* external/ioapi_share/
+mkdir external/io_phdf5
+ln -sf $WRFSRC/WRFV2/external/io_phdf5/* external/io_phdf5/
+mkdir external/RSL_LITE
+ln -sf $WRFSRC/WRFV2/external/RSL_LITE/* external/RSL_LITE/
+mkdir external/io_grib2
+ln -sf $WRFSRC/WRFV2/external/io_grib2/* external/io_grib2/
+\rm external/io_grib2/bacio-1.3
+\rm external/io_grib2/g2lib
+mkdir external/io_grib2/bacio-1.3
+ln -sf $WRFSRC/WRFV2/external/io_grib2/bacio-1.3/* external/io_grib2/bacio-1.3/
+mkdir external/io_grib2/g2lib
+ln -sf $WRFSRC/WRFV2/external/io_grib2/g2lib/* external/io_grib2/g2lib/
+mkdir external/io_pnetcdf
+ln -sf $WRFSRC/WRFV2/external/io_pnetcdf/* external/io_pnetcdf/
+mkdir external/RSL
+ln -sf $WRFSRC/WRFV2/external/RSL/* external/RSL/
+\rm external/RSL/RSL
+mkdir external/RSL/RSL
+ln -sf $WRFSRC/WRFV2/external/RSL/RSL/* external/RSL/RSL/
+mkdir external/io_esmf
+ln -sf $WRFSRC/WRFV2/external/io_esmf/* external/io_esmf/
+mkdir external/io_mcel
+ln -sf $WRFSRC/WRFV2/external/io_mcel/* external/io_mcel/
+echo ${laphysiq}
+if [[ "${laphysiq}" == *"void"* ]]
+then
+
+  ## case with no physics
+  rm -f physics.sed
+  touch physics.sed
+
+else
+  ## case with physics
+  echo $laphysiq
+  mkdir $laphysiq
+  mkdir $laphysiq/libf
+  mkdir $laphysiq/libf/grid
+  ln -sf $WRFSRC/WRFV2/$laphysiq/libf/grid/* $laphysiq/libf/grid/
+  mkdir $laphysiq/libf/dyn3d
+  ln -sf $WRFSRC/WRFV2/$laphysiq/libf/dyn3d/* $laphysiq/libf/dyn3d/
+  mkdir $laphysiq/libf/bibio
+  ln -sf $WRFSRC/WRFV2/$laphysiq/libf/bibio/* $laphysiq/libf/bibio/
+  if [[ "${laphysiq}" == *"mars"* ]]
+  then
+    ln -sf $WRFSRC/WRFV2/$laphysiq/makegcm* $laphysiq/
+    ln -sf $WRFSRC/WRFV2/$laphysiq/meso_dimphys.h* $laphysiq/
+    ln -sf $WRFSRC/WRFV2/$laphysiq/create_make_gcm $laphysiq/
+    #ln -sf $WRFSRC/WRFV2/$laphysiq/makefile $laphysiq/
+    ln -sf $WRFSRC/WRFV2/$laphysiq/libf/duplicate* $laphysiq/libf/
+    ln -sf $WRFSRC/WRFV2/$laphysiq/libf/generate* $laphysiq/libf/
+    mkdir $laphysiq/libf/aeronomars
+    ln -sf $WRFSRC/WRFV2/$laphysiq/libf/aeronomars/* $laphysiq/libf/aeronomars/
+    mkdir $laphysiq/libf/phymars
+    ln -sf $WRFSRC/WRFV2/$laphysiq/libf/phymars/* $laphysiq/libf/phymars/
+    ln -sf $WRFSRC/WRFV2/$laphysiq/libf/phy_common/* $laphysiq/libf/phymars/
+    ###
+    \rm $laphysiq/libf/phymars/dimphys.h
+  elif [[ "${laphysiq}" == *"venus"* ]]
+  then
+    ln -sf $WRFSRC/WRFV2/$laphysiq/makelmdz $laphysiq/
+    ln -sf $WRFSRC/WRFV2/$laphysiq/deftank $laphysiq/
+    ln -sf $WRFSRC/WRFV2/$laphysiq/arch* $laphysiq/
+    ln -sf $WRFSRC/WRFV2/$laphysiq/tmp* $laphysiq/
+    ln -sf $WRFSRC/WRFV2/$laphysiq/libf_gcm $laphysiq/
+    ln -sf $WRFSRC/WRFV2/$laphysiq/makefile $laphysiq/
+    ln -sf $WRFSRC/WRFV2/$laphysiq/make_dir $laphysiq/
+    ln -sf $WRFSRC/WRFV2/$laphysiq/create_make_gcm $laphysiq/
+    ln -sf $WRFSRC/WRFV2/$laphysiq/Tools $laphysiq/
+    mkdir $laphysiq/ioipsl
+    ln -sf $WRFSRC/WRFV2/$laphysiq/ioipsl/modipsl/lib/* $laphysiq/ioipsl/
+    mkdir $laphysiq/libf/phyvenus
+    ln -sf $WRFSRC/WRFV2/$laphysiq/libf/phyvenus/* $laphysiq/libf/phyvenus/
+    mkdir $laphysiq/libf/phy_common
+    ln -sf $WRFSRC/WRFV2/$laphysiq/libf/phy_common/* $laphysiq/libf/phy_common/
+    mkdir $laphysiq/libf/misc
+    ln -sf $WRFSRC/WRFV2/$laphysiq/libf/misc/* $laphysiq/libf/misc/
+    mkdir $laphysiq/libf/filtrez
+    ln -sf $WRFSRC/WRFV2/$laphysiq/libf/filtrez/* $laphysiq/libf/filtrez/
+  elif [[ "${laphysiq}" == *"generic"* ]]
+  then
+    ln -sf $WRFSRC/WRFV2/$laphysiq/arch* $laphysiq/
+    ln -sf $WRFSRC/WRFV2/$laphysiq/build_gcm $laphysiq/
+    ln -sf $WRFSRC/WRFV2/$laphysiq/makelmdz* $laphysiq/
+    ln -sf $WRFSRC/WRFV2/$laphysiq/makegcm* $laphysiq/
+    ln -sf $WRFSRC/WRFV2/$laphysiq/create_make_gcm $laphysiq/
+    mkdir $laphysiq/libf/phystd
+    ln -sf $WRFSRC/WRFV2/$laphysiq/libf/phystd/* $laphysiq/libf/phystd/
+    cp -r $WRFSRC/WRFV2/$laphysiq/libf/phystd/bands $laphysiq/libf/phystd/
+    cp -r $WRFSRC/WRFV2/$laphysiq/libf/phystd/scatterers $laphysiq/libf/phystd/
+    mkdir $laphysiq/libf/phy_common
+    ln -sf $WRFSRC/WRFV2/$laphysiq/libf/phy_common/* $laphysiq/libf/phy_common/
+    mkdir $laphysiq/libf/misc
+    ln -sf $WRFSRC/WRFV2/$laphysiq/libf/misc/* $laphysiq/libf/misc/
+    mkdir $laphysiq/libf/filtrez
+    ln -sf $WRFSRC/WRFV2/$laphysiq/libf/filtrez/* $laphysiq/libf/filtrez/
+  fi
+  mkdir $laphysiq/libo
+  #touch $laphysiq/makefile
+
+  sed s+"YORGLYORGL"+"$laphysiq"+g $WRFSRC/WRFV2/physics.sed > physics.sed
+fi
+
+mkdir test
+mkdir test/em_real
+mkdir test/em_quarter_ss
+ln -sf $WRFSRC/WRFV2/test/em_real/* test/em_real/
+
+echo '*** end'
+
+
+
+

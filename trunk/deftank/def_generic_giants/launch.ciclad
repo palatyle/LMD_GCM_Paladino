@@ -1,0 +1,13 @@
+#PBS -S  /bin/bash
+#PBS -j  oe
+#PBS -q  infini
+#PBS -N  LMDZ.UNIVERSAL
+#PBS -l "nodes=1:ppn=16"
+##PBS -l "mem=64gb"
+
+####### prep run
+mv $PBS_O_WORKDIR/CURRENT_RUN $PBS_O_WORKDIR/PREVIOUS_RUN
+cp -rf $PBS_O_WORKDIR/PROTO $PBS_O_WORKDIR/CURRENT_RUN
+cd $PBS_O_WORKDIR/CURRENT_RUN
+ulimit -s unlimited
+mpirun gcm.e > log

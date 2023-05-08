@@ -1,0 +1,54 @@
+{\footnotesize
+\begin{verbatim}
+netcdf startfi {
+dimensions:
+        index = 100 ;
+        physical_points = 738 ;
+        subsurface_layers = 18 ;
+        nlayer_plus_1 = 19 ;
+        number_of_advected_fields = 3 ;
+variables:
+        float controle(index) ;
+                controle:title = "Control parameters" ;
+        float soildepth(subsurface_layers) ;
+                soildepth:title = "Soil mid-layer depth" ;
+        float longitude(physical_points) ;
+                longitude:title = "Longitudes of physics grid" ;
+        float latitude(physical_points) ;
+                latitude:title = "Latitudes of physics grid" ;
+        float area(physical_points) ;
+                area:title = "Mesh area" ;
+        float phisfi(physical_points) ;
+                phisfi:title = "Geopotential at the surface" ;
+        float albedodat(physical_points) ;
+                albedodat:title = "Albedo of bare ground" ;
+        float ZMEA(physical_points) ;
+                ZMEA:title = "Relief: mean relief" ;
+        float ZSTD(physical_points) ;
+                ZSTD:title = "Relief: standard deviation" ;
+        float ZSIG(physical_points) ;
+                ZSIG:title = "Relief: sigma parameter" ;
+        float ZGAM(physical_points) ;
+                ZGAM:title = "Relief: gamma parameter" ;
+        float ZTHE(physical_points) ;
+                ZTHE:title = "Relief: theta parameter" ;
+        float co2ice(physical_points) ;
+                co2_ice:title = "CO2 ice cover" ;
+        float inertiedat(subsurface_layers, physical_points) ;
+                inertiedat:title = "Soil thermal inertia" ;
+        float tsurf(physical_points) ;
+                tsurf:title = "Surface temperature" ;
+        float tsoil(subsurface_layers, physical_points) ;
+                tsoil:title = "Soil temperature" ;
+        float emis(physical_points) ;
+                emis:title = "Surface emissivity" ;
+        float q2(nlayer_plus_1, physical_points) ;
+                q2:title = "pbl wind variance" ;
+        float h2o_ice(physical_points) ;
+                h2o_ice:title = "tracer on surface" ;
+
+// global attributes:
+                :title = "Physics start file" ;
+}
+\end{verbatim}
+}

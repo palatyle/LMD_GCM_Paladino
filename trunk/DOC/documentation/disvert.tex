@@ -1,0 +1,123 @@
+\documentclass[a4paper,10pt]{article}
+%\usepackage{graphicx}
+\usepackage{natbib}  % si appel à bibtex
+%\usepackage[francais]{babel}
+%\usepackage[latin1]{inputenc}  % accents directs (é...), avec babel
+%\usepackage{rotating}
+
+\setlength{\hoffset}{-1.in}
+\setlength{\oddsidemargin}{3.cm}
+\setlength{\textwidth}{15.cm}
+\setlength{\marginparsep}{0.mm}
+\setlength{\marginparwidth}{0.mm}
+
+\setlength{\voffset}{-1.in}
+\setlength{\topmargin}{0.mm}
+\setlength{\headheight}{0.mm}
+\setlength{\headsep}{30.mm}
+\setlength{\textheight}{24.cm}
+\setlength{\footskip}{1.cm}
+
+\setlength{\parindent}{0.mm}
+\setlength{\parskip}{1 em}
+\newcommand{\ten}[1]{$\times 10^{#1}$~} 
+\renewcommand{\baselinestretch}{1.}
+
+\begin{document}
+\pagestyle{plain}
+
+\begin{center}
+{\bf \LARGE 
+Documentation for LMDZ, Planets version
+
+\vspace{1cm}
+\Large
+The vertical discretization
+}
+
+\vspace{1cm}
+S\'ebastien Lebonnois, Ehouarn Millour
+
+\vspace{1cm}
+Latest version: \today
+\end{center}
+
+
+\section{Theoretical aspects}
+
+The position of the layers: 
+\begin{itemize}
+\item pressure limit between two layers, 
+\item pressure within the layers
+\end{itemize}
+
+The Exner function: 
+$pk = C_p \times (p/preff)^\kappa$.
+It corresponds to the pressure levels within the layers.
+Used for the computation of the potential temperature.
+For the Earth, we use a specific scheme that computes these positions so that 
+it maintains a condition of proportionality between total,
+internal and potential energy (cf. a note from F. Hourdin). 
+
+\section{Pratical aspects in the code}
+
+\begin{itemize}
+\item \textsf{disvert\_[no]terre.F[90]}: 
+position of the interface pressure levels from an input file
+(several possibilities). 
+Definition of ap, bp and presnivs.
+In the planetary version, definition of aps and bps.
+
+This is done only once, called at the beginning from \textsf{iniconst.F}.
+
+In the Earth version the vertical coordinates are hybrid (sigma-pressure),
+and generated automaticaly (or generated from parameters read from file
+\textsf{sigma.def}, if that file is present in the directory where the
+gcm is run).
+
+In the planetary version, the vertical coordinates can be hybrid (default
+behavior) or sigma (set using parameter "hybrid" in \textsf{run.def}; true
+implies hybrid coordinate, false implies sigma coordinate). the distribution
+of model levels is set from file \textsf{esasig.def} or \textsf{z2sig.def},
+depending on which is present (in the directory where the gcm is run).
+The first line of the  \textsf{z2sig.def} file should give the value of the
+reference atmospheric scale height (in km), followed by the (rough estimate)
+of the altitude (in km) of the atmospheric level (one per line of the file).
+
+For planetary applications, the usual way to go is to use \textsf{disvert\_noterre.F} together with \textsf{z2sig.def}.
+The sigma levels are computed as: 
+\begin{itemize}
+\item $H$ is the first value in \textsf{z2sig.def}, $zsig$ are the following values in \textsf{z2sig.def}
+\item $\sigma(1)=1$
+\item l=2 to llm: $\sigma(l)= 0.5 \times (\exp(-zsig(l)/H)+\exp(-zsig(l-1)/H))$
+\item $\sigma(llm+1)=0$
+\end{itemize}
+The $ap$ and $bp$ values, defining the interface pressure levels, are then computed using these sigma values, the reference pressure $preff$, and the transition pressure $pa$. The values of $preff$ and $pa$ are read in the \textsf{start.nc} file, in the control array.
+
+\item Interface pressures: 
+computed in \textsf{caldyn0.F, caldyn.F, integrd.F, leapfrog.F}
+through the \textsf{pression.F} routine.
+
+\item Exner function (and therefore pressure within the layers): 
+computed at three different places in \textsf{leapfrog.F} through the 
+\textsf{exner\_[hyb/milieu].F} routine. 
+For the Earth, we use \textsf{exner\_hyb.F}, that computes the positions in a
+specific way to maintain a condition of proportionality between total,
+internal and potential energy (cf. a note from F. Hourdin). 
+For other planets, we use \textsf{exner\_milieu.F}, that computes the positions
+of these pressure levels exactly in the middle of each layer. 
+Though this fails to maintain the previous condition, there is no evidence of 
+any significant influence on the results, and it makes it a lot easier to 
+define correctly the level positions with the input file.
+\end{itemize}
+
+%\begin{thebibliography}{2}
+%\providecommand{\natexlab}[1]{#1}
+%\expandafter\ifx\csname urlstyle\endcsname\relax
+%  \providecommand{\doi}[1]{doi:\discretionary{}{}{}#1}\else
+%  \providecommand{\doi}{doi:\discretionary{}{}{}\begingroup
+%  \urlstyle{rm}\Url}\fi
+
+%\end{thebibliography}
+
+\end{document}

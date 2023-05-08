@@ -1,0 +1,1 @@
+../../TMPDIR/GCMINI/diagfi.nc

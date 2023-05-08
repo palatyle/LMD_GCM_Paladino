@@ -1,0 +1,4 @@
+10  atmospheric scale height (km) (used as a reference only)
+80  maximum altitude (km)
+.01 thikness of the first layer (km)
+2.  number of layer for "sponge layer" at the top

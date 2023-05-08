@@ -1,0 +1,45 @@
+# Exemple de job pour soumission en MPI en classe debug
+# pour soumettre ce job: llsubmit nom_du_job
+# @ job_type = parallel
+### @ class = debug
+# @ wall_clock_limit = 2:00:00
+# @ cpu_limit = 1:58:00
+# Memoire max. utilisee (ici 3.2 Go) # rappel: prendre data+stack <=3.7gb
+# @ data_limit = 20.8gb
+# @ stack_limit=8.8gb,8.8gb
+# Nombre de processus demandés:
+# @ total_tasks = 8
+# Nombre de tâches OpenMP/pthreads par processus MPI
+# @ parallel_threads = 8
+# Nom du travail LoadLeveler
+# @ job_name   = job_mpi8_omp8
+# Fichier de sortie standard du travail       
+# @ output     = $(job_name).$(jobid)
+# Fichier de sortie d'erreur du travail
+# @ error      =  $(job_name).$(jobid)
+# @ notification = error
+# @ queue                   
+
+# Pour avoir l'echo des commandes
+set -x
+pwd
+ls -A
+
+# La memoire STACK max. (defaut 4Mo) utilisee (ici 64 Mo) par
+# les variables privees de chaque thread.
+#export XLSMPOPTS=$XLSMPOPTS:stack=65536000
+## 128 Mo
+#export XLSMPOPTS=$XLSMPOPTS:stack=131072000
+## 256 Mo
+#export XLSMPOPTS=$XLSMPOPTS:stack=262144000
+## 512 Mo
+#export XLSMPOPTS=$XLSMPOPTS:stack=524288000
+## 1024 Mo
+export XLSMPOPTS=$XLSMPOPTS:stack=1048576000
+## 1536 Mo
+#export XLSMPOPTS=$XLSMPOPTS:stack=1572864000
+
+# Execution du programme
+hpmcount ./gcm_320x640x30_phynophys_para.e > gcm.out 2>&1
+
+ls -At

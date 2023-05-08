@@ -1,0 +1,80 @@
+####MARS MARS MARS MARS MARS
+####MARS MARS MARS MARS MARS
+#### 
+#### variables physiques ecrites dans les fichiers WRF
+#### - h indique l'ecriture
+#### - en commentaire, les variables physiques dans physiq.F
+#### - utiliser le script automatique Registry.bash
+####
+#### YOU CAN OUTPUT ANY 2D OR 3D VARIABLE THAT IS AVAILABLE IN MESO_PHYSIQ.F
+#### --- please indicate #SAVEMARS2 for 2D fields and #SAVEMARS3 for 3D fields
+####
+############ name in WRF !!!!! ############# name in NETCDF !!!! ############################################## name in meso_physiq !!!!!
+state  real  TSURF     ij   misc  1  -  rhd  "TSURF"     "SURF TEMPERATURE"                "K"       #SAVEMARS2 tsurf
+state  real  CO2ICE    ij   misc  1  -  rhd   "CO2ICE"    "CO2 GROUND ICE"                  "kg m-2"  #SAVEMARS2 co2ice
+state  real  EMISSIV   ij   misc  1  -  rhd   "EMISSIV"   "EMISSIVITY"                      ""        #SAVEMARS2 emis
+state  real  THETA     ij   misc  1  -  rd   "THETA"     "SLOPE INCLINATION"               "deg"     #SAVEMARS2 theta_sl
+state  real  PSI       ij   misc  1  -  rd   "PSI"       "SLOPE ORIENTATION"               "deg"     #SAVEMARS2 psi_sl
+state  real  TAU_DUST  ij   misc  1  -  rhd   "TAU_DUST"  "REFERENCE VISIBLE DUST OPACITY"  ""        #SAVEMARS2 tauref
+state  real  SWDOWNZ   ij   misc  1  -  rhd   "SWDOWNZ"   "DOWNWARD SW FLUX AT SURFACE"     "W m-2"   #SAVEMARS2 fluxsurf_sw_tot      
+state  real  LWDOWNZ   ij   misc  1  -  rhd   "LWDOWNZ"   "DOWNWARD LW FLUX AT SURFACE"     "W m-2"   #SAVEMARS2 fluxsurf_lw
+state  real  SWUP      ij   misc  1  -  rd   "SWUP"      "UPWARD SW FLUX AT TOP"           "W m-2"   #SAVEMARS2 fluxtop_sw_tot    
+state  real  LWUP      ij   misc  1  -  rd   "LWUP"      "UPWARD LW FLUX AT TOP"           "W m-2"   #SAVEMARS2 fluxtop_lw
+state  real  MTOT      ij   misc  1  -  rhd   "MTOT"      "TOTAL MASS WATER VAPOR in pmic"  "pmic"    #SAVEMARS2 mtot
+state  real  ICETOT    ij   misc  1  -  rhd   "ICETOT"    "TOTAL MASS WATER ICE"            "kg m-2"  #SAVEMARS2 icetot
+state  real  RAVE      ij   misc  1  -  rhd   "RAVE"      "MEAN ICE RADIUS"                 "m"       #SAVEMARS2 rave
+state  real  RICE      ikj  misc  1  -  rhd   "RICE"      "ICE RADIUS"                      "m"       #SAVEMARS3 rice
+state  real  HR_SW     ikj  misc  1  -  rd   "HR_SW"     "HEATING RATE SW"                 "K/s"     #SAVEMARS3 zdtsw
+state  real  HR_LW     ikj  misc  1  -  rd   "HR_LW"     "HEATING RATE LW"                 "K/s"     #SAVEMARS3 zdtlw
+state  real  HR_SH     ikj  misc  1  -  rd   "HR_SH"     "HEATING RATE sens. heat"         "K/s"     #SAVEMARS3 zdtdif
+state  real  QSURFICE  ij   misc  1  -  rhd   "QSURFICE"  "WATER ICE AT SURFACE"            "kg m-2"  #SAVEMARS2 qsurfice
+state  real  RDUST     ikj  misc  1  -  rd   "RDUST"     "DUST RADIUS"                     "m"       #SAVEMARS3 rdust
+state  real  HR_NIR    ikj  misc  1  -  rd   "HR_NIR"    "HEATING RATE nirco2"             "K/s"     #SAVEMARS3 zdtnirco2
+state  real  HR_NLTE   ikj  misc  1  -  rd   "HR_NLTE"   "HEATING RATE nlte"               "K/s"     #SAVEMARS3 zdtnlte
+state  real  ALBBARE   ij   misc  1  -  rhd   "ALBBARE"   "SOIL ALBEDO"                     ""        #SAVEMARS2 albedodat
+state  real  VMR_ICE   ikj  misc  1  -  rhd   "VMR_ICE"   "VOL. MIXING RATIO ICE"           "ppm"     #SAVEMARS3 vmr
+state  real  TAU_ICE   ij   misc  1  -  rhd   "TAU_ICE"   "CLOUD OD at 825 cm-1 TES"        ""        #SAVEMARS2 tauTES
+state  real  PDTZ      ikj  misc  1  -  rd   "PDT"       "TEMP TENDENCY"                   "K s-1"   #SAVEMARS3 pdt
+####
+####
+####MARS MARS MARS MARS MARS
+####MARS MARS MARS MARS MARS
+
+####MARS MARS MARS MARS MARS
+####MARS MARS MARS MARS MARS
+####
+####
+#### TRACEURS: l'ordre dans SCALAR est defini plus bas dans les options mars)
+#### - effacer le h si l'on veut eviter les sorties
+####
+state  real  -         ikjftb  scalar  1  -  -                         -
+state  real  qh2o      ikjftb  scalar  1  -  i01rhusdf=(bdy_interp:dt)  "QH2O"          "Water vapor mixing ratio"   "kg kg-1"
+state  real  qh2o_ice  ikjftb  scalar  1  -  i01rusdf=(bdy_interp:dt)  "QH2O_ICE"      "Water ice mixing ratio"     "kg kg-1"
+state  real  qdust     ikjftb  scalar  1  -  i01rusdf=(bdy_interp:dt)  "QDUST"         "Dust mixing ratio"          "kg kg-1"
+state  real  qdustn    ikjftb  scalar  1  -  i01rusdf=(bdy_interp:dt)  "QDUSTN"        "Dust_number mixing ratio"   "kg kg-1"
+state  real  qco2      ikjftb  scalar  1  -  i01rusdf=(bdy_interp:dt)  "QCO2"          "CO2 mixing ratio"           "kg kg-1"
+####
+####
+####MARS MARS MARS MARS MARS
+####MARS MARS MARS MARS MARS
+
+state    real   u              ikjb     dyn_em      2         X     \
+     i01rhusdf=(bdy_interp:dt)       "U"                      "x-wind component"   "m s-1"
+
+
+
+state    real   alb            ikj     dyn_em      1         -      rdus      "alb"         "inverse base density"          "m3 kg-1"
+state    real   zx             ikj     dyn_em      1         X      -         " "  " "  " "    
+state    real   zy             ikj     dyn_em      1         Y      -         " "  " "  " "   
+state    real   rdz            ikj     dyn_em      1         Z      -         " "  " "  " "   
+state    real   rdzw           ikj     dyn_em      1         Z       -        " "  " "  " "   
+state    real   pb             ikj     dyn_em      1         -      rdus      "pb"          "BASE STATE PRESSURE "          "Pa"
+##
+## MARS: TO GET LIGHTER HISTORY FILES
+##
+state    real   ptot           ikj     dyn_em      1         -      irh       "PTOT"        "total pressure"      "Pa"
+####### if you choose h here, you will probably want not to output u,v,w,t,etc...
+state    real   uave           ikj     dyn_em      1         -      ir       "UAVE"        "average zonal wind"  "m/s"
+state    real   ustd           ikj     dyn_em      1         -      ir       "USTD"        "std dev zonal wind"  "m/s"
+state    real   vave           ikj     dyn_em      1         -      ir       "VAVE"        "average meridional wind"  "m/s"
+state    real   vstd           ikj     dyn_em      1         -      ir       "VSTD"        "std dev meridional wind"  "m/s"

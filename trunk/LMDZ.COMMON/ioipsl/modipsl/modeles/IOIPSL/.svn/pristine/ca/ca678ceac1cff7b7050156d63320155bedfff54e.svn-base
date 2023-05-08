@@ -1,0 +1,16 @@
+%COMPILER            mpif90 
+%LINK                mpif90 
+%FPP                 mpif90 -E
+%AR                  ar
+%MAKE                gmake
+%FPP_FLAGS           -P
+%FPP_DEF             KEY_NONE CPP_NETCDF4
+%BASE_FFLAGS         -i4 -r8 -auto -align all -I${MKLROOT}/include
+%PROD_FFLAGS         -g -traceback -O3 -vec-report2 -xAVX
+%DEV_FFLAGS          -g -O1 -traceback
+%DEBUG_FFLAGS        -g -traceback -check bounds -fp-model strict
+%MPI_FFLAGS
+%OMP_FFLAGS          -openmp -openmp-threadprivate=compat
+%BASE_LD             -i4 -r8 -auto $MKL_LIBS
+%MPI_LD
+%OMP_LD              -openmp -openmp-threadprivate=compat

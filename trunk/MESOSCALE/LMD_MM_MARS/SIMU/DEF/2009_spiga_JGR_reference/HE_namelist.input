@@ -1,0 +1,59 @@
+ &time_control
+ start_year       = 2025,
+ start_month      = 07, 
+ start_day        = 02,
+ start_hour       = 00
+ end_year         = 2025,
+ end_month        = 07,
+ end_day          = 03 !!15, 
+ end_hour         = 00, 
+ history_interval    = 1 !!74,   ! *100s : 74 is each 2 MH, 37 is each MH  
+ frames_per_outfile  = 12, 
+ restart          = .false.
+ restart_interval = 8880,
+ io_form_history  = 2
+ io_form_restart  = 2
+ io_form_input    = 2
+ io_form_boundary = 2
+ debug_level      = 0
+ interval_seconds = 7400     ! assim assim
+ /
+
+ &domains
+ time_step   = 18 
+ dx = 50000,
+ dy = 50000,
+ e_we   = 150,               ! IF YOU CHANGE THIS YOU MUST RECOMPILE THE PHYSICS
+ e_sn   = 150,               ! IF YOU CHANGE THIS YOU MUST RECOMPILE THE PHYSICS
+ e_vert = 31,                ! IF YOU CHANGE THIS YOU MUST RECOMPILE THE PHYSICS
+ p_top_requested = 2
+ max_dz = 2000
+ /
+
+ &physics
+ radt = 2,	! call each half hour with radt = 1850/dt
+ mars = 0,      ! IF YOU CHANGE THIS YOU MUST RECOMPILE THE PHYSICS (AND CHANGE CALLPHYS.DEF)
+ /
+
+ &fdda
+ /
+
+ &dynamics
+ pd_scalar = F   !! no water cycle (mars = 0)      
+ h_mom_adv_order  = 3      !! for better stability
+ h_sca_adv_order  = 3      !! for better stability 
+ /
+
+ &grib2
+ /
+
+ &bdy_control
+ /
+
+!! DO NOT MODIFY
+ &namelist_quilt
+ nio_tasks_per_group = 0,
+ nio_groups = 1,
+ /
+!! DO NOT MODIFY
+

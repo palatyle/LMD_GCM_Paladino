@@ -1,0 +1,7 @@
+mkdir save/share
+cp -rf share/module_date_time.F save/share
+cp -rf share/diff_module_model_constants save/share
+cp -rf share/module_model_constants.F* save/share
+cp -rf share/mediation_integrate.F save/share
+cp -rf share/diff_module_date_time save/share
+cp -rf share/diff_mediation_integrate save/share

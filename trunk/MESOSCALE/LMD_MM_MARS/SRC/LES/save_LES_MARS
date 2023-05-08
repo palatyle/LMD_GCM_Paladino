@@ -1,0 +1,13 @@
+#! /bin/bash
+####
+#### A. Spiga -- 2011 -- 
+####
+
+filesave=`date +LMD_LES_MARS_%Y_%m_%d.tar.gz`
+
+echo building backup $filesave
+cd ..
+tar czvf $filesave LMD_LES_MARS/modif_mars LMD_LES_MARS/LMD_LES_MARS_install LMD_LES_MARS/save_LES_MARS
+mv $filesave LMD_LES_MARS/
+cd LMD_LES_MARS/
+

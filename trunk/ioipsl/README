@@ -1,0 +1,19 @@
+Scripts in this directory are illustrative examples of how to
+obtain and install IOIPSL:
+1) install_ioipsl_gnome.bash: everything is set for Gnome, just run:
+./install_ioipsl_gnome.bash
+And output modules and library will be in subdirectory 'modipsl/lib'
+
+2) install_ioipsl_gfortran.bash and install_ioipsl_pgf90.bash are more
+general examples for installing IOIPSL on a machine with either compiler.
+Note that the paths to the NetCDF library hard coded in the scripts 
+will surely need to be adapted to your local settings.
+Then simply execute the script; output modules
+and library will be in subdirectory 'modipsl/lib'
+
+Note that it is a good idea to install IOIPSL outside of the LMDZ tree
+so that its version can be tracked (and potentialy updated), as it is
+downloaded from a different svn repository.
+
+
+

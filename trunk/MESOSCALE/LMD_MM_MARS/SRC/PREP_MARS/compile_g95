@@ -1,0 +1,21 @@
+#! /bin/bash
+
+\rm fix_no_info.inc 2> /dev/null
+\rm *.o 2> /dev/null
+touch fix_no_info.inc
+
+#pgf90 -byteswapio readmeteo.F90 \
+#g95 -fno-second-underscore -fendian=big readmeteo.F90 \
+g95 -fno-second-underscore readmeteo.F90 \
+-L$NETCDF/lib -lnetcdf \
+-I$NETCDF/include \
+-o readmeteo.exe
+
+#pgf90 create_readmeteo.F90 \
+g95 -fno-second-underscore create_readmeteo.F90 \
+-L$NETCDF/lib -lnetcdf \
+-I$NETCDF/include \
+-o create_readmeteo.exe
+
+\rm fix_no_info.inc 2> /dev/null
+\rm *.o 2> /dev/null

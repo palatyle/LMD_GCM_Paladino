@@ -1,0 +1,90 @@
+\chapter{Photochemical Module}
+
+\label{sc:photochem}
+
+The LMD GCM includes a photochemical module, which allows to compute 
+the atmospheric composition.
+
+\begin{itemize}
+
+\item 14 chemical species are included: CO$_2$ (background gas), CO, O, 
+O({\em $^1D$}), O$_2$, O$_3$, H, H$_2$, OH, HO$_2$, H$_2$O$_2$, N$_2$,
+Ar (inert) and H$_2$O.
+
+\item In {\tt callphys.def}, set tracer to true {\tt tracer=.true.}.
+Use the same options as shown below for the tracer part of {\tt callphys.def}.
+You need to set {\tt photochem=.true.}, 
+and to include the water cycle ({\tt water=.true.},
+{\tt sedimentation=.true.}; see Chapter~\ref{sc:water}), because 
+composition is extremely dependent on the water vapor abundance.
+%\input{input/photochem_list.tex}
+
+\item You will need the up-to-date file {\tt jmars.yyyymmdd} 
+(e.g. {\tt jmars.20140930}), which contains the photodissociation rates.
+It should be in the {\it datafile} directory in which are stored
+datafiles used by the GCM (the path to these files is set in file
+{\tt callphys.def}).
+
+\item {\bf Settings} \\ \\
+Compile as usual, what really matters are the options in {\tt callphys.def}
+and {\tt traceur.def}.
+You need at least 19 tracers:
+13 chemical species (co2, co, o, o(1d), o2, o3, h, h2, oh, ho2, h2o2, n2, ar)
+along with water vapor (h2o\_vap), water ice (h2o\_ice), related condensation
+nuclei moments (ccn\_mass and ccn\_number), and dust moments
+(dust\_mass and dust\_number).\\
+the {\tt traceur.def} file should thus be something like:
+\begin{verbatim}
+19
+co2
+co
+o
+o1d
+o2
+o3
+h
+h2
+oh
+ho2
+h2o2
+n2
+ar
+dust_mass
+dust_number
+h2o_vap
+h2o_ice
+ccn_mass
+ccn_number
+\end{verbatim}
+
+
+\item {\bf Run} \\ \\
+Same as usual. Just make sure that your start files contains the correct number
+of tracers. If you need to initialize the composition, you can run
+{\bf newstart} and use the options 
+\begin{description}
+\item - ini\_q: the 15 tracers are initialized, including water ice and vapor.
+\item - ini\_q-h2o: the 13 chemical species are initialized, water ice is put 
+to zero, and water vapor is kept untouched.
+\item - ini\_q-iceh2o: the 13 chemical species are initialized, water ice and 
+vapor are kept untouched.
+\end{description}
+The initialization is done with the files {\tt atmosfera\_LMD\_may.dat} and 
+{\tt atmosfera\_LMD\_min.dat}, which should also be found in the 
+{\it datafile} directory.
+
+\item {\bf Outputs} \\ \\
+The outputs can be done from the {\tt aeronomars/calchim.F} routine for the 14
+chemical species. The variables put in the {\tt diagfi.nc} and 
+{\tt stats.nc} files are
+labeled (where {\it name} is the name of the chemical species, e.g. co2):
+\begin{description}
+\item - n\_{\it name}: local density (in molecule cm$^{-3}$, 
+3-dimensional field)
+\item - c\_{\it name}: integrated column density (in molecule cm$^{-2}$, 
+2-dimensional field) 
+\end{description}
+
+\end{itemize}
+
+

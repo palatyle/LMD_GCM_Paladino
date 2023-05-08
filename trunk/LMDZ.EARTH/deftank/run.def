@@ -1,0 +1,47 @@
+# $Id: run.def 1403 2010-07-01 09:02:53Z fairhead $
+#
+## Fichier de configuration general
+## 
+INCLUDEDEF=physiq.def
+INCLUDEDEF=gcm.def
+INCLUDEDEF=orchidee.def
+INCLUDEDEF=output.def
+## Type de calendrier utilise
+## valeur possible: earth_360d (defaut), earth_365d, earth_366d
+calend=earth_360d
+## Jour de l'etat initial ( = 350  si 20 Decembre ,par expl. ,comme ici )
+dayref=1
+##  Annee de l'etat  initial (   avec  4  chiffres   )
+anneeref=1980
+## Nombre de jours d'integration
+nday=5
+## Remise a zero de la date initiale
+raz_date=0
+## periode de sortie des variables de controle (en pas)
+iconser=240
+## sorties instantanees dans la dynamique (fichiers dyn_hist.nc and co.)
+ok_dyn_ins=n
+## periode d'ecriture des sorties instantanees dans la dynamique
+## (en pas dynamiques)
+iecri=960
+## sorties de valeurs moyennes dans la dynamique (fichiers dyn_hist_ave.nc and co.)
+ok_dyn_ave=n
+## periode de stockage des moyennes dans la dynamique et dans dynzon
+periodav=30
+## flag de sortie dynzon
+ok_dynzon=n
+## activation du calcul d equilibrage de charge
+adjust=n
+## activation du filtre fft
+use_filtre_fft=n
+## niveau d'impression de controle
+prt_level=1
+##
+## Informations sur la configuration utilisee
+## 
+### type_ocean = force / slab  /couple
+type_ocean=force
+### version_ocean = nemo / opa8 
+version_ocean=nemo
+### VEGET= y si ORCHIDEE, =n si bucket
+VEGET=n

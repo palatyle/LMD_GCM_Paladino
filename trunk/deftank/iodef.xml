@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<simulation> 
+        
+        <context  id="xios">
+            <variable_definition>
+                <!-- set print_file to true to have XIOS write its
+                     outputs in separate files -->
+                <variable id="print_file" type="bool"> false </variable>
+                
+                <variable id="buffer_size_factor" type="double">4</variable>
+                <variable_group id="buffer">
+                buffer_size = 85000000
+                buffer_server_factor_size = 2 
+                </variable_group>
+
+                <variable_group id="parameters" >
+                    <!-- set using_server to true to run with XIOS
+                         in detached server/client mode -->
+                    <variable id="using_server" type="bool">false</variable>
+                    <!-- info_level is the verbosity level of XIOS
+                         0 for no messages; 100 for lots -->
+                    <variable id="info_level" type="int">100</variable>
+                </variable_group>
+            </variable_definition>
+        </context>
+        
+
+        <context id="LMDZ" src="./context_lmdz_physics.xml"/>
+
+
+</simulation>

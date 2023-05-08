@@ -1,0 +1,10 @@
+mkdir save/Registry
+cp -rf Registry/diff save/Registry
+cp -rf Registry/Registry.EM save/Registry
+cp -rf Registry/Registry.EMref save/Registry
+cp -rf Registry/Registry.EM_MARS* save/Registry
+cp -rf Registry/Registry.EM_dust save/Registry
+cp -rf Registry/Registry.EM_water save/Registry
+cp -rf Registry/Registry.bash save/Registry
+#cp -rf Registry/Registry.meso* save/Registry
+

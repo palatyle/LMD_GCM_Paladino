@@ -1,0 +1,62 @@
+Usage: pp.py [options]
+
+Options:
+  -h, --help            show this help message and exit
+  -f FILE, --file=FILE  [NEEDED] filename. Append: different figures. Comma-
+                        separated: same figure (+ possible --operation). Regex
+                        OK: use -f "foo*" DONT FORGET QUOTES "" !!!!
+  -t TGT, --target=TGT  destination folder
+  -S SAVE, --save=SAVE  save mode (gui,png,eps,svg,pdf,txt,html,avi) [gui]
+  -d, --display         do not pop up created images
+  -O OUT, --output=OUT  output file name
+  --rate=RATE           output is a movie along Time dimension [None]
+  --quality             For movie mode: improves movie quality.(slower)
+  -v VAR, --var=VAR     variable color-shaded
+  -w VAR2, --with=VAR2  variable contoured
+  -a, --anomaly         compute and plot relative anomaly in %
+  --mult=MULT           a multiplicative factor to plotted field
+  -m VMIN, --min=VMIN   bounding minimum value [min]
+  -M VMAX, --max=VMAX   bounding maximum value [max]
+  -H, --hole            holes above max and below min
+  --nolow               do not plot low |values| [False]
+  --redope=REDOPE       REDuce OPErators: mint,maxt for the moment [None]
+  -l LVL, --level=LVL   level / start,stop,step (-i 2: p,mb)(-i 3,4: z,km) [0]
+  -i ITP, --interp=ITP  interpolation (2: p, 3: z-amr, 4:z-als)
+  --intas=INTAS         specify "mcs" or "tes" for gcm P interpolation grid
+  -N, --no-api          do not recreate api file
+  -c CLB, --color=CLB   change colormap (nobar: no colorbar)
+  --div=NDIV            number of divisions in colorbar [10]
+  --title=ZETITLE       customize the whole title
+  -T, --tiled           draw a tiled plot (no blank zone)
+  --res=RES             resolution for png outputs. --save png needed. [200.]
+  --trans=TRANS         shaded plot transparency, 0 to 1 (=opaque) [1]
+  --area=AREA           area on the map to be plot [None]
+  -p PROJ, --proj=PROJ  projection
+  -b BACK, --back=BACK  background image [None]
+  -W, --winds           wind vectors [False]
+  -s STE, --stride=STE  stride vectors [3]
+  -z ZOOM, --zoom=ZOOM  zoom factor in %
+  --blat=BLAT           reference lat (or bounding lat for stere) [computed]
+  --blon=BLON           reference lon [computed]
+  --lat=SLAT            slices along lat. 2 comma-separated values: averaging
+  --lon=SLON            slices along lon. 2 comma-separated values: averaging
+  --vert=SVERT          slices along vert. 2 comma-separated values: averaging
+  --column              changes --vert z1,z2 from MEAN to INTEGRATE along z
+  --time=STIME          slices along time. 2 comma-separated values: averaging
+  --xmax=XMAX           max value for x-axis in contour-plots [max(xaxis)]
+  --ymax=YMAX           max value for y-axis in contour-plots [max(yaxis)]
+  --xmin=XMIN           min value for x-axis in contour-plots [min(xaxis)]
+  --ymin=YMIN           min value for y-axis in contour-plots [min(yaxis)]
+  --inverty             force decreasing values along y-axis (e.g. p-levels)
+  --logy                set y-axis to logarithmic
+  --axtime=AXTIME       choose "ls","sol","lt" for time ref (1D or --time)
+  --operation=OPERAT    operation to perform on input files given through -f.
+                        "+" or "-" acts on each input file by adding or
+                        substracting the ref file specified through --fref.
+                        "cat" acts on all input files in-a-row. "add_var"
+                        "sub_var" "mul_var" "div_var" acts on two variables.
+  --fref=FREF           reference namefile for the --operation option.
+  --mope=VMINOPE        bounding minimum value for inter-file operation
+  --Mope=VMAXOPE        bounding maximum value for inter-file operation
+  --titleref=TITREF     title for the reference file. [title of fig (1)]
+  --tsat                convert temperature field T in Tsat-T using pressure

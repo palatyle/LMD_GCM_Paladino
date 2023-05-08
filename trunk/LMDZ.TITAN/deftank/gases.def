@@ -1,0 +1,9 @@
+# gases
+10
+0.985
+0.015
+0.001
+
+# N2, CH4 and H2 ratio for reference level (index in first line)
+# Is used for cpp_mu calculations only
+# Vertical profile for CH4 is read in profile.def or given by chemistry

@@ -1,0 +1,20 @@
+# $Id: arch-X64_JEANZAY.fcm 3572 2019-10-01 15:26:00Z emillour $
+%COMPILER            mpif90
+%LINK                mpif90
+%AR                  ar
+%ARFLAGS             rs
+%MAKE                gmake
+%FPP_FLAGS           -P -traditional
+%CPP_FLAGS           -P
+%FPP_DEF             NC_DOUBLE LAPACK BLAS SGEMV=DGEMV SGEMM=DGEMM
+%BASE_FFLAGS         -i4 -r8
+%PROD_FFLAGS         -O2 -Munroll -Mnoframe -Mautoinline -Mcache_align
+%DEV_FFLAGS          -Mbounds
+%DEBUG_FFLAGS        -g -traceback -Mbounds -Mchkfpstk -Mchkstk -Ktrap=denorm,divz,fp,inv,ovf
+%C_COMPILER          mpicc
+%C_OPTIM             -O2
+%MPI_FFLAGS
+%OMP_FFLAGS          -mp
+%BASE_LD             -llapack -lblas
+%MPI_LD
+%OMP_LD              -mp

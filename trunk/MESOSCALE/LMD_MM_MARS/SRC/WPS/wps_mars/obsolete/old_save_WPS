@@ -1,0 +1,31 @@
+
+mkdir wps_mars
+cd wps_mars
+cp ../namelist.* .
+cp ../save_WPS .
+cp ../switch_WPS_Earth .
+cp ../switch_WPS_Mars .
+
+mkdir geogrid
+cd geogrid
+cp ../../geogrid/GEOGRID.TBL.ARW_Mars .
+cp ../../geogrid/GEOGRID.TBL.ARW_Earth .
+cp ../../geogrid/src/constants_module_Mars.f90 .
+cp ../../geogrid/src/constants_module_Earth.f90 .
+cp ../../geogrid/src/process_tile_module_Mars.F90 .
+cp ../../geogrid/src/process_tile_module_Earth.F90 .
+cd ..
+
+mkdir metgrid
+cd metgrid
+cp ../../metgrid/METGRID.TBL.ARW_Mars .
+cp ../../metgrid/METGRID.TBL.ARW_Earth .
+cp ../../metgrid/src/process_domain_module_Mars.F90 .
+cp ../../metgrid/src/process_domain_module_Earth.F90 .
+cp ../../metgrid/src/module_date_pack_Mars.f90 .
+cp ../../metgrid/src/module_date_pack_Earth.f90 .
+cd ..
+
+cd ..
+tar cvf wps_mars.tar wps_mars
+rm -rf wps_mars

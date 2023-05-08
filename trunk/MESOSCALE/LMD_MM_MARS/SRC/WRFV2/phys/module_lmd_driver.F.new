@@ -1,0 +1,829 @@
+!*******************************************************************************
+! PURPOSE: LMD_driver is the WRF mediation layer routine that provides the
+! interface to LMD physics packages in the WRF model layer. For those familiar
+! with the LMD GCM, the aim of this driver is to do part of the job of the
+! calfis.F routine.
+!*******************************************************************************
+! AUTHOR: A. Spiga - January 2007
+!*******************************************************************************
+! UPDATES:  - included all final updates for the paper - March 2008
+!           - general cleaning of code and comments - October 2008 
+!           - additions for idealized cases - January 2009
+!           - additions for new soil model in physics - January 2010 
+!           - unified module_lmd_driver: old, new phys and LES - February 2011
+!           - a new paradigm to prepare nested simulations - April 2014
+!           - adapted to new interface philosophy & other planets - August 2016
+!*******************************************************************************
+MODULE module_lmd_driver
+CONTAINS
+    SUBROUTINE lmd_driver(id,max_dom,DT,ITIMESTEP,XLAT,XLONG, &
+        IDS,IDE,JDS,JDE,KDS,KDE,IMS,IME,JMS,JME,KMS,KME, &
+        i_start,i_end,j_start,j_end,kts,kte,num_tiles, &
+        DX,DY, &
+        MSFT,MSFU,MSFV, &
+        GMT,JULYR,JULDAY, &
+        P8W,DZ8W,T8W,Z,HT, &
+        U,V,W,TH,T,P,EXNER,RHO, &
+        PTOP, &
+        RADT,CUDT, &
+        TSK,PSFC, &
+        RTHBLTEN,RUBLTEN,RVBLTEN, &
+        num_3d_s,SCALAR, &
+        num_3d_m,moist, &
+        MARS_MODE, &
+        planet_type, &
+        M_ALBEDO,M_TI,M_CO2ICE,M_EMISS, &
+        M_H2OICE,M_TSOIL,M_Q2,M_TSURF, &
+        M_FLUXRAD,M_WSTAR,M_ISOIL,M_DSOIL,&
+        M_Z0, CST_Z0, M_GW, &
+        NUM_SOIL_LAYERS, &
+        CST_AL, CST_TI, &
+        isfflx, diff_opt, km_opt, &
+        HISTORY_INTERVAL, &
+        HR_SW,HR_LW,HR_DYN,DDT,DT_RAD,DT_VDF,DT_AJS,&
+        CLOUDFRAC,TOTCLOUDFRAC, &
+        GRAIN,GSNOW,REEVAP,SURFRAIN,ALBEQ,FLUXTOP_DN,FLUXABS_SW,FLUXTOP_LW,FLUXSURF_SW,&
+        FLUXSURF_LW,FLXGRD,LSCEZ,H2OICE_REFF,LATENT_HF,SWDOWNZ,&
+        TAU_DUST,RDUST,QSURFDUST,&
+        MTOT,ICETOT,VMR_ICE,TAU_ICE,RICE,&
+        HFMAX,ZMAX,&
+        USTM,HFX,&
+        SLPX,SLPY,RESTART)
+! NB: module_lmd_driver_output1.inc : output arguments generated from Registry
+
+
+
+
+
+!==================================================================
+! USES
+!==================================================================
+   USE module_model_constants
+   USE module_wrf_error
+   !!!!!!!! interface modules
+   USE variables_mod !! to set variables
+   USE update_inputs_physiq_mod !! to set inputs for physiq
+   USE update_outputs_physiq_mod !! to get outputs from physiq
+   USE iniphysiq_mod !! to get iniphysiq subroutine
+   USE callphysiq_mod !! to call the LMD physics
+   !!!!!!!! interface modules
+
+!==================================================================
+  IMPLICIT NONE
+!==================================================================
+
+!==================================================================
+! VARIABLES
+!==================================================================
+
+CHARACTER(len=10),INTENT(IN) :: planet_type
+! WRF Dimensions
+INTEGER, INTENT(IN   )    ::   &
+      ids,ide,jds,jde,kds,kde, &
+      ims,ime,jms,jme,kms,kme, &
+            kts,kte,num_tiles, &
+              NUM_SOIL_LAYERS
+INTEGER, DIMENSION(num_tiles), INTENT(IN) ::  &
+      i_start,i_end,j_start,j_end   
+! Scalars
+INTEGER, INTENT(IN  ) :: JULDAY, itimestep, julyr,id,max_dom,MARS_MODE
+INTEGER, INTENT(IN  ) :: isfflx,diff_opt,km_opt
+REAL, INTENT(IN  ) :: GMT,dt,dx,dy,RADT,CUDT
+REAL, INTENT(IN  ) :: CST_AL, CST_TI 
+REAL, INTENT(IN  ) :: PTOP
+INTEGER, INTENT(IN   ) :: HISTORY_INTERVAL
+! 2D arrays          
+REAL, DIMENSION( ims:ime, jms:jme ), INTENT(INOUT)  :: &
+     MSFT,MSFU,MSFV, &
+     XLAT,XLONG,HT,  &
+     M_ALBEDO,M_TI,M_EMISS, &
+     SLPX,SLPY, &
+     M_CO2ICE,M_H2OICE, &
+     M_TSURF, M_Z0, &
+     M_FLUXRAD,M_WSTAR, &
+     PSFC,TSK
+REAL, DIMENSION( ims:ime, jms:jme ), INTENT(OUT) :: &
+     SWDOWNZ,&
+     TAU_DUST,QSURFDUST,&
+     MTOT,ICETOT,TAU_ICE,&
+     HFMAX,ZMAX,&
+     USTM,HFX,TOTCLOUDFRAC,ALBEQ,FLUXTOP_DN,FLUXABS_SW,FLUXTOP_LW,FLUXSURF_SW,&
+     FLUXSURF_LW,FLXGRD,LATENT_HF,REEVAP,SURFRAIN
+! 3D arrays 
+REAL, DIMENSION( ims:ime, kms:kme, jms:jme ), INTENT(IN ) :: &
+     dz8w,p8w,p,exner,t,t8w,rho,u,v,w,z,th
+REAL, DIMENSION( ims:ime, kms:kme, jms:jme ), INTENT(OUT ) :: &
+     RTHBLTEN,RUBLTEN,RVBLTEN, &
+     HR_SW,HR_LW,HR_DYN,DDT,DT_RAD,DT_VDF,DT_AJS,RDUST,VMR_ICE,RICE,&
+     CLOUDFRAC,GRAIN,GSNOW,LSCEZ,H2OICE_REFF
+REAL, DIMENSION( ims:ime, kms:kme+1, jms:jme ), INTENT(INOUT ) :: &
+     M_Q2
+REAL, DIMENSION( ims:ime, NUM_SOIL_LAYERS, jms:jme ), INTENT(INOUT )  :: &
+     M_TSOIL,M_ISOIL, M_DSOIL 
+REAL, INTENT(IN  ) :: CST_Z0
+REAL, DIMENSION( ims:ime, 5, jms:jme ), INTENT(IN   )  :: &
+     M_GW
+! 4D arrays
+INTEGER, INTENT(IN ) :: num_3d_s,num_3d_m
+REAL, DIMENSION( ims:ime, kms:kme, jms:jme, 1:num_3d_s ), INTENT(INOUT ) :: scalar
+REAL, DIMENSION( ims:ime, kms:kme, jms:jme, 1:num_3d_m ), INTENT(INOUT ) ::  moist
+! Logical
+LOGICAL, INTENT(IN ) :: restart
+
+!-------------------------------------------   
+! LOCAL  VARIABLES
+!-------------------------------------------
+   INTEGER ::    i,j,k,its,ite,jts,jte,ij,kk
+   INTEGER ::    subs,iii
+   
+
+   ! *** for tracer Mode 20 ***
+   REAL ::    tau_decay
+   ! *** ----------------------- ***
+
+   ! *** for LMD physics
+   ! ------> inputs:
+   INTEGER :: ngrid,nlayer,nq,nsoil 
+   REAL :: MY  
+   REAL :: phisfi_val
+   LOGICAL :: firstcall,lastcall
+   ! ----------	
+
+   ! <------ outputs:
+   !     physical tendencies
+   REAL*8,DIMENSION(:,:),ALLOCATABLE :: pdtheta
+   ! ... intermediate arrays
+   REAL, DIMENSION(:), ALLOCATABLE  :: &
+     dz8w_prof,p8w_prof,p_prof,t_prof,t8w_prof, &
+     u_prof,v_prof,z_prof
+   REAL, DIMENSION(:,:), ALLOCATABLE :: q_prof
+
+   ! Additional control variables
+   INTEGER :: sponge_top,relax,ips,ipe,jps,jpe,kps,kpe
+   REAL :: elaps
+   INTEGER :: test
+   REAL :: wappel_phys
+   LOGICAL, SAVE :: flag_first_restart
+   INTEGER, SAVE :: previous_id = 0
+!**************************************************
+! IMPORTANT: pour travailler avec grid nesting
+! --- deux comportements distincts du save
+! ... ex1: ferme planeto avec PGF+MPI: standard
+! ... ex2: iDataPlex avec IFORT+MPI: SPECIAL_NEST_SAVE 
+!**************************************************
+#ifdef SPECIAL_NEST_SAVE
+      !  une dimension supplementaire liee au nest
+      REAL, DIMENSION(:,:), ALLOCATABLE, SAVE :: &
+             dp_save
+      REAL, DIMENSION(:,:,:), ALLOCATABLE, SAVE :: &
+             du_save, dv_save, dt_save,dtheta_save
+      REAL, DIMENSION(:,:,:,:), ALLOCATABLE, SAVE :: &
+             dq_save      
+#else
+      REAL, DIMENSION(:), ALLOCATABLE, SAVE :: &
+             dp_save
+      REAL, DIMENSION(:,:), ALLOCATABLE, SAVE :: &
+             du_save, dv_save, dt_save,dtheta_save
+      REAL, DIMENSION(:,:,:), ALLOCATABLE, SAVE :: &
+             dq_save      
+#endif
+
+!!!IDEALIZED IDEALIZED
+      REAL :: lat_input, lon_input, ls_input, lct_input
+      LOGICAL :: isles
+!!!IDEALIZED IDEALIZED
+
+   REAL :: tk1,tk2
+
+!==================================================================
+! CODE
+!==================================================================
+
+print *, '** ',planet_type,'** ENTER WRF-LMD DRIVER'
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!! determine here if this is turbulence-resolving or not
+IF (JULYR .ne. 9999) THEN
+    isles = .false.  ! "True" LES is not available in this version
+    PRINT *, '*** REAL-CASE SIMULATION ***'
+ELSE
+     PRINT *, '*** IDEALIZED SIMULATION ***'
+     IF ((diff_opt .eq. 2) .and. (km_opt .eq. 2)) THEN
+          PRINT *, '*** type: LES ***'
+          PRINT *, '*** diff_opt = 2 *** km_opt = 2'
+          PRINT *, '*** forcing is isfflx = ',isfflx 
+          isles = .true.
+          !! SPECIAL LES
+     ELSE
+          PRINT *, '*** type: not LES ***'
+          PRINT *, '*** diff_opt = ',diff_opt
+          PRINT *, '*** km_opt = ',km_opt
+          isles = .false.
+          !! IDEALIZED, no LES
+          !! cependant, ne veut-on pas pouvoir
+          !! prescrire un flux en idealise ??
+     ENDIF
+ENDIF
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+!-------------------------!
+! TWEAK on WRF DIMENSIONS !
+!-------------------------!
+its = i_start(1)   ! define here one big tile
+ite = i_end(num_tiles)
+jts = j_start(1)
+jte = j_end(num_tiles)
+!!
+IF (isles .eqv. .false.) THEN
+ relax=0
+ sponge_top=0               ! another value than 0 triggers instabilities  
+ IF (id .gt. 1) relax=2     ! fix to avoid noise in nesting simulations ; 1 >> too much noise ...
+ENDIF
+ips=its
+ipe=ite
+jps=jts
+jpe=jte
+IF (isles .eqv. .false.) THEN
+ IF (ips .eq. ids)   ips=its+relax !! IF tests necesary for parallel runs
+ IF (ipe .eq. ide-1) ipe=ite-relax
+ IF (jps .eq. jds)   jps=jts+relax
+ IF (jpe .eq. jde-1) jpe=jte-relax
+ENDIF
+kps=kts         !! start at surface 
+IF (isles .eqv. .false.) THEN
+ kpe=kte-sponge_top
+ELSE
+ PRINT *, '*** IDEALIZED SIMULATION: LES *** kpe=kte'
+ kpe=kte !-sponge_top
+ENDIF
+
+!----------------------------!
+! DIMENSIONS FOR THE PHYSICS !
+!----------------------------!
+!day_ini = JULDAY - 1      !! GCM convention  !! pday at firstcall is day_ini
+wappel_phys = RADT
+zdt_split = dt*wappel_phys            ! physical timestep (s)
+ngrid=(ipe-ips+1)*(jpe-jps+1)         ! size of the horizontal grid
+nlayer = kpe-kps+1                    ! number of vertical layers: nlayermx
+nsoil = NUM_SOIL_LAYERS               ! number of soil layers: nsoilmx
+if (num_3d_s > 1) then                ! number of advected fields
+        nq = num_3d_s-1               
+else
+        nq = 1
+endif
+! **** needed but hardcoded
+lastcall = .false.
+! **** needed but hardcoded
+
+          !PRINT *, ips, ipe, jps, jpe
+          !PRINT *, ngrid
+
+elaps = (float(itimestep)-1.)*dt  ! elapsed seconds of simulation
+!----------------------------------------------!
+! what is done at the first step of simulation !
+!----------------------------------------------!
+IF (elaps .eq. 0.) THEN
+   flag_first_restart = .false.
+ELSE
+   flag_first_restart=flag_first_restart.OR.(.NOT. ALLOCATED(dp_save))
+ENDIF
+
+is_first_step: IF ((elaps .eq. 0.).or.flag_first_restart) THEN
+firstcall=.true.  !! for continuity with GCM, physics are always called at the first WRF timestep
+  !firstcall=.false. !! just in case you'd want to get rid of the physics 
+test=0
+#ifdef SPECIAL_NEST_SAVE
+PRINT *, 'ALLOCATED dp_save ???', ALLOCATED( dp_save ), id
+IF( .NOT. ALLOCATED( dp_save  ) ) THEN
+   PRINT *, '**** check **** OK I ALLOCATE one save ARRAY for all NESTS ', max_dom, id
+   !! here are the arrays that would be useful to save physics tendencies
+   ALLOCATE(dp_save(ngrid,max_dom))
+   ALLOCATE(du_save(ngrid,nlayer,max_dom))
+   ALLOCATE(dv_save(ngrid,nlayer,max_dom))
+   ALLOCATE(dt_save(ngrid,nlayer,max_dom))
+   ALLOCATE(dtheta_save(ngrid,nlayer,max_dom))
+   ALLOCATE(dq_save(ngrid,nlayer,nq,max_dom))
+   dp_save(:,:)=0.    !! initialize these arrays ...
+   du_save(:,:,:)=0.
+   dv_save(:,:,:)=0.
+   dt_save(:,:,:)=0.
+   dtheta_save(:,:,:)=0.
+   dq_save(:,:,:,:)=0.
+ENDIF
+IF (id .lt. max_dom) THEN
+   flag_first_restart=.true.
+ELSE
+   flag_first_restart=.false.
+ENDIF
+#else
+IF( .NOT. ALLOCATED( dp_save  ) ) THEN
+ALLOCATE(dp_save(ngrid)) !! here are the arrays that would be useful to save physics tendencies
+ALLOCATE(du_save(ngrid,nlayer))
+ALLOCATE(dv_save(ngrid,nlayer))
+ALLOCATE(dt_save(ngrid,nlayer))
+ALLOCATE(dtheta_save(ngrid,nlayer))
+ALLOCATE(dq_save(ngrid,nlayer,nq))
+ENDIF
+dp_save(:)=0.    !! initialize these arrays ...
+du_save(:,:)=0.
+dv_save(:,:)=0.
+dt_save(:,:)=0.
+dtheta_save(:,:)=0.
+dq_save(:,:,:)=0.
+flag_first_restart=.false.
+#endif
+ELSE
+!-------------------------------------------------!
+! what is done for the other steps of simulation  !
+!-------------------------------------------------!
+IF (wappel_phys .gt. 0.) THEN
+firstcall = .false.
+test = MODULO(itimestep-1,int(wappel_phys)) ! WRF time is integrated time (itimestep=1 at the end of first step) 
+                                            ! -- same strategy as diagfi in the LMD GCM 
+                                            ! -- arguments of modulo must be of the same kind (here: integers)
+ELSE
+firstcall = .false.
+test = 9999   
+ENDIF
+ENDIF is_first_step
+
+!------------------------------------!
+! print info about domain initially  !
+! ... and whenever domain is changed !
+!------------------------------------!
+print *,'** ',planet_type,' ** DOMAIN',id
+IF (previous_id .ne. id) THEN
+    print *, '** ',planet_type,' ** ... INITIALIZE DOMAIN',id
+    print *, '** ',planet_type,' ** ... PREVIOUS DOMAIN was',previous_id
+    print *, 'ITIMESTEP: ',itimestep
+    print *, 'TILES: ', i_start,i_end, j_start, j_end  ! numbers for simple runs, arrays for parallel runs
+    print *, 'DOMAIN: ', ids, ide, jds, jde
+    print *, 'MEMORY: ', ims, ime, jms, jme
+    print *, 'COMPUT: ', ips, ipe, jps, jpe
+    print *, 'SIZE OF PHYSICS GRID for this process: ',ngrid
+    print *, 'ADVECTED TRACERS: ', num_3d_s-1
+    print *, 'PHYSICS IS CALLED EACH...',wappel_phys
+    print *, '-- means: PHYSICAL TIMESTEP=',zdt_split
+ENDIF
+
+
+!!!***********!!
+!!! IDEALIZED !!
+!!!***********!!
+IF (JULYR .eq. 9999) THEN
+  PRINT *,'** ',planet_type,'** IDEALIZED SIMULATION'
+  PRINT *,'** ',planet_type,'** BEWARE: input_coord must be here'
+  open(unit=14,file='input_coord',form='formatted',status='old')
+  rewind(14)
+  read(14,*) lon_input
+  read(14,*) lat_input
+  read(14,*) ls_input
+  read(14,*) lct_input
+  close(14)
+ENDIF
+
+!----------!
+! ALLOCATE !
+!----------!
+CALL allocate_interface(ngrid,nlayer,nq)
+ALLOCATE(pdtheta(ngrid,nlayer))
+!!!
+!!! BIG LOOP : 1. no call for physics, used saved values
+!!!
+IF (test.NE.0) THEN
+print *,'** ',planet_type,'** NO CALL FOR PHYSICS, go to next step...',test
+#ifdef SPECIAL_NEST_SAVE
+zdpsrf_omp(:)=dp_save(:,id)
+zdufi_omp(:,:)=du_save(:,:,id)
+zdvfi_omp(:,:)=dv_save(:,:,id)
+zdtfi_omp(:,:)=dt_save(:,:,id)
+pdtheta(:,:)=dtheta_save(:,:,id)
+zdqfi_omp(:,:,:)=dq_save(:,:,:,id)
+#else
+print*,'else'
+zdpsrf_omp(:)=dp_save(:)
+zdufi_omp(:,:)=du_save(:,:)
+zdvfi_omp(:,:)=dv_save(:,:)
+zdtfi_omp(:,:)=dt_save(:,:)
+pdtheta(:,:)=dtheta_save(:,:)
+zdqfi_omp(:,:,:)=dq_save(:,:,:)
+#endif
+!!!
+!!! BIG LOOP : 2. calculate physical tendencies
+!!!
+ELSE
+!----------!
+! ALLOCATE !
+!----------!
+! interm
+ALLOCATE(dz8w_prof(nlayer))
+ALLOCATE(p8w_prof(nlayer))
+ALLOCATE(p_prof(nlayer))
+ALLOCATE(t_prof(nlayer))
+ALLOCATE(t8w_prof(nlayer))
+ALLOCATE(u_prof(nlayer))
+ALLOCATE(v_prof(nlayer))
+ALLOCATE(z_prof(nlayer))
+ALLOCATE(q_prof(nlayer,nq))
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!! PREPARE PHYSICS INPUTS !!  
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+!! INITIALIZE AND ALLOCATE EVERYTHING !! here, only firstcall
+allocation_firstcall: IF (firstcall .EQV. .true.) THEN
+  !! tracers' name
+  PRINT *,'** ',planet_type,'** TRACERS NAMES'
+  CALL update_inputs_physiq_tracers(nq,MARS_MODE)
+  !! PHYSICS VARIABLES (cf. iniphysiq in LMD GCM)
+  !! parameters are defined in the module_model_constants.F WRF routine
+  PRINT *,'** ',planet_type,'** INITIALIZE ARRAYS FOR PHYSICS'
+  !! need to get initial time first
+  CALL update_inputs_physiq_time(&
+            JULYR,JULDAY,GMT,&
+            elaps,&
+            lct_input,lon_input,ls_input,&
+            MY)
+  !! Set up initial time
+  phour_ini = JH_cur_split
+  !! Fill planetary parameters in modules
+  !! Values defined in the module_model_constants.F WRF routine
+  CALL update_inputs_physiq_constants
+  !! Initialize physics
+  CALL iniphysiq(ngrid,nlayer,nq,wappel_phys,&
+                     wdaysec,floor(JD_cur), &
+                     1./reradius,g,r_d,cp,1)
+                     
+                     
+ENDIF allocation_firstcall
+
+!!*****************************!!
+!! PREPARE "FOOD" FOR PHYSIQ.F !!
+!!*****************************!!
+
+DO j = jps,jpe
+DO i = ips,ipe
+
+!!*******************************************!!
+!! FROM 3D WRF FIELDS TO 1D PHYSICS PROFILES !!
+!!*******************************************!!
+
+!-----------------------------------!
+! 1D subscript for physics "cursor" !
+!-----------------------------------!
+subs = (j-jps)*(ipe-ips+1)+(i-ips+1)
+  
+!--------------------------------------!
+! 1D columns : inputs for the physics  !
+! ... vert. coord., meteor. fields ... !
+!--------------------------------------!
+dz8w_prof(:) = dz8w(i,kps:kpe,j)   ! dz between full levels (m)   
+p8w_prof(:) = p8w(i,kps:kpe,j)     ! pressure full level (Pa) >> zplev_omp
+p_prof(:) = p(i,kps:kpe,j)         ! pressure half level (Pa) >> zplay_omp
+t_prof(:) = t(i,kps:kpe,j)         ! temperature half level (K) >> pt
+t8w_prof(:) = t8w(i,kps:kpe,j)     ! temperature full level (K)
+u_prof(:) = u(i,kps:kpe,j)         ! zonal wind (A-grid: unstaggered) half level (m/s) >> zufi_omp  
+v_prof(:) = v(i,kps:kpe,j)         ! meridional wind (A-grid: unstaggered) half level (m/s) >> pv
+z_prof(:) = z(i,kps:kpe,j)         ! geopotential height half level (m) >> zphi_omp/g
+
+!--------------------------------!
+! specific treatment for tracers !
+!--------------------------------!
+IF (MARS_MODE .EQ. 0) THEN
+    q_prof(:,1)=0.95
+ELSE IF (MARS_MODE .EQ. 42) THEN
+    q_prof(:,1) = moist(i,kps:kpe,j,P_QV) !! the names were set above !! one dummy tracer in WRF
+    q_prof(:,2) = SCALAR(i,kps:kpe,j,3) !! the names were set above !! one dummy tracer in WRF  
+ELSE
+    q_prof(:,1:nq) = SCALAR(i,kps:kpe,j,2:nq+1)  !! the names were set above !! one dummy tracer in WRF
+ENDIF
+
+IF (MARS_MODE .EQ. 20) THEN
+  IF (firstcall .EQV. .true. .and. (.not. restart)) THEN
+      q_prof(:,:) = 0.95
+  ENDIF
+ENDIF
+
+IF (MARS_MODE .EQ. 32) THEN
+  IF (firstcall .EQV. .true. .and. (.not. restart)) THEN
+      q_prof(:,7) = 0.95
+!! traceurs(7)   = 'co2'
+  ENDIF
+ENDIF
+
+IF (firstcall .EQV. .true.) THEN
+  !-----------------!
+  ! Optional output !
+  !-----------------!
+  IF ( (i == ips) .AND. (j == jps) ) THEN
+  PRINT *,'z_prof ',z_prof
+  PRINT *,'dz8w_prof',dz8w_prof
+  PRINT *,'p8w_prof ',p8w_prof
+  PRINT *,'p_prof ',p_prof
+  PRINT *,'t_prof ',t_prof
+  PRINT *,'t8w_prof ',t8w_prof
+  PRINT *,'u_prof ',u_prof
+  PRINT *,'v_prof ',v_prof
+  PRINT *,'q_prof ',q_prof
+  ENDIF
+ENDIF
+
+!---------------------------------------------!
+! in LMD physics, geopotential must be        !
+! expressed with respect to the local surface !
+!---------------------------------------------!
+zphi_omp(subs,:) = g*( z_prof(:)-(z_prof(1)-dz8w_prof(1)/2.) )
+
+!--------------------------------!
+! Dynamic fields for LMD physics !
+!--------------------------------!
+zplev_omp(subs,1:nlayer) = p8w_prof(1:nlayer)  !! NB: last level: no data
+zplay_omp(subs,:) = p_prof(:)
+ztfi_omp(subs,:) = t_prof(:)
+zufi_omp(subs,:) = u_prof(:)
+zvfi_omp(subs,:) = v_prof(:)
+flxwfi_omp(subs,:) = 0   !! NB: not used in the physics, only diagnostic...
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!! for IDEALIZED CASES ONLY
+IF (JULYR .eq. 9999) zplev_omp(subs,nlayer+1)=0.  !! zplev_omp(subs,nlayer+1)=ptop >> NO !
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+! NOTE:
+! IF ( zplev_omp(subs,nlayer+1) .le. 0 ) zplev_omp(subs,nlayer+1)=ptop
+! cree des diagnostics delirants et aleatoires dans le transfert radiatif 
+
+!---------!
+! Tracers !  
+!---------!
+zqfi_omp(subs,:,:) = q_prof(:,:)  !! traceurs generiques, seuls noms sont specifiques
+
+ENDDO
+ENDDO
+
+!---------------------------------------------------------!
+! Ground geopotential                                     !
+! (=g*HT(i,j), only used in the microphysics: newcondens) !
+!---------------------------------------------------------! 
+phisfi_val=g*(z_prof(1)-dz8w_prof(1)/2.)   !! NB: z_prof are half levels, so z_prof(1) is not the surface
+
+!!*****************!!
+!! CLEAN THE PLACE !!
+!!*****************!!
+DEALLOCATE(dz8w_prof)
+DEALLOCATE(z_prof)
+DEALLOCATE(p8w_prof)
+DEALLOCATE(p_prof)
+DEALLOCATE(t_prof)
+DEALLOCATE(t8w_prof)
+DEALLOCATE(u_prof)
+DEALLOCATE(v_prof)
+DEALLOCATE(q_prof)
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!! ONE DOMAIN CASE
+!!! --> we simply need to initialize static and physics inputs
+!!! SEVERAL DOMAINS
+!!! --> we update static and physics inputs each time
+!!!     to account for domain change 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+pass_interface: IF ( (firstcall .EQV. .true.) .or. (max_dom .GT. 1) ) THEN
+PRINT *,'** ',planet_type,'** PASS INTERFACE. EITHER FIRSTCALL or NESTED SIMULATION.'
+!!*******************************************!!
+!!*******************************************!!
+CALL update_inputs_physiq_geom( &
+            ims,ime,jms,jme,&
+            ips,ipe,jps,jpe,&
+            JULYR,ngrid,nlayer,&
+            DX,DY,MSFT,&
+            lat_input, lon_input,&
+            XLAT,XLONG)
+!!!
+CALL update_inputs_physiq_slope( &
+            ims,ime,jms,jme,&
+            ips,ipe,jps,jpe,&
+            JULYR,&
+            SLPX,SLPY)
+!!!
+CALL update_inputs_physiq_soil( &
+            ims,ime,jms,jme,&
+            ips,ipe,jps,jpe,&
+            JULYR,nsoil,&
+            M_TI,CST_TI,&
+            M_ISOIL,M_DSOIL,&
+            M_TSOIL,M_TSURF)
+!!!
+CALL update_inputs_physiq_surf( &
+            ims,ime,jms,jme,&
+            ips,ipe,jps,jpe,&
+            JULYR,MARS_MODE,&
+            M_ALBEDO,CST_AL,&
+            M_TSURF,M_EMISS,M_CO2ICE,&
+            M_GW,M_Z0,CST_Z0,&
+            M_H2OICE,&
+            phisfi_val)
+!!!
+CALL update_inputs_physiq_turb( &
+            ims,ime,jms,jme,kms,kme,&
+            ips,ipe,jps,jpe,&
+            RESTART,isles,&
+            M_Q2,M_WSTAR)
+!!!
+CALL update_inputs_physiq_rad( &
+            ims,ime,jms,jme,&
+            ips,ipe,jps,jpe,&
+            RESTART,&
+            M_FLUXRAD)
+!!!
+ENDIF pass_interface
+!!*******************************************!!
+!!*******************************************!!
+
+!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!
+!! CALL LMD PHYSICS !!  
+!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!
+
+call_physics : IF (wappel_phys .ne. 0.) THEN
+!!! initialize tendencies (security)
+zdpsrf_omp(:)=0.
+zdufi_omp(:,:)=0.
+zdvfi_omp(:,:)=0.
+zdtfi_omp(:,:)=0.
+pdtheta(:,:)=0.
+zdqfi_omp(:,:,:)=0.
+print *, '** ',planet_type,'** CALL TO LMD PHYSICS'
+!!!
+CALL update_inputs_physiq_time(&
+            JULYR,JULDAY,GMT,&
+            elaps,&
+            lct_input,lon_input,ls_input,&
+            MY)
+!!!
+CALL call_physiq(planet_type,ngrid,nlayer,nq,       &
+                       firstcall,lastcall)
+!!!
+
+!! specific scenario. necessary to add the right amount of dust.
+#ifdef DUSTSTORM
+IF (firstcall .EQV. .true.) THEN
+  zdqfi_omp(:,:,:) = zdqfi_omp(:,:,:) / dt
+ENDIF
+#endif
+
+IF (planet_type .eq. "venus" ) THEN
+  DO j=jps,jpe
+  DO i=ips,ipe
+    do k=kps,kpe
+      subs=(j-jps)*(ipe-ips+1)+(i-ips+1)
+      tk1=(ztfi_omp(subs,k)**nu + nu*TT00**nu*log((p1000mb/zplay_omp(subs,k))**rcp))**(1/nu)
+      tk2=((ztfi_omp(subs,k) + zdtfi_omp(subs,k))**nu + nu*TT00**nu*log((p1000mb/zplay_omp(subs,k))**rcp))**(1/nu)
+      pdtheta(subs,k)=tk2-tk1
+    enddo
+  ENDDO
+  ENDDO
+ENDIF
+
+print *, '** ',planet_type,'** CALL TO LMD PHYSICS DONE'
+
+!---------------------------------------------------------------------------------!
+! PHYSIQ TENDENCIES ARE SAVED TO BE SPLIT WITHIN INTERMEDIATE DYNAMICAL TIMESTEPS !
+!---------------------------------------------------------------------------------!
+#ifdef SPECIAL_NEST_SAVE
+dp_save(:,id)=zdpsrf_omp(:)
+du_save(:,:,id)=zdufi_omp(:,:)
+dv_save(:,:,id)=zdvfi_omp(:,:)
+dt_save(:,:,id)=zdtfi_omp(:,:)
+dtheta_save(:,:,id)=pdtheta(:,:)
+dq_save(:,:,:,id)=zdqfi_omp(:,:,:)
+#else
+dp_save(:)=zdpsrf_omp(:)
+du_save(:,:)=zdufi_omp(:,:)
+dv_save(:,:)=zdvfi_omp(:,:)
+dt_save(:,:)=zdtfi_omp(:,:)
+dtheta_save(:,:)=pdtheta(:,:)
+dq_save(:,:,:)=zdqfi_omp(:,:,:)
+#endif
+
+!! OUTPUT OUTPUT OUTPUT
+!-------------------------------------------------------!
+! Save key variables for restart and output and nesting !  
+!-------------------------------------------------------!
+!!!
+CALL update_outputs_physiq_surf( &
+            ims,ime,jms,jme,&
+            ips,ipe,jps,jpe,&
+            MARS_MODE,&
+            M_TSURF,M_CO2ICE,&
+            M_H2OICE)
+!!!
+CALL update_outputs_physiq_soil( &
+            ims,ime,jms,jme,&
+            ips,ipe,jps,jpe,&
+            nsoil,&
+            M_TSOIL)
+!!!
+CALL update_outputs_physiq_rad( &
+            ims,ime,jms,jme,&
+            ips,ipe,jps,jpe,&
+            M_FLUXRAD)
+!!!
+CALL update_outputs_physiq_turb( &
+            ims,ime,jms,jme,kms,kme,&
+            ips,ipe,jps,jpe,kps,kpe,&
+            M_Q2,M_WSTAR,&
+            HFMAX,ZMAX,USTM,HFX)
+!!!
+CALL update_outputs_physiq_diag( &
+            ims,ime,jms,jme,kms,kme,&
+            ips,ipe,jps,jpe,kps,kpe,&
+            SWDOWNZ,TAU_DUST,QSURFDUST,&
+            MTOT,ICETOT,TAU_ICE,&
+            HR_SW,HR_LW,HR_DYN,DDT,DT_RAD,&
+            RDUST,VMR_ICE,RICE,&
+            CLOUDFRAC,TOTCLOUDFRAC,&
+            GRAIN,GSNOW,REEVAP,SURFRAIN,&
+            ALBEQ,FLUXTOP_DN,FLUXABS_SW,FLUXTOP_LW,FLUXSURF_SW,&
+            FLUXSURF_LW,FLXGRD,LSCEZ,H2OICE_REFF,LATENT_HF)
+!!!
+print *, '** ',planet_type,'** OUTPUT PHYSICS DONE'
+
+ENDIF call_physics
+
+ENDIF    ! end of BIG LOOP 2.
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+!!***************************!!
+!! DEDUCE TENDENCIES FOR WRF !!
+!!***************************!!
+RTHBLTEN(ims:ime,kms:kme,jms:jme)=0.
+RUBLTEN(ims:ime,kms:kme,jms:jme)=0.
+RVBLTEN(ims:ime,kms:kme,jms:jme)=0.
+PSFC(ims:ime,jms:jme)=p8w(ims:ime,kms,jms:jme) ! was done in surface driver in regular WRF 
+!------------------------------------------------------------------!
+! WRF adds the physical and dynamical tendencies                   !
+! thus the tendencies must be passed as 'per second' tendencies    !
+! --when physics is not called, the applied physical tendency      !
+! --is the one calculated during the last call to physics          !
+!------------------------------------------------------------------!
+!print*,'pdt',pdt(1,1),pdt(1,nlayer)
+!print*,'exner',exner(1,:,1)
+DO j = jps,jpe
+DO i = ips,ipe
+
+  subs = (j-jps)*(ipe-ips+1)+(i-ips+1)
+
+    ! zonal wind
+  RUBLTEN(i,kps:kpe,j) = zdufi_omp(subs,kps:kpe) 
+    ! meridional wind
+  RVBLTEN(i,kps:kpe,j) = zdvfi_omp(subs,kps:kpe) 
+    ! potential temperature
+    ! (dT = dtheta * exner for isobaric coordinates or if pressure variations are negligible)
+  IF (planet_type .eq. "venus" ) THEN
+    RTHBLTEN(i,kps:kpe,j) = pdtheta(subs,kps:kpe)
+  ELSE
+    RTHBLTEN(i,kps:kpe,j) = zdtfi_omp(subs,kps:kpe) / exner(i,kps:kpe,j)
+  ENDIF
+    ! update surface pressure (cf CO2 cycle in physics)
+    ! here dt is needed
+  PSFC(i,j)=PSFC(i,j)+zdpsrf_omp(subs)*dt 
+    ! tracers
+  SCALAR(i,kps:kpe,j,1)=0.
+  SELECT CASE (MARS_MODE)
+    CASE(0)
+      SCALAR(i,kps:kpe,j,:)=0.
+    CASE(20)
+      !! tracer mode 20 : add a passive tracer with radioactive-like decay
+      IF ( (i == ips) .AND. (j == jps) )   print *, 'RADIOACTIVE-LIKE TRACER WITH SOURCE AT SURFACE LAYER.'
+      tau_decay=60.*10. !! why not make it a namelist argument?
+      SCALAR(i,kps:kpe,j,2) = SCALAR(i,kps:kpe,j,2)*exp(-dt/tau_decay)
+      SCALAR(i,1,j,2) = SCALAR(i,1,j,2) + 1. !! this tracer is emitted in the surface layer
+    CASE(42)
+      moist(i,kps:kpe,j,P_QV)=moist(i,kps:kpe,j,P_QV)+zdqfi_omp(subs,kps:kpe,1)*dt  !!! here dt is needed
+      scalar(i,kps:kpe,j,3)=scalar(i,kps:kpe,j,3)+zdqfi_omp(subs,kps:kpe,2)*dt  !!! here dt is needed
+    CASE DEFAULT
+      SCALAR(i,kps:kpe,j,2:nq+1)=SCALAR(i,kps:kpe,j,2:nq+1)+zdqfi_omp(subs,kps:kpe,1:nq)*dt !!! here dt is needed
+  END SELECT
+
+ENDDO
+ENDDO
+CALL deallocate_interface
+DEALLOCATE(pdtheta)
+!!*****!!
+!! END !!
+!!*****!!
+print *,'** ',planet_type,'** END LMD PHYSICS'
+previous_id = id
+!----------------------------------------------------------------!
+! use debug (see solve_em) if you wanna display some message ... !
+!----------------------------------------------------------------!
+END SUBROUTINE lmd_driver
+
+END MODULE module_lmd_driver

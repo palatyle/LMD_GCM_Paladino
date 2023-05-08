@@ -1,0 +1,77 @@
+\documentclass[a4paper,10pt]{article}
+%\usepackage{graphicx}
+\usepackage{natbib}  % si appel à bibtex
+%\usepackage[francais]{babel}
+%\usepackage[latin1]{inputenc}  % accents directs (é...), avec babel
+%\usepackage{rotating}
+
+\setlength{\hoffset}{-1.in}
+\setlength{\oddsidemargin}{3.cm}
+\setlength{\textwidth}{15.cm}
+\setlength{\marginparsep}{0.mm}
+\setlength{\marginparwidth}{0.mm}
+
+\setlength{\voffset}{-1.in}
+\setlength{\topmargin}{0.mm}
+\setlength{\headheight}{0.mm}
+\setlength{\headsep}{30.mm}
+\setlength{\textheight}{24.cm}
+\setlength{\footskip}{1.cm}
+
+\setlength{\parindent}{0.mm}
+\setlength{\parskip}{1 em}
+\newcommand{\ten}[1]{$\times 10^{#1}$~} 
+\renewcommand{\baselinestretch}{1.}
+
+\begin{document}
+\pagestyle{plain}
+
+\begin{center}
+{\bf \LARGE 
+Documentation for LMDZ, Planets version
+
+\vspace{1cm}
+\Large
+Running the GCM in parallel using MPI
+-- Venus
+}
+
+\vspace{1cm}
+S\'ebastien Lebonnois
+
+\vspace{1cm}
+Latest version: \today
+\end{center}
+
+
+\section{Compilation}
+
+To compile the GCM for parallel runs using MPI, you need to find the MPI compilor (\textsf{mpif90}) you want to use on your machine. With that knowledge, you can build you own \textsf{arch-$<$your\_architecture$>$.fcm} file in the \textsf{LMDZ.COMMON/arch/} directory. 
+You can find inspiration, for example, on the \textsf{arch-GNOMEp.fcm} (for the {\em gnome} computation server of UPMC), which uses \textsf{ifort}. 
+For the LMD local computation machines (e.g. {\em levan}), you can use \textsf{arch-linux-64bit-para.fcm}.
+
+You also need to have \textsf{netcdf} and \textsf{ioipsl} compiled using the same compilor and main options. The paths to these libraries (and includes) must be written in the \textsf{arch-$<$your\_architecture$>$.path} file.
+
+An example of command line to compile the Venus GCM using \textsf{makelmdz} is then:
+
+\textsf{makelmdz -arch $<$your\_architecture$>$ -parallel mpi -d $<$nlon$>$x$<$nlat$>$x$<$nlev$>$ -p venus gcm}
+
+\section{Run}
+ 
+To run the simulation, you have to use the \textsf{mpirun} launcher corresponding to your \textsf{mpif90} compilor.
+
+The command line is:
+
+\textsf{mpirun -n $<$number\_of\_procs$>$ gcm.e}
+
+\section{Outputs}
+
+Each of the processors used during the run will write its own portion of the \textsf{hist$<$mth/day/ins$>$.nc} files. To gather these portions back into one single file, there is a tool located in the ioipsl directory that you built from the SVN instructions. 
+
+This tool is called \textsf{rebuild} and is found in the \textsf{ioipsl/modipsl/bin/} directory. 
+
+To use it, the command line is:
+
+\textsf{rebuild -f -o $<$name\_of\_final\_file$>$.nc hist$<$mth/day/ins$>$\_*.nc}
+
+\end{document}

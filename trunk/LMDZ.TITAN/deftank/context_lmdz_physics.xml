@@ -1,0 +1,783 @@
+<context id="LMDZ">
+
+    <!-- Definition of a calendar is done in code via wxios_set_cal -->
+    
+    <!-- Definition of domains and groups of domains -->
+    <domain_definition>
+        <domain id="dom_glo" data_dim="2" />
+    </domain_definition>
+        
+    <!-- Definition of vertical axes 
+         NB: these must be defined and set in code via
+         xios_set_axis -->
+    <axis_definition>
+        <axis id="presnivs" 
+              standard_name="Pseudo-pressure of model vertical levels" 
+              unit="Pa">
+        </axis>
+        <axis id="altitude" 
+              standard_name="Pseudo-altitude of model vertical levels" 
+              unit="km">
+        </axis>
+        <axis id="preskim" 
+              standard_name="Pseudo-pressure of upper atmosphere vertical levels" 
+              unit="Pa">
+        </axis>
+        <axis id="preskim_tot" 
+              standard_name="Pseudo-pressure of total (model+upper) vertical levels" 
+              unit="Pa">
+        </axis>
+    </axis_definition>
+    
+    <grid_definition>
+        <!-- toggle axis id below to change output vertical axis -->
+        <grid id="grid_3d">
+            <domain id="dom_glo" />
+                <axis id="presnivs" />
+                <!-- <axis id="altitude" /> -->
+        </grid>
+        <!-- to output upper atmosphere chemistry fields -->
+        <grid id="grid_3d_up">
+            <domain id="dom_glo" />
+                <axis id="preskim" />
+        </grid>
+        <!-- to output total atmosphere chemistry fields -->
+        <grid id="grid_3d_tot">
+            <domain id="dom_glo" />
+                <axis id="preskim_tot" />
+        </grid>
+        <!-- to output scalars -->
+        <grid id="scalarpoint" >
+            <scalar />
+        </grid>
+    </grid_definition>
+    
+    <!-- Definition of model variables -->
+    <field_definition prec="4" 
+                      freq_op="1ts"
+                      enabled=".TRUE.">
+        
+        <!-- 0D variables -->
+        <field_group id="fields_0D" grid_ref="scalarpoint">
+            <field id="ls"
+                   long_name="Solar longitude"
+                   unit="degrees" />
+            <field id="lss"
+                   long_name="Sub solar longitude"
+                   unit="degrees" />
+            <field id="RA"
+                   long_name="Right ascension"
+                   unit="degrees" />
+            <field id="Declin"
+                   long_name="Solar declination"
+                   unit="degrees" />
+        </field_group>
+        
+        <!-- 2D variables -->
+        <field_group id="fields_2D" domain_ref="dom_glo">
+            <field id="area"
+                   long_name="Mesh area"
+                   unit="m2" />
+            <field id="tsurf"
+                   long_name="Surface Temperature" 
+                   unit="K" />
+            <field id="ps"
+                   long_name="Surface Pressure" 
+                   unit="Pa" />
+            <field id="pphis"
+                   long_name="Surface Geopotential" 
+                   unit="m2/s2" />
+            <field id="sensibFlux"
+                   long_name="Sensible Heat Flux" 
+                   unit="W/m2" />
+            <field id="evapCH4"
+                   long_name="Surface CH4 pseudo-evaporation rate" 
+                   unit="mol/mol/s" />
+            <field id="ISR_TOA"
+                   long_name="Incoming Solar Radiation at TOA" 
+                   unit="W/m2" />
+            <field id="OLR_TOA"
+                   long_name="Outgoing Longwave Radiation at TOA" 
+                   unit="W/m2" />
+        </field_group>
+
+        <!-- 3D variables -->
+        <field_group id="fields_3D" grid_ref="grid_3d">
+            <field id="temp"
+                   long_name="Atmospheric temperature"
+                   unit="K" />
+            <field id="teta"
+                   long_name="Potential temperature"
+                   unit="K" />
+            <field id="p"
+                   long_name="Atmospheric pressure" 
+                   unit="Pa" />
+            <field id="pphi"
+                   long_name="Geopotential (gz)" 
+                   unit="m2/s2" />
+            <field id="u"
+                   long_name="Eastward Zonal Wind"
+                   unit="m/s" />
+            <field id="v" 
+                   long_name="Northward Meridional Wind" 
+                   unit="m/s" />
+            <field id="w"
+                   long_name="Vertical wind" 
+                   unit="Pa/s" />
+            <field id="dudif"
+                   long_name="Turbdiff du" 
+                   unit="m/s2" />
+            <field id="dudyn"
+                   long_name="Dynamics du" 
+                   unit="m/s2" />
+            <field id="dtdyn"
+                   long_name="Dynamics dT" 
+                   unit="K/s" />
+            <field id="dtsw"
+                   long_name="SW radiation dT" 
+                   unit="K/s" />
+            <field id="dtlw"
+                   long_name="LW radiation dT" 
+                   unit="K/s" />
+            <field id="dtrad"
+                   long_name="Radiative dT" 
+                   unit="K/s" />
+            <!-- Microphysical moments -->
+            <field id="mu_m0as"
+                   long_name="Spherical mode 0th order moment" 
+                   unit="m-3" />
+            <field id="mu_m3as"
+                   long_name="Spherical mode 3rd order moment" 
+                   unit="m3/m3" />
+            <field id="mu_m0af"
+                   long_name="Fractal mode 0th order moment" 
+                   unit="m-3" />
+            <field id="mu_m3af"
+                   long_name="Fractal mode 3rd order moment" 
+                   unit="m3/m3" />
+            <!-- Chemical species -->
+            <field id="H"
+                   long_name="H" 
+                   unit="mol/mol" />
+            <field id="H2"
+                   long_name="H2" 
+                   unit="mol/mol" />
+            <field id="CH"
+                   long_name="CH" 
+                   unit="mol/mol" />
+            <field id="CH2s"
+                   long_name="CH2s" 
+                   unit="mol/mol" />
+            <field id="CH2"
+                   long_name="CH2" 
+                   unit="mol/mol" />
+            <field id="CH3"
+                   long_name="CH3" 
+                   unit="mol/mol" />
+            <field id="CH4"
+                   long_name="CH4" 
+                   unit="mol/mol" />
+            <field id="C2"
+                   long_name="C2" 
+                   unit="mol/mol" />
+            <field id="C2H"
+                   long_name="C2H" 
+                   unit="mol/mol" />
+            <field id="C2H2"
+                   long_name="C2H2" 
+                   unit="mol/mol" />
+            <field id="C2H3"
+                   long_name="C2H3" 
+                   unit="mol/mol" />
+            <field id="C2H4"
+                   long_name="C2H4" 
+                   unit="mol/mol" />
+            <field id="C2H5"
+                   long_name="C2H5" 
+                   unit="mol/mol" />
+            <field id="C2H6"
+                   long_name="C2H6" 
+                   unit="mol/mol" />
+            <field id="C3H3"
+                   long_name="C3H3" 
+                   unit="mol/mol" />
+            <field id="C3H5"
+                   long_name="C3H5" 
+                   unit="mol/mol" />
+            <field id="C3H6"
+                   long_name="C3H6" 
+                   unit="mol/mol" />
+            <field id="C3H7"
+                   long_name="C3H7" 
+                   unit="mol/mol" />
+            <field id="C4H"
+                   long_name="C4H" 
+                   unit="mol/mol" />
+            <field id="C4H3"
+                   long_name="C4H3" 
+                   unit="mol/mol" />
+            <field id="C4H4"
+                   long_name="C4H4" 
+                   unit="mol/mol" />
+            <field id="C4H2s"
+                   long_name="C4H2s" 
+                   unit="mol/mol" />
+            <field id="CH2CCH2"
+                   long_name="CH2CCH2" 
+                   unit="mol/mol" />
+            <field id="CH3CCH"
+                   long_name="CH3CCH" 
+                   unit="mol/mol" />
+            <field id="C3H8"
+                   long_name="C3H8" 
+                   unit="mol/mol" />
+            <field id="C4H2"
+                   long_name="C4H2" 
+                   unit="mol/mol" />
+            <field id="C4H6"
+                   long_name="C4H6" 
+                   unit="mol/mol" />
+            <field id="C4H10"
+                   long_name="C4H10" 
+                   unit="mol/mol" />
+            <field id="AC6H6"
+                   long_name="AC6H6" 
+                   unit="mol/mol" />
+            <field id="C3H2"
+                   long_name="C3H2" 
+                   unit="mol/mol" />
+            <field id="C4H5"
+                   long_name="C4H5" 
+                   unit="mol/mol" />
+            <field id="AC6H5"
+                   long_name="AC6H5" 
+                   unit="mol/mol" />
+            <field id="N2"
+                   long_name="N2" 
+                   unit="mol/mol" />
+            <field id="N4S"
+                   long_name="N4S" 
+                   unit="mol/mol" />
+            <field id="CN"
+                   long_name="CN" 
+                   unit="mol/mol" />
+            <field id="HCN"
+                   long_name="HCN" 
+                   unit="mol/mol" />
+            <field id="H2CN"
+                   long_name="H2CN" 
+                   unit="mol/mol" />
+            <field id="CHCN"
+                   long_name="CHCN" 
+                   unit="mol/mol" />
+            <field id="CH2CN"
+                   long_name="CH2CN" 
+                   unit="mol/mol" />
+            <field id="CH3CN"
+                   long_name="CH3CN" 
+                   unit="mol/mol" />
+            <field id="C3N"
+                   long_name="C3N" 
+                   unit="mol/mol" />
+            <field id="HC3N"
+                   long_name="HC3N" 
+                   unit="mol/mol" />
+            <field id="NCCN"
+                   long_name="NCCN" 
+                   unit="mol/mol" />
+            <field id="C4N2"
+                   long_name="C4N2" 
+                   unit="mol/mol" />
+            <!-- Condensation tendencies -->
+            <field id="dqcond_CH4"
+                   long_name="CH4 condensation rate" 
+                   unit="mol/mol/s" />
+            <field id="dqcond_C2H2"
+                   long_name="C2H2 condensation rate" 
+                   unit="mol/mol/s" />
+            <field id="dqcond_C2H4"
+                   long_name="C2H4 condensation rate" 
+                   unit="mol/mol/s" />
+            <field id="dqcond_C2H6"
+                   long_name="C2H6 condensation rate" 
+                   unit="mol/mol/s" />
+            <field id="dqcond_C3H6"
+                   long_name="C3H6 condensation rate" 
+                   unit="mol/mol/s" />
+            <field id="dqcond_C4H4"
+                   long_name="C4H4 condensation rate" 
+                   unit="mol/mol/s" />
+            <field id="dqcond_CH3CCH"
+                   long_name="CH3CCH condensation rate" 
+                   unit="mol/mol/s" />
+            <field id="dqcond_C3H8"
+                   long_name="C3H8 condensation rate" 
+                   unit="mol/mol/s" />
+            <field id="dqcond_C4H2"
+                   long_name="C4H2 condensation rate" 
+                   unit="mol/mol/s" />
+            <field id="dqcond_C4H6"
+                   long_name="C4H6 condensation rate" 
+                   unit="mol/mol/s" />
+            <field id="dqcond_C4H10"
+                   long_name="C4H10 condensation rate" 
+                   unit="mol/mol/s" />
+            <field id="dqcond_AC6H6"
+                   long_name="AC6H6 condensation rate" 
+                   unit="mol/mol/s" />
+            <field id="dqcond_HCN"
+                   long_name="HCN condensation rate" 
+                   unit="mol/mol/s" />
+            <field id="dqcond_CH3CN"
+                   long_name="CH3CN condensation rate" 
+                   unit="mol/mol/s" />
+            <field id="dqcond_HC3N"
+                   long_name="HC3N condensation rate" 
+                   unit="mol/mol/s" />
+            <field id="dqcond_NCCN"
+                   long_name="NCCN condensation rate" 
+                   unit="mol/mol/s" />
+            <field id="dqcond_C4N2"
+                   long_name="C4N2 condensation rate" 
+                   unit="mol/mol/s" />
+       </field_group>
+
+        <!-- 3D upper atmosphere chemistry variables -->
+        <field_group id="fields_3D_up" grid_ref="grid_3d_up">
+            <field id="H_up"
+                   long_name="H_up" 
+                   unit="mol/mol" />
+            <field id="H2_up"
+                   long_name="H2_up" 
+                   unit="mol/mol" />
+            <field id="CH_up"
+                   long_name="CH_up" 
+                   unit="mol/mol" />
+            <field id="CH2s_up"
+                   long_name="CH2s_up" 
+                   unit="mol/mol" />
+            <field id="CH2_up"
+                   long_name="CH2_up" 
+                   unit="mol/mol" />
+            <field id="CH3_up"
+                   long_name="CH3_up" 
+                   unit="mol/mol" />
+            <field id="CH4_up"
+                   long_name="CH4_up" 
+                   unit="mol/mol" />
+            <field id="C2_up"
+                   long_name="C2_up" 
+                   unit="mol/mol" />
+            <field id="C2H_up"
+                   long_name="C2H_up" 
+                   unit="mol/mol" />
+            <field id="C2H2_up"
+                   long_name="C2H2_up" 
+                   unit="mol/mol" />
+            <field id="C2H3_up"
+                   long_name="C2H3_up" 
+                   unit="mol/mol" />
+            <field id="C2H4_up"
+                   long_name="C2H4_up" 
+                   unit="mol/mol" />
+            <field id="C2H5_up"
+                   long_name="C2H5_up" 
+                   unit="mol/mol" />
+            <field id="C2H6_up"
+                   long_name="C2H6_up" 
+                   unit="mol/mol" />
+            <field id="C3H3_up"
+                   long_name="C3H3_up" 
+                   unit="mol/mol" />
+            <field id="C3H5_up"
+                   long_name="C3H5_up" 
+                   unit="mol/mol" />
+            <field id="C3H6_up"
+                   long_name="C3H6_up" 
+                   unit="mol/mol" />
+            <field id="C3H7_up"
+                   long_name="C3H7_up" 
+                   unit="mol/mol" />
+            <field id="C4H_up"
+                   long_name="C4H_up" 
+                   unit="mol/mol" />
+            <field id="C4H3_up"
+                   long_name="C4H3_up" 
+                   unit="mol/mol" />
+            <field id="C4H4_up"
+                   long_name="C4H4_up" 
+                   unit="mol/mol" />
+            <field id="C4H2s_up"
+                   long_name="C4H2s_up" 
+                   unit="mol/mol" />
+            <field id="CH2CCH2_up"
+                   long_name="CH2CCH2_up" 
+                   unit="mol/mol" />
+            <field id="CH3CCH_up"
+                   long_name="CH3CCH_up" 
+                   unit="mol/mol" />
+            <field id="C3H8_up"
+                   long_name="C3H8_up" 
+                   unit="mol/mol" />
+            <field id="C4H2_up"
+                   long_name="C4H2_up" 
+                   unit="mol/mol" />
+            <field id="C4H6_up"
+                   long_name="C4H6_up" 
+                   unit="mol/mol" />
+            <field id="C4H10_up"
+                   long_name="C4H10_up" 
+                   unit="mol/mol" />
+            <field id="AC6H6_up"
+                   long_name="AC6H6_up" 
+                   unit="mol/mol" />
+            <field id="C3H2_up"
+                   long_name="C3H2_up" 
+                   unit="mol/mol" />
+            <field id="C4H5_up"
+                   long_name="C4H5_up" 
+                   unit="mol/mol" />
+            <field id="AC6H5_up"
+                   long_name="AC6H5_up" 
+                   unit="mol/mol" />
+            <field id="N2_up"
+                   long_name="N2_up" 
+                   unit="mol/mol" />
+            <field id="N4S_up"
+                   long_name="N4S_up" 
+                   unit="mol/mol" />
+            <field id="CN_up"
+                   long_name="CN_up" 
+                   unit="mol/mol" />
+            <field id="HCN_up"
+                   long_name="HCN_up" 
+                   unit="mol/mol" />
+            <field id="H2CN_up"
+                   long_name="H2CN_up" 
+                   unit="mol/mol" />
+            <field id="CHCN_up"
+                   long_name="CHCN_up" 
+                   unit="mol/mol" />
+            <field id="CH2CN_up"
+                   long_name="CH2CN_up" 
+                   unit="mol/mol" />
+            <field id="CH3CN_up"
+                   long_name="CH3CN_up" 
+                   unit="mol/mol" />
+            <field id="C3N_up"
+                   long_name="C3N_up" 
+                   unit="mol/mol" />
+            <field id="HC3N_up"
+                   long_name="HC3N_up" 
+                   unit="mol/mol" />
+            <field id="NCCN_up"
+                   long_name="NCCN_up" 
+                   unit="mol/mol" />
+            <field id="C4N2_up"
+                   long_name="C4N2_up" 
+                   unit="mol/mol" />
+       </field_group>
+
+        <!-- 3D total atmosphere chemistry variables -->
+        <field_group id="fields_3D_tot" grid_ref="grid_3d_tot">
+            <field id="H_tot"
+                   long_name="H_tot" 
+                   unit="mol/mol" />
+            <field id="H2_tot"
+                   long_name="H2_tot" 
+                   unit="mol/mol" />
+            <field id="CH_tot"
+                   long_name="CH_tot" 
+                   unit="mol/mol" />
+            <field id="CH2s_tot"
+                   long_name="CH2s_tot" 
+                   unit="mol/mol" />
+            <field id="CH2_tot"
+                   long_name="CH2_tot" 
+                   unit="mol/mol" />
+            <field id="CH3_tot"
+                   long_name="CH3_tot" 
+                   unit="mol/mol" />
+            <field id="CH4_tot"
+                   long_name="CH4_tot" 
+                   unit="mol/mol" />
+            <field id="C2_tot"
+                   long_name="C2_tot" 
+                   unit="mol/mol" />
+            <field id="C2H_tot"
+                   long_name="C2H_tot" 
+                   unit="mol/mol" />
+            <field id="C2H2_tot"
+                   long_name="C2H2_tot" 
+                   unit="mol/mol" />
+            <field id="C2H3_tot"
+                   long_name="C2H3_tot" 
+                   unit="mol/mol" />
+            <field id="C2H4_tot"
+                   long_name="C2H4_tot" 
+                   unit="mol/mol" />
+            <field id="C2H5_tot"
+                   long_name="C2H5_tot" 
+                   unit="mol/mol" />
+            <field id="C2H6_tot"
+                   long_name="C2H6_tot" 
+                   unit="mol/mol" />
+            <field id="C3H3_tot"
+                   long_name="C3H3_tot" 
+                   unit="mol/mol" />
+            <field id="C3H5_tot"
+                   long_name="C3H5_tot" 
+                   unit="mol/mol" />
+            <field id="C3H6_tot"
+                   long_name="C3H6_tot" 
+                   unit="mol/mol" />
+            <field id="C3H7_tot"
+                   long_name="C3H7_tot" 
+                   unit="mol/mol" />
+            <field id="C4H_tot"
+                   long_name="C4H_tot" 
+                   unit="mol/mol" />
+            <field id="C4H3_tot"
+                   long_name="C4H3_tot" 
+                   unit="mol/mol" />
+            <field id="C4H4_tot"
+                   long_name="C4H4_tot" 
+                   unit="mol/mol" />
+            <field id="C4H2s_tot"
+                   long_name="C4H2s_tot" 
+                   unit="mol/mol" />
+            <field id="CH2CCH2_tot"
+                   long_name="CH2CCH2_tot" 
+                   unit="mol/mol" />
+            <field id="CH3CCH_tot"
+                   long_name="CH3CCH_tot" 
+                   unit="mol/mol" />
+            <field id="C3H8_tot"
+                   long_name="C3H8_tot" 
+                   unit="mol/mol" />
+            <field id="C4H2_tot"
+                   long_name="C4H2_tot" 
+                   unit="mol/mol" />
+            <field id="C4H6_tot"
+                   long_name="C4H6_tot" 
+                   unit="mol/mol" />
+            <field id="C4H10_tot"
+                   long_name="C4H10_tot" 
+                   unit="mol/mol" />
+            <field id="AC6H6_tot"
+                   long_name="AC6H6_tot" 
+                   unit="mol/mol" />
+            <field id="C3H2_tot"
+                   long_name="C3H2_tot" 
+                   unit="mol/mol" />
+            <field id="C4H5_tot"
+                   long_name="C4H5_tot" 
+                   unit="mol/mol" />
+            <field id="AC6H5_tot"
+                   long_name="AC6H5_tot" 
+                   unit="mol/mol" />
+            <field id="N2_tot"
+                   long_name="N2_tot" 
+                   unit="mol/mol" />
+            <field id="N4S_tot"
+                   long_name="N4S_tot" 
+                   unit="mol/mol" />
+            <field id="CN_tot"
+                   long_name="CN_tot" 
+                   unit="mol/mol" />
+            <field id="HCN_tot"
+                   long_name="HCN_tot" 
+                   unit="mol/mol" />
+            <field id="H2CN_tot"
+                   long_name="H2CN_tot" 
+                   unit="mol/mol" />
+            <field id="CHCN_tot"
+                   long_name="CHCN_tot" 
+                   unit="mol/mol" />
+            <field id="CH2CN_tot"
+                   long_name="CH2CN_tot" 
+                   unit="mol/mol" />
+            <field id="CH3CN_tot"
+                   long_name="CH3CN_tot" 
+                   unit="mol/mol" />
+            <field id="C3N_tot"
+                   long_name="C3N_tot" 
+                   unit="mol/mol" />
+            <field id="HC3N_tot"
+                   long_name="HC3N_tot" 
+                   unit="mol/mol" />
+            <field id="NCCN_tot"
+                   long_name="NCCN_tot" 
+                   unit="mol/mol" />
+            <field id="C4N2_tot"
+                   long_name="C4N2_tot" 
+                   unit="mol/mol" />
+       </field_group>
+
+    </field_definition>
+    
+    <!-- Definition of output files
+   output_freq: ts is physics time steps, d is day
+   enabled=".true." to output a file
+      -->
+
+    <file_definition>
+    
+        <!-- Instantaneous outputs; 10/Td (if day_step=24000 and ts=80) -->
+        <file id="ins-10perTd"
+              name="Xins-10perTd"
+              output_freq="30ts" 
+              type="one_file"
+              enabled=".false.">
+                    
+            <!-- VARS 2D
+            <field_group operation="instant"
+                         freq_op="1ts">
+                <field field_ref="ISR_TOA" />
+                <field field_ref="OLR_TOA" />
+            </field_group> -->
+
+            <!-- VARS 3D -->
+            <field_group operation="instant"
+                         freq_op="1ts">
+                <field field_ref="temp" />
+                <field field_ref="p" />
+                <field field_ref="u" />
+                <field field_ref="v" />
+                <field field_ref="w" />
+            </field_group>
+        </file>
+
+        <!-- averages outputs; every Tday -->
+        <file id="diurnalave"
+              name="Xdiurnalave"
+              output_freq="1d" 
+              type="one_file"
+              output_level="3"
+              enabled=".false.">
+                    
+            <!-- VARS 0D -->
+            <field_group operation="average"
+                         freq_op="1ts">
+                <field field_ref="ls" level="2" />
+                <field field_ref="Declin" level="3" />
+            </field_group>
+
+            <!-- VARS 2D -->
+            <field_group operation="average"
+                         freq_op="1ts">
+                <field field_ref="area" level="3" operation="once" />
+                <field field_ref="tsurf" level="1" />
+                <field field_ref="ps" level="1" />
+            </field_group>
+
+            <!-- VARS 3D -->
+            <field_group operation="average"
+                         freq_op="1ts">
+                <field field_ref="temp" level="1" />
+                <field field_ref="teta" level="2" />
+                <field field_ref="p" level="1" />
+                <field field_ref="pphi" level="1" />
+                <field field_ref="u" level="1" />
+                <field field_ref="v" level="1" />
+                <field field_ref="w" level="2" />
+                <field field_ref="HCN_tot" level="3" />
+                <field field_ref="C2H2_tot" level="3" />
+                <field field_ref="C2H6_tot" level="3" />
+                <field field_ref="AC6H6_tot" level="3" />
+            </field_group>
+        </file>
+
+        <!-- Output file for DragonFly model intercomp - every Tday -->
+        <file id="intercomp.diurn"
+              name="Xintercomp.diurn"
+              output_freq="1d" 
+              type="one_file"
+              output_level="1"
+              enabled=".true.">
+                    
+            <!-- VARS 0D -->
+            <field_group operation="average"
+                         freq_op="1ts">
+                <field field_ref="ls" level="1" />
+            </field_group>
+
+            <!-- VARS 2D Time-Indep-->
+            <field_group operation="average"
+                         freq_op="1ts">
+                <field field_ref="area" level="1" operation="once" />
+                <field field_ref="pphis" level="1" operation="once" />
+            </field_group>
+
+            <!-- ~~~~~~~ VARS 2D Time-Dep ~~~~~~ -->
+            <!-- Average -->
+            <field_group operation="average"
+                         freq_op="1ts">
+                <field field_ref="tsurf" level="1" />
+                <field field_ref="ps" level="1" />
+                <field field_ref="sensibFlux" level="1" />
+                <field field_ref="evapCH4" level="1" />
+            </field_group>
+
+            <!-- Min -->
+            <field_group operation="minimum"
+                         freq_op="1ts">
+                <field field_ref="tsurf" name="tsurf_min" level="1" />
+                <field field_ref="ps" name="ps_min" level="1" />
+                <field field_ref="sensibFlux" name="sensibFlux_min" level="1" />
+                <field field_ref="evapCH4" name="evapCH4_min" level="1" />
+            </field_group>
+
+            <!-- Max -->
+            <field_group operation="maximum"
+                         freq_op="1ts">
+                <field field_ref="tsurf" name="tsurf_max" level="1" />
+                <field field_ref="ps" name="ps_max" level="1" />
+                <field field_ref="sensibFlux" name="sensibFlux_max" level="1" />
+                <field field_ref="evapCH4" name="evapCH4_max" level="1" />
+            </field_group>
+
+            <!-- ~~~~~~~ VARS 3D Time-Dep ~~~~~~ -->
+            <!-- Average -->
+            <field_group operation="average"
+                         freq_op="1ts">
+                <field field_ref="temp" level="1" />
+                <field field_ref="teta" level="1" />
+                <field field_ref="p" level="1" />
+                <field field_ref="pphi" level="1" />
+                <field field_ref="u" level="1" />
+                <field field_ref="v" level="1" />
+                <field field_ref="w" level="1" />
+                <field field_ref="CH4" level="1" />
+                <field field_ref="dqcond_CH4" level="1" />
+            </field_group>
+
+            <!-- Min -->
+            <field_group operation="minimum"
+                         freq_op="1ts">
+                <field field_ref="temp" name="temp_min" level="1" />
+                <field field_ref="p" name="p_min" level="1" />
+                <field field_ref="u" name="u_min" level="1" />
+                <field field_ref="v" name="v_min" level="1" />
+                <field field_ref="w" name="w_min" level="1" />
+                <field field_ref="CH4" name="CH4_min" level="1" />
+                <field field_ref="dqcond_CH4" name="dqcondCH4_min" level="1" />
+            </field_group>
+
+            <!-- Max -->
+            <field_group operation="maximum"
+                         freq_op="1ts">
+                <field field_ref="temp" name="temp_max" level="1" />
+                <field field_ref="p" name="p_max" level="1" />
+                <field field_ref="u" name="u_max" level="1" />
+                <field field_ref="v" name="v_max" level="1" />
+                <field field_ref="w" name="w_max" level="1" />
+                <field field_ref="CH4" name="CH4_max" level="1" />
+                <field field_ref="dqcond_CH4" name="dqcondCH4_max" level="1" />
+            </field_group>
+
+        </file>
+
+    </file_definition>
+
+</context>

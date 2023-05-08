@@ -1,0 +1,12 @@
+4196c4196,4199
+<    IF(config_flags%bl_pbl_physics .GT. 0) THEN
+---
+> !   IF(config_flags%bl_pbl_physics .GT. 0) THEN
+> !
+> !****MARS: Always do that
+> 
+4210c4213,4214
+<    ENDIF
+---
+> !   ENDIF
+> !****MARS

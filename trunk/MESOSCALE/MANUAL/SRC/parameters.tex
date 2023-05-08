@@ -1,0 +1,77 @@
+\chapter{Setting simulation parameters}\label{zeparam}
+
+\vk
+Here we describe how to set the parameters defining a simulation with the LMD Martian Mesoscale Model. As it was detailed in~\ref{sc:arsia}, two main parameter files are needed to run the model. Many examples of such files for martian mesoscale simulations can be found in \ttt{\$MMM/SIMU/DEF}:
+\begin{enumerate}
+\item The parameters related to the dynamical part of the model (dynamical core) can be set in the file \ttt{namelist.input} according to the ARW-WRF namelist formatting.
+\item The parameters related to the physical part of the model (physical parameterizations) can be set in the file \ttt{callphys.def} according to the LMD-GCM formatting.
+\end{enumerate}
+
+\mk
+\section{Dynamical settings}
+
+\sk
+\subsection{Description of \ttt{namelist.input}}
+
+\sk
+The file \ttt{namelist.input} controls the behavior of the dynamical core in the LMD Martian Mesoscale Model. This file is organized as a Fortran namelist with explicitely named categories:
+\begin{citemize}
+\item \ttt{time\_control}: set simulation start/end time and frequency of outputs;
+\item \ttt{domains}: set the extent and grid spacing of the simulation domain(s) in the horizontal and vertical dimension, as well as the timestep for numerical integration;
+\item \ttt{physics}: set parameters related to the dynamics / physics interface;
+\item \ttt{dynamics}: set parameters controlling dynamical integrations (accuracy, diffusion, filters);
+\item \ttt{bdy\_control}: set parameters related to boundary conditions and relaxation rows between model integrations and boundary conditions;
+\item \ttt{grib2}, \ttt{fdda}, \ttt{namelist\_quilt}: not relevant for Mars, only present for continuity.
+\end{citemize}
+
+\sk %answer \ttt{y} to the last question.
+Many parameters in the \ttt{namelist.input} file are optional in the Martian version\footnote{E.g., in the \ttt{namelist.input} file associated to the Arsia Mons test case presented in the previous chapter, the parameter \ttt{non\_hydrostatic} is set to false to assume hydrostatic equilibrium, whereas standard simulations are non-hydrostatic. Compared to the file the ARW-WRF users are familiar with (see generic description in \ttt{\$MMM/SRC/WRFV2/run/README.namelist}), typical \ttt{namelist.input} files for LMD Martian Mesoscale Model simulations are much shorter.} and their default values are defined in the file \ttt{\$MMM/SRC/WRFV2/Registry/Registry.EM}\footnote{Changing default values in \ttt{\$MMM/SRC/WRFV2/Registry/Registry.EM} should be avoided even if you are an advanced user.}. The only mandatory parameters in \ttt{namelist.input} are within the~\ttt{time\_control} and~\ttt{domains} categories. The minimal version of the \ttt{namelist.input} file corresponds to standard simulations with the model\footnote{You may find the corresponding file in \ttt{\$MMM/SIMU/namelist.input\_minim}.}:
+%
+\scriptsize
+\codesource{namelist.input_minim}
+\normalsize
+
+\sk
+A more detailed description of the \ttt{namelist.input} file is given in what follows\footnote{You may find the corresponding file in \ttt{\$MMM/SIMU/namelist.input\_full}.}, with all available (mandatory or optional) parameters to be set by the user. Each parameter is commented to understand its impact on the mesoscale simulations. Optional parameters are given with their default values. We have adopted labels to describe the specifics of each parameter with respect to the $5$~steps detailed in section~\ref{steps} (compilation, preprocessing, run):
+
+\sk
+\begin{citemize}
+\item \ttt{(r)} indicates parameters which modifications imply a new compilation\footnote{A full recompilation using the option \ttt{makemeso -f} is not needed here.} of the model using \ttt{makemeso} (step 0);
+\item \ttt{(p1)}, \ttt{(p2)}, \ttt{(p3)} mention parameters which modification implies a new processing of initial and boundary conditions (see chapter~\ref{zepreproc}), corresponding respectively to step~1, 2, 3; \ttt{(p1)} means the user has to carry out again steps~1 to 3 before being able to run the model at step~4; \ttt{(p2)} means the user has to carry out again steps~2 to~3 before model run at step~4; 
+\item no label means that once you have modified the parameter, you can simply start directly at step~4 (running the model);
+\item \ttt{(*d)} denotes dynamical parameters which modification implies non-standard simulations -- please read \ttt{\$MMM/SRC/WRFV2/run/README.namelist} and use with caution, i.e. if you know what you are doing; after modifying those parameters you can simply start at step~4.
+\item \ttt{(*)} denotes parameters not to be modified;
+\item \ttt{(n)} describes parameters involved when nested domains are defined (see chapter~\ref{nests}).
+\end{citemize}
+
+\sk
+\small
+\codesource{namelist.input_full}
+\normalsize
+
+\sk
+\subsection{Important advice on filling \ttt{namelist.input}}\label{namelist}
+
+\paragraph{Test case} An interesting exercise is to analyze comparatively the \ttt{TESTCASE/namelist.input} file (cf. section~\ref{sc:arsia}) with the reference \ttt{namelist.input\_full} given above, so that you could understand which settings are being made in the Arsia Mons test simulation. Then you could try to modify parameters in the \ttt{namelist.input} file and re-run the model to start getting familiar with the various settings. Given that the test case relies on pre-computed initial and boundary conditions, not all parameters can be changed in the \ttt{namelist.input} file at this stage.
+
+\paragraph{Syntax} Please pay attention to rigorous syntax while editing your personal \ttt{namelist.input} file to avoid reading error. If the model complains about this at runtime, start again with the available template \ttt{\$MMM/SIMU/namelist.input\_full}.
+
+\paragraph{Time management} Usually the user would like to start/end the mesoscale simulation at a given solar aerocentric longitude~$L_s$ or a given sol in the Martian year\footnote{Information on Martian calendars: \url{http://www-mars.lmd.jussieu.fr/mars/time/solar_longitude.html}.}. In the \ttt{namelist.input} file, start/end time is set in the form year / month / day with each month corresponding to a ``slice" of~$30^{\circ}$~$L_s$. The file~\ttt{\$MMM/SIMU/calendar} (reproduced in appendix) is intended to help the user to perform the conversion prior to filling the \ttt{namelist.input} file. In the above example of \ttt{namelist.input\_minim}, the simulation with the LMD Martian Mesoscale Model takes place on month~7 and day~1, which corresponds to~$L_s \sim 180^{\circ}$ according to the \ttt{calendar} file. In the Arsia Mons test case, the simulation with the LMD Martian Mesoscale Model takes place on month~1 and day~17, which corresponds to~$L_s \sim 8^{\circ}$.
+
+\mk
+\section{Physical settings}
+
+\mk
+The file \ttt{callphys.def} controls the behavior of the physical parameterizations in the LMD Martian Mesoscale Model. Modifying \ttt{callphys.def} implies to recompile the model only if the number of tracers has changed. This file is organized very similarly to the corresponding file in the LMD Martian GCM, which user manual can be found at \url{http://web.lmd.jussieu.fr/~forget/datagcm/user_manual.pdf}. Here are the \ttt{callphys.def} contents with typical mesoscale settings:
+
+\vskip -0.5cm
+\codesource{callphys.def}
+
+\mk
+\begin{finger}
+\item In the provided example, convective adjustment \ttt{calladj}, gravity wave parameterization \ttt{calllott} and non-local thermodynamic equilibrium schemes \ttt{callnlte} are turned off, as is usually the case in typical Martian tropospheric mesoscale simulations (see chapter~\ref{whatis}).
+\item \ttt{iradia} sets the frequency (in dynamical timesteps) at which the radiative computations are performed. To obtain the interval in seconds at which radiative computations are performed, one simply has to multiply \ttt{iradia} to the value of \ttt{time\_step} in \ttt{namelist.input}.
+\item \ttt{iaervar=4} and~\ttt{iddist=3} defines the standard ``Mars Global Surveyor" dust scenario (see chapter~\ref{whatis}). It is the recommended choice.
+\end{finger}
+
+\clearemptydoublepage

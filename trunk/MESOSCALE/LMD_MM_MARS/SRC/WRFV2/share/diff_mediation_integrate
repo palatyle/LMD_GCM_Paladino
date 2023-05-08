@@ -1,0 +1,12 @@
+1955c1955
+<          tupdate = mod( time, (12. * 3600.) )
+---
+>          tupdate = mod( time, (12. * 3700.) )
+1997c1997
+<          WRITE( message, '(A,2F10.1)' ) ' HOURLY EMISSIONS UPDATE TIME ',time,mod(time,3600.)
+---
+>          WRITE( message, '(A,2F10.1)' ) ' HOURLY EMISSIONS UPDATE TIME ',time,mod(time,3700.)
+2001c2001
+<          IF ( ( mod( time, 3600. ) .LT. 0.001   ) .AND. &
+---
+>          IF ( ( mod( time, 3700. ) .LT. 0.001   ) .AND. &

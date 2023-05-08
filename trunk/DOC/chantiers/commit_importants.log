@@ -1,0 +1,2036 @@
+**** commit_v5 ****
+
+** ADAPTATION GCM POUR CP(T)
+**--------------------------
+
+* Ajout d'un fichier cpdet.F contenant toutes les routines nécessaires à 
+  l'utilisation de Cp(T)
+  -> routines ini_cpdet, t2tpot, tpot2t
+  -> fonction cpdet(t)
+
+* Du coup, suppression de tous les cpdet.* de phytitan et phyvenus
+
+* Modif de gcm.F : initialisation ini_cpdet ajoutée
+
+* Modif de comconst.h : ajout de nu_venus et t0_venus
+
+* Modif de caldyn0.F : 
+    - dimensions de pk (ip1jmp1 à la place de iip1,jjp1)
+    - ajout de temp et tsurpk
+    - calcul de temp (tpot2t) et tsurpk
+    - passage de tsurpk à la place de teta dans sortvarc0
+    
+* Modif de caldyn.F :
+    - passage de tsurpk en argument
+    - dimensions de pk (ip1jmp1 à la place de iip1,jjp1)
+    - ajout de temp
+    - passage de tsurpk à la place de teta dans dudv2
+    - passage de tsurpk à la place de teta dans sortvarc
+
+* Modif de calfis.F :
+    - ajout de zteta et zpk
+    - calculs de zteta et zpk
+    - calcul de ztfi via tpot2t
+    - mise en commentaires de pcvgu/v/t/q car ne servent pas... 
+    - (ajout commentaire sur traceurs intensifs)
+    - modification du calcul de pdhfi
+
+* Modif de diagedyn.F :
+  (même si c'est une routine pure Terre, pour l'instant)
+    - calcul de la temperature 
+    - remplacement de RCPD par cpdet(T)
+
+* Modif de leapfrog.F :
+    - ajout de temp et tsurpk
+    - calcul de temp (tpot2t) et tsurpk (3 endroits)
+    - passage de tsurpk à la place de teta dans geopot (3 endroits)
+    - passage de tsurpk en argument de caldyn
+    - calcul de dtetaecdt
+
+* Modif de vlspltqs.F
+    - modif taille de tempe
+    - calcul de tempe (via tpot2t)
+
+
+** APPEL DE LA PHYSIQUE
+**----------------------
+
+* Modif de calfis.F :
+    - on appelle physiq comme pour Venus et Titan quand on n'a pas la 
+      clé CPP_EARTH
+    - j'ai enlevé le mot clé planet_type, ça fait double emploi, non ?
+    - j'ai laissé nqtot dans les arguments d'appel à physiq... A reverifier.
+
+**** commit_v6 ****
+
+* Modif de defrun.F : commentaire indiquant qu'il ne sert plus donc pas a jour !
+
+* Modif de dynredem.F : correction faute orthographe dans commentaire
+
+** IOIPSL, real8 vs real4
+**-----------------------
+
+J'élimine ce truc bancal. Il faudra compiler IOIPSL en double précision.
+Du coup, pas de modifs spécifiques dans dyn3d. Par contre, il faudra éliminer
+ça dans les physiques !
+
+
+** Nombre de traceurs
+**-------------------
+
+* Modif de infotrac.F90 :
+    - definition de type_trac
+    - definition de nqtrue depend de planet_type
+    - lecture de traceur.def depend de planet_type
+
+* Modif de addfi.F :
+    - separation des traceurs 1 et 2 pour qtestt/qtestw valable seulement 
+      pour planet_type=earth
+
+* Modif de caladvtrac.F :
+    - deplacement du test sur planet_type pour virer tout ce qui concerne
+      dq quand on n'est pas sur Terre
+
+* Modif de calfis.F :
+    - ajout d'une remarque concernant pdq...
+
+
+** Avec ou sans advection de traceurs
+**-----------------------------------
+
+Reglé grace à iadv lu dans traceur.def: si 0, pas advecté.
+Sans traceurs, on a donc un seul traceur dummy, non advecté, mais 
+écrit dans start.nc et trimbalé partout...
+
+
+** Homogeneisation des .def
+**-------------------------
+
+* Modif des deftanks/[titan/venus]/[gcm/physiq/run].def :
+    - ajout planet_type
+    - passage des cles physiques vers physiq.def
+    - homogeneisation des parametres
+
+* Modif de conf_gcm.F :
+    - ok_strato mis à true par defaut
+
+* Modif de clesph0.h :
+    - ajout d'un commentaire: il faut virer ce fichier, ne sert plus a rien.
+
+
+** Homogeneisation de bilan_dyn
+**-----------------------------
+
+* Modif de leapfrog.def :
+    - premier appel: il y a first, deplacement de first=.false., elimination prem
+    - ajout d'initialisations
+    - ajout des tendances de la couche superieure (d*top)
+    - elimination itau_w (ne sert pas)
+    - couche superieure: ajout addfi séparé
+    - passage des d*dis en */s
+    - appel bilan_dyn
+
+* Modif de bilan_dyn.def :
+    - modification appel (pour sortie des tendances en moment cinetique)
+    - ajout tendances du* en m/s2
+    - ajout variables pour transport vertical
+    - ajout variables pour tendances en moment cinetique
+    - Champs advectés: base=6 (ovap est un traceur...), 
+      en commentaire pour l'instant, les traceurs.
+    - introduction des calculs pour transport vertical
+    - introduction des calculs pour tendances moment cinétique
+    - présentation des déclarations
+    - facteur fact_geovenus=-1 pour Vénus
+    - petit ajustement possible pour ncum (problèmes de précision)
+    - élminination des sorties grads
+    - modif noms temp et ecin
+    - modif sur incrementation itau et time
+    - definitions et sorties: 
+       limité pour l'instant à temp et ang, sans les psiQ
+       sans la somme en lat du transport vertical, à revoir (1D seulement?).
+    - modification calcul ang
+    - modification tpot2t
+    - correction sur fonction de courant psiQ
+
+
+** Choix de spécificités Terre dans gcm.F
+**---------------------------------------
+( certains appels ont été mis sous flag CPP_EARTH ou planet_type=earth alors )
+( qu'il sont aussi valables pour Venus et Titan...                           )
+( ils etaient sous flag IOIPSL avant...                                      )
+
+* Modif de gcm.F :
+    - appel de dynetat0 modulé selon planet_type (mars est un cas à part)
+    - appel de dynredem0 modulé selon planet_type (mars est un cas à part)
+    - appel de iniphysiq: a mettre sous cle CPP_PHYS pour cas sans physique
+
+* Modif de leapfrog.F :
+    - appel de dynredem1 modulé selon planet_type (mars est un cas à part)
+
+* Modif de calfis.F :
+    - appel de physiq: a mettre sous cle CPP_PHYS pour cas sans physique
+    - conservation de la possibilité de nsplit_phys
+    - ajout commentaire sur unité des tendances
+
+* Modif de conf_gcm.F :
+    - commentaires pour nsplit_phys
+
+
+**** commit_v7 ****
+
+* Mise à niveau (de la dynamique) par rapport à la version 1447 de LMDZ5
+* ----------------------------------------------------------------------
+
+* Pour l'instant, on n'a pas touché à dyn3dpar, donc pour l'instant on ne
+  fait que recopier les fichiers de la version 1447
+
+* Mise à jour de routines (dans dyn3d) qui n'ont changé que côté LMDZ5:
+- ener.h
+- grid_noro.F
+- iniacademic.F
+- integrd.F
+- limit_netcdf.F90
+
+* Mise à jour des routines qui ont changé des deux côtés:
+- addfi.F 
+  * ajout d'un "USE control_mod, ONLY : planet_type"
+  * mise en forme du if (planet_type=="earth") à l'identique de la revision 1447 (pour être peinard vis-à-vis de futures diff).
+- caladvtrac.F 
+  * ajout d'un "USE control_mod, ONLY : iapp_tracvl,planet_type"
+  * mise en conformité de la taille du tableau dq(ip1jmp1,llm,nqtot) et non pas dq(ip1jmp1,llm,2) (qui oblige à avoir au moins 2 traceurs...)
+  * mise entre if (planet_type=="earth") des calculs après advtrac (à nouveau, il faut avoir au moins 2 traceurs pour que ça ait un sens; et encore, ce morceau ne sert peut-être au final à rien).
+  * A nouveau ces modifs étaient déjà en partie déjà faites; j'ai juste remis en forme comme dans la révision 1447 pour rester homogène avec le code terrestre.
+- gcm.F
+  * Mise d'un #ifdef CPP_PHYS autoure de Init_Phys_lmdz et InitComgeomphy , au lieu du (bancal) #ifdef CPP_EARTH
+  * De même il faut bel et bien un #ifdef CPP_PHYS autour de iniphysiq & co.
+- infotrac.F90
+  * Ajout des modifs de forme et correction sur l'utilisation de trim() et taille des tableaux str1(23),str2(23)
+  * On garde un type_trac='plnt' pour les planètes (Attention, il faudra vérifier que ça ne casse rien par ailleurs et surtout n'est-ce finalement pas redoundant avec le planet_type?).
+- leapfrog.F
+  * Ajout des modifs/améliorations pour le cas académique sans physique
+   mais en utilisant dutop(),dvtop(), etc. pour le sponge layer
+   
+**** commit_v8 ****
+
+** ADAPTATION DYNAMIQUE PARALLELE AU CP(T)
+------------------------------------------
+
+Remarques:
+----------
+- Modifs non testées par une compilation/exécution du code; finalement s'organiser un mode de fonctionnement ou on peut compiler le code (au moins sans physique) est assez impératif.
+- On pourrait peut-être faire de cpdet.F90 un module...
+
+Retour sur leapfrog.F: (version séquentielle, dans dyn3d):
+----------------------
+- On revient en arrière sur l'utilisation de dutop(),dvtop(),dtetatop() au lieu des dufi(),dvfi() et dtetafi() pour les appels à top_bound. Dans la version terrestre, différente du sponge Martien (et Vénusien), ces tendances sont liées.
+=> A 'hamoniser' plus tard.
+
+Modifications (dans dyn3dpar):
+------------------------------
+
+* infotrac.F90 : recopié à l'identique depuis dyn3d
+
+* comconst.h : recopié à l'identique depuis dyn3d
+
+* caldyn0.F : recopié à l'identique depuis dyn3d
+
+* cpdet.F :
+  - création des routines t2tpot_p et tpot2t_p , versions // de t2tpot et tpot2t
+
+* gcm.F :
+  - on encadre les appels à Init_Phys_lmdz et Init_interface_dyn_phys par des #ifdef CPP_PHYS (et non plus ifdef CPP_EARTH).
+  - ajout de l'appel à ini_cpdet pour Cp(T)
+  - appel de dynetat0 modulé selon planet_type (Mars est le cas pathologique)
+  - appel à iniphysiq encadré par un #ifdef CPP_PHYS
+  - appel de dynredem0_p modulé selon planet_type (Mars est le cas pathologique)
+  
+* leapfrog_p.F :
+  - ajout variables temp et tsurpk
+  - ajout des calculs des hallos pour temp() et tsurkp() (NOTE POUR PLUS TARD: vérifier que c'est bien nécessaire...)
+  - utilisation tpot2t_p et calcul de tsurkp() avant appel à geopot_p (sans oublier de modifier argument de geopot_p, teta => tsurpk). (3 fois)
+  - ajout argument tsurpk dans l'appel à caldyn_p.
+  - ajout des passages en (m/s)/s des dudis , dvdis et dtetadis.
+  - calcul de dtetaecdt en passant par la température.
+  - changement des arguments de l'appel à bilan_dyn_p.
+  - appel de dynredem1_p modulé selon planet_type (Mars est le cas pathologique).
+
+* calfis_p.F :
+  - utilisation de la clef CPP_PHYS (et non plus CPP_EARTH).
+  - ajout des variables locales zteta et zpk.
+  - ajout calcul de zteta et zpk.
+  - calcul de ztfi via tpot2t_p (NOTE POUR PLUS TARD: vérifier que la taille "physique" du champ ne pose pas pb par rapport au découpage //).
+  - appel de la routine physiq selon planet_type.
+  - modification calcul de pdhfi.
+  
+* caldyn_p.F :
+  - ajout de tsurpk dans les arguments.
+  - passage de tsurkp à la place de teta dans dudv2_p.
+  - passage de tsurkp à la place de teta dans sortvarc.
+  
+* vlspltqs_p.F :
+  - modification de la taille de tempe (tempe(ip1jmp1,llm) au lieu de tempe(ip1jmp1).
+  - calcul de tempe via tpot2t_p (NOTE POUR PLUS TARD: probablement à revoir! Etrangement vlspltqs_p ne contient aucune instruction OpenMP !?! Il y a là un truc qui m'échappe...)
+
+* bilan_dyn_p.F : A FAIRE... (mis de côté pour l'instant car pas sûr que l'ancien bilan_dyn_p fonctionne en mode mixte mpi/omp, à vérifier d'abord, avant de tenter des modifs...) 
+
+**** commit_v11 ****
+
+24/01/2011 ajout du modele meso-echelle martien, ancienne physique -- A. Spiga
+
+**** commit_v17 ****
+
+24/01/2011 ajout du module LES, ancienne physique -- A. Spiga
+
+**** commit_v37 ****
+27/01/2011 Remise en route chantier compilation -- Ehouarn
+- Modifs et corrections pour pouvoir compiler le gcm (en séquentiel, avec
+   makelmdz_fcm pour l'instant):
+ * ajout de fichiers 'arch' pour linux-64 (pour Bellonzi, avec ioipsl et en r8)
+ * modification de makelmdz_fcm, ajout de la clé CPP_PHYS si on compile avec
+   une physique
+ * correction de quelques typos/bugs révélés à la compilation:
+ - infotrac.F90 : supression des appels à 'lnblnk' (remplacés par len_trim)
+ - bilan_dyn.F : déclaration des variables znom3,znom3l,zunites3, planet_type
+ - cpdet.F : "use control_mod, ONLY: planet_type" mis aux bons endroits
+             (idem sur cpdet.F dans dyn3dpar)
+ - leapfrog.F : declaration de  ztetaec(), dtec, cpdet , itau_w, duspg()
+ - diagedyn.F : correction typo; attention dans diagedyn.F il y a du
+                include "../phylmd/YOMCST.h"
+                Ca va poser problème qd on change de physique....
+
+- Avec ces modifs, la compilation marche sans physque, avec ou sans ioipsl
+  et avec la physique terrestre phylmd.
+
+********************************************
+**** commit_v51 (et quelques autres...) ****
+********************************************
+
+29/01/2011 --- A. SPIGA
+
+Nouveautes LMD_MM_MARS - LMD_LES_MARS - LMDZ.MARS [dossier mars]
+
+Ce commit fait le bilan des chantiers d'uniformisation des diverses sources du mesochelle
+[tous les commits par "spiga" depuis le debut sont relatifs a ces chantiers]
+
+Chantiers acheves avec compilation et execution testees:
+
+1. le meme coeur dynamique peut maintenant etre compile avec ancienne ou nouvelle physique; option -p sur makemeso.
+
+2. la meme interface module_lmd_driver est partagee par LMD_MM_MARS et LMD_LES_MARS
+
+3. le meme libf est partage entre modele mesoechelle et gcm
+   les quelques routines qui different sont notees meso_ et integrees aux sources du gcm
+
+=====> De 4 version du modele + 1 version de la nouvelle physique, on passe a une seule version du modele
+meso-echelle dont la physique est automatiquement indexee sur les modifications effectuees dans le GCM 
+[quelques routines mesoechelle mises a part]
+
+* Reste a tester LMD_LES_MARS avec la nouvelle physique. Modifications mineures attendues suite au point 2. 
+* Reste a tester le nesting qui devrait induire des modifications dues a des lignes trop longues... ce sera transparent du point de vue GCM.
+
+********************
+**** commit_v52 ****
+********************
+
+********** chantier principal du commit
+********** --- version LMDZ5 qui fonctionne pour tests geantes
+********** --- prochaine etape, tests sur GNOME
+
+M      libf/dyn3dpar/comconst.h
+M      libf/dyn3dpar/conf_planete.F90
+ajout du flux de chaleur intrinseque: ihf
+[par defaut il est nul] 
+
+M      libf/dyn3dpar/gcm.F
+changements cosmetiques 
+[pour diff plus efficace avec version non par]
+
+M      libf/dyn3dpar/iniacademic.F
+possibilites de variations latitudinales
+de temperature plus originales 
+[seulement pour planet_type.eq."giant"]
+
+M      libf/dyn3dpar/leapfrog_p.F
+1. ajout d'une tendance causee par le flux de chaleur intrinseque
+      (seulement prise en compte si planet_type.eq."giant")
+2. correction bugs problematiques a la compilation et au run
+--> probleme dans les boucles (l'indice etait llm et non l)
+--> ajout de SAVE pour les variables paralleles
+--> correction des declarations de variables manquantes
+
+M      libf/dyn3dpar/calfis_p.F
+correction d'une deuxieme parenthese manquante sur ALLOCATE(zteta(klon,llm))
+
+M      libf/phylmd/regr_lat_time_climoz_m.F90
+erreur a la compilation avec FCM... il s'agit d'une routine terrestre
+il y a visiblement un probleme avec o3_in
+en attendant, les lignes sont commentees avec !AS
+
+A      deftanks/giant  8 fichiers
+ajout de fichiers de configuration typiques pour les geantes gazeuses
+[experimental pour le moment... on est loin de jupiter]
+       --> comparaisons entre un run ancien [avec LMDZ5-dev sur SVN ipsl sans cp var] 
+       et run avec version sur ce SVN planeto donne des resultats similaires
+
+********** pratique
+
+A      ioipsl
+A      ioipsl/compile_ioipsl.bash
+A      ioipsl/util 16 fichiers
+script et utilitaire pour compiler IOIPSL de facon independante
+il suffit d'executer ./compile_ioipsl.bash
+
+M      arch/arch-AMD64_CICLAD.path
+si IOIPSL a ete compile avec la methode precedente, les bons
+PATH sont definis dans ce fichier [le NETCDF est aussi OK]
+
+M      000-README-svn
+mise a jour options "svn status"
+
+M      mars/libf/phymars/meso_callkeys.h
+mise a jour mineure du fichier 
+[ecri_phys etait defini mais pas dans la liste]
+
+
+********************
+**** commit_v54 ****
+********************
+
+
+--------------------------
+LMD_LES_MARS: Tests with new physics in unified frame
+M              53   mesoscale/LMD_LES_MARS/modif_mars/module_model_constants.F
+M              53   mesoscale/LMD_LES_MARS/modif_mars/module_first_rk_step_part1.F
+M              53   mesoscale/LMD_MM_MARS/SRC/WRFV2/phys/module_lmd_driver.F
+Modifications made to cope with new soil scheme
+
+M              53   mesoscale/LMD_MM_MARS/SRC/WRFV2/mars_lmd/libf/phymars/meso_physiq.F
+Commented aeronomars in old physics so that the model can compile with lots of grid points
+
+--------------------------
+LMD_MM_MARS: Implement tracers with the new physics. Test with JBM runs with 5 tracers
+               including radiatively active dust and water ice
+             TODO: propagate reading "traceur.def" and few initialisations from
+               testphys1d.F into module_lmd_driver.F 
+
+M              53   mars/libf/phymars/dimradmars.h
+M              53   mars/libf/phymars/callradite.F
+Change it back to both dust and ice radiatively active
+
+M              53   mesoscale/LMD_MM_MARS/makemeso
+Allow to "fresh start" with the inclusion of "clean -a" in the script
+
+M              53   mesoscale/LMD_MM_MARS/SRC/WRFV2/Registry/Registry.EM
+M              53   mesoscale/LMD_MM_MARS/SRC/WRFV2/dyn_em/module_initialize_real.F
+M              53   mesoscale/LMD_MM_MARS/SRC/WRFV2/dyn_em/solve_em.F
+M              53   mesoscale/LMD_MM_MARS/SRC/WRFV2/main/real_em.F
+M              53   mesoscale/LMD_MM_MARS/SIMU/runmeso
+Added the option mars==11 with 5 tracers: CO2 H2Ovap H2Oice DUST DUSTN
+-- Note that the order matters for H2Ovap and H2Oice
+
+LMD_MM_MARS: Create a folder to run LMD GCM with exact same physics as mesoscale
+
+A               0   mesoscale/LMDZ.MARS/libf/phymars/physiq.F
+All files in mesoscale/LMDZ.MARS/libf are links except this one
+--> Because specific WRITEDIAGFI commands are set to output what is needed PREP_MARS
+--> Something must be done so that qCO2, qdust, qdustN can be propagated too !!!
+
+A               0   mesoscale/LMDZ.MARS/libf_gcm
+A               0   mesoscale/LMDZ.MARS/in_lmdz_mars_newphys
+Two important links that must not be broken
+
+A               0   mesoscale/LMDZ.MARS/myGCM
+This folder is for runs. Only links here -- except temp files which are not synchronized.
+
+M              53   mesoscale/LMD_MM_MARS/SIMU/in_lmdz_mars_newphys/compile
+A               0   mesoscale/LMD_MM_MARS/SIMU/in_lmdz_mars_newphys/myGCM/run.def
+A               0   mesoscale/LMD_MM_MARS/SIMU/in_lmdz_mars_newphys/myGCM/traceur.def
+M              53   mesoscale/LMD_MM_MARS/SIMU/in_lmdz_mars_newphys/myGCM/callphys.def
+A               0   mesoscale/LMD_MM_MARS/SIMU/in_lmdz_mars_newphys/myGCM/callphys.def.csttau
+Those files are needed to run the GCM in order to prepare initial & boundary
+   conditions for the mesoscale... but basically it is the exact same GCM
+--> compile is a convenient script
+
+A               0   mesoscale/LMDZ.MARS/makegcm
+A               0   mesoscale/LMDZ.MARS/makegcm_g95
+A               0   mesoscale/LMDZ.MARS/create_make_gcm
+This is supposed to be merged one day with files in trunk/mars/
+
+A               0   mesoscale/LMDZ.MARS/myGCM/DEFS_JB
+Necessary files to restart a GCM run corresponding to new water cycle in JB's thesis
+
+**** commit_v65 ****
+-- 16/02/2011 -- EM , Mise a niveau par rapport à la version terrestre
+                      (LMDZ5V2.0-dev rev. 1487)
+* Mise à jour des scripts (terrestres) 'makegcm' et 'create_make_gcm'
+* Ajout du script 'makelmdz' (version "améliorée", en Bash, de makegcm)
+* Mise à jour des routines dans phylmd (sauf regr_lat_time_climoz_m.F)
+
+* disvert (dans dyn3d et dyn3dpar): passage au Fortran 90
+* parallel.F90 (dyn3dpar): correction bug
+* etat0_netcdf.F90 (dyn3d et dyn3dpar) : mise à jour mineure
+* ce0l.F90 (dyn3dpar) : correction bug
+* abort_gcm.F (dyn3dpar) : correction bug
+* ugeostr.F90 (dyn3d et dyn3dpar) : passage au Fortran 90
+* fluxstokenc_p.F (dyn3dpar) : correction bug
+* iniacademic.F90 (dyn3d et dyn3dpar) : passage au Fortran 90
+* friction_p.F (dyn3dpar) : correction bug
+* infotrac.F90 (dyn3d et dyn3dpar) : correction bug mineur sur lecture traceurs
+* caladvtrac.F (dyn3d) : modifications cosmétiques
+
+********************
+**** commit_v76 ****  etape importante d'une serie de commit sur les traceurs dans le mesoscale
+********************
+
+LMD_MM_MARS: remise a plat du traitement des traceurs terminee 
+             [en particulier en vue de l'utilisation nouvelle physique]
+             --> fonctionnement concluant sur un cas Tharsis hydro 61x61x61
+             --> ne pas utiliser le cas FASTCASE trop instable avec traceurs
+             --> reste a tester l'effet d'especes radiativement actives
+
+             options dans namelist.input :
+             mars = 0   ---> pas de traceurs
+             mars = 1   ---> cycle de l'eau : water vapour + ice
+             mars = 2   ---> cycle poussieres : un dust bin
+             mars = 3   ---> cycle poussieres : dustq + dustn [NOUVELLE PHYS seulement] 
+             mars = 11  ---> cycle de l'eau + poussieres [1+3] [NOUVELLE PHYS seulement]
+                  NB: pour les deux derniers, reste un petit travail mineur sur qsurf
+                                                 (voir dans module_lmd_driver.F)
+             il faut definir conjointement le callphys.def associe et relancer real.exe
+                         (sinon on transporte juste dynamiquement des 'dummy' traceurs) 
+             il n'est necessaire de recompiler que si le nombre total de traceurs change
+
+Fichiers a mettre a jour si l'on ajoute une option "mars" dans le Registry
+--------------------------------------------------------------------------
+Attention suivant les inputs GCM, il faut peut etre egalement changer
+1. readmeteo.F90 dans PREP_MARS et 2. METGRID.TBL dans WPS/metgrid
+
+M               75   mesoscale/LMD_MM_MARS/SRC/WRFV2/Registry/Registry.EM
+---> definition du scenario et de l'ordre des traceurs dans SCALAR
+
+M               75   mesoscale/LMD_MM_MARS/SRC/WRFV2/dyn_em/module_initialize_real.F
+---> definition des interpolations verticales des champs de traceurs venant du GCM
+
+M               75   mesoscale/LMD_MM_MARS/SRC/WRFV2/dyn_em/solve_em.F
+---> definition du traitement a reserver aux bornes
+---> --- dans les 4 scenarios precites, on passe aux bornes les champs du GCM
+         [y compris QH2O_ICE contrairement a ce qui etait par defaut precedemment]
+---> --- les lignes relatives a un flux nul aux bornes sont laissees a un cas hypothetique mars>50
+
+M               75   mesoscale/LMD_MM_MARS/SRC/WRFV2/phys/module_lmd_driver.F
+---> definition de l'ordre correct des traceurs pour le passage a la physique
+---> recuperation des tendances de la physique pour passage a la dynamique
+---> NB: c'est dans ce module que sont presents des STOP si mars = 4-10 ou mars > 11
+         .... il faut donc modifier si l'on ajoute des options
+
+M               75   mesoscale/LMD_MM_MARS/SRC/WRFV2/main/real_em.F
+---> definition et calcul des champs a appliquer aux bornes
+---> generalise desormais, il n'y a plus qu'a ajouter d'eventuelles nouvelles options 'mars'
+---> .... des modifications sont necessaires si on passe plus de 4 traceurs aux bornes
+
+M               75   mesoscale/LMD_MM_MARS/SIMU/runmeso
+---> definition du bon nombre de traceurs dans la compilation de la physique puis l'execution
+     [l'option mars est lue par le script dans namelist.input]
+
+Fichiers tests
+--------------
+A                0   mesoscale/TESTS/newphys_tracers/*
+---> pour la nouvelle physique (ici seulement les fichiers def)
+---> toutes les options precitees ont ete testes avec succes a l'execution [pas de crash]
+---> ... plausibilite physique verifiee rapidement, PAS d'ANALYSE APPROFONDIE pour le moment
+
+A                0   mesoscale/TESTS/LMD_MM_MARS_TESTCASE_water.tar.gz
+---> pour l'ancienne physique (introduit precedemment mais n'avait pas ete synchronise)
+
+M               75   mars/libf/phymars/meso_dustlift.F
+NB: correction mineure, de facon a recuperer alpha_lift de initracer
+
+
+********************
+**** commit_v97 ****
+********************
+
+Serie de modifs Sebastien Lebonnois
+
+** Correction bug
+**---------------
+
+* Modif de bilan_dyn.F :
+    - bug à la ligne 915: jjm et non jjp1...
+
+** Modifs de dyn3d
+**---------------
+
+* Modif de leapfrog.F :
+    - ajout test pk monotone
+
+** Sortie des opacites plutot que des aerosols dans phytitan
+**----------------------------------------------------------
+
+* Modif de physiq.F :
+    - ajout de variables et d'un common (pour variables venant de radtitan)
+
+* Modif de ini/write_histmth.h
+    - sorties des opacites (thv* et khv*)
+    - commentaire de la sortie des q*
+
+** Reglage .def
+**---------------
+
+* titan/physiq.def :
+    - ajustement tx
+
+** Sorties IOIPSL
+**-----------------------
+
+* Modif de phy[venus/titan]/physiq.F
+    - suppression des REAL*4 lies aux sorties IOIPSL
+
+* Modif de phy[venus/titan]/[ini/write]_hist*
+    - suppression des variables intermediaires en REAL*4 lies aux sorties IOIPSL
+
+** nqmx remplace par nqtot
+**-----------------------
+
+* Modif de phytitan/
+  calchim.F,optci.F,optcv.F,pg3.F,physiq.F,phytrac.F,
+  radlwsw.F,radtitan.F,rdf.F
+
+* Modif de phyvenus/
+  phytrac.F,testphys1d.F
+
+** nettoyage
+**-----------------------
+
+* Suppression de phytitan/
+  calchim.dbleprec,calchim.spleprec
+
+** calendriers
+**-----------------------
+
+* Modif de dyn3d[par]/gcm.F:
+  - calendriers: il faut une option dans ioconf_calendar pour definir
+  les calendriers titan et venus
+  - pour definition jD_ref et jH_ref: avertissement pour Venus et Titan
+  - avertissement pour separation en annees
+
+* Modif de deftank/[titan/venus]/run.def
+  - ajout de calend => calend=titan ou venus
+  - ajout de anneeref et raz_date
+
+** Possibilite de tourner moins d'une journee
+**-----------------------
+
+* Modif de dyn3d[par]/leapfrog[_p].F
+  - ajout de la possibilite de tourner moins d'1 jour
+
+* Modif de dyn3d[par]/control_mod.F90
+  - ajout de less1day et fractday
+
+* Modif de dyn3d[par]/conf_gcm.F
+  - definition/lecture de less1day et fractday
+
+* Modif de deftank/venus/run.def
+  - ajout de less1day et fractday
+
+** suppression advtrac.h et control.h dans les phy*
+**-----------------------
+
+* Modif de : phy[venus/titan]/physiq.F
+  - remplacement de #include "advtrac.h" par USE infotrac
+  - remplacement de #include "control.h" par USE control_mod
+
+* Modif de : phy[venus/titan]/phytrac.F 
+  - remplacement de #include "advtrac.h" par USE infotrac
+  - remplacement de #include "control.h" par USE control_mod
+
+* Modif de : phy[venus/titan]/phyredem.F
+ - remplacement de #include "control.h" par USE control_mod
+
+** ajustements lecture des .def
+**-----------------------
+
+* Modif de phy[titan/venus]/conf_phys.F90
+  - ajout de tous les parametres transferes de gcm.def dans physiq.def
+  - utilisation de ecritphy: 
+       pour Venus, frequence de sortie dans mth et ins
+       pour Titan, frequence de sortie dans ins
+  - suppression de zzz
+
+* Modif de phy[titan/venus]/clesphys.h
+  - mise a jour des declarations necessaires
+
+** Elimination de clesphy0
+**-----------------------
+
+* Modif de : phy[titan/venus]/phyetat0.F
+  - elimination de clesphy0, longcles
+
+* Modif de : phy[titan/venus]/physiq.F
+  - elimination de clesphy0, longcles
+
+* Modif de dyn3d[par]/
+  calfis.F, ce0l.F90, conf_gcm.F, gcm.F, leapfrog.F
+  - elimination de clesphy0, longcles
+
+** Ajustement format .h
+**-----------------------
+
+* Modif de phy[titan/venus]/clesphys.h (clesphys.inc elimine)
+
+* Modif de phy[titan/venus]/YOMCST.h (YOMCST.inc elimine)
+
+* Elimination de tous les YOETHF dans phy[titan/venus] et nettoyage de suphec.F
+
+* Elimination de tous les FCTTRE dans phy[titan/venus]
+
+* Modif de : phytitan/comorbit.h (comorbit.inc elimine)
+
+** Controle de la remise a zero des varc
+**-----------------------
+
+* Modif de dyn3d[par]/sortvarc.F
+  - ajout firstcal
+  - ajout flag pour controle (resetvarc)
+  - correction pour avoir le moment cinetique total absolu
+
+* Modif de dyn3d[par]/conf_gcm.F
+  - ajout flag pour controle (resetvarc)
+
+* Modif de dyn3d[par]/control_mod.F90
+  - ajout de resetvarc
+
+* Modif de deftank/venus/run.def
+  - ajout de resetvarc
+
+* Modif de dyn3d[par]/sortvarc0.F
+  - correction pour avoir le moment cinetique total absolu
+
+
+*********************
+**** commit_v101 ****
+*********************
+
+Serie de modifs Sebastien Lebonnois
+
+Compilation de phyvenus, ça passe ! 
+Modifs propagees a phytitan (sans compilation... a cause des routines C)
+dans la v102.
+
+Reste des chantiers a finir: 
+- discretisation verticale
+- sponge layer
+
+*********************
+**** commit_v104 ****
+*********************
+
+SLebonnois: modification de makelmdz et create_make_gcm pour pouvoir 
+compiler la chimie titan. Pas de raison que ca gene les autres.
+Dans cette version, les compilations de Venus et Titan fonctionnent.
+
+Phytitan: modifications pour pouvoir compiler correctement.
+Il ne manque plus que physiq.F a faire.
+---
+Fait:
+Avec la v105, la compilation Titan se fait sans problemes.
+
+**-----------
+(commit 106: ajustements dans phytitan)
+**-----------
+- Sorties des opacites (*_hist*.h)
+- g(z) pris en compte (physiq.F, zzlay)
+- correction topo (physiq.F, zzlev(i,1))
+- correction lell.F et lell_light.F (et aussi radtitan.F du coup)
+- remise a jour des sorties
+- suphec.F : RDAY=1.37889e6 et non RSIDAY
+**-----------
+
+*********************
+**** commit_v108 ****
+*********************
+
+Modifs Sebastien Lebonnois dans dyn3d[par] pour sponge layer et dissip horizontale.
+
+** Correction bug
+**---------------
+
+* Modif de dyn3d[par]/calfis[_p].F
+  => ztfi doublement incremente...
+
+** Sponge layer
+**-------------
+
+* Modif de dyn3d[par]/leapfrog[_p].F
+  Utilisation de d*top dans appel a top_bound.F
+  Initialisation des d* (dis, fi, top)
+
+* Modif de dyn3d[par]/top_bound[_p].F
+  Implementation de mode_top_bound
+  Pas d'incrementation
+
+* Modif de dyn3d[par]/conf_gcm.F
+  Parametres de top_bound
+
+* Modif de dyn3d[par]/comconst.h
+  Parametres de top_bound
+
+* Modif de deftank/[titan/venus]/gcm.def
+  Ajout ok_strato
+  Ajout parametres de top_bound
+
+* Ecriture doc
+  Ajout top_bound.tex (et .pdf) dans la documentation.
+
+** Dissipation horizontale
+**------------------------
+
+* Modif de dyn3d[par]/inidissip.F
+  passage a dissip_fac_mid automatique
+  passage a dissip_fac_up sur modele martien si ok_strato
+
+* Modif de dyn3d[par]/conf_gcm.F
+  Parametres dissip_*
+
+* Modif de dyn3d[par]/comconst.h
+  Parametres dissip_*
+
+* Modif de deftank/[titan/venus]/gcm.def
+  Ajout parametres dissip_*   !!! REGLAGES A FAIRE !!!
+
+* Ecriture doc
+  Ajout dissip_horiz.tex (et .pdf) dans la documentation.
+
+****************************
+**** commit_v109 (+110) ****
+****************************
+
+** Discretisation verticale
+**-----------------------
+
+* Modif de dyn3d[par]/iniconst.F
+  Appel de disvert_[no]terre mis sous flag planet_type
+
+* Modif de dyn3d[par]/disvert.F90
+  Renomme disvert_terre.F90
+
+* Ajout de dyn3d[par]/disvert_noterre.F
+  Correspond au disvert pour Titan et Venus (et Mars ? A verifier)
+  Declaration aps et bps enlevee (=> comvert.h)
+
+* Modif de dyn3d[par]/comvert.h
+  Ajout de aps,bps
+   => entraine la modif de limy.F(+par), vlsplt[_p].F, vlspltqs[_p].F, 
+
+* Modif de dyn3d[par]/limy.F, vlsplt[_p].F, vlspltqs[_p].F, 
+  Changement de aps en apps (et du coup, apn en appn)
+
+* Ajout dyn3d[par]/exner_milieu.F (vient directement de mars/libf/dyn3d/)
+  pour remplacer exner_hyb dans cas noterre
+
+* Ajout dyn3dpar/exner_milieu_p.F 
+  adapte de exner_milieu.F
+  pour remplacer exner_hyb_p dans cas noterre
+
+* Modif de dyn3d[par]/leapfrog[_p].F
+  Appels à exner_hyb[_p]/exner_milieu[_p] mis sous flag planet_type.
+
+* Ajout de disvert.tex[/.pdf] dans la doc
+
+*********************
+**** commit_v117 ****
+*********************
+
+M              116   mesoscale/LMD_MM_MARS/SRC/WRFV2/phys/module_lmd_driver.F
+*** CORRECTION MAJEURE DE BUG : PSFC et TRACEURS PAS BIEN MIS A JOUR ***
+- pdq au lieu de pdq*dt (dt = pas de temps dynamique)
+- idem pour pdpsrf
+IMPACT SURTOUT SUR LES SIMULATIONS LONGUES ET LES SIMULATIONS TACHE DE POUSSIERE (stage Julien)
+TEST A EFFECTUER POUR LES SIMULATIONS CYCLE DE L'EAU
+
+M              116   mars/libf/phymars/newsedim.F
+M              116   mars/README
+Correction de deux bugs dans newsedim.F: 1-e(-x) trop faible et endif mal place
+
+M              116   mesoscale/LMDZ.MARS.new/myGCM/start.nc
+A                0   mesoscale/LMDZ.MARS.new/myGCM/DEFS_JB/SP51_HR_dq_r3.0n0.5a0.5_MY26_TM
+A                0   mesoscale/LMDZ.MARS.new/myGCM/DEFS_JB/SP51_HR_dq_r3.0n0.5a0.5_MY26_TM/run.def
+A                0   mesoscale/LMDZ.MARS.new/myGCM/DEFS_JB/SP51_HR_dq_r3.0n0.5a0.5_MY26_TM/traceur.def
+A                0   mesoscale/LMDZ.MARS.new/myGCM/DEFS_JB/SP51_HR_dq_r3.0n0.5a0.5_MY26_TM/startfi72.nc
+A                0   mesoscale/LMDZ.MARS.new/myGCM/DEFS_JB/SP51_HR_dq_r3.0n0.5a0.5_MY26_TM/start72.nc
+A                0   mesoscale/LMDZ.MARS.new/myGCM/DEFS_JB/SP51_HR_dq_r3.0n0.5a0.5_MY26_TM/callphys.def
+M              116   mesoscale/LMDZ.MARS.new/myGCM/traceur.def
+M              116   mesoscale/LMDZ.MARS.new/myGCM/startfi.nc
+M              116   mesoscale/LMDZ.MARS.new/myGCM/callphys.def
+M              116   mesoscale/LMD_MM_MARS/SIMU/in_lmdz_mars_newphys/compile
+M              116   mesoscale/LMD_MM_MARS/SIMU/in_lmdz_mars_newphys/myGCM/launch_gcm
+M              116   mesoscale/LMD_MM_MARS/SIMU/in_lmdz_mars_newphys/myGCM/run_mcd_3days
+Nouvelle base de donnees d'etats initiaux sans les nuages radiativement actifs
+
+A                0   mesoscale/PLOT/SPEC/LES/turb_period_psfc.pro
+A                0   mesoscale/PLOT/SPEC/LES/turb_inc.pro.new
+M              116   mesoscale/PLOT/SPEC/GW/gravitwave2.pro
+M              116   mesoscale/PLOT/SPEC/GW/gravitwaveprof.pro
+Petites MAJ routines graphiques
+
+*********************
+**** commit_v119 ****
+*********************
+
+Sebastien Lebonnois: apres validation des versions Venus et Titan, 
+correction d'un certain nombre de bugs.
+
+*********************
+**** commit_v124 ****
+*********************
+
+Ehouarn: suite de l'implémentation de la discrétisation verticale
+-> insertion flag 'hybrid' pour discretisation verticale en sigma/hybrid
+   dans disvert_noterre.F
+-> ajout parametre 'scaleheight' (lu dans z2sig.def) dans comvert.h
+-> quelques corrections de bug (en //), mais il faudra plus de travail
+   pour atteindre la concordance entre versions séq. et //.
+   
+*********************
+**** commit_v126 ****
+*********************
+
+Ehouarn: suite de l'implémentation de la discrétisation verticale, quelques
+         mises à jour pour concorder avec la version terrestre.
+-> Finalement, on met un flag "disvert_type" pour fixer la discrétisation
+   disvert_type==1 (défaut si planet_type=="earth") pour cas terrestre
+   disvert_type==2 (défaut si planet_type!="earth") pour cas planéto (z2sig.def)
+-> au passage, pour rester en phase avec modèle terrestre on renomme
+   disvert_terre en disvert (le disvert "alternatif" demeure 'disvert_noterre')
+
+*********************
+**** commit_v130 ****
+*********************
+
+Sebastien:
+
+- correction de bugs dans phytitan suite a compil avec -debug sur gnome
+- elimination de nbetat* dans gcm.F et leapfrog.F (et dans le parallele)
+- correction rday -> rjour dans sortvarc.F
+- ajustement des arch-GNOME*
+
+*********************
+**** commit_v137 ****
+*********************
+
+CHANGEMENT ARBORESCENCE DECIDEE EN REUNION SVN
+voir svn log
+voir DOC/000-MODELS
+
+*********************
+**** commit_v142 ****
+*********************
+
+LMD_LES_MARS: changement majeur pour pallier a plusieurs defauts penibles de la separation d'avec LMD_MM_MARS.
+   --> le LES est maintenant inclus dans LMD_MM_MARS/SRC/LES [executer le script d'installation LMD_LES_MARS_install au prealable]
+   --> il se compile avec le script makemeso dans $MMM en mettant l'option "-c les" qui cree un dossier particulier, e.g. lesmpi_64
+   --> pour l'instant sont supportes : mpi_64, mpifort_64, ancienne et nouvelle physique, cas particulier ciclad (detecte automatiquement)
+   --> le(s) script(s) makeles sont desormais obsoletes
+   --> il n'y a plus qu'un seul Registry.EM a modifier pour le LES
+       (eventuellment il est possible de modifier dans le dossier specifique en remplacant le lien par un fichier)
+   --> disparition du dossier MESOSCALE/LMD_LES_MARS
+   --> les changements ont ete fait sans modifier le script copy_model
+   Il reste a verifier le bon fonctionnement de facon plus approfondie suite a ce changement de structure.
+   Le nouveau script 'correcfft' est un sparadrap un peu moche mais sans consequence.
+
+*********************
+**** commit_v156 ****
+*********************
+changements pour pouvoir faire tourner le LES sans appel a la physique martienne
+-- non teste mais fonctionne a priori egalement avec le MESOSCALE
+
+*********************
+**** commit_v234 ****
+*********************
+plus de meso_ files dans la physique martienne. physiq et inifis sont communs au GCM avec des precompiler flags.
+
+*********************
+**** commit_v270 ****
+*********************
+Ehouarn: mises à jour des dynamiques (seq et //) pour suivre les 
+développements de LMDZ5 terrestre (LMDZ5 trunk, rev 1560)
+
+* scripts & co.: changement (mineur) dans "makelmdz_fcm" et "makelmdz" et les
+                 fichiers "arch*path" sur la façon dont sont définies et
+                 utilisées les références à NetCDF
+
+* dyn3d:
+- advtrac.F devient advtrac.F90
+- inidissip.F devient inidissip.F90 + utilisation de "dissip_period" au lieu de
+  "idissip" et calcul automatique de "dissip_period" si dissip_period=0
+  dans gcm.def
+- iniacademic.F90 : adaptation pour aquaplanètes terrestres (iflag_phys>2)
+- ajout de grilles_gcm_netcdf_sub.F90 (pas utile pour les planètes)
+- leapfrog.F :ajout du logical 'physic' (pour régler l'appel à la physique,
+  avec les cas particuliers aquaplanètes) + correction bug sur cumul des
+  flux de masse pour l'advection des tracers.
+- ini_paramLMDZ_dyn.h : remplacement de "idissip" par "dissip_period"
+- comdissipn.h : passage a un format compatible fixe/libre
+- control_mod.F90 : remplacement de "idissip" par "dissip_period"
+- defrun.F : remplacement de "idissip" par "dissip_period"
+- gcm.F : adaptations pour aquaplanètes terrestres (iflag_phys>2)
+- iniconst.F : dtdiss est calculé dans inidissip.F90
+- vlsplt.F : changements cosmetiques
+- ce0l.F90 : ajout appel à grilles_gcm_netcdf_sub
+- integrd.F : changements cosmetiques
+- limit_netcdf.F90 : mise à jour de la version terrestre (pas important pour
+                     les planètes)
+- conf_gcm.F : ajout lecture du flag 'dissip_period' (au lieu de idissip) et
+               du flag 'grilles_gcm_netcdf' (pas important pour les planètes)
+- write_paramLMDZ_dyn.h : remplacement de "idissip" par "dissip_period"
+
+*dyn3dpar:
+- Idem que pour dyn3d pour le fichiers identiques entre dyn3d et dyn3dpar:
+  comdissipn.h, control_mod.F90, iniconst.F, grilles_gcm_netcdf_sub.F90,
+  ce0l.F90, inidissip.F90, iniacademic.F90, limit_netcdf.F90, conf_gcm.F,
+  defrun.F
+- advtrac_p.F devient advtrac_P.F90
+- integrd_p.F : changements cosmetiques
+- leapfrog_p.F90 : changements cosmetiques + correction bug sur cumul des
+  flux de masse
+- bilan_dyn_p.F : correction bug mineur
+- exner_hyb_p.F : correction bug OMP majeur
+- exner_milieu_p.F : correction bug OMP majeur
+
+*********************
+**** commit_v492 ****
+*********************
+Ehouarn: mises à jour des dynamiques (seq et //) pour suivre les 
+développements de LMDZ5 terrestre (LMDZ5 trunk, rev 1605)
+
+* grid:
+- dimension/makdim: mise à jour du script + commentaires
+
+* filtrez:
+- filtreg_mod.F90: correction sur la taille des tableaux à allouer
+
+* dyn3d:
+- leapfrog.F : ajout possibilité de démarrer un run à n'importe quelle heure
+- dynredem.F : ajout possibilité de démarrer à n'importe quelle heure +
+              utilisation du flag "type_trac" au lieu de "config_inca"
+- control_mod.F90 : ajout de "starttime", heure de départ
+- dynetat0.F : ajout "start_time" dans tab_cntrl(32)
+- gcm.F : utilisation du flag "type_trac" au lieu de "config_inca" +
+          possibilité de démarrer à n'importe quelle heure
+- ce0l.F : utilisation du flag "type_trac" au lieu de "config_inca"
+- iniacademic.F90 : correction valeur de la pression de surface pour
+                    aqua et terra-planètes
+- conf_gcm.F : ajout lecture des flags "starttime" et "type_trac"
+- infotrac.F : gestion des cas INCA et Reprobus
+- temps.h : ajout de "start_time"
+
+* dyn3dpar:
+- Idem que pour dyn3d pour le fichiers identiques entre dyn3d et dyn3dpar:
+  dynredem.F, control_mod.F90, dynetat0.F, iniacademic.F90
+- temps.h : ajout de "start_time"
+- conf_gcm.F : ajout lecture des flags "starttime" et "type_trac" et
+               changement du nom du fichier de sortie "standard"
+- gcm.F : utilisation du flag "type_trac" au lieu de "config_inca" +
+          possibilité de démarrer à n'importe quelle heure
+- parallel.F90 : gestion des sorties "standard" dans plusieurs fichiers (1 par
+                 processus MPI)
+- leapfrog_p.F : ajout possibilité de démarrer un run à n'importe quelle heure
+                 et suppression de la variable "verbose"
+- dynredem_p.F : ajout possibilité de démarrer à n'importe quelle heure +
+                 utilisation du flag "type_trac" au lieu de "config_inca"
+- ce0l.F : utilisation du flag "type_trac" au lieu de "config_inca"
+- filtreg_p.F : ajout de flags cpp autour de l'utilisation de la BLAS et
+                realisation des calculs via matmul() sinon
+
+*********************
+**** commit_v776 ****
+*********************
+Ehouarn: Updates in the dynamics (seq and //) to keep up with updates
+in LMDZ5 (up to LMDZ5 trunk, rev 1649):
+
+* bibio:
+- initdynav.F => initdynav.F90
+- writedynav.F => writedynav.F90
+- new_unit.F90 : added this new module
+- nf95_get_var_m.F90 : added this new module
+- netcdf95.F90, nf95_get_att_m.F90, nf95_gw_var_m.F90, nf95_put_var_m.F90,
+  simple.F90 : updated as they were in LMDZ5
+
+* dyn3d:
+- guide_mod.F90 : keep up with minor changes (pressure_exner flag)
+- inigrads.F : keep up with minor changes
+- integrd.F : keep up with changes (get rid of finvmaold which was not used)
+- calfis.F : keep up with minor changes (#CPP_...)
+- iniacademic.F90 : keep up with minor changes (pressure_exner flag)
+- inidissip.F90 : keep up with minor changes (simplify computation of zh)
+- ce0l.F90 : keep up with minor changes
+- dynetat0.F : keep up with minor changes (use netcdf90 function)
+- iniconst.F => iniconst.F90 (+ introduce pressure_exner flag)
+- exner_milieu.F : keep up with minor changes (can be used for all planets)
+- exner_hyb.F : keep up with minor changes (can be used for all planets)
+- gcm.F : keep up with minor changes (CPP_PHYS instead of CPP_EARTH)
+- comvert.h : keep up with minor changes (pressure_exner flag)
+- etat0_netcdf.F : keep up with minor changes (pressure_exner flag)
+- wrgrads.F : keep up with minor changes (lnblnk => trim)
+- disvert.F90 : keep up with changes (Earth version of disvert anyways)
+- dynredem.F : keep up with minor changes (use netcdf90 functions)
+- leapfrog.F : updates (get rid of finvmold , pressure_exner flag, updated
+               computation of time, get rid of "dissipation bug"
+               that kills 1+1=2 in dynamics)
+
+* dyn3dpar:
+- same updates as in dyn3 for routines : inigrads.F, iniacademic.F90,
+  inidissip.F90, dynetat0.F, iniconst.F90, exner_milieu.F, exner_hyb.F,
+  comvert.h, etat0_netcdf.F90, wrgrads.F, disvert.F90, dynredem.F
+- guide_p_mod.F : keep up with minor changes (pressure_exner flag)
+- gr_fi_dyn_p.F : keep up with minor changes (CPP_PHYS condition)
+- gr_dyn_fi_p.F : keep up with minor changes (CPP_PHYS condition)
+- integrd_p.F : keep up with changes (get rid of finvmaold which was not used)
+- calfis_p.F : keep up with minor changes (CPP_PHYS condition)
+- mod_interface_dyn_phys.F90 : keep up with minor changes (CPP_PHYS condition)
+- ce0l.F : keep up with minor changes
+- exner_milieu_p.F : keep up with minor changes (can be used for all planets)
+- exner_hyb_p.F : keep up with minor changes (can be used for all planets)
+- gcm.F : keep up with minor changes (CPP_PHYS)
+- bands.F : keep up with minor changes (CPP_PHYS)
+- dynredem_p.F : keep up with minor changes (use netcdf90 functions)
+- leapfrog_p.F : updates (get rid of finvmold , pressure_exner flag, updated
+                 computation of time, get rid of "dissipation bug"
+                 that kills 1+1=2 in dynamics)
+
+*********************
+**** commit_v808 ****
+*********************
+
+For Venus (but should be done for Titan also, soon):
+
+To be able to use start2archive.F and newstart-VT.F, the following routines are added in the phy* directory:
+ini_archive.F
+interp_vert.F
+readstart.F
+scal_wind.F
+wind_scal.F
+write_archive.F
+writerestart.F
+
+Also,  dyn3d/startvar.F90 and dyn3d/grid_noro have been transfered to the
+phyvenus directory and adapted (mostly to remove the mask). They have also been removed from dyn3dpar.
+
+start2archive.F and newstart-VT.F should be in dyn3d. However, they depend on the planet. For the moment, not put in the SVN depository...
+
+For Titan: 
+
+Update to be able to run clouds in the GCM. TO BE CHECKED !
+- optc*_1pt3 replace optc*_1pt2 (called in optc*.F)
+- use of effg (though effg=RG for the moment) everywhere it was already implemented. Beware that there are still lots of places where RG is used directly. Many modifications still to be done for variable g.
+- added optcld.F90
+- physiq.F, write_hist[day/mth].h : use of zlsm1 to get a correct average of Ls in the outputs when crossing the 360->0 transition.
+
++ some changes in NCL scripts...
+
+*********************
+**** commit_v841 ****
+*********************
+Ehouarn: Updates in the dynamics (seq and //) to keep up with updates
+in LMDZ5 (up to LMDZ5 trunk, rev 1678):
+* dyn3d:
+- leapfrog.F : jD_cur initialization for planet_type=generic ; 
+               comment out calls to "ini_paramLMDZ_dyn.h" and
+               "write_paramLMDZ_dyn.h" (unused outputs)
+- comvert.h : add pseudoalt()
+- comconst.h : add comments
+- fxhyp.F : add modification (FH) to run with only 1 longitude point
+- gcm.F : remove call to iniaqua.F + add iflag_phys argument to call
+          to iniphysiq => adapt iniphysiq.F in "phyvenus" and "phytitan"
+- dyetat0.F : adapt loading of "controle" start.nc file so it works for
+              Earth/Venus/Titan and Mars/Generic planets.
+- groupe.F : add modification (FH) to run with only 1 longitude point
+- paramet.h : add modification (FH) to run with only 1 longitude point
+- calfis.F : add planet_type=="generic" case call to physiq
+- disvert_noterre.F : remove "pseudoalt" from local variables
+
+* phyvenus/phytitan :
+- iniphysiq.F : add the iflag_phys argument to routine input argument list
+
+* dyn3dpar:
+- identical changes to those in 'dyn3d' for comvert.h, comconst.h, paramet.h,
+  fxhyp.F, dynetat0.F, disvert_noterre.F
+- gcm.F : add possibility to call to iniphysiq.F for iflag_phys>=100 and
+          remove call to iniaqua.F + add iflag_phys argument to call
+          to iniphysiq
+- leapfrog_p.F : add "physiq" logical (to control calls to physics) and
+                 jD_cur initialization for planet_type=generic
+- groupe_p.F : add modification (FH) to run with only 1 longitude point
+- calfis_p.F : add planet_type=="generic" case call to physiq
+
+* Important bug fix in leapfrog_p.F : moved compuation of tsurpk() so that
+  it is done BEFORE the "Register Hallo" calls (prior to calling caldyn_p).
+  Now dynamics in seq/MPI/OpenMP/mixed modes yield identical results when
+  running in Newtonian mode (i.e. dynamics only).
+
+*********************
+**** commit_v979 ****
+*********************
+Ehouarn: Updates in the dynamics (seq and //) to keep up with updates
+in LMDZ5 (up to LMDZ5 trunk, rev 1760):
+* General stuff (essentially to keep up with Earth model):
+- Updated makelmdz_fcm and makelmdz (more control on dimension.h, 
+  added option -mem, although it is not usefull for now)
+- Updated build_gcm with more control over fcm
+- Updated create_make_gcm (enable looking for code in subdirectories)
+
+* bibio:
+- updates (just renaming the files actually...) new_unit.F90 => new_unit_m.F90,
+  pchsp_95.F90 => pchsp_95_m.F90 and pchfe_95.F90 => pchfe_95_m.F90
+
+* filtrez:
+- mod_fft.F90: use more baseline CPP directives for preprocessor compatibility
+- mod_filtre_fft_loc.F90: added this new file
+- filtreg_mod.f90: added calls to init_..._loc
+- filtreg.F: fixed calls to DGEMM into SGEMM (preprocessing does the switch)
+
+* dyn3d:
+- removed obsolete files: etat0_netcdf.F90 limit_netcdf.F90
+                          pres2lev.F90
+- added new file : pres2lev_mod.F90 (module containing "old" pres2lev)
+- gcm.F: changed args to call to inidissip (added arg "vert_prof_dissip")
+- inidissip.F90: added arg "vert_prof_dissip" and the "earth model"
+  discterizations (flagged with "planet_type=="earth")
+- comdissnew.h: added 'vert_prof_dissip' to the common block
+- guide_mod.F90: added the "use pres2lev_mod"
+- conf_gcm.F: cosmetics, and evaluation of vert_prof_dissip,
+  (and also of dissip_* factors, for Earth model)
+- comconst.h : added dissip_factz,dissip_zref variables (for Earth mode dissip)
+
+* dyn3dpar:
+- removed obsolete files: etat0_netcdf.F90 limit_netcdf.F90
+                          pres2lev.F90 mod_const_para.F90
+- added new files: pres2lev_mod.F90 (module containing "old" pres2lev)
+                   mod_const_mpi
+- abort_gcm : better control of abort in parallel mode
+- gcm.F: changed args to call to inidissip (added arg "vert_prof_dissip")
+- inidissip.F90: added arg "vert_prof_dissip" and the "earth model"
+  discterizations (flagged with "planet_type=="earth")
+- comdissnew.h: added 'vert_prof_dissip' to the common block
+- filtreg_p.F : bug correction (array bounds)
+- guide_p_mod.F90 : added the "use pres2lev_mod"
+- conf_gcm.F : cosmetics (and evaluation of vert_prof_dissip , and
+               also of dissip_* factors, for Earth model)
+               plus check if "adjust" is indeed not used in OpenMP
+- comconst.h : add dissip_factz,dissip_zref variables (for Earth mode dissip)
+
+**********************
+**** commit_v1000 ****
+**********************
+Ehouarn: Some cleanup in the dynamics: ismax.F,ismin.F and cray.F (scopy/ssum)
+moved to 'bibio' (rather than being in dyn3d and dyn3dpar).
+
+**********************
+**** commit_v1010 ****
+**********************
+Ehouarn: Improved sponge layer scheme (top_bound):
+- Sponge tendencies are now computed analytically, instead than using
+  a Forward Euler approximation.
+- Sponge tendencies are now added within top_bound.
+
+**********************
+**** commit_v1017 ****
+**********************
+Ehouarn: Improved cpdet routines in // and additional sponge mode:
+- Additionnal sponge mode (trigered with "callsponge" flag), in line with the one used
+  in the Generic and Martian GCM. This sponge is called whenever there is a dissipation
+  step.
+- Improvement of the // cpdet routines : created routines tpot2t_glo_p and t2tpot_glo_p
+  which handle fields on the whole dynamics (scaler) grid, which are more efficient than
+  calling tpot2t_p or t2tpot_p with slabs of data (generated use of intermediate copies
+  of these chunks of data at every call)
+- Turned cpdet.F into a module cpdet_mod.F90 (and correspondingly adapted all routines
+  in the Venus physics).
+
+**********************
+**** commit_v1019 ****
+**********************
+Ehouarn: Updates in the dynamics (seq and //) to keep up with updates
+in LMDZ5 (up to LMDZ5 trunk, rev 1845):
+* General stuff:
+- makelmdz_fcm: add options -j # (compile using # threads) and -full, and to keep up
+   with Earth model, possibility to compile with various versions of orchidee
+- bld.cfg: adaptations to enable compiling using multiple threads
+- build_gcm: adaptations to enable compiling using multiple threads
+- makelmdz: keep up with Earth model: possibility to compile with various versions of orchidee + cosmetic changes + library directory name change
+
+* bibio:
+- wxios.F90 : Added for possible future use of XIOS library
+
+* filtrez:
+- mkl_dft_type.f90 & mkl_dfti.f90 : MKL (for MKL FFT) interface definitions
+- filtreg_mod : limit use of FFT to parallel mode
+- mod_filtre_fft.F90 & mod_filtre_fft_lov.F90 : swich to use parallel_lmdz 
+
+* dyn3d:
+- abort_gcm.F : add things for xios
+- advtrac.F90 : minor change in CFL outputs
+- ce0l.F90 : indicesol.h is now module indice_sol_mod
+- comvert.h : cosmetic change on comments
+- gcm.F : add xios and use module indice_sol_mod (for INCA)
+- inigeom.F : move two computations outside loop
+
+* dyn3dpar:
+- parallel.F90 => parallel_lmdz.F90 : and change all the "use parallel" into
+  "use parallel_lmdz" in all files in dyn3dpar
+- comvert.h : cosmetic change on comments
+- gcm.F : add xios and use module indice_sol_mod (for INCA)
+- leapfrog_p.F : add xios + correction for times in Newtonian case
+- ce0l.F90 : indicesol.h is now module indice_sol_mod
+- inigeom.F : move two computations outside loop
+
+**********************
+**** commit_v1056 ****
+**********************
+
+SL: Titan runs parallel !
+To do this, I had to add the possibility to do zonal averages in calfis...
+This is under flags moyzon_ch (chemistry) and moyzon_mu (microphysics).
+These flags are false by default and are activated through physiq.def.
+This should not be a problem for other users of LMDZ.COMMON
+
+Also, you'll find updated arch files for GNOMEp_large using dynamic libraries that are located in the COMMON dir on "gnome".
+
+Other Titan modifications: 
+- use of tholin_cvd instead of tholin => xvis and xir read in physiq.def instead of initpar now (easier). These coeffs need to be adjusted for tholin_cvf... for the moment, they are =1.
+- updated deftank. You can find a z2sig.def for 65 levels (10 additional levels above the usual model top)
+- gravity waves parameterization is implemented but not usable yet !
+
+**********************
+**** commit_v1107 ****
+**********************
+Ehouarn: Updates and modifications to enable running Mars physics with
+         LMDZ.COMMON dynamics:
+- For compilation: adapted makelmdz, create_make_gcm and makelmdz_fcm, bld.cfg
+  to compile aeronomy routines in "aerono$physique" if it exists,
+  and added "-P -traditional" preprocessing flags in "arch-linux-ifort*"
+- Added function "cbrt.F" (cubic root) in 'bibio'
+- Adapted the reading/writing of dynamics (re)start.nc files for Mars. The main
+  issue is that different information (on time, reference and current) is 
+  stored and used differently, hence a few if (planet_type =="mars") here and
+  there. Moreover in the martian case there is the possibility to store fields
+  over multiple times.
+  Some Mars-specific variables (ecritphy,ecritstart,timestart) added in 
+  control_mod.F and (hour_ini) in temps.h
+
+**********************
+**** commit_v1189 ****
+**********************
+Ehouarn : updates in the dynamics:
+- Correctly account for the change in pressure, masse, etc. after modifying surface
+  pressure following a call to the physics
+- Corrected tracer advection, which is computed using values at the beginning of the
+  time step, so it is done at Matsuno forward step.
+
+**********************
+**** commit_v1300 ****
+**********************
+Ehouarn: Updates in the dynamics (seq and //) to keep up with updates
+in LMDZ5 (up to LMDZ5 trunk, rev 1955):
+* compilation:
+- bld.cfg : adaptations for XIOS and SISVAT (Earth physics sub-package).
+- makelmdz_fcm : adaptations for XIOS and SISVAT.
+- makelmdz: adaptations for dyn3D_common and XIOS and SISVAT
+- create_make_gcm : adaptations for dyn3d_common
+
+* dyn3d_common :
+- new directory which holds routines common to dyn3d and dyn3dpar:
+  academic.h, adaptdt.F, advn.F, advx.F, advxp.F, advy.F, advyp.F, advz.F, advzp.F,
+  bernoui.F, clesph0.h, coefpoly.F, com_io_dyn_mod.F90, comuforc_h.F90,
+  comconst.h, comdissip.h, comdissipn.h, comdissnew.h, comgeom.h, 
+  comgeom2.h, comvert.h, conf_planete.F90, control_mod.F90, convflu.F,
+  convmas.F, coordij.F, covcont.F, covnat.F, cpdet_mod.F90, defrun.F, description.h,
+  diagedyn.F, disvert.F90, disvert_noterre.F, diverg.F, divergf.F, diverg_gam.F,
+  divergst.F, divgrad.F, divgrad2.F, dump2d.F, dynetat0.F, dynredem.F, ener.h, enercin.F, 
+  exner_hyb.F,exner_milieu.F, extrapol.F, flumass.F, fxhyp.F, fxy.F, fxyhyper.F, 
+  fxysinus.F, fyhyp.F, geopot.F, gr_dyn_fi.F, gr_ecrit_fi.F, gr_fi_dyn.F, gr_int_dyn.F, 
+  gr_u_scal.F, grad.F, gradiv.F, gradiv2.F, gradsdef.h, grid_atob.F,
+  grilles_gcm_netcdf.F, grilles_gcm_netcdf_sub.F90, heavyside.F, infotrac.F90,
+  iniconst.F90, inidissip.F90, inigeom.F, inigrads.F, iniprint.h, initial0.F,
+  inter_barxy_m.F90, interpost.F, interpre.F, invert_lat.F90, juldate.F,
+  laplacien.F, laplacien_gam.F, laplacien_rot.F, laplacien_rotgam.F,
+  limx.F, limy.F, limz.F, massbar.F, massbarxy.F, massdair.F, minmax.F,
+  minmax2.F, nxgrad.F, nxgrad_gam.F, nxgradst.F, nxgrarot.F,nxgraro2.F,
+  paramet.h, pbar.F, pentes_ini.F, ppm3d.F, prather.F, pres2lev_mod.F90,
+  pression.F, psextbar.F, PVtheta.F, q_sat.F, ran1.F, relaxetat0.F,
+  rotat.F, rotatf.F, rotat_nfil.F, rotatst.F, serre.h, sort.F,
+  sortvarc.F, sortvarc0.F, temps.h, test_period.F, tidal_forces.F,
+  tourabs.F, tourpot.F, traceurpole.F, tracstoke.h, ugeostr.F90, vitvert.F
+  write_grads_dyn.h
+- defrun.F: change abort() (not a Fortran standard) for abort_gcm()
+- fxhyp.F : change abort() (not a Fortran standard) for abort_gcm()
+- fyhyp.F : change abort() (not a Fortran standard) for abort_gcm()
+- grid_atob.F : change abort() (not a Fortran standard) for abort_gcm()
+- juldate.F : change dfloat() (not a Fortran standard) to dble()
+- ran1.F better to use a "stop" instead of a "pause"
+- dynetat0.F : change abort() (not a Fortran standard) for abort_gcm()
+- dynredem.F : change abort() (not a Fortran standard) for abort_gcm()
+
+* bibio:
+- wxios.F90 : updates on handling xios outputs.
+
+* dyn3d_par:
+- mod_const_mpi.F90 : ajustments for XIOS.
+- abort_gcm.F90 : cosmetic changes.
+- gcm.F : adaptations for XIOS.
+- leapfrog_p.F90 : adaptations for XIOS and for calls to bilan_dyn_p.
+- parallel_lmdz.F90 : enable reading "omp_chunk" from def files. Adaptations for XIOS.
+- conf_gcm.F90: remove "reading omp_chunk" from def files.
+- bilan_dyn_p.F : corrections to make it work in MPI and OpenMP. >>> Earth version!!!
+  >>> not the same as "bilan_dyn" in dyn3D !!
+- guide_mod_p.F : update to keep up with Earth model 
+
+* dyn3d:
+- guide_mod.F : upate to keep up with Earth model
+
+**********************
+**** commit_v1302 ****
+**********************
+Ehouarn: Updates in the dynamics (seq and //) to keep up with updates
+in LMDZ5 (up to LMDZ5 trunk, rev 2070):
+* compilation:
+- bld.cfg : adaptations for compilation with RRTM and PRISM.
+- makelmdz_fcm : adaptations for compilation with RRTM and OASIS-MCT ocean coupled mode
+  and change handling of RRTM and SISVAT so that bld.cfg is never overwritten (as is the case
+  for COSP), since bld.cfg is sometimes a link to the one located in LMDZ.COMMON.
+- makelmdz : adaptations for compilation with RRTM and in 1D, and some cleanup.
+- create_make_gcm : cleanup and improved scaning of dependencies 
+
+* dyn3d_common:
+- iniconst.F90 : change argument list in call to disvert
+- disvert.F90 : change argument list; add "sima", "starto_**" cases
+- grilles_gcm_netcdf.F : removed because obsolete
+- q_sat.F : made free-form compatible
+- exner_hyb_m.F90 : now a module; some cleanup around beta and alpha;
+  made pkf an optional argument and removed the averaging of pks at the poles (because was
+  is not necessary; note that it changes model results wrt previous versions of code)
+- exner_milieu_m.F90 : now a module; some cleanup around beta and alpha;
+  made pkf an optional argument and removed the averaging of pks at the poles (because was
+  is not necessary; note that it changes model results wrt previous versions of code)
+- iniacademic.F90 : adaptations for changes with exner_* routines
+- removed PVtheta.F and tourabs.F
+
+* dyn3dpar :
+- parallel_lmdz.F90 : updates for XIOS and Oasis-MCT coupler
+- mod_const_mpi.F90 : updates for XIOS and Oasis-MCT coupler
+- conf_gcm.F : remove obsolete "grilles_gcm_netcdf" flag
+- logic.h : remove obsolete "grilles_gcm_netcdf" flag
+- ce0l.F : follow up on updates from Earth model
+- leapfrog_p.F : enable runing a number of dyn steps given by a negative "nday" value. Adaptations
+  for exner_* routines. Add computation of geopotential before calling physics.
+- gcm.F : enable runing a number of dyn steps given by a negative "nday" value
+- guide_p_mod.F90 : follow up on updates from Earth model
+- exner_hyb_p_m.F90 : now a module; some cleanup around beta and alpha;
+  made pkf an optional argument and removed the averaging of pks at the poles (because was
+  is not necessary; note that it changes model results wrt previous versions of code)
+- exner_milieu_p_m.F90 : now a module; some cleanup around beta and alpha;
+  made pkf an optional argument and removed the averaging of pks at the poles (because was
+  is not necessary; note that it changes model results wrt previous versions of code)
+- calfis_p.F : removed call to PVtheta
+
+* dyn3d :
+- conf_gcm.F : remove obsolete "grilles_gcm_netcdf" flag and made free-form compatible
+  (because it is included in the 1D Earth model, which is free form)
+- logic.h : remove obsolete "grilles_gcm_netcdf" flag
+- ce0l.F : follow up on updates from Earth model
+- leapfrog.F : enable runing a number of dyn steps given by a negative "nday" value. Adaptations
+  for exner_* routines. Add computation of geopotential before calling physics.
+- gcm.F : enable runing a number of dyn steps given by a negative "nday" value
+- guide_mod.F90 : follow up on updates from Earth model
+- calfis.F : removed call to PVtheta
+
+* bibio :
+- pres2lev_mod.F90 : move from dyn3d_common to bibio
+- wxios.F90 : follow up on updates on XIOS usage
+
+**********************
+**** commit_v1391 ****
+**********************
+Ehouarn: Updates in the dynamics (seq and //) to keep up with updates
+in LMDZ5 (up to LMDZ5 trunk, rev 2200):
+* compilation:
+- create_make_gcm : added processing of .f & .f90 files (not just .F and .F90)
+- makelmdz: add "mix" option for -io (ouptut with both IOIPSL and XIOS)
+- makelmdz_fcm: add "mix" option for -io
+
+* filtrez:
+- acc.F and eigen.F : add "implicit none" and variable declarations
+
+* bibio:
+- handle_err_m.F90: replace "stop" with call to abort_gcm()
+- i1mach.F, j4save.F: add "implicit none" and variable declarations
+- xercnt.F, xermsg.F, xerprn.F, xersve.F, xgetua.F: add "implicit none" 
+  and variable declarations
+
+* dyn3d_common:
+- disvert.F90 : added comments on meaning of "pa" variable
+- grid_atob.F : better control on level of default ouputs
+- infotrac.F90: update Earth-specific stuff (nqo water tracers)
+- interpre.F: correction on the size of input array w
+- juldate.F, massbar.F, ppm3d.F, ran1.F: add "implicit none"
+  and variable declarations
+- sortvarc.F: code cleanup
+- iniacademic.F90: cleanup and extra sanity check.
+
+* dyn3d:
+- abort_gcm.F: additions for XIOS
+- conf_gcm.F90: transformed to free form from conf_gcm.F
+- gcm.F: added test to check that iphysiq is a multiple of iperiod
+- getparam.F90, guidz_mod.F: update from LMDZ5
+- integrd.F: replace stop with call_abort()
+
+* dyn3dpar:
+- abort_gcm.F: minor cleanup
+- gcm.F: added test to check that iphysiq is a multiple of iperiod
+- getparam.F90, guide_p_mod.F90: update from LMDZ5
+- integrd_p.F: abort with call_abort when there is negative surface pressure
+- leapfrog_p.F: add INCA specific stuff to keep up with current LMDZ5
+- conf_gcm.F90: transformed to free form from conf_gcm.F
+
+**********************
+**** commit_v1395 ****
+**********************
+Ehouarn: some cleanup and tidying on the dynamics/physics interface.
+Essentially affects the "iniphysiq" routine in all physics packages.
+
+**********************
+**** commit_v1403 ****
+**********************
+Ehouarn: Reorganizing the physics/dynamics interface.
+
+* makelmdz and makelmdz_fcm scripts adapted to handle the new directory
+  settings
+
+* misc: (replaces what was the "bibio" directory)
+- Should only contain extremely generic (and non physics or
+  dynamics-specific) routines
+- Therefore moved initdynav.F90, initfluxsto.F, inithist.F, writedynav.F90,
+  write_field.F90, writehist.F to "dyn3d_common"
+
+* dynlonlat_phylonlat: (new interface directory)
+- This directory contains routines relevent to physics/dynamics grid
+  interactions, e.g. routines gr_dyn_fi or gr_fi_dyn and calfis
+- Moreover the dynlonlat_phylonlat contains directories "phy***" corresponding
+  to each physics package "phy***" to be used. These subdirectories should
+  only contain specific interfaces (e.g. iniphysiq) or main programs (e.g.
+  newstart)
+
+* phy***/dyn1d: this subdirectory contains the 1D model using physics
+  from phy***
+
+**********************
+**** commit_v1441 ****
+**********************
+Ehouarn: Updates in the dynamics (seq and //) to keep up with updates
+in LMDZ5 (up to LMDZ5 trunk, rev 2250):
+* compilation:
+- added test in grid/dimension/makdim to check that # of longitudes
+  is a multiple of 8
+
+* dyn3d_common:
+Bug correction concerning zoom (cf LMDZ5 rev 2218)
+- coefpoly.F becomes coefpoly_m.F90 (in misc)
+- fxhyp.F => fxhyp_m.F90 , fyhyp.F => fyhyp_m.F90
+- new routines for zoom: invert_zoom_x_m.F90 and principal_cshift_m.F90  
+- inigeom.F adapted to new zoom definition routines
+- fluxstokenc.F : got rid of calls to initial0()
+
+* dyn3d:
+- advtrac.F90 : got rid of calls to initial0()
+- conf_gcm.F90 : cosmetic changes and change in default dzoomx,dzoomy values
+- guide_mod.F90 : followed updates from Earth Model
+- gcm.F is now gcm.F90
+
+* dyn3dpar:
+- advtrac_p.F90, covcont_p.F90, mod_hallo.F90 : cosmetic changes
+- conf_gcm.F90 : cosmetic and changed in default dzoomx,dzoomy values
+- parallel_lmdz.F90 : updates to keep up with Earth model 
+
+* misc:
+- arth.F90 becomes arth_m.F90
+- wxios.F90 updated wrt Earth model changes 
+- nrtype.F90 and coefpoly_m.F90 added
+- ran1.F, sort.F, minmax.F, minmax2.F, juldate.F moved over from dyn3d_common
+
+**********************
+**** commit_v1508 ****
+**********************
+Ehouarn: Updates in the dynamics (seq and //) to keep up with updates
+in LMDZ5 (up to LMDZ5 trunk, rev 2325):
+IMPORTANT: Modifications for isotopes are only done in dyn3d, not in dyn3dpar
+           as in LMDZ5 these modifications were done in dyn3dmem.
+           Related LMDZ5 revisions are r2270 and r2281
+* in dynlonlat_phylonlat:
+- add module "grid_atob_m.F90" (a regridding utility
+  so far only used by phylmd/ce0l.F90, used to be dyn3d_common/grid_atob.F)
+
+* in misc:
+- follow up updates on wxios.F (add missing_val module variable)
+
+* in dyn3d_common:
+- pression.F => pression.F90
+- misc_mod.F90: moved from misc to dyn3d_common
+- added new iso_verif_dyn.F 
+- covcont.F => covcont.F90
+- infotrac.F90 : add handling of isotopes (reading of corresponding
+  traceur.def for planets not implemented)
+- dynetat0.F => dynetat0.F90 with some code factorization
+- dynredem.F => dynredem.F90 with some code factorization
+- added dynredem_mod.F90: routines used by dynredem 
+- iniacademic.F90 : added isotopes-related initialization for Earth case
+
+* in dyn3d:
+- added check_isotopes.F
+- modified (isotopes) advtrac.F90, caladvtrac.F
+- guide_mod.F90: ported updates
+- leapfrog.F : (isotopes) updates (NB: call integrd with nqtot tracers)
+- qminimium.F : adaptations for isotopes (copied over, except that #include
+  comvert.h is not needed).
+- vlsplt.F: adaptations for isotopes (copied over, except than #include
+  logic.h, comvert.h not needed, and replace "include comconst.h" with 
+  use comconst_mod, ONLY: pi)
+- vlspltqs.F : same as vlsplt.F, but also keeping added modification for CP(T)
+
+* in dyn3dpar:
+- leapfrog_p.F: remove unecessary #ifdef CPP_EARTH cpp flag. and call
+  integrd_p with nqtot tracers (only important for Earth)
+- dynredem_p.F => dynredem_p.F90 and some code factorization
+- and no isotopes-relates changes in dyn3dpar (since these changes
+  have been made in LMDZ5 dyn3dmem).
+
+**********************
+**** commit_v1521 ****
+**********************
+Ehouarn: Updates to make planetary codes (+Earth) setups converge.
+* Made a "phy_common" directory in libf, to contain routines common (wrt
+  structural nature of underlying code/grid) to all LMDZ-related physics
+  packages.
+* moved all "mod_phys_*" and "mod_grid_phy_lmdz" files from dynlonlat_phylonlat
+  to "phy_common"
+* moved "ioipsl_getincom_p.F90 from "misc" to "phy_common" and modified
+  it to match Earth GCM version and renamed it ioipsl_getin_p_mod.F90
+* added an "abort_physics" (as in Earth GCM) in "phy_common"
+* added a "print_control_mod.F90 (as in Earth GCM) in phy_common
+* made similar changes in LMDZ.GENERIC and LMDZ.MARS
+
+**********************
+**** commit_v1523 ****
+**********************
+Ehouarn: More updates to make planetary codes (+Earth) setups converge.
+
+* in dyn3d_common:
+- convmas.F => convmas.F90
+- enercin.F => enercin.F90
+- flumass.F => flumass.F90
+- massbar.F => massbar.F90
+- tourpot.F => tourpot.F90
+- vitvert.F => vitvert.F90
+
+* in misc:
+- move "q_sat" from "dyn3d_common" to "misc" (in Earth model, it is also called
+  by the physics)
+- move "write_field" from "dyn3d_common" to "misc"(may be called from physics
+  or dynamics and depends on neither).
+
+* in phy_common:
+- move "write_field_phy" here since it may be called from any physics package)
+- add module "regular_lonlat_mod" to store global information on lon-lat grid
+
+* in dynlonlat_phylonlat/phy*:
+- turn "iniphysiq.F90" into module "iniphysiq_mod.F90"
+  (and of course adapt gcm.F[90] and 1D models accordingly)
+
+**********************
+**** commit_v1524 ****
+**********************
+Ehouarn: More updates to enforce dynamics/physics separation:
+  get rid of references to "temps_mod" from physics packages;
+  make a "time_phylmdz_mod.F90" module to store that
+  information and fill it via "iniphysiq".
+
+**********************
+**** commit_v1525 ****
+**********************
+Ehouarn: Further adaptations to enforce dynamics/physics separation:
+- get rid of references to "control_mod" from physics packages.
+
+**********************
+**** commit_v1530 ****
+**********************
+Ehouarn: Updates in the physics (Venus and Titan) to keep up with updates
+in LMDZ5 (up to LMDZ5 trunk, rev 2350) concerning dynamics/physics separation:
+- Adapted makelmdz and makelmdz_fcm script to stop if trying to compile
+  1d model or newstart or start2archive in parallel.
+- got rid of references to "dimensions.h" in physics.
+  Within physics packages, use nbp_lon (=iim), nbp_lat (=jjmp1) and
+  nbp_lev (=llm) from module mod_grid_phy_lmdz (in phy_common) instead.
+  Only partially done for Titan, because of many hard-coded commons; a
+  necessary first step will be to clean these up (using modules).
+
+**********************
+**** commit_v1540 ****
+**********************
+Ehouarn: Further adaptations to keep up with changes in LMDZ5 concerning
+physics/dynamics separation:
+- changed directory "dynlonlat_phylonlat" to "dynphy_lonlat" and adapted
+  makelmdz and makelmdz_fcm scripts accordingly.
+- added option "-libphy" to makelmdz_fcm to just build a physics library,
+  without any main program (not operational yet; further cleanup in the
+  physics required).
+- moved "iniprint.h" from dyn3d_common to misc (NB: it is used in both physics
+  and dynamics; this should be cleaned up further...)
+
+**********************
+**** commit_v1543 ****
+**********************
+Ehouarn: Further adaptations to keep up with changes in LMDZ5 concerning
+physics/dynamics separation:
+* dyn3d:
+- adapted gcm.F so that all physics initializations are now done in iniphysiq.
+
+* dyn3dpar:
+- adapted gcm.F so that all physics initializations are now done in iniphysiq.
+- updated calfis_p.F to follow up with changes.
+- copied over updated "bands.F90" from LMDZ5.
+
+* dynphy_lonlat:
+- calfis_p.F90, mod_interface_dyn_phys.F90,
+  follow up of changes in phy_common/mod_* routines
+
+* phy_common:
+- added "geometry_mod.F90" to store information about the grid (replaces
+  phy*/comgeomphy.F90) and give variables friendlier names: rlond =>
+  longitude , rlatd => latitude, airephy => cell_area,
+  cuphy => dx , cvphy => dy
+- added "physics_distribution_mod.F90"
+- updated "mod_grid_phy_lmdz.F90", "mod_phys_lmdz_mpi_data.F90",
+  "mod_phys_lmdz_para.F90", "mod_phys_lmdz_mpi_transfert.F90",
+  "mod_grid_phy_lmdz.F90", "mod_phys_lmdz_omp_data.F90",
+  "mod_phys_lmdz_omp_transfert.F90", "write_field_phy.F90"
+  and "ioipsl_getin_p_mod.F90" to LMDZ5 versions.
+
+* phy[venus/titan/mars/std]:
+- removed "init_phys_lmdz.F90", "comgeomphy.F90"; adapted routines to use
+  geometry_mod (longitude, latitude, cell_area, etc.)
+
+**********************
+**** commit_v1545 ****
+**********************
+Ehouarn: Adaptation wrt previous changes for Titan and Venus where
+longitude and latitude arrays (in phycommon/geometry_mod) were overwritten
+with values from startphy.nc files, where values are given in degrees.
+For the sake of homegeneity with other physics package, revert to "default"
+behaviour: longitude/latitude are in radians and longitude_deg/latitude_deg
+are in degrees.
+Also added checking in phyetat0 that the longitude/latitude read in the
+restartphy.nc files match the ones provided by the dynamics.
+
+**********************
+**** commit_v1549 ****
+**********************
+Ehouarn: Further adaptations to keep up with changes in LMDZ5 concerning
+physics/dynamics separation (up to rev r2420 of LMDZ5)
+* all physics packages:
+- added module callphysiq_mod.F90 in dynphy_lonlat/phy*** which contains 
+  the routine "call_physiq" which is called by calfis* and calls the 
+  physics. This way different "physiq" routine from different physics 
+  packages may be called: The calfis* routines now exposes all available 
+  fields that might be transmitted to physiq but which is actually send 
+  (ie: expected/needed by physiq) is decided in call_physiq.
+- turned "physiq.F[90]" into module "physiq_mod.F[90]" for better control  
+  of "physiq" arguments. for phyvenus/phytitan, extracted gr_fi_ecrit from
+  physiq.F as gr_fi_ecrit.F90 (note that it can only work in serial).
+
+* misc:
+- updated wxios.F90 to keep up with LMDZ5 modifications.
+
+* dyn3d_common:
+- infotrac.F90 keep up with LMDZ5 modifications (cosmetics)
+
+* dyn3d:
+- gcm.F90: cosmetic cleanup.
+- leapfrog.F90: fix computation of date as function of itau.
+
+* dyn3dpar:
+- gcm.F: cosmetic cleanup.
+- leapfrog_p.F90: fix computation of date as function of itau.
+    NB: physics are given the date corresponding to the end of the
+    physics step.
+
+* dynphy_lonlat:
+- calfis.F : added computation of relative wind vorticity.
+- calfis_p.F: added computation of relative wind vorticity (input required
+  by Earth physics)
+
+**********************
+**** commit_v1563 ****
+**********************
+
+iniphysiq in all GCMs
+---------------------
+
+iniphysiq was performing two main tasks
+- one that is planet-independent i.e. setting the physics grid and geometry
+(we checked: the lines of code in phyxxx/iniphysiq_mod were doing
+the exact same things)
+- one that is planet-dependent i.e. time settings, planetary constants
+
+now the planet-independent initialization is done by inigeomphy_mod
+which is in dynphy_lonlat and the planet-dependent initialization is done
+in the respective phyxxx folders
+
+this commit is intended for interface lisibility and modular approach
+following the framework adopted by Ehouarn in the last commits
+it paves the path for a similar (and, now, easy) counterpart for mesoscale
+models
+
+**********************
+**** commit_v1572 ****
+**********************
+Ehouarn: Further adaptations to keep up with changes in LMDZ5 concerning
+physics/dynamics separation (up to rev r2500 of LMDZ5)
+
+* arch:
+- remove ifort debug option '-check all', replace it with
+  '-check bounds,format,output_conversion,pointers,uninit' (i.e.
+  get it to stop complaining about copying into temporary arrays)
+
+* dyn3d_common:
+- comconst_mod.F90 : add ngroup
+
+* dyn3d:
+- gcm.F90 : minor bug fix (arguments to a call_abort())
+- leapfrog.F90 : recompute geopotential for bilan_dyn outputs
+- conf_gcm.F90 : read "ngroup" from run.def
+- groupe.F , groupeun.F : ngroup no longer a local parameter
+
+* dyn3d_par:
+- conf_gcm.F90 : read "ngroup" from run.def
+- groupe_p.F , groupeun_p.F : ngroup no longer a local parameter
+
+* misc:
+- regr1_step_av_m.F90 : removed (not used)
+
+* phy_common:
+- mod_phys_lmdz_mpi_transfert.F90 , mod_phys_lmdz_mpi_data.F90 : change
+  is_north_pole and is_south_pole to is_north_pole_dyn and is_south_pole_dyn
+- mod_phys_lmdz_omp_data.F90 : introduce is_nort_pole_phy and is_south_pole_phy
+
+* dynphy_lonlat:
+- mod_interface_dyn_phys.F90 : use is_north_pole_dyn and is_south_pole_dyn
+- calfis_p.F : use is_north_pole_dyn and is_south_pole_dyn
+
+* phyvenus:
+- physiq_mod , write_hist*.h : use is_north_pole_phy and is_south_pole_phy
+  to correctly compute mesh area at poles to send to hist*nc files.
+
+* phytitan:
+- physiq_mod , write_hist*.h : use is_north_pole_phy and is_south_pole_phy
+  to correctly compute mesh area at poles to send to hist*nc files.
+
+
+**********************
+**** commit_v1573 ****
+**********************
+Cleanup concerning iniphysiq/inigeomphy initializations: initializations
+related to routines in phy_common or dynphy_lonlat can be done in 
+inigeomphy, but any initialization for modules/routines in a physics
+package (directory phy***) must be done in the related phy***/iniphysiq
+routine.
+
+**********************
+**** commit_v1575 ****
+**********************
+Ehouarn: Further adaptations to keep up with changes in LMDZ5 concerning
+physics/dynamics separation (up to rev r2575 of LMDZ5)
+
+* dyn3d_common:
+- infotrac.F90 : propagate initialisations for INCA (Earth GCM)
+
+* misc:
+- wxios.F90: updates to use the XIOS2 library
+
+* dynphy_lonlat:
+- grid_atob_m.F90: fix for some zoomed grid interpolation cases
+
+**********************
+**** commit_v1576 ****
+**********************
+Ehouarn: Clean up the dynamics/physics interface to converge with LMDZ5;
+get rid of tracerdyn parameter (which was supposed to send information
+about wether tracers should be advected or not in the Mars and Generic
+models).
+
+**********************
+**** commit_v1592 ****
+**********************
+Ehouarn: Further adaptations to stick with LMDZ5 (at this point one can
+compile phylmd, from LMDZ5 revision 2602, with LMDZ.COMMON!)
+
+* dyn3d and dyn3dpar:
+- removed ce0l.F90
+
+* dyn3d_common:
+- added conf_dat_m.F90 (for Earth model)
+- modified diagedyn.F: hard coded constants for Earth and error message
+  for other planets
+
+* misc:
+- added slopes_m.F90 and regr1_conserv_m.F90 used by Earth model
+
+**********************
+**** commit_v1621 ****
+**********************
+Ehouarn: Further work on full dynamics/physics separation.
+
+LMDZ.COMMON:
+- added phy_common/vertical_layers_mod.F90 to store information on vertical
+  grid. This is where routines in the physics should get the information.
+- The contents of vertical_layers_mod intialized via
+  dynphy_lonlat/inigeomphy_mod.F90.
+
+LMDZ.MARS:
+- physics now completely decoupled from dynamics; the physics package
+  may now be compiled as a library (-libphy option of makelmdz_fcm).
+- created an "ini_tracer_mod" routine in module "tracer_mod" for a cleaner
+  initialization of the later.
+- removed some purely dynamics-related outputs (etot0, zoom parameters, etc.)
+  from diagfi.nc and stats.nc outputs as these informations are not available
+  in the physics.
+
+LMDZ.GENERIC:
+- physics now completely decoupled from dynamics; the physics package
+  may now be compiled as a library (-libphy option of makelmdz_fcm).
+- added nqtot to tracer_h.F90.
+- removed some purely dynamics-related outputs (etot0, zoom parameters, etc.)
+  from diagfi.nc and stats.nc outputs as these informations are not available
+  in the physics.
+
+LMDZ.VENUS:
+- physics now completely decoupled from dynamics; the physics package
+  may now be compiled as a library (-libphy option of makelmdz_fcm).
+- added infotrac_phy.F90 to store information on tracers in the physics.
+  Initialized via iniphysiq.
+- added cpdet_phy_mod.F90 to store t2tpot etc. functions to be used in the
+  physics. Initialized via iniphysiq. IMPORTANT: there are some hard-coded
+  constants! These should match what is in cpdet_mod.F90 in the dynamics.
+- got rid of references to moyzon_mod module within the physics. The 
+  required variables (tmoy, plevmoy) are passed to the physics as arguments
+  to physiq.
+
+LMDZ.TITAN:
+- added infotrac_phy.F90 to store information on tracers in the physics.
+  Initialized via iniphysiq.
+- added cpdet_phy_mod.F90 to store t2tpot etc. functions to be used in the
+  physics.
+- Extra work required to completely decouple physics and dynamics: moyzon_mod
+  should be cleaned up and information passed from dynamics to physics as
+  as arguments. Likewise moyzon_ch and moyzon_mu should not be queried from
+  logic_mod (which is in the dynamics).
+
+**********************
+**** commit_v1650 ****
+**********************
+Ehouarn: Further adaptations to stick with LMDZ5 (up to rev r2750)
+
+* libf
+- makelmdz[_fcm] : added Earth-specific "dust" and "strataer" cases and
+                   -arch_path option
+- bld.cfg : added dust and strataer cases
+
+* dyn3d[par]
+- conf_gcm.F90 : added read_orop parameter (Earth-related) for
+                 loading subgrid orography parameters.
+- guide[_p]_mod.F90: added output of nudging coefficients for winds
+                     and temperature
+- temps_mod.F90 : cosmetics/comments
+- logic_mod.F90 : cosmetics/comments
+
+* dyn3d_common
+- comconst_mod.F90 : cosmetics/comments + added year_day module variable
+- conf_planete.F90 : added year_day from comconst_mod as done in LMDZ5
+- comvert_mod.F90 : cosmetics/comments
+- infotrac.F90 : added "startAer" case to follow up with LMDZ5
+
+* misc
+- wxios.F90 : follow up on changes in LMDZ5
+
+**********************
+**** commit_v1682 ****
+**********************
+Ehouarn: set things up to enable pluging physics with dynamico
+
+* dyn3d
+- gcm.F90 : move I/O initialization (dates) to be done before physics
+            initialization
+
+* dyn3dpar
+- gcm.F : move I/O initialization (dates) to be done before physics
+          initialization
+
+* dynphy_lonlat:
+- inigeomphy_mod.F90 : add ind_cell_glo computation and  transfer
+                       to init_geometry
+
+* phy_common:
+- geometry_mod.F90 : add ind_cell_glo module variable to store global
+                     column index
+- print_control_mod.F90 : make initialization occur via init_print_control_mod
+                          to avoid circular module dependencies
+- init_print_control_mod.F90 : added to initialize print_control_mod module
+                               variables
+- mod_phys_lmdz_mpi_data.F90 : use print_control_mod (rather than iniprint.h)
+- mod_phys_lmdz_para.F90 : use print_control_mod (rather than iniprint.h)
+- mod_phys_lmdz_omp_data.F90 : add is_omp_master (alias of is_omp_root) module
+                               variable and use print_control_mod (rather than
+                               iniprint.h)
+- physics_distribution_mod.F90 : add call to init_dimphy in
+                                 init_physics_distribution
+- xios_writefield.F90 : generic routine to output field with XIOS (for debug)
+
+* misc:
+- handle_err_m.F90 : call abort_physic, rather than abort_gcm
+- wxios.F90 : updates to enable unstructured grids
+   set module variable g_ctx_name to "LMDZ"
+   wxios_init(): remove call to wxios_context_init
+   wxios_context_init(): call xios_context_initialize with COMM_LMDZ_PHY
+   add routine wxios_set_context() to get handle and set context to XIOS
+   wxios_domain_param(): change arguments and generate the domain in-place
+   add wxios_domain_param_unstructured(): generate domain for unstructured case
+       NB: access is via "domain group" (whereas it is via "domain" in 
+                                         wxios_domain_param)
+* dynphy_lonlat/phy[std|mars|venus|titan]:
+- iniphysiq_mod.F90 : Remove call to init_dimphy (which is now done in
+                      phy_common/physics_distribution_mod.F90)
+
+* phystd:
+- ocean_slab_mod.F90 : call abort_physic, rather than abort_gcm
+- inifis_mod.F90 : initialize print_control variables
+- physiq_mod.F90 : add XIOS context initialization and finalization
+- xios_output_mod.F90 : update initialize_xios_output initialization
+                        of the horizontal domain
+
+**********************
+**** commit_v1695 ****
+**********************
+Reorganization of the way paths to external libraries are handles by makelmdz_fcm
+and makelmdz. This will ease interfacing with Dynamico which follows simillar rules
+with respect to a given external library ,e.g. for SOMELIBRARY, in the arch.path file:
+SOMELIBRARY_LIBDIR="-L/path/to/the/library/libdir -L/possible/other/required/path"
+SOMELIBRARY_LIB"-lsomelib -lsomeotherrequiredlib"
+SOMELIBRARY_INCDIR"-I/path/to/the/library/incdir -I/possible/other/required/include/path"
+
+**********************
+**** commit_v1696 ****
+**********************
+Introducing an interface between Dynamico and LMDZ.COMMON physics packages:
+directory ICOSA_LMDZ (and related ARCH directory). Compiling with Dynamico
+requires having directories ICOSAGCM (dynamico dynamical core) and
+IOIPSL alongside ICOSA_LMDZ.
+Still quite experimental (and so far only tested on Ada with phystd physics)
+

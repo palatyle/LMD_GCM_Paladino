@@ -1,0 +1,53 @@
+gnu simple en 64 bits sur huchard, etc...
+-------------------
+
+choix 99 de makemeso pour le moment
+
+
+**** segmentation fault dans le cas de la montagne 2D ****
+
+
+
+autre possibilite: essayer les librairies NETCDF4.0 d'Ehouarn
+
+
+essai sans O3
+NB: on a juste a modifier SRC/WRFV2/configure.defaults.gfortran64
+>>> NE REGLE PAS LE PB
+
+
+IL Y A UN PROBLEME AVEC LES VALEURS CALCULEES...
+ou: Floating exception sur auric
+
+
+../mars_lmd/libo/liblmd.a(physdem1.o): In function `physdem1_':
+physdem1.F:(.text+0x6bb): undefined reference to `nf_put_var_real_'
+physdem1.F:(.text+0x74a): undefined reference to `nf_put_var_real_'
+physdem1.F:(.text+0x7d9): undefined reference to `nf_put_var_real_'
+physdem1.F:(.text+0x868): undefined reference to `nf_put_var_real_'
+physdem1.F:(.text+0x8f7): undefined reference to `nf_put_var_real_'
+../mars_lmd/libo/liblmd.a(physdem1.o):physdem1.F:(.text+0x986): more undefined
+references to `nf_put_var_real_' follow
+../mars_lmd/libo/liblmd.a(meso_readtesassim.o): In function
+`meso_readtesassim_':
+meso_readtesassim.F90:(.text+0x1224): undefined reference to
+`nf_get_var_real_'
+meso_readtesassim.F90:(.text+0x14cc): undefined reference to
+`nf_get_var_real_'
+meso_readtesassim.F90:(.text+0x179a): undefined reference to
+`nf_get_var_real_'
+meso_readtesassim.F90:(.text+0x17dd): undefined reference to
+`nf_get_var_real_'
+../mars_lmd/libo/liblmd.a(readtesassim.o): In function `readtesassim_':
+readtesassim.F90:(.text+0x11ec): undefined reference to `nf_get_var_real_'
+../mars_lmd/libo/liblmd.a(readtesassim.o):readtesassim.F90:(.text+0x121b):
+more undefined references to `nf_get_var_real_' follow
+collect2: ld returned 1 exit status
+make[1]: [em_wrf] Error 1 (ignored)
+
+
+>>>> corrige en ajoutant dans makemeso
+
+                       sed s+"-L../mars_lmd/libo -llmd"+"-L../mars_lmd/libo
+-llmd $NETCDF/lib/libnetcdf.a"+g configure.wrf > yeah ; mv -f yeah
+configure.wrf ;;

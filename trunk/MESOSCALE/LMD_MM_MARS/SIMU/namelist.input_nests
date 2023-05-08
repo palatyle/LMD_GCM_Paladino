@@ -1,0 +1,69 @@
+ &time_control
+ start_year         = 2024, 2024, 2024,   !! Any information about dates have to be duplicated for each nest     
+ start_month        =   10,   10,   10,   !! ..
+ start_day          =   03,   03,   03,   !! ..
+ start_hour         =   06,   06,   06,   !! ..
+ end_year           = 2024, 2024, 2024,   !! ..
+ end_month          =   10,   10,   10,   !! ..
+ end_day            =   07,   07,   07,   !! ..
+ end_hour           =   06,   06,   06,   !! ..
+ history_interval   =   37,   37,   37,   !! Any information about model outputs have to be set for each nest   
+ frames_per_outfile =   24,   24,   24,   !! ... NB: could be different for each nest
+ restart            = .false.
+ restart_interval   = 8880
+ io_form_history    = 2
+ io_form_restart    = 2
+ io_form_input      = 2
+ io_form_boundary   = 2
+ debug_level        = 0
+ /
+
+ &domains
+ time_step              =     40    !! This is time_step for the parent nest
+ p_top_requested        =     10     
+ force_sfc_in_vinterp   =      5
+ num_metgrid_levels     =     33
+ max_dom                =      3                !! Set number of nests here   
+ grid_id                =      1,     2,    3,  !! Identify each grid by a number
+ parent_id              =      0,     1,    2,  !! Identify parents for each nested domain
+                                                !! ....(two nested domains can have the same parent)
+ parent_grid_ratio      =      1,     3,    3,  !! "Zooming" ratio between nests. 3 is a good choice.
+  !! WARNING: parent_grid_ratio must divide e_we - s_we plus 1
+ parent_time_step_ratio =      1,     2,    3,  !! Time step ratio between nests.
+ i_parent_start         =      0,    40,   40,  !! \  Those subscripts are used to place the nested
+ j_parent_start         =      0,    40,   40,  !! /  domains with respect to their respective parents. 
+ e_we                   =    117,   121,  121,  !! IMPORTANT: e_we[parent domain] = e_we[child domains] - 4
+ e_sn                   =    117,   121,  121,  !! IMPORTANT: e_sn[parent domain] = e_sn[child domains] - 4
+  !! WARNING: number of processors must divide e_we minus 1 and e_sn minus 1
+ e_vert                 =     61,    61,   61,  !! Vertical levels must be duplicated
+ dx                     =  63000, 21000, 7000,  !! Compute dx[child] with parent_grid_ratio and dx[parent]
+ dy                     =  63000, 21000, 7000,  !! .... (keep 10^-2 accuracy if result of division is not int)
+ feedback               =      1                !! Set 0 for 1-way nesting / 1 for 2-way nesting
+ smooth_option          =      2                !! We recommend using smooth_option = 2
+ blend_width            =      5                !! We recommend using blend_width = 5
+ /
+
+ &physics
+ /
+
+ &fdda
+ /
+
+ &dynamics
+ tiso = 100. 
+ non_hydrostatic  =   F, F, F,       !! We recommend using hydrostatic integration in all nests
+                                     !! .... (non-hydrostatic nested runs might be unstable)
+ /
+
+ &grib2
+ /
+
+ &bdy_control
+ specified        =   T, F, F,       !! Only the parent domain has specified GCM boundary conditions
+ nested           =   F, T, T,       !! ... the child domains are nested within the parent domain
+ /
+
+ &namelist_quilt
+ nio_tasks_per_group = 0,
+ nio_groups = 1,
+ /

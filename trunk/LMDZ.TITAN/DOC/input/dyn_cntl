@@ -1,0 +1,21 @@
+tab_cntrl(1) = float(iim)       ! nombre de points en longitude
+tab_cntrl(2) = float(jjm)       ! nombre de points en latitude
+tab_cntrl(3) = float(llm)       ! nombre de couches
+tab_cntrl(4) = float(idayref)   ! jour 0
+tab_cntrl(5) = rad     ! rayon de mars(m) ~3397200
+tab_cntrl(6) = omeg    ! vitesse de rotation (rad.s-1)
+tab_cntrl(7) = g       ! gravite (m.s-2) ~3.72
+tab_cntrl(8) = mugaz   ! Masse molaire de l'atm (g.mol-1) ~43.49
+tab_cntrl(9) = kappa   ! = r/cp  ~0.256793 (=rcp dans physique)
+tab_cntrl(10) = daysec ! duree du sol (s)  ~88775
+tab_cntrl(11) = dtvr   ! pas de temps de la dynamique (s)
+ 
+tab_cntrl(12) = etot0  ! energie totale    !
+tab_cntrl(13) = ptot0  ! pression totalei   !    variables
+tab_cntrl(14) = ztot0  ! enstrophie totale   !  de controle
+tab_cntrl(15) = stot0  ! enthalpie totale   !    globales
+tab_cntrl(16) = ang0   ! moment cinetique  !
+tab_cntrl(17) = clon   ! longitude en degres du centre du zoom   
+tab_cntrl(18) = clat   ! latitude en degres du centre du zoom
+tab_cntrl(19) = alphax ! facteur de grossissement du zoom,selon longitude
+tab_cntrl(20) = alphay ! facteur de grossissement du zoom ,selon latitude

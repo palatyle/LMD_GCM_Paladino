@@ -1,0 +1,772 @@
+#!/bin/bash
+# $Id: makelmdz_fcm 1615 2012-02-10 15:42:26Z emillour $
+# This is a script in Bash.
+
+# FH : on ne crée plus le fichier arch.mk qui est supposé exister par
+# FH : ailleurs.
+# FH : ulterieurement, ce fichier sera pré-existant pour une série
+# FH : de configurations en versions optimisées et debug qui seront
+# FH : liés (ln -s) avec arch.mk en fonction de l'architecture.
+# FH : Pour le moment, cette version est en test et on peut créer les
+# FH : arch.mk en lançant une première fois makegcm.
+#
+##set -x
+########################################################################
+# options par defaut pour la commande make
+########################################################################
+
+dim="96x72x19"
+physique=lmd
+filtre=filtrez
+grille=reg
+couple=false
+veget=false
+sisvat=false
+rrtm=false
+dust=false
+strataer=false
+chimie=false
+chemistry=false
+parallel=none
+paramem="par"
+compil_mod=prod
+io=ioipsl
+LIBPREFIX=""
+cosp=false
+bands=""
+scatterers=""
+job=1
+full=''
+libphy=false
+
+arch_defined="FALSE"
+arch_path="arch"
+arch_default_path="arch"
+
+LMDGCM=`/bin/pwd`
+LIBOGCM=$LMDGCM/libo
+LIBFGCM=$LMDGCM/libf
+DYN_COMMON_PATH=$LIBFGCM/dyn3d_common
+# path for optional packages, but default set to ".void_dir"
+FILTRE_PATH=$LMDGCM/.void_dir
+DYN_PHYS_PATH=$LMDGCM/.void_dir
+DYN_PHYS_SUB_PATH=$LMDGCM/.void_dir
+PHY_COMMON_PATH=$LMDGCM/.void_dir
+RRTM_PATH=$LMDGCM/.void_dir
+DUST_PATH=$LMDGCM/.void_dir
+STRATAER_PATH=$LMDGCM/.void_dir
+SISVAT_PATH=$LMDGCM/.void_dir
+COSP_PATH=$LMDGCM/.void_dir
+CHEM_PATH=$LMDGCM/.void_dir
+CLOUD_PATH=$LMDGCM/.void_dir
+MUPHY_PATH=$LMDGCM/.void_dir
+AERONO_PATH=$LMDGCM/.void_dir
+# Path to fcm utility:
+##fcm_path=$LMDGCM/tools/fcm/bin
+##fcm_path=/planeto/mturbet/planeto2-mturbet/FCM_V1.2/bin
+fcm_path=$(dirname $(which fcm))
+
+########################################################################
+#  Quelques initialisations de variables du shell.
+########################################################################
+
+CPP_KEY="" 
+INCLUDE=""
+LIB=""
+adjnt=""
+COMPIL_FFLAGS="%PROD_FFLAGS"
+PARA_FFLAGS=""
+PARA_LD=""
+EXT_SRC=""
+
+########################################################################
+# lecture des options de mymake
+########################################################################
+
+while (($# > 0))
+  do
+  case $1 in
+      "-h") cat <<fin
+Usage :
+makegcm [options] -arch arch exec
+[-h]                       : brief help
+[-d [[IMx]JMx]LM]          : IM, JM, LM are the dimensions in x, y, z (default: $dim)
+[-s nscat]                 : (Generic) Number of radiatively active scatterers
+[-b IRxVIS]                : (Generic) Number of infrared (IR) and visible (VIS) bands for radiative transfer
+[-p PHYS]                  : set of physical parametrizations (in libf/phyPHYS), (default: lmd)
+[-prod / -dev / -debug]    : compilation mode production (default) / developement / debug .
+[-c false/MPI1/OMCT]       : (Earth) coupling with ocean model : MPI1/OMCT/false (default: false)
+[-v false/orchidee2.0/orchidee1.9/true] : (Earth) version of the vegetation model to include (default: false)
+          false       : no vegetation model
+          orchidee2.0 : compile using ORCHIDEE 2.0 (or more recent version)
+          orchidee1.9 : compile using ORCHIDEE up to the version including OpenMP in ORCHIDEE : tag 1.9-1.9.5(version AR5)-1.9.6
+          true        : (obsolete; for backward compatibility) use ORCHIDEE tag 1.9-1.9.6
+[-chimie INCA/false]       : (Earth) with INCA chemistry model or without (default: false)
+[-cosp cosp/false]         : (Earth) add the cosp model (default: false)
+[-sisvat true/false]  : (Earth) compile with/without sisvat package (default: false)
+[-rrtm true/false]    : (Earth) compile with/without rrtm package (default: false)
+[-dust true/false]    : (Earth) compile with/without the dust package by Boucher and co (default: false)
+[-strataer true/false]    : (Earth) compile with/without the strat aer package by Boucher and co (default: false)
+[-parallel none/mpi/omp/mpi_omp] : parallelism (default: none) : mpi, openmp or mixted mpi_openmp
+[-g GRI]                   : grid configuration in dyn3d/GRI_xy.h  (default: reg, inclues a zoom)
+[-io ioipsl/mix/xios]                   : Input/Output library (default: ioipsl)
+[-include INCLUDES]        : extra include path to add
+[-cpp CPP_KEY]             : additional preprocessing definitions
+[-adjnt]                   : adjoint model, not operational ...
+[-mem]                     : reduced memory dynamics (if in parallel mode)
+[-filtre NOMFILTRE]        : use filtre from libf/NOMFILTRE (default: filtrez)
+[-link LINKS]              : additional links with other libraries
+[-j n]                     : active parallel compiling on ntask
+[-full]                    : full (re-)compilation (from scratch)
+[-fcm_path path]           : path to the fcm tool (default: tools/fcm/bin)
+[-ext_src path]            : path to an additional set of routines to compile with the model
+[-arch_path path]          : path to architecture files (default: $arch_default_path)
+ -arch arch                : target architecture 
+ exec                      : executable to build
+fin
+	  exit;;
+
+      "-d")
+	  dim=$2 ; shift ; shift ;;
+      
+      "-p")
+	  physique="$2" ;  shift ; shift ;;
+
+      "-s")
+	  scatterers=$2 ; shift ; shift ;;
+
+      "-b")
+	  bands=$2 ; shift ; shift ;;
+
+      "-g")
+	  grille="$2" ; shift ; shift ;;
+
+      "-c")
+	  couple="$2" ; shift ; shift ;;
+
+      "-prod")
+	  compil_mod="prod" ; shift ;;
+
+      "-dev")
+	  compil_mod="dev" ; shift ;;
+
+      "-debug")
+	  compil_mod="debug" ; shift ;;
+
+      "-io")
+	  io="$2" ; shift ; shift ;;
+
+      "-v")
+	  veget="$2" ; shift ; shift ;;
+
+      "-sisvat")
+	  sisvat="$2" ; shift ; shift ;;
+
+      "-rrtm")
+	  rrtm="$2" ; shift ; shift ;;
+
+      "-dust")
+	  dust="$2" ; shift ; shift ;;
+
+      "-strataer")
+	  strataer="$2" ; shift ; shift ;;
+
+      "-chimie")
+	  chimie="$2" ; shift ; shift ;;
+
+      "-parallel")
+	  parallel="$2" ; shift ; shift ;;
+      
+      "-include")
+	  INCLUDE="$INCLUDE -I$2" ; shift ; shift ;;
+
+      "-cpp")
+	  CPP_KEY="$CPP_KEY $2" ; shift ; shift ;;
+
+      "-adjnt")
+	  echo "not operational ... work to be done here ";exit
+	  opt_dep="$opt_dep adjnt" ; adjnt="-ladjnt -ldyn3d "
+	  optim="$optim -Dadj" ; shift ;;
+
+      "-cosp")
+          cosp="$2" ; shift ; shift ;;
+
+      "-mem")
+          paramem="mem" ; shift ;;
+
+      "-filtre")
+	  filtre=$2 ; shift ; shift ;;
+
+      "-link")
+	  LIB="$LIB $2" ; shift ; shift ;;
+
+      "-fcm_path")
+	  fcm_path=$2 ; shift ; shift ;;
+
+      "-ext_src")
+	  EXT_SRC=$2 ; shift ; shift ;;
+
+      "-j")
+	  job=$2 ; shift ; shift ;;
+
+      "-full")
+	  full="-full" ; shift ;;
+
+      "-libphy")
+	  libphy="true" ; shift ;;
+
+      "-arch")
+	  arch=$2 ; arch_defined="TRUE" ; shift ; shift ;;
+
+      "-arch_path")
+	  arch_path=$2 ; arch_path_defined="TRUE"; shift ; shift ;;
+
+      *)
+	  code="$1" ; shift ;;
+  esac
+done
+
+###############################################################
+# path to fcm 
+###############################################################
+# handle case when provided path to fcm was given as a relative
+# path (from makelmdz_fcm script directory) and not an absolute path
+if [[ ${fcm_path:0:1} != "/" ]] ; then
+  # prepend with makelmdz_fcm location
+  fcm_path=$(cd $(dirname $0) ; pwd)"/"${fcm_path}
+fi
+
+# add fcm_path to PATH
+export PATH=${fcm_path}:${PATH}
+
+echo "Path to fcm:"
+echo ${fcm_path}
+
+###############################################################
+# lecture des chemins propres à l'architecture de la machine #
+###############################################################
+rm -f .void_file
+echo > .void_file
+rm -rf .void_dir
+mkdir .void_dir
+
+if [[ "$arch_defined" == "TRUE" ]]
+then
+  rm -f arch.path
+  rm -f arch.fcm
+  rm -f arch.env
+
+  if test -f $arch_path/arch-${arch}.path
+  then
+    ln -s $arch_path/arch-${arch}.path arch.path
+  elif test -f $arch_default_path/arch-${arch}.path
+  then
+    ln -s $arch_default_path/arch-${arch}.path arch.path
+  fi
+        
+  if test -f $arch_path/arch-${arch}.fcm
+  then
+    ln -s $arch_path/arch-${arch}.fcm arch.fcm
+  elif test -f $arch_default_path/arch-${arch}.fcm
+  then
+    ln -s $arch_default_path/arch-${arch}.fcm arch.fcm
+  fi
+
+  if test -f $arch_path/arch-${arch}.env
+  then
+    ln -s $arch_path/arch-${arch}.env arch.env
+  elif test -f $arch_default_path/arch-${arch}.env
+  then
+    ln -s $arch_default_path/arch-${arch}.env arch.env
+  else
+    ln -s .void_file arch.env
+  fi
+  # source architecture PATH and ENV files
+  source arch.env
+  source arch.path
+else
+  echo "You must define a target architecture"
+  exit 1
+fi
+
+########################################################################
+# Definition des clefs CPP, des chemins des includes et modules
+#  et des libraries
+########################################################################
+
+if [[ "$compil_mod" == "prod" ]]
+then
+  COMPIL_FFLAGS="%PROD_FFLAGS"
+elif [[ "$compil_mod" == "dev" ]]
+then
+  COMPIL_FFLAGS="%DEV_FFLAGS"
+elif [[ "$compil_mod" == "debug" ]]
+then
+  COMPIL_FFLAGS="%DEBUG_FFLAGS"
+fi
+
+phys_root=$physique
+if [[ "${physique:0:3}" == "lmd" ]] ; then phys_root=lmd ; fi
+if [[ "${physique:0:3}" == "mar" ]] ; then phys_root=mar ; fi
+if [[ "${physique:0:4}" == "mars" ]] ; then phys_root=mars ; fi
+if [[ "${physique:0:3}" == "std" ]] ; then phys_root=std ; fi
+if [[ "${physique:0:5}" == "venus" ]] ; then phys_root=venus ; fi
+if [[ "${physique:0:5}" == "titan" ]] ; then phys_root=titan ; fi
+if [[ "${physique:0:3}" == "dev" ]] ; then phys_root=dev ; fi
+
+if [[ "$physique" != "nophys" ]]
+then
+   #We'll use some physics
+   CPP_KEY="$CPP_KEY CPP_PHYS"
+   if [[ "${phys_root}" == "lmd" ]]
+   then
+   #For lmd physics, default planet type is Earth
+   CPP_KEY="$CPP_KEY CPP_EARTH"
+   fi
+   # set physics common utilities path
+   PHY_COMMON_PATH="${LIBFGCM}/phy_common"
+   # set the dyn/phys interface path
+   DYN_PHYS_PATH="${LIBFGCM}/dynphy_lonlat"
+   DYN_PHYS_SUB_PATH="${LIBFGCM}/dynphy_lonlat/phy${phys_root}"
+fi
+
+if [[ "$filtre" == "filtrez" ]]
+then
+   FILTRE_PATH=${LIBFGCM}/$filtre
+fi
+
+if [[ "$chimie" == "INCA" ]]
+then
+   CPP_KEY="$CPP_KEY INCA"
+   INCLUDE="$INCLUDE -I${INCA_INCDIR}"
+   LIB="$LIB -L${INCA_LIBDIR} ${INCA_LIB}"
+fi
+
+if [[ "$couple" != "false" ]]
+then
+    if [[ "$couple" == "MPI1" ]]
+    then
+	CPP_KEY="$CPP_KEY CPP_COUPLE"
+	export OASIS_INCDIR=$LMDGCM/../../prism/X64/build/lib/psmile.MPI1
+	export OASIS_LIBDIR=$LMDGCM/../../prism/X64/lib
+	INCLUDE="$INCLUDE -I${OASIS_INCDIR}"
+	LIB="$LIB -L${OASIS_LIBDIR} ${OASIS_LIB}"
+    else
+	CPP_KEY="$CPP_KEY CPP_COUPLE CPP_OMCT"
+	INCLUDE="$INCLUDE -I${OASIS_INCDIR}"
+	LIB="$LIB -L${OASIS_LIBDIR} ${OASIS_LIB}"
+    fi
+fi
+
+if [[ "$parallel" != "none" && \
+     ( "$code" == "newstart" || "$code" == "start2archive" ) ]]
+then
+    echo "newstart or start2archive utilities should be run in serial!"
+    echo " Compile without -parallel [mpi|omp|mpi_omp] option!"
+    exit
+fi
+
+if [[ "$parallel" == "mpi" ]]
+then
+   CPP_KEY="$CPP_KEY CPP_PARA CPP_MPI"
+   PARA_FFLAGS="%MPI_FFLAGS"
+   PARA_LD="%MPI_LD"
+elif [[ "$parallel" == "omp" ]]
+then
+   CPP_KEY="$CPP_KEY CPP_PARA CPP_OMP"
+   PARA_FFLAGS="%OMP_FFLAGS"
+   PARA_LD="%OMP_LD"
+elif [[ "$parallel" == "mpi_omp" ]]
+then
+   CPP_KEY="$CPP_KEY CPP_PARA CPP_MPI CPP_OMP"
+   PARA_FFLAGS="%MPI_FFLAGS %OMP_FFLAGS"
+   PARA_LD="%MPI_LD %OMP_LD"
+fi
+
+if [[ ( "$parallel" == "omp" || "$parallel" == "mpi_omp" ) \
+   && "$compil_mod" == "debug" ]]
+then
+    echo "Usually, parallelization with OpenMP requires some optimization."
+    echo "We suggest switching to \"-dev\"."
+fi
+
+if [ "$veget" = "true" -o "$veget" = "orchidee1.9" -o "$veget" = "orchidee2.0" ]
+then
+#NB: option 'true': for backward compatibility. To be used with ORCHIDEE tag 1.9-1.9.6
+#    For this case, cpp flag ORCHIDEE_NOOPENMP must be added to the makelmdz_fcm arguments
+#    option orchidee1.9 : Compile with ORCHIDEE version up to the inclusion of OpenMP in ORCHIDEE : tag 1.9-1.9.5(version AR5)-1.9.6
+   INCLUDE="${INCLUDE} ${ORCHIDEE_INCDIR}"
+   CPP_KEY="$CPP_KEY CPP_VEGET"
+# temporary, for Orchidee versions 1.9.* (before openmp activation)
+   if [[ "$veget" == "orchidee1.9" ]] ; then
+      CPP_KEY="$CPP_KEY ORCHIDEE_NOOPENMP"
+   fi
+   if [[ "$veget" == "orchidee2.0" ]] ; then
+      orch_libs="sechiba parameters stomate parallel orglob orchidee"
+   else
+      orch_libs="sechiba parameters stomate parallel orglob"
+   fi
+   LIB="${LIB} -L${ORCHIDEE_LIBDIR} ${ORCHIDEE_LIB}"
+elif [[ "$veget" != "false" ]] ; then
+   echo "Option -v $veget does not exist"
+   echo "Use ./makelmdz_fcm -h for more information"
+   exit 
+fi
+
+if [[ "$sisvat" == "true" ]]
+then
+   CPP_KEY="$CPP_KEY CPP_SISVAT"
+   SISVAT_PATH="$LIBFGCM/%PHYS/sisvat"
+fi
+
+if [[ "$rrtm" == "true" ]]
+then
+   CPP_KEY="$CPP_KEY CPP_RRTM"
+   RRTM_PATH="$LIBFGCM/%PHYS/rrtm"
+fi
+
+if [[ "$dust" == "true" ]]
+then
+   CPP_KEY="$CPP_KEY CPP_Dust"
+   DUST_PATH="$LIBFGCM/%PHYS/Dust"
+fi
+
+if [[ "$strataer" == "true" ]]
+then
+   CPP_KEY="$CPP_KEY CPP_StratAer"
+   STRATAER_PATH="$LIBFGCM/%PHYS/StratAer"
+fi
+
+if [[ $io == ioipsl ]]
+then
+   CPP_KEY="$CPP_KEY CPP_IOIPSL"
+   INCLUDE="$INCLUDE ${IOIPSL_INCDIR}"
+   LIB="$LIB ${IOIPSL_LIBDIR} ${IOIPSL_LIB}"
+elif [[ $io == mix ]]
+then
+   # For now, xios implies also using ioipsl
+   CPP_KEY="$CPP_KEY CPP_IOIPSL CPP_XIOS"
+   INCLUDE="$INCLUDE ${IOIPSL_INCDIR} ${XIOS_INCDIR}"
+   LIB="$LIB ${IOIPSL_LIBDIR} ${IOIPSL_LIB} ${XIOS_LIBDIR} ${XIOS_LIB}"
+elif [[ $io == xios ]]
+then
+   # For now, xios implies also using ioipsl
+   CPP_KEY="$CPP_KEY CPP_IOIPSL CPP_XIOS CPP_IOIPSL_NO_OUTPUT"
+   INCLUDE="$INCLUDE ${IOIPSL_INCDIR} ${XIOS_INCDIR}"
+   LIB="$LIB ${IOIPSL_LIBDIR} ${IOIPSL_LIB} ${XIOS_LIBDIR} ${XIOS_LIB}"
+fi
+
+if [[ "$cosp" == "true" ]]
+then
+   CPP_KEY="$CPP_KEY CPP_COSP"
+   COSP_PATH="$LIBFGCM/cosp"
+#   LIB="${LIB} -l${LIBPREFIX}cosp"
+fi
+
+# for Titan (but could be used by others as well), there is also "chimtitan"
+if [[ -d ${LIBFGCM}/chim${physique} ]]
+then
+   CHEM_PATH="${LIBFGCM}/chim${physique}"
+   INCLUDE="$INCLUDE -I${LIBFGCM}/chim${physique}"
+fi
+
+# for Titan add microphysics dependencies
+if [[ -d ${LIBFGCM}/muphy${physique} ]] ; then
+
+  # add muphy{physique} to the list of files to compile.
+  MUPHY_PATH="${LIBFGCM}/muphy${physique}"
+  # For Titan as we embbed some libraries with CPP keys, we define them:
+  #   -DPREC={32|64|80} real kind precision (32: simple, 64: double, 80: extended double)
+  #   -DHAVE_NC_FTN=1 (mandatory: for support of NetCDF in lintnd).
+  CPP_KEY="$CPP_KEY PREC=64 HAVE_NC_FTN=1"
+  if [[ "${physique}" == "titan" ]] ; then
+    echo "Yaahh you're about to use YAMMS in a GCM..."
+  fi
+fi
+
+# for Venus (but could be used by others as well), there is also "phyvenus/cloudvenus"
+if [[ -d ${LIBFGCM}/phy${physique}/cloud${physique} ]]
+then
+   CLOUD_PATH="${LIBFGCM}/phy${physique}/cloud${physique}"
+   INCLUDE="$INCLUDE -I${LIBFGCM}/phy${physique}/cloud${physique}"
+fi
+
+# for Mars (but could be used by others as well), there is also "aeronomars"
+if [[ -d ${LIBFGCM}/aerono${physique} ]]
+then
+   AERONO_PATH="${LIBFGCM}/aerono${physique}"
+   INCLUDE="$INCLUDE -I${LIBFGCM}/aerono${physique}"
+fi
+
+# NETCDF library include/library paths
+INCLUDE="$INCLUDE ${NETCDF_INCDIR}"
+LIB="$LIB ${NETCDF_LIBDIR} ${NETCDF_LIB}"
+
+########################################################################
+# calcul du nombre de dimensions
+########################################################################
+
+
+dim_full=$dim
+dim=`echo $dim | sed -e 's/[^0-9]/ /g'` 
+set $dim
+dimc=$#
+echo calcul de la dimension
+echo dim $dim
+echo dimc $dimc
+
+
+########################################################################
+# Gestion des dimensions du modele.
+# on cree ou remplace le fichier des dimensions
+########################################################################
+
+cd $LIBFGCM/grid
+if [[ -f dimensions.h ]]
+then
+  echo 'ATTENTION: vous etes sans doute en train de compiler le modele par ailleurs'
+  echo "Attendez que la premiere compilation soit terminee pour relancer la suivante."
+  echo "Si vous etes sur que vous ne compilez pas le modele par ailleurs,"
+  echo  vous pouvez continuer en repondant oui.
+  echo "Voulez-vous vraiment continuer?"
+  echo ""
+  echo "WARNING: you are probably already compiling the model somewhere else."
+  echo "Wait until the first compilation is finished before launching this one."
+  echo "If you are sure that you are not compiling elsewhere, just answer "
+  echo "yes (or 'oui') to the question below to proceed."
+  echo "Do you wish to continue?"
+  read reponse
+  if [[ $reponse == "oui" || $reponse == "yes" ]]
+  then
+    \rm -f $LIBFGCM/grid/dimensions.h
+  else
+    exit
+  fi
+fi
+
+
+cd $LIBFGCM/grid/dimension
+./makdim $dim
+if (($? != 0))
+then
+    exit 1
+fi
+
+cat $LIBFGCM/grid/dimensions.h
+cd $LMDGCM
+
+if [[ "$bands" != "" ]]
+then
+  # Generic model, recreate bands.h (IR & VIS bands for radiative transfer)
+  bands=$(echo $bands | sed -e 's/[^0-9]/ /g')
+  cd $LIBFGCM/phy$physique/bands
+  ./makbands $bands
+  cat $LIBFGCM/phy$physique/bands.h
+  cd $LMDGCM
+fi
+
+if [[ "$scatterers" != "" ]]
+then
+  # Generic model, recreate scatterers.h
+  cd $LIBFGCM/phy$physique/scatterers
+  ./make_scatterers $scatterers
+  cat $LIBFGCM/phy$physique/scatterers.h
+  cd $LMDGCM
+fi
+
+
+########################################################################
+# Differentes dynamiques (3d, 2d, 1d)
+########################################################################
+
+dimension=`echo $dim | wc -w`
+echo dimension $dimension
+
+if (( $dimension == 3 ))
+then
+  cd $LIBFGCM/grid
+  \rm fxyprim.h
+  cp -p fxy_${grille}.h fxyprim.h
+#else
+#  echo "Probleme dans les dimensions de la dynamique !!"
+#  echo "Non reactive pour l'instant !!!"
+fi
+
+if (( $dimension == 1 ))
+then
+## Sanity check: 1D models should be used in serial
+  if [[ $parallel != "none" ]]
+  then
+    echo "Error: a 1D model should not be compiled with "
+    echo "       -parallel [mpi|omp|mpi_omp] option!"
+    exit
+  fi
+  CPP_KEY="$CPP_KEY CPP_1D"
+##in 1D, add dyn3d to include path (because main prog is in physics)
+  INCLUDE="$INCLUDE -Ilibf/dyn3d -Ilibf/dyn3d_common"
+## no filtre in 1d:
+  FILTRE_PATH=$LMDGCM/.void_dir
+## no need to compile all routines in dyn3d_common either:
+  DYN_COMMON_PATH=$LMDGCM/.void_dir
+## no need to compile all routines in dynlmdz_phy... ;
+## (because key ones are included in 1D main program)
+  DYN_PHYS_PATH=$LMDGCM/.void_dir
+  DYN_PHYS_SUB_PATH=$LMDGCM/.void_dir
+fi
+
+######################################################################
+#   Traitement special pour le nouveau rayonnement de Laurent Li.
+#   ---> YM desactive pour le traitemement en parallele
+######################################################################
+
+#if [[ -f $libf/phy$physique/raddim.h ]]
+#then
+# if [[ -f $libf/phy$physique/raddim.$dimh.h ]]
+#then
+#  \rm -f $libf/phy$physique/raddim.h
+#  cp -p $libf/phy$physique/raddim.$dimh.h $libf/phy$physique/raddim.h
+#  echo $libf/phy$physique/raddim.$dimh.h 
+#  cat $libf/phy$physique/raddim.h
+# else
+#  echo On peut diminuer la taille de l executable en creant
+#  echo le fichier $libf/phy$physique/raddim.$dimh.h
+#  \cp -p $libf/phy$physique/raddim.defaut.h $libf/phy$physique/raddim.h
+# fi
+#fi
+
+######################################################################
+# Gestion du filtre qui n'existe qu'en 3d.
+######################################################################
+
+if (( `expr $dimc \> 2` == 1 ))
+then
+   filtre="FILTRE=$filtre"
+else
+   filtre="FILTRE= L_FILTRE= "
+fi
+echo MACRO FILTRE $filtre
+
+echo $dimc
+
+
+
+######################################################################
+# Creation du suffixe de la configuration
+######################################################################
+
+
+SUFF_NAME=_${dim_full}
+SUFF_NAME=${SUFF_NAME}_phy${physique}
+
+if [[ "$parallel" != "none" ]]
+then
+  SUFF_NAME=${SUFF_NAME}_para
+  DYN=dyn${dimc}d${paramem}
+  if [[ "$paramem" == "mem" ]]
+  then
+   SUFF_NAME=${SUFF_NAME}_${paramem}
+  fi
+else
+  SUFF_NAME=${SUFF_NAME}_seq
+  if (( $dimension == 1 ))
+  then
+    # dynamics-related routines in"dyn1d" subdirectory of phy${physique} 
+    DYN=phy${physique}/dyn1d
+  else
+    DYN=dyn${dimc}d
+  fi
+fi
+
+if [[ $veget != "false" ]]
+then
+  SUFF_NAME=${SUFF_NAME}_orch
+fi
+
+if [[ $couple != "false" ]]
+then
+  SUFF_NAME=${SUFF_NAME}_couple
+fi
+
+if [[ $chimie == "INCA" ]]
+then
+  SUFF_NAME=${SUFF_NAME}_inca
+fi
+
+if [[ $libphy == "true" ]]
+then
+  # special case where we compile only the physics
+  DYN=$LMDGCM/.void_dir
+  DYN_COMMON_PATH=$LMDGCM/.void_dir
+  FILTRE_PATH=$LMDGCM/.void_dir
+  DYN_PHYS_PATH=$LMDGCM/.void_dir
+  DYN_PHYS_SUB_PATH=$LMDGCM/.void_dir
+  #and there is no main program to generate
+  code=""
+  SUFF_NAME=""
+else
+  SUFF_NAME=${SUFF_NAME}.e
+fi
+
+cd $LMDGCM
+config_fcm="config.fcm"
+rm -f $config_fcm
+touch $config_fcm
+rm -f bin/${code}${SUFF_NAME}.e
+rm -f arch.fcm
+rm -f arch.opt
+
+echo "%ARCH          $arch"          >> $config_fcm
+echo "%INCDIR        $INCLUDE"       >> $config_fcm 
+echo "%LIB           $LIB"           >> $config_fcm
+echo "%ROOT_PATH     $PWD"           >> $config_fcm
+echo "%LIBF          $LIBFGCM"       >> $config_fcm
+echo "%LIBO          $LIBOGCM"       >> $config_fcm
+echo "%DYN           $DYN"           >> $config_fcm
+echo "%DYN_COMMON    $DYN_COMMON_PATH" >> $config_fcm
+echo "%PHY_COMMON    $PHY_COMMON_PATH" >> $config_fcm
+echo "%FILTRE        $FILTRE_PATH"   >> $config_fcm
+echo "%PHYS          phy${physique}" >> $config_fcm
+echo "%DYN_PHYS      $DYN_PHYS_PATH" >> $config_fcm
+echo "%DYN_PHYS_SUB  $DYN_PHYS_SUB_PATH" >> $config_fcm
+echo "%RRTM          $RRTM_PATH"     >> $config_fcm
+echo "%DUST          $DUST_PATH"     >> $config_fcm
+echo "%STRATAER      $STRATAER_PATH" >> $config_fcm
+echo "%SISVAT        $SISVAT_PATH"   >> $config_fcm
+echo "%COSP          $COSP_PATH"     >> $config_fcm
+echo "%CHEM          $CHEM_PATH"     >> $config_fcm
+echo "%CLOUD         $CLOUD_PATH"    >> $config_fcm
+echo "%MUPHY         $MUPHY_PATH"    >> $config_fcm
+echo "%AERONO        $AERONO_PATH"   >> $config_fcm
+echo "%CPP_KEY       $CPP_KEY"       >> $config_fcm
+echo "%EXEC          $code"          >> $config_fcm
+echo "%SUFF_NAME     $SUFF_NAME"     >> $config_fcm
+echo "%COMPIL_FFLAGS $COMPIL_FFLAGS" >> $config_fcm
+echo "%PARA_FFLAGS   $PARA_FFLAGS"   >> $config_fcm
+echo "%PARA_LD       $PARA_LD"       >> $config_fcm
+echo "%EXT_SRC       $EXT_SRC"       >> $config_fcm
+
+
+
+ln -s arch/arch-${arch}.fcm arch.fcm
+if test -f arch/arch-${arch}.opt &&  [ $compil_mod = "prod" ]
+  then
+  ln -s arch/arch-${arch}.opt arch.opt
+else
+  ln -s .void_file arch.opt
+fi
+
+
+rm -f $LIBOGCM/${arch}${SUFF_NAME}/.config/fcm.bld.lock
+./build_gcm ${fcm_path} -j $job $full
+
+rm -rf tmp_src
+rm -rf config
+ln -s $LIBOGCM/${arch}${SUFF_NAME}/.config config
+ln -s $LIBOGCM/${arch}${SUFF_NAME}/.config/ppsrc tmp_src
+
+
+if [[ -r $LIBFGCM/grid/dimensions.h ]]
+then
+  # Cleanup: remove dimension.h file
+  \rm -f $LIBFGCM/grid/dimensions.h
+fi

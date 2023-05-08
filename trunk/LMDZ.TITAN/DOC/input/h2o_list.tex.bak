@@ -1,0 +1,29 @@
+{\footnotesize
+\begin{verbatim}                                                                               
+## Tracer (dust water, ice and/or chemical species) options (used if tracer=T):
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# DUST: Transported dust ? (if >0, use 'dustbin' dust bins)
+dustbin    = 0
+# DUST: Radiatively active dust ? (matters if dustbin>0)
+active  = .false.
+# DUST: use mass and number mixing ratios to predict dust size ?
+# (must also have dustbin=1)
+doubleq   = .false.
+# DUST: lifted by GCM surface winds ?
+lifting = .false.
+# DUST: lifted by dust devils ?
+callddevil = .false.
+# DUST: Scavenging by CO2 snowfall ?
+scavenging = .false.
+# DUST/WATERICE: Gravitationnal sedimentation ?
+sedimentation = .true.
+# WATERICE: Radiatively active transported atmospheric water ice ?
+activice   = .false.
+# WATER: Compute water cycle
+water = .true.
+# WATER: current permanent caps at both poles. True IS RECOMMENDED
+#        (with .true., North cap is a source of water and South pole
+#         is a cold trap)
+caps  = .true.
+\end{verbatim}
+}

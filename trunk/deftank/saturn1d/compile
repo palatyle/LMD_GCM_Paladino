@@ -1,0 +1,4 @@
+#! /bin/bash
+
+/donnees/aslmd/MODELES/LMDZ.GENERIC/makegcm -d 64 -t 0 -b 20x30 rcm1d
+#/donnees/aslmd/MODELES/LMDZ.GENERIC/makegcm -d 32 -t 0 -b 20x30 rcm1d

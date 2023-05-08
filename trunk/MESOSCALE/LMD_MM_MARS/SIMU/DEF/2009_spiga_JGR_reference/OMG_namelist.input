@@ -1,0 +1,75 @@
+ &time_control
+ start_year       = 2024, 2024, 2024,
+ start_month      =   01,   01,   01,
+ start_day        =   49,   49,   49,
+ start_hour       =   06,   06,   06,
+ end_year         = 2024, 2024, 2024,
+ end_month        =   01,   01,   01,
+ end_day          =   54,   54,   54,
+ end_hour         =   06,   06,   06,
+ history_interval   = 74,   74,   74,    
+ frames_per_outfile = 12,   12,   12, 
+ restart          = .false.
+ restart_interval = 8880,
+ io_form_history  = 2
+ io_form_restart  = 2
+ io_form_input    = 2
+ io_form_boundary = 2
+ debug_level      = 0
+ input_from_file  =    T,    T,    T,     ! F en second pour que d1 init. d2 (smoother)
+ /
+
+ &domains
+ time_step   = 40 
+ dx     = 36000,  9000,  2250,   !!alt 48000 12000 3000
+ dy     = 36000,  9000,  2250, 
+ e_we   =   153,   157,   157,            ! IF YOU CHANGE THIS YOU MUST RECOMPILE THE PHYSICS
+ e_sn   =   153,   157,   157,            ! IF YOU CHANGE THIS YOU MUST RECOMPILE THE PHYSICS
+ e_vert =    61,    61,    61,            ! IF YOU CHANGE THIS YOU MUST RECOMPILE THE PHYSICS
+ p_top_requested = 3
+!!!!! NESTING STUFF
+ max_dom = 3	!!!! PLEASE DO NOT FORGET callphysd*_.def	
+ grid_id                = 1,   2,   3,
+ parent_id              = 0,   1,   2,
+ i_parent_start         = 0,  57,  57,      ! attention au raccord avec WPS !
+ j_parent_start         = 0,  57,  57,      ! attention au raccord avec WPS !
+ parent_grid_ratio      = 1,   4,   4,
+ parent_time_step_ratio = 1,   2,   2,
+ feedback               = 0  
+ smooth_option          = 2
+ blend_width            = 5
+!!!!! NESTING STUFF
+ /
+
+ &physics
+ radt =  1, 1, 1     ! 1 is the best (change iradia in callphys)
+ mars =  0, 0, 0     ! IF YOU CHANGE THIS YOU MUST RECOMPILE THE PHYSICS (AND CHANGE CALLPHYS.DEF)
+!!! init_MU=3.   ! ... quasi no-wind
+!!! init_MV=3.   ! ... quasi no-wind
+ /
+
+ &fdda
+ /
+
+ &dynamics
+ diff_6th_opt =      2,   2,   2,     !! NECESSAIRE 
+ diff_6th_factor =   0.2, 0.2, 0.2    !! NECESSAIRE 
+ diff_opt = 1,
+ km_opt = 4,
+ pd_scalar = F   !! no water cycle (mars = 0)
+ /
+
+ &grib2
+ /
+
+ &bdy_control
+ specified = T, F, F
+ nested    = F, T, T
+ /
+
+!! DO NOT MODIFY
+ &namelist_quilt
+ nio_tasks_per_group = 0,
+ nio_groups = 1,
+ /
+!! DO NOT MODIFY

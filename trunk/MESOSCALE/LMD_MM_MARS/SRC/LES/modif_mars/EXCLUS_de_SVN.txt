@@ -1,0 +1,11 @@
+
+les fichiers mis a jour par makeles
+
+cp -rf ${libphys_folder}/liblmd.a ${whereliblmd}/
+cp -rf ${phymars_folder}/dimphys.h ${here}/modif_mars/
+cp -rf ${folder}/call_meso_inifis.inc ${here}/modif_mars/
+cp -rf ${folder}/call_meso_physiq.inc ${here}/modif_mars/
+cp -rf ${folder}/inc/module_lmd_driver_output*.inc ${here}/modif_mars/
+cp -rf ${phymars_folder}/wrf_output_2d.h ${here}/modif_mars/
+cp -rf ${phymars_folder}/wrf_output_3d.h ${here}/modif_mars/
+

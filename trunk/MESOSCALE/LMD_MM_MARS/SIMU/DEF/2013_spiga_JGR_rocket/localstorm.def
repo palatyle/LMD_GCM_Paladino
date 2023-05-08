@@ -1,0 +1,39 @@
+### "Add a local storm ?" 
+###      default is T
+#########################
+localstorm        = .true. 
+
+### "ref opacity of local dust storm" 
+###      default is 4.25
+#####################################
+taulocref         = 4.25 
+
+### "target altitude of local storm (km)" 
+###      default is 10.0
+#########################################
+ztoploc           = 10.0 
+
+### "radius of dust storm (degree)" 
+###      default is 0.5
+###################################
+radloc            = 0.5 
+
+### "center longitude of storm (deg)" 
+###      default is 25.0
+#####################################
+lonloc            = 25.0 
+
+### "center latitude of storm (deg)" 
+###      default is -2.5
+####################################
+latloc            = -2.5 
+
+### "reff storm (mic) 0. for background" 
+###      default is 0.0 (use background reff)
+#############################################
+reffstorm         = 0.0 
+
+### "beta coefficient for sedimentation"
+###      default is 0.5
+########################################
+betaset           = 0.5 

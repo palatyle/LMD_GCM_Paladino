@@ -1,0 +1,47 @@
+#! /bin/bash
+
+## changer eventuellement le callphys.def egalement
+
+##################
+tracers=2
+nx=64
+ny=48
+nz=32
+##################
+#tracers=1
+#nx=64
+#ny=48
+#nz=25
+##################
+
+
+
+# GCM environment variables
+#--------------------------
+export LMDGCM=$PWD
+export LIBOGCM=$PWD/libo
+
+echo $LMDGCM
+echo $LIBOGCM
+echo $NCDFLIB
+echo $NCDFINC 
+
+#rm -rf libo
+mkdir libo
+touch libo/log_compile_newstart
+touch libo/log_compile_gcm
+
+echo bricolo
+\rm libf/grid/dimensions.h 2> /dev/null
+
+echo compile newstart
+echo check in $PWD/libo/log_compile_newstart
+makegcm -t ${tracers} -p mars -d ${nx}x${ny}x${nz} newstart > libo/log_compile_newstart 2>&1 #| tee libo/log_compile_newstart | grep 'warnings' >> libo/log_compile_newstart
+
+echo compile gcm
+echo check in $PWD/libo/log_compile_gcm
+makegcm -t ${tracers} -p mars -d ${nx}x${ny}x${nz} gcm > libo/log_compile_gcm 2>&1 #| tee libo/log_compile_gcm | grep 'warnings' >> libo/log_compile_gcm
+
+echo well, OK.
+
+

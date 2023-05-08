@@ -1,0 +1,44 @@
+## planet-specific constants
+#Reference surface pressure (Pa)
+preff=300000.
+# Reference pressure at which hybrid coord. become purely pressure
+# (default pa=preff/2.)
+# Gravity
+##g=26.
+g=8.
+# Molar mass of the atmosphere
+molmass = 2.3
+# kappa = R/Cp et Cp     (default 2./7.) 
+# (default cpp : 8.3145/molmass/kappa*1000.)
+# Radius of the planet
+###radius = 69.86e6
+##radius = 12.e6
+radius = 26e6
+# Length of a standard day (s)
+#daysec=35726.
+daysec= 35700.0
+# Length of a solar day, in standard days
+# (default: daylen = 1. )
+# Number of days (standard) per year:
+# year_day = 10476
+year_day=10484
+# Omega
+# default: omeg= 2.*pi/daysec*(1./daylen+1./year_day)
+
+### intrinsic heat flux ###
+#ihf=6.
+ihf=30.
+
+
+#CALL getin('preff', preff)
+#CALL getin('pa', pa)
+#CALL getin('g',g)
+#CALL getin('molmass',molmass)
+#CALL getin('kappa',kappa)
+#CALL getin('cpp',cpp)
+#CALL getin('radius',rad)
+#CALL getin('daysec',daysec)
+#CALL getin('daylen',daylen)
+#CALL getin('year_day',year_day)
+#CALL getin('omeg',omeg)
+

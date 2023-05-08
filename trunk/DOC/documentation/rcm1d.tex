@@ -1,0 +1,85 @@
+\documentclass[a4paper,10pt]{article}
+%\usepackage{graphicx}
+\usepackage{natbib}  % si appel à bibtex
+%\usepackage[francais]{babel}
+%\usepackage[latin1]{inputenc}  % accents directs (é...), avec babel
+%\usepackage{rotating}
+
+\setlength{\hoffset}{-1.in}
+\setlength{\oddsidemargin}{3.cm}
+\setlength{\textwidth}{15.cm}
+\setlength{\marginparsep}{0.mm}
+\setlength{\marginparwidth}{0.mm}
+
+\setlength{\voffset}{-1.in}
+\setlength{\topmargin}{0.mm}
+\setlength{\headheight}{0.mm}
+\setlength{\headsep}{30.mm}
+\setlength{\textheight}{24.cm}
+\setlength{\footskip}{1.cm}
+
+\setlength{\parindent}{0.mm}
+\setlength{\parskip}{1 em}
+\newcommand{\ten}[1]{$\times 10^{#1}$~} 
+\renewcommand{\baselinestretch}{1.}
+
+\begin{document}
+\pagestyle{plain}
+
+\begin{center}
+{\bf \LARGE 
+Documentation for LMDZ, Planets version
+
+\vspace{1cm}
+\Large
+Running with only one column: \\
+rcm1d in Venus and Titan physics
+}
+
+\vspace{1cm}
+S\'ebastien Lebonnois
+
+\vspace{1cm}
+Latest version: \today
+\end{center}
+
+
+\section{The \textsf{rcm1d} tool}
+
+The file \textsf{rcm1d.F} is located in the \textsf{phy$<$planet$>$} directory.
+For the moment, the tool described here is available for Venus and Titan, though a similar tool exists for Mars and the Generic model.
+
+The goal of this tool is to initialize the model the same way \textsf{gcm.F} does on 3D, but only on a single column, so that the physics may be tested without any dynamics.
+
+It can be compiled (sequential only) with a command like (e.g. for 50 layers):
+
+\textsf{makelmdz -p venus -d 50 rcm1d}
+
+It requires the files \textsf{rcm1d.def}, \textsf{physiq.def}
+and a file describing the vertical layers (\textsf{z2sig.def}).
+The 3D \textsf{run.def} is also needed though only to access \textsf{physiq.def} (the other parameters specific to \textsf{run.def} are not read.
+
+{\bf Beware:}
+The file \textsf{traceur.def} may or may not be present. 
+For the moment, tracers are initialized to 0. 
+If you plan to use them, there will be need for modifications (in \textsf{rcm1d.F}).
+
+
+Using these files and an initial temperature vertical profile defined in the \textsf{profile.F} routine (with options available through \textsf{rcm1d.def}), the model is initialized and a first \textsf{startphy.nc} file is written, to be read again at the first call of \textsf{physiq}.
+
+\section{Specific \textsf{rcm1d.def} file}
+ 
+This file is read by \textsf{rcm1d} during initialization.
+It is very simple and reads values at the beginning of each lines (different from \textsf{gcm.def}).
+It can be found in the \textsf{deftank} directory. 
+Each line has a comment explaining what the parameter is. 
+The number of timestep per day (third line) is the number of calls to the physics per day, since no dynamics is involved here.
+
+It also includes parameters for the \textsf{profile.F} definition.
+
+\section{Outputs}
+
+It writes the same \textsf{hist*.nc} as the regular GCM.
+It also writes a \textsf{profile.new} file containing the vertical profiles of altitude, temperature and stability at the end of the run, and the usual \textsf{restartphy.nc} though it will not be used for a restart, since \textsf{rcm1d} starts with the same initial state everytime it is launched.
+
+\end{document}

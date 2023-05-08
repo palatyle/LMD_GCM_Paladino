@@ -1,0 +1,82 @@
+#! /bin/bash
+
+
+### must do something to remove .svn in save files 
+### find * */* */*/* -iname .svn
+
+echo Saving LMD_MM_MARS !
+
+mkdir clean
+
+cd SRC
+
+  cd WRFV2
+    save_changes
+    mv sources_Mars.tar.gz ../../clean/
+    mv saved ../../clean/
+  cd ..
+
+  tar czvf ARWpost.tar.gz ARWpost
+  mv ARWpost.tar.gz ../clean/
+
+  #tar czvf INIT_SIMPLE_TEST.tar.gz INIT_SIMPLE_TEST
+  #mv INIT_SIMPLE_TEST.tar.gz ../clean/
+  cp INIT_SIMPLE_TEST.tar.gz ../clean/
+
+  tar czvf PREP_MARS.tar.gz PREP_MARS
+  mv PREP_MARS.tar.gz ../clean/
+
+  tar czvf WPS.tar.gz WPS/switch* WPS/wps_mars
+  mv WPS.tar.gz ../clean/
+
+  #tar czvf g95.tar.gz g95
+  #mv g95.tar.gz ../clean/
+  cp g95.tar.gz ../clean/
+
+  #tar czvf mac.tar.gz mac
+  #mv mac.tar.gz ../clean/
+  cp mac.tar.gz ../clean/
+
+  tar czvf POSTPROC.tar.gz POSTPROC
+  mv POSTPROC.tar.gz ../clean/
+
+
+cd ..
+
+tar czvf SIMU.tar.gz SIMU
+mv SIMU.tar.gz clean/
+
+tar czvf WPS_GEOG.tar.gz WPS_GEOG/res WPS_GEOG/*_GCM
+mv WPS_GEOG.tar.gz clean/
+
+#cd WPS_GEOG
+#cd not_used
+#save_wps_geog
+#mv -f WPS_GEOG.tar.gz ../../clean/
+#cd ../..
+
+cp copy_model clean/
+cp save_all clean/
+cp makemeso clean/
+cp prepare clean/
+cp build_static clean/
+cp prepare_ini clean/
+cp prepare_post clean/
+cp prepare_offline clean/
+
+date > clean/datesave
+cp -f clean/datesave SRC/
+cp -f clean/saved SRC/
+
+#mv clean `date +LMD_MM_MARS_%Y_%m_%d`
+mv clean LMD_MM_MARS
+
+tar czvf `date +LMD_MM_MARS_%Y_%m_%d.tar.gz` LMD_MM_MARS #`date +LMD_MM_MARS_%Y_%m_%d` 
+rm -rf LMD_MM_MARS #`date +LMD_MM_MARS_%Y_%m_%d`
+
+if [[ -d TESTCASE ]]
+then
+tar czvf DATA.tar.gz TESTCASE
+mv DATA.tar.gz LMD_MM_MARS_TESTCASE.tar.gz
+fi
+

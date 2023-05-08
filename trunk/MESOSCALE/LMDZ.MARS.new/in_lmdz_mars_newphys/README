@@ -1,0 +1,29 @@
+> tar xvf LMDZ.MARS.source.tar
+ajouter perso
+change resol in compile
+check NETCDF NCDFLIB NCDFINC
+> compile
+> mkdir myGCM
+> cd myGCM
+lier z2sig.def (voir what_I_need)
+lier un start_archive avec bon nombre traceurs
+> ln -sf ../gcm.e
+> ln -sf ../newstart.e
+> ln -sf ../deftank/run0 
+lier un callphys.def
+lier un run.def
+cp num_run
+> newstart.e
+> mv restart.nc start0.nc
+> mv restartfi.nc startfi0.nc
+LANCER AVEC
+> nohup run_mcd_3days > log_run_mcd_3days &
+ATTENDRE LONGTEMPS ...
+> mv tmpsave ../STARTBASE_64_48_32_t2
+> rm -rf start.nc start0.nc startfi.nc startfi0.nc
+
+lier le run.def simu
+modifier physiq.F pour sortir des donnees 
+recompiler
+link diagfi.nc vers un espace temp
+ex: ln -sf $MODELS/TMPDIR/GCMINI/diagfi.nc

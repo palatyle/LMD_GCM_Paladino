@@ -1,0 +1,1 @@
+../../dyn3d/paramet.h

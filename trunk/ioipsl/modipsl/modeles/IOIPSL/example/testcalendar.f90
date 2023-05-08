@@ -1,0 +1,70 @@
+PROGRAM testcalendar
+!-
+!$Id: testcalendar.f90 386 2008-09-04 08:38:48Z bellier $
+!-
+! This software is governed by the CeCILL license
+! See IOIPSL/IOIPSL_License_CeCILL.txt
+!---------------------------------------------------------------------
+!- This program will do some basic tests on the calendar
+!---------------------------------------------------------------------
+  USE calendar
+!-
+  IMPLICIT NONE
+!-
+  REAL :: julian, sec
+  INTEGER :: year, month, day
+  INTEGER :: iread, iret
+  CHARACTER(LEN=20) :: tmp
+!-
+  INTEGER :: iargc, getarg
+  EXTERNAL iargc, getarg
+!---------------------------------------------------------------------
+!-
+! Get the command line arguments
+!-
+  iread = iargc()
+  IF (iread .EQ. 0) THEN
+    WRITE(*,*) 'Using the default calendar'
+  ELSE
+    iret = getarg(1,tmp)
+    WRITE(*,*) 'Using the calendar named :',TRIM(tmp)
+    CALL ioconf_calendar (TRIM(tmp))
+  ENDIF
+!-
+! Get the origine of the julian days
+!-
+  julian = 0.0
+  CALL ju2ymds (julian, year, month, day, sec)
+  WRITE(*,*) 'Day at which the julian day was zero :'
+  WRITE(*,*) 'Year : ',year,' Month : ',month,' Day : ',day
+!-
+! Do we get the same day back when we go back and forth
+!-
+  year = 1997
+  month = 8
+  day = 21
+  sec = 0.0
+  WRITE(*,*) 'Day transformed into julian :'
+  WRITE(*,*) 'Year : ',year,' Month : ',month,' Day : ',day
+  CALL ymds2ju (year, month, day, sec, julian)
+  WRITE(*,*) ' --> The resulting julian day : ',julian
+  CALL ju2ymds (julian, year, month, day, sec)
+  WRITE(*,*) 'The day which comes out again :'
+  WRITE(*,*) 'Year : ',year,' Month : ',month,' Day : ',day
+!-
+! Yet another test but this time with a strange dat !
+!-
+  year = 1997
+  month = 3
+  day = 34
+  sec = 0.0
+  WRITE(*,*) 'Strange day transformed into julian :'
+  WRITE(*,*) 'Year : ',year,' Month : ',month,' Day : ',day
+  CALL ymds2ju (year, month, day, sec, julian)
+  WRITE(*,*) ' --> The resulting julian day : ',julian
+  CALL ju2ymds (julian, year, month, day, sec)
+  WRITE(*,*) &
+ &  'The day which comes out again, does it make more sense ? :'
+  WRITE(*,*) 'Year : ',year,' Month : ',month,' Day : ',day
+!-----------------------
+END PROGRAM testcalendar

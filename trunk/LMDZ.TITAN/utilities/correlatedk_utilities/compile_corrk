@@ -1,0 +1,11 @@
+#!/bin/bash
+#gfortran -c -g -fbounds-check generate_kmatrix.F90 strlen.for
+
+gfortran -c generate_kmatrix.F90 co2_cont.for strlen.for
+gfortran -o generate_kmatrix.exe generate_kmatrix.o co2_cont.o strlen.o
+
+gfortran -c make_composition_gen.for strlen.for
+gfortran -o make_composition_gen.exe make_composition_gen.o strlen.o
+
+rm -f *o
+rm -f *~

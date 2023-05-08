@@ -1,0 +1,263 @@
+#!/bin/sh
+#set -xv
+#
+# Ehouarn: added the following feature:
+#          create_make_gcm must be called with list of directories
+#          which contain header (or modules) which should be scanned
+#          by create_make_gcm when checking dependencies.
+#          Example:
+#          create_make_gcm dyn3d grid
+#          means that header/modules will be looked for in directories
+#          ., dyn3d and grid
+#
+
+# arguments given to create_make_gcm are the directories to scan
+src_dirs=$*
+
+machine=`hostname`
+os=`uname`
+gcm=`pwd`
+logfile=$gcm/create_make_gcm.log
+rm -f $logfile ; touch -f $logfile
+libf=$gcm/libf
+libo=$gcm/libo
+CRAY=0
+if [ "$machine" = "atlas" -o "$machine" = "etoile" -o "$machine" = "axis" ] ; then
+  CRAY=1
+fi
+XNEC=0
+if [ "$machine" = "rhodes" ] ; then
+  XNEC=1
+fi
+VPP=0
+if [ "$machine" = "nymphea0" ] ; then
+  VPP=1
+fi
+#
+echo "#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+echo "# Definitions de Macros pour Make"
+echo "#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+echo 
+echo "# create_make_gcm arguments: $*"
+echo
+echo "# Repertoires :"
+echo
+echo "GCM     = "$gcm
+if [ "$CRAY" = '0' ] ; then
+   echo "MACHINE = sun4"
+fi
+echo 'LIBF    = $(GCM)/libf'
+if [ "$CRAY" = '0' ] ; then
+#   echo 'LIBO    = $(GCM)/libo/$(MACHINE)'
+   echo 'LIBO    = $(LIBOGCM)/$(MACHINE)'
+else
+   echo 'LIBO    = $(GCM)/libo'
+fi
+#echo 'LOCAL_DIR=$(GCM)'
+#echo $localdir
+echo "LOCAL_DIR=`echo $localdir`"
+echo 'MISC    = $(LIBF)/misc'
+#echo 'AERONOMARS    = $(LIBF)/aeronomars'
+echo "FILTRE   = filtre"
+echo "PHYS  = "
+echo 'DYN  = $(DYNTYPE)'
+echo 'LIBPHY = $(LIBO)/libphy$(PHYS).a'
+echo 'LIBDYN_PHY = $(LIBO)/libdynlmdz_phy$(PHYS).a'
+echo 'DIRMAIN= $(DYN)$(DIM)d'
+echo 'RM=rm'
+echo
+echo "OPLINK = "
+echo
+echo '# Les differentes librairies pour l"edition des liens:'
+echo
+echo 'L_DYN      = -ldyn$(DIM)d'
+echo 'L_FILTRE   = -l$(FILTRE)'
+echo 'L_DYN_PHY = -ldynlmdz_phy$(PHYS) '
+echo 'L_PHY = -lphy$(PHYS) -lphy_common'
+echo 'L_MISC    = -lmisc'
+#echo 'L_AERONOMARS    = -laeronomars'
+echo 'L_ADJNT    ='
+echo
+echo "#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+echo "# Option de compilation FORTRAN"
+echo "#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+echo
+   echo 'COMPILE = $(F77) $(OPTIM) $(INCLUDE) -c'
+   echo 'COMPILE90 = $(F90) $(OPTIM90) $(INCLUDE) -c'
+   echo 'COMPTRU90 = $(F90) $(OPTIMTRU90) $(INCLUDE) -c'
+   echo "LINK    = $LINK"
+   echo "AR      = $AR"
+echo
+echo
+echo "#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+echo "# Creation des differents executables"
+echo "#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+echo
+echo "# Executables:"
+echo "# ------------"
+echo
+echo "PROG = code"
+echo 'DYN  = dyn$(DIM)d'
+echo
+echo 'main : $(DYN) misc phys phy_common dyn_phy $(OPTION_DEP) '
+echo '	cd $(LIBO) ; $(RANLIB) lib*.a ; cd $(GCM) ;\'
+echo '	cd $(LOCAL_DIR); \'
+echo '	$(COMPILE90) $(LIBF)/$(DIRMAIN)/$(SOURCE) -o $(PROG).o ; \'
+echo '	$(LINK) $(PROG).o -L$(LIBO) $(L_DYN) $(L_DYN_PHY) $(L_ADJNT) $(L_FILTRE) $(L_PHY) $(L_DYN_PHY) $(L_MISC) $(L_DYN) $(L_PHY) $(OPLINK) $(OPTION_LINK) -o $(LOCAL_DIR)/$(PROG).e ; $(RM) $(PROG).o '
+echo
+echo 'dyn : $(LIBO)/libdyn$(DIM)d.a $(FILTRE)$(DIM)d'
+echo
+echo 'olddyn : $(LIBO)/libolddyn$(DIM)d.a $(FILTRE)$(DIM)d'
+echo
+echo 'phys : $(LIBPHY)'
+echo 'phy_common : $(LIBPHY_COMMON)'
+echo
+echo 'dyn3d : $(LIBO)/libdyn3d.a $(LIBO)/lib$(FILTRE).a'
+echo 'dyn2d : $(LIBO)/libdyn2d.a'
+echo 'dyn1d : '
+echo
+echo 'dyn_phy: $(LIBDYN_PHYS)'
+echo
+echo 'misc : $(LIBO)/libmisc.a'
+echo
+#echo 'aeronomars : $(LIBO)/libaeronomars.a'
+#echo
+echo 'adjnt : $(LIBO)/libadjnt.a'
+echo
+echo '$(FILTRE)3d : $(LIBO)/lib$(FILTRE).a'
+echo
+echo '$(FILTRE)2d :'
+echo
+echo '$(FILTRE)1d :'
+echo
+echo "#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+echo "# Contenu des differentes bibliotheques"
+echo "#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+echo
+echo
+cd $libf >/dev/null 2>&1
+
+for diri in $src_dirs ; do
+
+   if [ -d $diri ] ; then
+   if [ "`ls $diri/*.F`" != "" ] || [ "`ls $diri/*.[fF]90`" != "" ]  ; then 
+#      cd $diri >/dev/null 2>&1
+      echo
+      listlib=""
+# Liste des fichiers .F et .F90 n'etant pas des programmes principaux
+      for fili in `ls $diri/*.[fF]` ; do
+         # Check if file is a routine or main program
+         # i.e: look for the "program" keword preceeded by leading spaces
+         test=` (  head $fili | grep -i '^ *program' ) `
+         # if it is not a main program, add it to the list
+         if [ "$test" = "" ] ; then listlib=$listlib" "$fili ; fi
+      done
+      for fili in `ls $diri/*.[fF]90` ; do
+         # Check if file is a routine or main program
+         # i.e. look for "program" keyword (with possibly some leading spaces)
+         test=` (  head $fili | grep -i '^ \{0,\}program' ) `
+         # if it is not a main program, add it to the list
+         if [ "$test" = "" ] ; then listlib=$listlib" "$fili ; fi 
+      done
+      echo
+      echo $listlib >> $logfile
+      echo
+      # topdiri contains main dir name (without trailing "/blabla" for subdirs)
+      topdiri=${diri%/*}
+      echo "#=================================================================="
+      echo "# Contenu de la bibliotheque correspondant au Directory "$diri
+      echo "#=================================================================="
+      echo
+      for trufile in $listlib ; do
+         fili=`echo $trufile | awk -F/ ' { print $NF } ' | cut -d. -f1`
+         echo '$(LIBO)/lib'$topdiri".a : " '$(LIBO)/lib'$topdiri".a("$fili".o)"
+         echo
+      done
+      echo '.PRECIOUS	: $(LIBO)/lib'$topdiri'.a'
+      echo
+      echo
+      echo "# Compilation of elements in $diri of library lib"$topdiri".a"
+      echo
+      for trufile in $listlib ; do
+         fili=`echo $trufile | awk -F/ ' { print $NF } ' | cut -d. -f1`
+         F90=0 ; egrep -i '^ *use ' $trufile > /dev/null 2>&1 && F90=1
+                 egrep -i '^ *module ' $trufile > /dev/null 2>&1 && F90=1
+                 egrep -i '#include*.inc ' $trufile > /dev/null 2>&1 && F90=1
+         str1='$(LIBO)/lib'$topdiri'.a('$fili'.o) : $(LIBF)/'$trufile
+         [ "$fili" = "$diri/chem.subs" ] && str1=$str1' $(LIBF)/'$diri/chem.mods.F
+
+##########################################################################
+# TRAITEMENT DES DEPENDANCES
+# Differents cas de dependance correspondant a des include ou des
+# use module.
+# soit dans le repertoire local soit dans un autre.
+# Pour dyn3d, il faudrait remplacer la chaine de caractere par $DYN
+# ou quelque chose du genre.
+##########################################################################
+
+         for stri in ` ( sed -e '/^[cC\!]/d' $trufile | sed -e "/\#include /s/\#include /XXnclude /" -e "/include /s/include /XXnclude /" -e "/INCLUDE /s/INCLUDE /XXnclude /" | sed -n "/XXnclude /s/XXnclude//p" | sed 's/\"//g' | sort | uniq ; sed -e '/^[cC\!]/d' $trufile | egrep -i '^ *use ' | sed -e 's/,/ /' | awk ' { print $2 } ' | sort | uniq ) ` ; do
+            echo $trufile $fili $stri >> $logfile
+            strj=`echo $stri | tr [A-Z] [a-z]`
+            str2=""
+            for dirinc in $src_dirs ; do
+# Recherche dans l'ordre hierarchique inverse car seule la derniere
+# ligne est conservee
+#               if [ $dirinc = phydev ] ; then
+#                   dirstr='$(PHYS)'
+#                   libstr='phy$(PHYS)'
+#               else
+                   dirstr=$dirinc
+                   libstr=$dirinc
+#               fi
+               echo dirinc $dirinc >> $logfile
+               if [ -f $dirinc/$stri ] ; then
+                  str2='$(LIBF)/'$dirstr/$stri
+               elif [ -f $dirinc/$strj ] ; then
+                  str2='$(LIBF)/'$dirstr/$stri
+               elif [ -f $dirinc/$strj.[fF]90 ]  || [ -f $dirinc/$strj.[fF] ]  ; then 
+                  strlib=`echo $libstr | awk -F/ ' { print $1 } '`
+                  str2='$(LIBO)/lib'$strlib'.a('$strj'.o)'
+               elif [ -f $dirinc/$stri.[fF]90 ]  || [ -f $dirinc/$stri.[fF] ]  ; then 
+                  strlib=`echo $libstr | awk -F/ ' { print $1 } '`
+                  str2='$(LIBO)/lib'$strlib'.a('$stri'.o)'
+               fi
+               echo stri $stri  >> $logfile
+               echo str2 $str2  >> $logfile
+            done
+               echo dernier str2 $str2  >> $logfile
+            if [ "$str2" = "" ] ; then
+               echo Warn: Include $diri $trufile $fili $stri pas trouve >> $logfile
+            elif [ "$str2" = "$str1" ] ; then
+               echo Warn: Include $diri $trufile $fili $stri $str1 trouve 2x >> $logfile
+            else
+               echo $str1 \\
+               str1=$str2
+            fi
+         done # Fin de la boucle sur les dependances et ecriture de la derniere
+         echo $str1
+         # Compile in LIBO directory; and before compiling, remove
+         # object from library
+         echo '	cd $(LIBO); \'
+         echo '	$(AR) d $(LIBO)/lib'$topdiri'.a '$fili'.o ; \'
+	 if [ "$F90" -eq '0' ] ; then
+         ## Fixed Form Fortran 77
+	   echo '	$(COMPILE) $(LIBF)/'$trufile' ; \'
+	 else
+         ## Fortran 90
+           if [ `echo $trufile | cut -d. -f2` = F90 ] ; then
+	      ## Free Form
+              echo '	$(COMPTRU90) $(LIBF)/'$trufile' ; \'
+           else
+	      echo '	$(COMPILE90) $(LIBF)/'$trufile' ; \'
+           fi
+	 fi
+         # Put generated object in library
+         echo '	$(AR) r $(LIBO)/lib'$topdiri'.a '$fili'.o ; $(RM) '$fili'.o ; \'
+	 echo
+      done
+#	 
+      echo
+   cd $libf
+   fi
+   fi
+done

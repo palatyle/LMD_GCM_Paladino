@@ -1,0 +1,121 @@
+------------------------------
+ LMD Martian Mesoscale Model
+------------------------------
+       Technical note   
+------------------------------
+
+Authors: 
+A. Spiga and F. Forget
+Laboratoire de Meteorologie Dynamique
+Universite Pierre et Marie Curie
+BP 99
+4 place Jussieu
+75252 PARIS CEDEX 5
+FRANCE
+
+IMPORTANT NOTICE:
+Please refer to the authors in any publication using the model.
+
+Correspondance:
+spiga@lmd.jussieu.fr
+forget@lmd.jussieu.fr
+
+------------------------------
+
+Credits: 
+- NCEP/NCAR WRF development team http://www.wrf-model.org/index.php
+- EuroMars team (LMD ~ OU/Univ. Oxford - IAA)
+
+Support : 
+- European Space Agency (ESA)
+- Centre National d'Etudes Spatiales (CNES)
+
+------------------------------
+------------------------------
+
+------------------------------
+   Description of the model
+------------------------------
+
+Please refer to the report "Design and Performance of the LMD Martian Mesoscale Model"
+
+------------------------------
+   Installation of the model
+------------------------------
+
+1. copy the LMD Martian Mesoscale sources on a disk with 400 Mo of free space 
+> cp LMD_MM_MARS.tar.gz ***my_disk***
+
+2. unzip the archive file, download WRF sources and prepare directories and files for compilation
+**** REQUIREMENTS:
+**** - you must be connected to the internet
+> tar xzvf LMD_MM_MARS.tar.gz
+> cd LMD_MM_MARS
+> ./prepare
+
+3. compile the model
+**** REQUIREMENTS:
+**** - you must have either pgf90 or g95 installed in your computer
+**** - you must have compiled NETCDF libraries and define the environment variable $NETCDF
+> ./makemeso 
+
+------------------------------
+   Structure of the model
+------------------------------
+SIMU  		>> contains a test case and several useful scripts
+SRC  		>> contains sources of the model, the pre- and post-processing utilities
+WPS_GEOG  	>> contains static data (topography, albedo, thermal inertia)
+build_static    >> a script to build a minimal dataset for initialization of static data 
+copy_model      >> a script to link the model sources and avoid duplicates
+makemeso        >> the main compilation script
+prepare         >> a script to run right after you deflated the .tar.gz file
+
+SRC/ARWpost     		>> post-processing utilities (maps, etc ...)
+SRC/INIT_SIMPLE_TEST.tar.gz  	>> a simple idealized case study
+SRC/PREP_MARS  			>> pre-processing utilities : convert GCM outputs
+SRC/WPS  			>> the main pre-processing system : define domain and interpolate meteorological and static data
+SRC/WRFV2  			>> the folder containing WRF sources and LMD physics sources
+SRC/datesave   			>> a reminder of the version you use
+SRC/g95.tar.gz  		>> fix for some problems that may appear with g95
+SRC/mac.tar.gz  		>> scripts and fixes to run the model on MACs
+SRC/save_all  			>> a script to save the sources and create a .tar.gz archive 
+SRC/saved			>> a reminder of the files in the version you use
+
+------------------------------
+       Run a test case
+------------------------------
+
+1. edit the file ./SRC/WRFV2/meso_datafile.h to change the datafile path
+
+2. compile the model with g95 with specific number of grid points
+> ./makemeso < SIMU/TESTCASE/makemeso_x51_y51_z61_d1_t1_p1   (an example with g95)
+
+3. link the executable
+> cd SIMU/TESTCASE
+> ln -sf ../../g95_??_single/wrf_x51_y51_z61_d1_t1_p1.exe wrf.exe
+
+4. extract the pre-generated initial and boundary conditions
+> tar xzvf wrfinput.tar.gz
+
+5. run the simulation
+> nohup wrf.exe > log_wrf &
+
+6. check the model behavior during the run
+> vi log_wrf           (check model's messages during the run)
+> ./elapsed            (a script to evaluate elapsed simulation time)
+
+The model results are in the 'wrfout_d01_2024-07-01_06:00:00' NETCDF file
+
+NB: 
+- simulation settings can be changed in namelist.input
+- physics settings can be changed in callphys.def
+
+------------------------------
+  Installation of utilities
+------------------------------
+
+4. download and build static data (topography, albedo, thermal inertia)
+**** REQUIREMENTS:
+**** - you must be connected to the internet
+> ./build_static
+

@@ -1,0 +1,978 @@
+#! /bin/bash
+
+
+##################################
+# makemeso allows you to compile # 
+# WRF with modified LMD physics  #
+##################################
+
+##############################
+# Author: A. Spiga           #
+# New version : October 2008 #
+# Last update : January 2009 #
+#               November  09 # 
+#               January   11 #
+##############################
+
+###############################
+#### Type makemeso -h for help
+###############################
+
+###path to compiled version of ioipsl on your system for generic physics
+pathioipsl='/home/leconte/script/ioipsl/modipsl/lib'
+
+##############################################################################################
+##############################################################################################
+##############################################################################################
+##############################################################################################
+
+donotcompile=0
+donotallow=0
+config='real'
+donotcompilephys=0
+justphys=0
+debug=0
+fresh_start=0
+phys="mars_lmd"
+scenario=""
+from_scratch=0
+
+while getopts "drc:njhgp:fs:xe" options; do
+  case $options in
+   d ) donotcompile=1;donotcompilephys=1;justphys=1;;       ## just to check the compile folder
+   r ) donotallow=1;;         ## allow only known config (useful with 'makemeso < last')
+   c ) config="${OPTARG}";;   ## idealized cases
+   n ) donotcompilephys=1;;   ## do not recompile physics
+   j ) justphys=1;;           ## just compile LMD physics
+   g ) debug=1;;              ## debug mode
+   p ) phys="${OPTARG}";;     ## choose physics
+   f ) fresh_start=1;;        ## a fresh start
+   e ) from_scratch=1;;       ## a fresh start with a completely new folder
+   s ) scenario="${OPTARG}";; ## a specific scenario (with precompiling flags)
+   x ) donotcompile=1;phys="void_lmd_new";donotcompilephys=1;; ## a case with no LMD physics included
+   h ) echo "
+# Use:    
+#
+# makemeso                   ## basic use (real-case configuration)
+#
+# makemeso -d                ## no compilation, just check the name of the compile folder
+#
+# makemeso -c ideal          ## idealized mode (convective cell, mountain wave, etc...)
+# makemeso -c les            ## large-eddy simulations mode based on WRFV3
+#
+# makemeso -n                ## do not recompile LMD physics (must have been compiled before)
+#
+# makemeso < last            ## basic use + skip questions [! script must have been executed at least once]
+# makemeso -r < last         ## basic use + skip questions + only known config
+# makemeso -nr < last        ## basic use + skip questions + only known config + no LMD phys recompile
+#
+# makemeso -j                ## just compile the LMD physics
+#
+# makemeso -g                ## debug mode
+#
+# makemeso -h                ## display options
+#
+# makemeso -p mars_lmd_new   ## choose physics
+#             venus_lmd_new
+#             generic_lmd_new              
+#
+# makemeso -f                ## fresh start [clean -a]
+#
+# makemeso -e                ## a completely new recompile with erasing the WHOLE compiling folder
+#
+# makemeso -s DUSTSTORM      ## a specific scenario (with precompiling flags)
+#
+# makemeso -x                ## a case with no LMD physics included
+" ; exit ;;
+  esac
+done   
+
+#--------------
+# talk w/ user
+#--------------
+  echo '****************************************'
+  echo ' LMD Mesoscale Model Compiler. Welcome.'
+  echo '****************************************'
+  if [[ "${phys}" == *"new"* ]]
+  then
+    echo '*********** PHYSICS: ' ${phys}
+    echo '****************************************'
+  fi
+  # computer
+  uname -a | grep x86_64 > /dev/null
+  if [[ "$?" == 0 ]]
+  then
+    machine='64'
+  else
+    machine='32'
+  fi
+  # compiler
+  echo "Supported compiler options are "
+  echo "       <1> pgf90"
+  echo "       <2> g95"
+  echo "       <3> pgf90 + mpi"
+  echo "       <4> ifort"
+  echo "       <5> ifort + mpi"
+  echo "       <7> xlf + mpi (IBM AIX)"
+  echo "       <8> gfortran"
+  echo "       <9> gfortran + openmpi"
+  echo "Your choice ?" ; read reply
+  case ${reply} in
+    1) compilo='pgf' ; numproc=1 ;;
+    2) compilo='g95' ; numproc=1 ;;
+    3) compilo='mpi'
+       if [[ "${WHERE_MPI}" = "" ]]
+       then
+         echo Please initialize the variable WHERE_MPI in your environnement
+         exit
+       fi ;;
+    4) compilo='ifort' ; numproc=1 ;;
+    5) compilo='mpifort' ;;
+    7) compilo='mpixlf' ;;
+    8) compilo='gnu' ; numproc=1 ;;
+    9) compilo='openmpi';;
+    *) echo not supported by this script ; exit ;;
+  esac
+  # number of processors
+  if [[ "${phys}" == *"new"* ]]
+  then
+   numproc=999
+  else
+   case ${reply} in
+    3) echo How many processors ? e.g. 1, 2, 4, 6, 8, 12, 16, 20, 24, 32, 64, 128 ; read numproc ;;
+    5) echo How many processors ? e.g. 1, 2, 4, 6, 8, 12, 16, 20, 24, 32, 64, 128 ; read numproc ;;
+    7) echo How many processors ? e.g. 1, 2, 4, 6, 8, 12, 16, 20, 24, 32, 64, 128 ; read numproc ;;
+   esac
+  fi
+
+  # dimensions
+  if [ ${donotcompile} -eq 0 ]
+  then	  
+  # ngrid: now dynamically set in newphys 03/2014
+   if [[ "${phys}" == *"new"* ]] 
+   then
+      lon=999
+      lat=999
+      level=999
+   else
+      echo Grid points in longitude ? ; read lon
+      echo Grid points in latitude ? ; read lat
+      echo Number of vertical levels ? ; read level
+   fi
+  fi
+  echo Number of domains ? ; read dom 
+
+###PB lecture dom si < last
+
+    case ${dom} in
+       1) single='_single' ;;
+       *) single='_nest' ;;
+    esac
+      if [ "${compilo}" = "mpi" -o "${compilo}" = "mpifort" -o "${compilo}" = "mpixlf" ]
+      then
+           single=''
+      fi
+
+testflag=''
+####
+#testflag='_test'
+####
+
+    conf_wrf="${phys}_${config}${scenario}_${compilo}_${machine}${single}${testflag}"
+
+    if [ ${debug} -eq 1 ]
+    then
+     conf_wrf="debug_${conf_wrf}"
+    fi
+
+    \rm what_folder 2> /dev/null
+    echo ${conf_wrf} > what_folder
+         if [ ${donotcompile} -eq 0 ]
+         then
+            ##\rm what_folder 2> /dev/null
+            ##echo '**********************' 
+            ##echo '*** Your folder is ...'
+            ##echo '**********************'
+            ##echo ${conf_wrf} | tee what_folder
+            ##cat what_folder
+            ##echo ${conf_wrf} > what_folder
+	    ##echo ${reply} > what_compilo
+	    ##echo ${numproc} > what_numproc
+            #if [[ "${phys}" != "nophys_" ]]
+            #then
+            #  exit
+            #fi
+         #else
+            # tracers: now dynamically set in newphys 09/2013
+            if [[ "${phys}" == *"new"* ]] 
+            then
+              tra=999
+            else
+              echo Number of tracers ? ; read tra
+              if [ ${tra} -eq 0 ]
+              then 
+                tra=1	 
+              fi
+            fi
+         fi
+  # 'from scratch' case
+  if [ ${from_scratch} -eq 1 ]
+  then
+      echo "***** I ERASE THE FOLDER "${conf_wrf}
+      \rm -rf ${conf_wrf}
+  fi
+  # folder
+
+  mkdir ${conf_wrf} 2> /dev/null
+  if [[ "$?" == 0 ]]
+  then
+    echo new folder ... link sources
+    ###############################################
+     echo ${phys}
+     ./SRC/SCRIPTS/copy_model -p ${phys} -c ${config}
+     mv zeWRFV2 ${conf_wrf}/WRFV2
+    ###############################################
+     if [[ "${phys}" == *"new"* ]]
+     then
+      cd ${conf_wrf}/WRFV2
+        if [[ "${config}" != "les" ]]
+        then
+           cp ../../SRC/WRFV2/Registry/Registry.EM.newphys Registry/Registry.EM
+        else
+           cp -L ../../SRC/LES/WRFV2/Registry/Registry.EM.newphys Registry/Registry.EM
+        fi
+      cd phys
+      ln -sf module_lmd_driver.F.new module_lmd_driver.F
+      cd ..
+
+     else
+      cd ${conf_wrf}/WRFV2
+      cd Registry ; ./Registry.bash ; cd .. 
+     fi
+          #### sparadrap consequent a l'utilisation de copy_model pour les liens
+          #### -- car alors il manque fftpack
+          if [[ "${config}" == "les" ]]
+          then 
+            cp ../../SRC/LES/correcfft ./
+            ./correcfft
+            \rm correcfft
+          fi
+  else 
+    cd ${conf_wrf}/WRFV2 
+    if [ ${fresh_start} -eq 1 ] 
+    then
+      echo '*** FRESH START, I clean everything'
+      ### clean the whole place  
+      clean -a > /dev/null 2> /dev/null
+      ### get a possibly modified registry !
+      if [[ "${phys}" == *"new"* ]]
+      then
+          cp ../../SRC/WRFV2/Registry/Registry.EM.newphys Registry/Registry.EM
+      else
+          cp ../../SRC/WRFV2/Registry/Registry.EM Registry/
+      fi
+      if [[ "${config}" == "les" ]]
+      then
+        cp ../../SRC/LES/WRFV2/Registry/Registry.EM Registry/
+      fi
+      ### ensure the model will be recompiled from scratch with correct registry
+      cd Registry ; mv Registry Registry.bak ; Registry.bash ; cd ..
+#     answer='y' ## a voir... pas si sur
+#    else
+#            if [[ "${phys}" != "nophys_" ]]
+#            then
+#      echo Did you modify anything in the Registry or clean ? y for yes, any key for no ; read answer
+#      case ${answer} in
+#        y) cd Registry ; mv Registry Registry.bak ; Registry.bash ; cd .. ;;
+#        *) answer='no' ;;
+#      esac
+#            fi
+    fi 
+  fi
+
+  # summary
+  echo '**********************' 
+  echo '*** Your folder is ...'
+  echo '**********************'
+  echo ${conf_wrf} 
+  echo '**********************'
+  echo '****************************************'
+  echo so ...
+  echo your computer is ${machine} bits
+  echo ${compilo} is your compiler
+       if [[ "${compilo}" = "mpi" ]]
+       then
+         echo MPICH is in ${WHERE_MPI}
+       fi
+  echo you have ${dom} domains
+  if [[ "${phys}" == *"new"* ]]
+  then
+   echo number of processors can be changed without recompiling
+   echo x points can be changed without recompiling
+   echo y points can be changed without recompiling
+   echo z points can be changed without recompiling
+   echo number of tracers can be changed without recompiling
+  else
+   echo you will use ${numproc} processors
+   echo you have ${lon} x points
+   echo '         '${lat} y points
+   echo '         '${level} z points
+   echo '         '${tra} tracers
+  fi
+  echo '****************************************'
+  # save answer
+  \rm last 2> /dev/null
+  touch last
+  echo ${reply} >> last
+  if [[ "${phys}" != *"new"* ]]
+  then
+    if [ "${compilo}" = "mpi" -o "${compilo}" = "mpifort" -o "${compilo}" = "mpixlf" ]
+    then
+     echo ${numproc} >> last
+    fi
+    echo ${lon} >> last
+    echo ${lat} >> last
+    echo ${level} >> last
+  fi
+  echo ${dom} >> last
+  if [[ "${phys}" != **"new"* ]]
+  then
+   echo ${tra} >> last
+  fi
+
+#------------
+# log files
+#------------
+  \rm log_compile 2> /dev/null
+  \rm log_error 2> /dev/null
+
+#-----------------
+# configure WRF
+#-----------------
+  mv configure.wrf configure.wrf.bak 2> /dev/null
+  ########################
+  conf_wrf_forall="${compilo}_${machine}${single}${testflag}"
+
+         #### in this case options are different because for LES, WRFV3 is used
+         if [[ "${config}" == "les" ]]
+         then
+         conf_wrf_forall="${config}${compilo}_${machine}${single}${testflag}"
+         fi
+
+  case ${conf_wrf_forall} in
+
+     #######LES-specific (WRFV3-based) -- previously in 'makeles'
+     #######
+
+     lesmpi_64)        ## MPI (dm) 64 bits [PS: remplacer 3 par 4 pour openMP]
+                       \rm conf > /dev/null 2> /dev/null ; touch conf ; echo 3 >> conf ; echo 1 >> conf
+                       \rm configure.wrf > /dev/null 2> /dev/null ; ./configure < conf > /dev/null 2> /dev/null
+                       sed s+"-lnetcdf"+"-lnetcdf -L../$phys/libo -llmd"+g   configure.wrf > yeah ; mv -f yeah configure.wrf
+                       if [[ "$(hostname)" == "ciclad1.ipsl.jussieu.fr" ]]
+                       then
+            echo "SPECIFIC CHANGES FOR CICLAD CLUSTER. EDIT makemeso IF YOU ENCOUNTER PROBLEMS."
+            #sed s+"mpif90 -f90=$(SFC)"+"/usr/lib64/openmpi/1.4.2-pgf/bin/mpif90"+g                      configure.wrf > yeah ; mv -f yeah configure.wrf
+            #sed s+"mpicc -cc=$(SCC)"+"/usr/lib64/openmpi/1.4.2-gfortran/bin/mpicc -DMPI2_SUPPORT"+g     configure.wrf > yeah ; mv -f yeah configure.wrf
+            sed s+"mpif90 -f90=\$(SFC)"+"/usr/lib64/openmpi/1.4.3-pgfgcc/bin/mpif90"+g                   configure.wrf > yeah ; mv -f yeah configure.wrf 
+            sed s+"mpicc -cc=\$(SCC)"+"/usr/lib64/openmpi/1.4.3-pgfgcc/bin/mpicc -DMPI2_SUPPORT"+g       configure.wrf > yeah ; mv -f yeah configure.wrf
+                       else
+            #sed s+"mpif90"+"$WHERE_MPI/mpif90"+g                 configure.wrf > yeah ; mv -f yeah configure.wrf
+            #sed s+"mpicc"+"$WHERE_MPI/mpicc -DMPI2_SUPPORT"+g    configure.wrf > yeah ; mv -f yeah configure.wrf
+            #### OPENMPI
+            sed s+"mpif90 -f90=\$(SFC)"+"$WHERE_MPI/mpif90"+g                 configure.wrf > yeah ; mv -f yeah configure.wrf
+            sed s+"mpicc -cc=\$(SCC)"+"$WHERE_MPI/mpicc -DMPI2_SUPPORT"+g    configure.wrf > yeah ; mv -f yeah configure.wrf
+                       fi
+                       sed s+"-fastsse"+" "+g                               configure.wrf > yeah ; mv -f yeah configure.wrf
+                          ### pas forcement necessaire ici mais OK
+                          sed s+"-llmd"+"-llmd $NETCDF/lib/libnetcdf.a"+g     configure.wrf > yeah ; mv -f yeah configure.wrf 
+                       \rm conf > /dev/null ;;
+
+     lesmpifort_64)    ## MPI (dm) 64 bits IFORT
+                       \rm conf > /dev/null 2> /dev/null ; touch conf ; echo 7 >> conf ; echo 1 >> conf
+                       \rm configure.wrf > /dev/null 2> /dev/null ; ./configure < conf > /dev/null 2> /dev/null
+                       if [[ "${phys}" != *"void"* ]]
+                       then
+                         sed s+"-lnetcdff"+"TOZTOZ"+g configure.wrf > yeah ; mv -f yeah configure.wrf 
+                         # ... in case there is netcdff save it in TOZTOZ so that it is not impacted in the following sed
+                         sed s+"-lnetcdf"+"-lnetcdf -L../$phys/libo -llmd $NETCDF/lib/libnetcdf.a"+g   configure.wrf > yeah ; mv -f yeah configure.wrf
+                         sed s+"TOZTOZ"+"-lnetcdff"+g configure.wrf > yeah ; mv -f yeah configure.wrf
+                       else
+                         sed s+"-lnetcdf"+"-lnetcdf $NETCDF/lib/libnetcdf.a"+g   configure.wrf > yeah ; mv -f yeah configure.wrf
+                       fi
+                       sed s+"mpif90"+"$WHERE_MPI/mpif90"+g                 configure.wrf > yeah ; mv -f yeah configure.wrf
+                       sed s+"mpicc"+"$WHERE_MPI/mpicc -DMPI2_SUPPORT"+g    configure.wrf > yeah ; mv -f yeah configure.wrf
+                       sed s+"-fastsse"+" "+g                               configure.wrf > yeah ; mv -f yeah configure.wrf
+                       sed s+"O3"+"O3 -mcmodel=large -shared-intel"+g configure.wrf > yeah ; mv -f yeah configure.wrf
+                       #sed s+"-lnetcdf -lnetcdff"+"-lnetcdf -lnetcdff -L../mars_lmd/libo -llmd"+g     configure.wrf > yeah ; mv -f yeah configure.wrf
+                       if [ ${debug} -ne 0 ]   # not working for xlf!
+                             then
+                             echo 'DEBUG DEBUG DEBUG DEBUG'
+                             sed s+"# -g"+" -g -no-ftz -traceback -ftrapuv -fp-stack-check -check"+g configure.wrf > yeah
+                             mv -f yeah configure.wrf
+                       fi
+                       \rm conf > /dev/null ;;
+
+     lesopenmpi_64_single) echo Special option...
+                       \rm conf > /dev/null 2> /dev/null ; touch conf ; echo 13 >> conf ; echo 0 >> conf
+                       configure  < conf > log_compile 2> log_error
+                       sed -f physics.sed configure.wrf > yeah ; mv -f yeah configure.wrf  
+                       sed s+"-lnetcdff"+'-lnetcdff -I$(WRF_SRC_ROOT_DIR)/inc'+g configure.wrf > yeah ; mv -f yeah configure.wrf ;;
+
+     lesgnu_64_single) echo Special option...
+                       \rm conf > /dev/null 2> /dev/null ; touch conf ; echo 11 >> conf ; echo 0 >> conf
+                       configure  < conf > log_compile 2> log_error
+                       sed -f physics.sed configure.wrf > yeah ; mv -f yeah configure.wrf  
+                       sed s+"-lnetcdff"+'-lnetcdff -I$(WRF_SRC_ROOT_DIR)/inc'+g configure.wrf > yeah ; mv -f yeah configure.wrf ;;
+     #######
+     #######LES-specific (WRFV3-based) -- previously in 'makeles'    
+
+                     # GFORTRAN, 64 bits, no nesting      
+     gnu_64_single)    cd arch ; ln -sf ../configure.defaults.gfortran64 configure.defaults ; cd ..
+                       echo 15 | configure > log_compile 2> log_error
+                       sed -f physics.sed configure.wrf > yeah ; mv -f yeah configure.wrf  
+                       sed s+"-L../$phys/libo -llmd"+"-lnetcdf -lnetcdff -L../$phys/libo -llmd $NETCDF/lib/libnetcdf.a"+g configure.wrf > yeah ; mv -f yeah configure.wrf ;;
+                     # PGF90, 32 bits, no nesting
+     pgf_32_single)    echo 1 | configure > log_compile 2> log_error 
+                       sed -f physics.sed configure.wrf > yeah ; mv -f yeah configure.wrf ;;
+                     # PGF90, 32 bits, nesting
+     pgf_32_nest)      echo 2 | configure > log_compile 2> log_error 
+                       sed -f physics.sed configure.wrf > yeah ; mv -f yeah configure.wrf ;;
+                     # PGF90, 64 bits, no nesting
+     pgf_64_single)    echo 1 | configure > log_compile 2> log_error 
+                       #### the following line is necessary because readtesassim has a line "use netcdf" in it!
+                       #sed s+"-L../$phys/libo -llmd"+"-L../$phys/libo -llmd $NETCDF/lib/libnetcdf.a"+g configure.wrf > yeah ; mv -f yeah configure.wrf
+                       sed -f physics.sed configure.wrf > yeah ; mv -f yeah configure.wrf ;;
+                     # PGF90, 64 bits, nesting
+     pgf_64_nest)      cd arch ; ln -sf ../configure.defaults.fix64nest configure.defaults ; cd ..
+		       echo 4 | configure > log_compile 2> log_error 
+                       sed -f physics.sed configure.wrf > yeah ; mv -f yeah configure.wrf ;;
+                     # G95, 32 bits, no nesting
+     g95_32_single)    echo 13 | configure > log_compile 2> log_error 
+                       sed -f physics.sed configure.wrf > yeah ; mv -f yeah configure.wrf ;; 
+                     # G95, 64 bits, no nesting  ### we modify configure.defaults to add x86_64 next to g95 in the header comment
+     g95_64_single)    cd arch ; sed s/"PC Linux i486 i586 i686, g95 compiler"/"PC Linux i486 i586 i686 x86_64, g95 compiler"/g configure.defaults > yeahyeahyeah ; rm configure.defaults ; mv yeahyeahyeah configure.defaults ; cd ..
+                       echo 14 | configure > log_compile 2> log_error
+                         ##### marche pas ....
+                         #sed s+"-fno-second-underscore"+""+g configure.wrf > yeah ; mv -f yeah configure.wrf
+                         #sed -f physics.sed configure.wrf > yeah ; mv -f yeah configure.wrf
+                         #sed s+"-L../$phys/libo -llmd"+"-L../$phys/libo -llmd $NETCDF/lib/libnetcdf.a"+g configure.wrf > yeah ; mv -f yeah configure.wrf ;;
+                       sed -f physics.sed configure.wrf > yeah ; mv -f yeah configure.wrf ;;
+                       #sed s+"=       g95"+"=       /home/physastro/aspiga/mysoft/g95/g95-install/bin/x86_64-unknown-linux-gnu-g95"+g configure.wrf > yeah ; mv -f yeah configure.wrf;;
+                     # IFORT, 64 bits, no nesting
+     ifort_64_single)  echo 5 | configure > log_compile 2> log_error 
+                       sed s+"-DIFORT_KLUDGE"+" "+g configure.wrf > yeah ; mv -f yeah configure.wrf 
+                       if [ ${debug} -ne 0 ]   # not working for xlf!
+                             then
+                             echo 'DEBUG DEBUG DEBUG DEBUG'
+                             sed s+"# -g"+" -g -no-ftz -traceback -ftrapuv -fp-stack-check -check"+g configure.wrf > yeah
+                             mv -f yeah configure.wrf
+                       fi
+                         ## !!! NETCDF must be defined
+                         sed s+"lio_grib_share"+"lio_grib_share -L../$phys/libo -llmd $NETCDF/lib/libnetcdf.a"+g configure.wrf > yeah 
+                         mv -f yeah configure.wrf ;;
+     mpifort_64)     # MPI+IFORT, 64 bits, no nesting / nesting
+                       echo 9 | ./configure > log_compile 2> log_error 
+                       sed -f physics.sed configure.wrf > yeah ; mv -f yeah configure.wrf 
+                       sed s+"-f90=ifort"+" "+g configure.wrf > yeah ; mv -f yeah configure.wrf 
+                       sed s+"-cc=icc"+" "+g configure.wrf > yeah ; mv -f yeah configure.wrf 
+                       sed s+"-DIFORT_KLUDGE"+" "+g configure.wrf > yeah ; mv -f yeah configure.wrf 
+                       sed s+"-O1"+"-O1 -mcmodel=medium -shared-intel"+g configure.wrf > yeah ; mv -f yeah configure.wrf
+                       sed s+"-O2"+"-O2 -mcmodel=medium -shared-intel"+g configure.wrf > yeah ; mv -f yeah configure.wrf
+                       sed s+"-O3"+"-O3 -mcmodel=medium -shared-intel"+g configure.wrf > yeah ; mv -f yeah configure.wrf
+                       if [ ${debug} -ne 0 ]   # not working for xlf!
+                             then
+                             echo 'DEBUG DEBUG DEBUG DEBUG'
+                             sed s+"#-g"+" -g -no-ftz -traceback -ftrapuv -fp-stack-check -check"+g configure.wrf > yeah
+                             mv -f yeah configure.wrf
+                       fi
+                       sed s+"O3"+"O2"+g configure.wrf > yeah ; mv -f yeah configure.wrf 
+                                        #sed s+"O3"+"O0"+g configure.wrf > yeah ; mv -f yeah configure.wrf  ### pour compilation rapide
+                                        #-w -ftz -align all -fno-alias -fp-model precise >>> options indiquees dans WRF3
+                                        #http://software.intel.com/en-us/articles/performance-tools-for-software-developers-building-wrf-with-the-intel-compilers/
+                            #### NB: RSL is replaced by RSL_LITE, better memory capacity, less seg fault
+                            sed s+"../external/RSL/RSL"+"../external/RSL_LITE"+g configure.wrf > yeah ; mv -f yeah configure.wrf
+                            sed s+"-DWRF_RSL_IO"+" "+g configure.wrf > yeah ; mv -f yeah configure.wrf
+                            sed s+"-DRSL"+" "+g configure.wrf > yeah ; mv -f yeah configure.wrf
+                            sed s+"librsl.a"+"librsl_lite.a"+g configure.wrf > yeah ; mv -f yeah configure.wrf
+                            sed s+"../external/RSL/gen"+"../external/RSL_LITE/gen"+g configure.wrf > yeah ; mv -f yeah configure.wrf
+                            sed s+"../external/RSL/module"+"../external/RSL_LITE/module"+g configure.wrf > yeah ; mv -f yeah configure.wrf
+                            sed s+"-lrsl"+"-lrsl_lite"+g configure.wrf > yeah ; mv -f yeah configure.wrf
+                            sed s+"linux"+" "+g configure.wrf > yeah ; mv -f yeah configure.wrf
+                         ### necessary even if mpi-selector is used (no need in makegcm though)
+                         sed s+"mpif90"+"${WHERE_MPI}/mpif90"+g configure.wrf | sed s+"mpicc"+"${WHERE_MPI}/mpicc"+g > yeah ; mv -f yeah configure.wrf
+                         sed s+"mpicc"+"mpicc -DMPI2_SUPPORT"+g configure.wrf > yeah ; mv -f yeah configure.wrf
+                         ## !!! NETCDF must be defined
+                         if [[ "${phys}" != *"void"* ]]
+                         then
+                           sed s+"-L../$phys/libo -llmd"+"-L../$phys/libo -llmd $NETCDF/lib/libnetcdf.a"+g configure.wrf > yeah 
+                         else
+                           sed s+"-lesmf_time"+"-lesmf_time $NETCDF/lib/libnetcdf.a"+g configure.wrf > yeah
+                         fi
+                         mv -f yeah configure.wrf 
+                         #### POUR LE TRAITEMENT PARTICULIERS des NESTS sur iDATAPLEX [cf. module_lmd_driver]
+                         sed s+"ARCHFLAGS       =       "+"ARCHFLAGS       =       -DSPECIAL_NEST_SAVE "+g configure.wrf > yeah
+                         mv -f yeah configure.wrf ;;
+                     # MPICH, 64 bits, no nesting / nesting
+     mpi_64)           cd arch ; ln -sf ../configure.defaults.fix64nest configure.defaults ; cd ..
+                       echo 3 | configure > log_compile 2> log_error 
+                       sed -f physics.sed configure.wrf > yeah ; mv -f yeah configure.wrf 
+                       ### the following line is necessary because readtesassim has a line "use netcdf" in it!
+                       sed s+"-L../$phys/libo -llmd"+"-L../$phys/libo -llmd $NETCDF/lib/libnetcdf.a"+g configure.wrf > yeah ; mv -f yeah configure.wrf
+                       sed s+"mpif90"+"${WHERE_MPI}/mpif90"+g configure.wrf | sed s+"mpicc"+"${WHERE_MPI}/mpicc"+g | sed s+"mpicc"+"mpicc -DMPI2_SUPPORT"+g > yeah
+                       #sed s+"mpif90"+"${WHERE_MPI}/mpif90"+g configure.wrf | sed s+"mpicc"+"${WHERE_MPI}/mpicc"+g | sed s+"mpicc"+"mpicc -DMPI2_SUPPORT -w -O3"+g > yeah
+                                #| sed s+"fastsse"+"fast"+g > yeah
+                       mv -f yeah configure.wrf ;;
+                       #    #sed s+"-fastsse"+"-O2 -Munroll -Mcache_align"+g configure.wrf > yeah 
+                       #    ##sed s+"-fastsse"+"-O2 -fpic"+g configure.wrf > yeah ## marche pas, ILM problem
+                       #    ##sed s+"-fastsse"+"-mcmodel=medium -Mlarge_arrays"+g configure.wrf > yeah ## marche pas, ILM problem
+                       #sed s+"-fastsse"+"-O3 -tp=nehalem-64 -fastsse -Mscalarsse -Mvect=sse -Mipa=fast"+g configure.wrf > yeah
+                       #sed s+"-fastsse"+"-O2 -Munroll -Mcache_align"+g configure.wrf > yeah
+                       #sed s+"-fastsse"+""+g configure.wrf > yeah
+                       #sed s+"-fastsse"+"-fast"+g configure.wrf > yeah
+                       #sed s+"-fastsse"+"-Mvect=noaltcode -Msmartalloc -Mprefetch=distance:8 -Mfprelaxed"+g configure.wrf > yeah
+                       #mv -f yeah configure.wrf ;; 
+                     # MPICH, 64 bits, OK with periodic BC but no positive definite
+     mpi_64_test)      cd arch ; ln -sf ../configure.defaults.fix64nest configure.defaults ; cd ..
+                       echo 2 | configure > log_compile 2> log_error 
+                       sed -f physics.sed configure.wrf > yeah ; mv -f yeah configure.wrf 
+                       sed s+"mpif90"+"${WHERE_MPI}/mpif90"+g configure.wrf | sed s+"mpicc"+"${WHERE_MPI}/mpicc"+g | sed s+"mpicc"+"mpicc -DMPI2_SUPPORT"+g > yeah
+                       mv -f yeah configure.wrf ;;
+                     # XLF+MPICH on AIX machine (64 bits) with nesting, NB: the 32bits notice is not to be considered
+     mpixlf_32)        cd arch ; ln -sf ../configure.defaults.fix64nest configure.defaults ; cd ..
+                       echo 3 | configure > log_compile 2> log_error
+                       sed -f physics.sed configure.wrf > yeah 
+                       mv -f yeah configure.wrf ;;
+                     # ANYTHING ELSE
+     *)                echo NO PRESETS ...
+                       if [ ${donotallow} -eq 0 ]  
+                       then
+                         configure 
+                       else
+                         # problem when an input file is used
+                         echo 'please cd to '$PWD' and type ./configure'  
+		         exit	
+                       fi ;;
+  esac
+  ########################
+
+
+  ### here a case structure would be great
+
+  if [[ "${phys}" == *"new"* ]]
+  then
+     if [[ "${config}" == "les" ]]  ### LES is different because of WRFV3
+     then
+       sed s+"ARCH_LOCAL      =       "+"ARCH_LOCAL      =       -DNEWPHYS "+g configure.wrf > yeah
+     else
+       sed s+"ARCHFLAGS       =       "+"ARCHFLAGS       =       -DNEWPHYS "+g configure.wrf > yeah 
+     fi
+     mv -f yeah configure.wrf
+  fi
+
+        ### SCENARIO SCENARIO SCENARIO
+        if [[ ! ("${scenario}" == "") ]]   ### not supported with LES for the moment?
+        then
+          # precompiling flag in WRF part
+          sed s+"ARCHFLAGS       =   "+"ARCHFLAGS       =   -D${scenario} "+g configure.wrf > yeah
+          mv -f yeah configure.wrf
+          # precompiling flag in LMD part
+          cd $phys
+          cp -Lrf makegcm_${compilo} yeah
+          \rm makegcm_${compilo}
+          sed s+"-DMESOSCALE"+"-D${scenario} -DMESOSCALE"+ yeah > makegcm_${compilo}
+          chmod 755 makegcm_${compilo}
+          \rm yeah
+          cd ..
+        fi
+
+  ################
+  #if [[ "${phys}" == "nophys_" ]]
+  #then
+  #   if [[ "${config}" == "les" ]]  ### LES is different because of WRFV3
+  #   then
+  #     sed s+"ARCH_LOCAL      =       "+"ARCH_LOCAL      =       -DNOPHYS "+g configure.wrf > yeah ; mv -f yeah configure.wrf
+  #     sed s+"-L../$phys/libo -llmd"+""+g configure.wrf > yeah ; mv -f yeah configure.wrf
+  #   else
+  #     ### not tested yet but should be working  
+  #     echo CAUTION CAUTION CAUTION NOT FULLY TESTED
+  #     sed s+"ARCHFLAGS       =       "+"ARCHFLAGS       =       -DNOPHYS "+g configure.wrf > yeah ; mv -f yeah configure.wrf
+  #     sed s+"-L../$phys/libo -llmd"+""+g configure.wrf > yeah ; mv -f yeah configure.wrf
+  #   fi
+  #fi
+  ################
+
+  if [[ "${phys}" == *"venus"* ]]
+  then
+    sed s+"LIB_BUNDLED     = "+"LIB_BUNDLED     =    /usr/lib64/liblapack.so  \ "+g configure.wrf > yeah ; mv -f yeah configure.wrf
+  fi
+
+  if [ ${debug} -ne 0 ]   # not working for xlf!
+  then
+    echo 'DEBUG DEBUG DEBUG DEBUG'
+    sed s+"# -g"+" -g -no-ftz -traceback -ftrapuv -fp-stack-check -check"+g configure.wrf > yeah
+    #sed s+"# -g"+"-g -Ktrap=fp -Mbounds"+g configure.wrf > yeah 
+    #sed s+"# -g"+"-g"+g configure.wrf > yeah
+    mv -f yeah configure.wrf
+  fi
+
+  if [[ "${phys}" == *"prescribed"* ]]
+  then
+     donotcompilephys=1
+  fi
+
+  # some compiler and environment mess things up when using -C
+  sed s+"-C"+""+g configure.wrf > yeah ; mv -f yeah configure.wrf   
+
+#exit
+##################################################
+# compile physics
+##################################################
+if [ ${donotcompilephys} -eq 0 ] #|| [[ "${phys}" != *"prescribed"* ]]
+then
+
+ cd $phys/
+
+ if [[ "${phys}" == *"new"* ]]
+ then
+  divx=1
+  divy=1
+ else
+  # required size
+  #----------------
+  case ${numproc} in
+      1) divx=1 ; divy=1  ;;
+      2) divx=1 ; divy=2  ;;
+      4) divx=2 ; divy=2  ;;
+      6) divx=2 ; divy=3  ;;
+      8) divx=2 ; divy=4  ;;
+     12) divx=3 ; divy=4  ;;
+     16) divx=4 ; divy=4  ;;
+     20) divx=4 ; divy=5  ;;
+     24) divx=4 ; divy=6  ;;
+     32) divx=4 ; divy=8  ;;
+     64) divx=8 ; divy=8  ;;
+    128) divx=8 ; divy=16 ;;
+      *) echo not yet supported ; exit ;;
+  esac
+ fi
+  physx=$(expr ${lon} - 1)
+  restex=$(expr ${physx} \% ${divx})   
+  physy=$(expr ${lat} - 1)
+  restey=$(expr ${physy} \% ${divy})
+  if [[ ${restex} != 0 || ${restey} != 0 ]]
+  then
+     echo nx-1 shall be divided by ${divx}
+     echo ny-1 shall be divided by ${divy}
+     exit
+  fi
+  physx=$(expr ${physx} \/ ${divx})
+  physy=$(expr ${physy} \/ ${divy})
+  physz=$(expr ${level} - 1)
+
+  # change this if you change num_soil_layers in WRF
+  # -- default is 10
+  if [[ "${phys}" == *"new"* ]]
+  then
+     soilsize=18 ## nouvelle physique. ne sert a rien ici. voir comsoil.
+  else
+     soilsize=10
+  fi
+
+  # GCM environment variables
+  #--------------------------
+  export LMDGCM=$PWD
+  export LIBOGCM=$PWD/libo
+
+  # generate the appropriate dimphys
+  #---------------------------------
+  if [[ "${phys}" == *"mars"* ]]
+  then
+    cd libf/phymars
+  elif [[ "${phys}" == *"venus"* ]]
+  then 
+    cd libf/phyvenus
+  elif [[ "${phys}" == *"generic"* ]]
+  then
+    cd libf/phystd
+  fi
+  \rm dimphys.h 2> /dev/null
+#  if [[ "${phys}" == "newphys_" ]]
+#  then
+#    ln -sf ../../meso_dimphys.h_ref . ## ne sert plus !!
+#  else
+  if [[ "${phys}" == "mars_lmd" ]]
+  then
+    physize=$(expr ${physx} \* ${physy})
+    sed s/--xsize--/${physx}/g meso_dimphys.h_ref | sed s/--ysize--/${physy}/g | sed s/--physize--/${physize}/g | sed s/--zsize--/${physz}/g | sed s/--soilsize--/${soilsize}/g > dimphys.h
+    head -15 dimphys.h
+  fi
+     #### TEST new new phys
+     #if [[ "${phys}" == "newphys_" ]]
+     #then
+     #  touch gr_fi_dyn.F.lien
+     #    ln -sf ../dyn3d/gr_fi_dyn.F .  ## dommage, a corriger 
+     ################################
+     ################################
+     ################################
+     #fi 
+     ####
+     ####
+  cd ../..
+
+  # prepare for nesting
+  #---------------------
+  cd libf
+  duplicate${dom} 2> /dev/null
+  cd ..
+
+  # compile physics
+  #-------------------------- 
+  \rm libf/grid/dimensions.h 2> /dev/null
+  \rm -rf libo/* 2> /dev/null
+  echo 1. compiling LMD physics ...
+  echo compilation info in: 
+  echo $PWD/libo/log_compile_phys
+
+  if [ ${debug} -ne 0 ]  
+  then
+    if [[ "${phys}" == *"mars"* ]]
+    then
+      echo 'DEBUG DEBUG DEBUG DEBUG'
+      nohup makegcm_${compilo} -debug -full -t ${tra} -p mars -d ${physz} testphys1d | tee libo/log_compile_phys | grep 'warnings' >> libo/log_compile_phys
+    elif [[ "${phys}" == *"venus"* ]]
+    then
+      echo 'DEBUG DEBUG DEBUG DEBUG'
+      nohup ./makelmdz -debug -full -p venus -d 51 rcm1d -arch linux-ifort -cpp MESOSCALE  | tee libo/log_compile_phys | grep 'warnings' >> libo/log_compile_phys # on /u/ and /planeto/
+      nohup ./makelmdz --debug p venus -d 51 rcm1d -arch linux-ifort -cpp MESOSCALE  | tee libo/log_compile_phys | grep 'warnings' >> libo/log_compile_phys
+    elif [[ "${phys}" == *"generic"* ]]
+    then
+      echo 'DEBUG DEBUG DEBUG DEBUG'
+      nohup ./makelmdz -debug -t ${tra} -p std -b 36x32 -s 1 -d 25 rcm1d -arch X64_MESU -cpp MESOSCALE | tee libo/log_compile_phys | grep 'warnings' >> libo/log_compile_phys #Proxb
+    fi
+  else
+    if [[ "${phys}" == *"mars"* ]]
+    then
+      nohup makegcm_${compilo} -t ${tra} -p mars -d ${physz} testphys1d | tee libo/log_compile_phys | grep 'warnings' >> libo/log_compile_phys
+    elif [[ "${phys}" == *"venus"* ]]
+    then
+      nohup ./makelmdz -full -p venus -d 51 rcm1d -arch linux-ifort_meso -cpp MESOSCALE  | tee libo/log_compile_phys | grep 'warnings' >> libo/log_compile_phys # on /u/ and /planeto/
+      nohup ./makelmdz -p venus -d 51 rcm1d -arch linux-ifort_meso -cpp MESOSCALE  | tee libo/log_compile_phys | grep 'warnings' >> libo/log_compile_phys
+      #nohup ./makelmdz -full -p venus -d 51 rcm1d -arch CICLADifort -cpp MESOSCALE  | tee libo/log_compile_phys | grep 'warnings' >> libo/log_compile_phys # on CICLAD
+      #nohup ./makelmdz -p venus -d 51 rcm1d -arch CICLADifort -cpp MESOSCALE  | tee libo/log_compile_phys | grep 'warnings' >> libo/log_compile_phys
+      #nohup ./makelmdz -full -p venus -d 51 rcm1d -arch X64_MESU -cpp MESOSCALE  | tee libo/log_compile_phys | grep 'warnings' >> libo/log_compile_phys #on MESU
+      #nohup ./makelmdz -p venus -d 51 rcm1d -arch X64_MESU -cpp MESOSCALE  | tee libo/log_compile_phys | grep 'warnings' >> libo/log_compile_phys
+      #nohup makelmdz -full -p venus -d 51 rcm1d -arch X64_OCCIGEN -cpp MESOSCALE  | tee libo/log_compile_phys | grep 'warnings' >> libo/log_compile_phys #on OCCIGEN
+      #nohup makelmdz -p venus -d 51 rcm1d -arch X64_OCCIGEN -cpp MESOSCALE  | tee libo/log_compile_phys | grep 'warnings' >> libo/log_compile_phys 
+    elif [[ "${phys}" == *"generic"* ]]
+    then
+      echo $PWD/libo/log_compile_phys2
+      nohup ./makelmdz -t 1 -p std -b 38x36 -full -s 1 -d 25 rcm1d -arch mascaret_gfortran_para -cpp MESOSCALE | tee libo/log_compile_phys | grep 'warnings' >> libo/log_compile_phys #Proxb
+      nohup ./makelmdz -t 1 -p std -b 38x36 -s 1 -d 25 rcm1d -arch mascaret_gfortran_para -cpp MESOSCALE | tee libo/log_compile_phys2 | grep 'warnings' >> libo/log_compile_phys2 #Proxb
+    fi
+  fi
+  echo ... done
+        # clean the duplicate routines
+        cd libf
+        duplicate1 2> /dev/null
+        cd ..
+
+  # merge LMD executables in one lib
+  #--------------------------------------
+  cd libo
+  mkdir temp
+  if [[ "${phys}" == *"mars"* ]]
+  then
+    cp -f LINUX*/*.a temp
+  else #VENUS and GENERIC 
+#    cp -f linux*/*.a temp/ # on /u/ and /planeto/
+    cp -f */*.a temp/ # on /u/ and /planeto/
+    #cp -f /home/mlefevre/modipsl/lib/libioipsl.a temp/ #on CICLAD
+    #cp -f X64*/*.a temp #on MESU and OCCIGEN
+    cp -f $pathioipsl/libioipsl.a temp/
+  fi
+  cd temp
+  if [[ "${phys}" == *"mars"* ]]
+   then   
+   ar x libbibio.a
+   ar x libphymars.a
+   ar x libaeronomars.a
+  elif [[ "${phys}" == *"venus"* ]]
+   then
+   ar x libphyvenus.a
+   ar x libmisc.a
+   ar x libphy_common.a
+   ar x libioipsl.a 
+  elif [[ "${phys}" == *"generic"* ]]
+   then
+   ar x libphystd.a
+   ar x libmisc.a
+   ar x libphy_common.a
+   ar x libioipsl.a
+  fi
+  \rm *.a
+  ar r liblmd.a *
+  cp -f liblmd.a ..
+  cd ..
+  \rm -r temp
+  nm liblmd.a > liblmd_content
+  # finish merge
+  cd ..
+  if [[ "${phys}" == *"new"* ]]
+  then
+    if [[ "${phys}" == *"mars"* ]]
+    then
+      # include modules for interfacing
+      mv  *.mod ../inc/
+    else
+#      mv  ./libo/linux*/*.mod ../inc/ # on /u/ and /planeto/
+      mv  ./libo/*/*.mod ../inc/ # on /u/ and /planeto/
+      #mv  ./libo/CICLAD*/*.mod ../inc/ # on CICLAD
+      #mv  ./libo/X64*/*.mod ../inc/ # on MESU and OCCIGEN
+      cp -f $pathioipsl/*.mod ../inc/
+    fi
+  fi
+
+
+  # save a copy 
+  #--------------
+  cp -f libo/liblmd.a libo/liblmd.a_${lon}_${lat}_${level}_${dom}_${tra}
+  echo '****************************************'
+
+  # ok
+  #----
+  cd ..
+
+  # manage nest includes in module_lmd_driver.F
+  #---- 
+  cp call_meso_inifis$dom.inc call_meso_inifis.inc
+  cp call_meso_physiq$dom.inc call_meso_physiq.inc
+
+
+fi
+##################################################
+# END compile physics
+##################################################
+
+#------------------
+# compile WRF
+#------------------
+if [ ${justphys} -eq 0 ]
+then
+
+  echo 2. compiling WRF dynamical core ...
+
+  #if [[ "${phys}" == "nophys_" ]]
+  #then
+  # echo 'NO LMD PHYSICS included'
+  #else
+  # if [[ ! ( -f "call_meso_physiq.inc" ) ]]
+  # then
+  #  echo 'did you compile the physics ? no call_meso_physiq.inc !'
+  #  exit
+  # fi
+  #fi
+
+  # be sure to compile with the most recent physics
+  touch phys/module_lmd_driver.F
+
+  # talk to user
+  echo '>>> compiling ... this may be long ... <<<'
+  echo check progress in:
+  echo $PWD/log_compile
+  echo check possible errors in:
+  echo $PWD/log_error
+  
+  # compile ...
+  echo '>>> YOUR CONFIG IS : '${config}
+  case ${config} in
+    'real')         ./compile em_real > log_compile 2> log_error 
+                    # save executables  
+                    cd main
+                      if [[ -f real.exe ]]
+                      then
+                        echo 'Looks good ! real.exe is here...' 
+                      fi
+                      if [[ -f wrf.exe ]]
+                      then
+                        echo 'Looks good ! wrf.exe is here...' 
+                      fi
+                    cp -f real.exe ../../real_x${lon}_y${lat}_z${level}_d${dom}_t${tra}_p${numproc}.exe
+                    cp -f wrf.exe ../../wrf_x${lon}_y${lat}_z${level}_d${dom}_t${tra}_p${numproc}.exe
+                    cd ..  ;;
+    'ideal')        #mkdir 'test/em_quarter_ss' 2> /dev/null
+                    #echo '>>> YOUR CONFIG IS : '${config}
+                    ./compile em_quarter_ss > log_compile 2> log_error 
+                    # save executables  
+                    cd main
+                      if [[ -f ideal.exe ]]
+                      then
+                        echo 'Looks good ! ideal.exe is here...' 
+                      fi
+                      if [[ -f wrf.exe ]]
+                      then
+                        echo 'Looks good ! wrf.exe is here...' 
+                      fi
+                    cp -f ideal.exe ../../ideal_x${lon}_y${lat}_z${level}_d${dom}_t${tra}_p${numproc}.exe
+                    cp -f wrf.exe ../../wrf_x${lon}_y${lat}_z${level}_d${dom}_t${tra}_p${numproc}.exe
+                    cd ..  ;;
+    'les')          #echo '>>> YOUR CONFIG IS : '${config}
+                    mkdir 'test/em_les' 2> /dev/null                    
+                    ./compile em_les ###> log_compile 2> log_error
+                    # save executables  
+                    cd main
+                      if [[ -f ideal.exe ]]
+                      then
+                        echo 'Looks good ! ideal.exe is here...' 
+                      fi
+                      if [[ -f wrf.exe ]]
+                      then
+                        echo 'Looks good ! wrf.exe is here...' 
+                      fi
+                    cp -f ideal.exe ../../ideal_x${lon}_y${lat}_z${level}_d${dom}_t${tra}_p${numproc}.exe
+                    cp -f wrf.exe ../../wrf_x${lon}_y${lat}_z${level}_d${dom}_t${tra}_p${numproc}.exe
+                    cd ..  ;;
+    *)              echo not supported... please use ; echo ideal les ; exit ;;
+  esac
+  echo '*******last lines from log_error*********'
+  tail -n 20 log_error
+fi
+
+  # the end
+  echo '****************************************'
+  echo 'done.'
+  echo '****************************************'
+  cp last ../makemeso_x${lon}_y${lat}_z${level}_d${dom}_t${tra}_p${numproc}
+  mv last ../../
+  svn info ../../ > ../makemeso_x${lon}_y${lat}_z${level}_d${dom}_t${tra}_p${numproc}.svn.info
+
+  # link latest compiled folder as LATEST
+  cd ../../
+  rm -rf LATEST
+  ln -sf ${conf_wrf} LATEST
+
+  # link latest compiled exec
+  cd LATEST
+  case ${config} in
+    'real')         ln -sf real_x${lon}_y${lat}_z${level}_d${dom}_t${tra}_p${numproc}.exe real.exe ;;
+    'ideal')        ln -sf ideal_x${lon}_y${lat}_z${level}_d${dom}_t${tra}_p${numproc}.exe ideal.exe ;;
+    'les')          ln -sf ideal_x${lon}_y${lat}_z${level}_d${dom}_t${tra}_p${numproc}.exe ideal.exe ;;
+  esac
+  ln -sf wrf_x${lon}_y${lat}_z${level}_d${dom}_t${tra}_p${numproc}.exe wrf.exe
+  cd ..
+
+  # add here specific messages
+  if [[ "${dom}" != "1" ]]
+  then
+  nest=$(expr ${lon} + 4)
+  echo NB: in namelist.input, please set:
+  echo '
+  max_dom = '$dom'
+  s_we    = 1,1,
+  e_we    = '$lon','$nest',
+  s_sn    = 1,1, 
+  e_sn    = '$lat','$nest',
+  s_vert  = 1,1,
+  e_vert  = '$level','$level','
+  fi
+
+

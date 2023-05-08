@@ -1,0 +1,1689 @@
+      SUBROUTINE meso_physiq(ngrid,nlayer,nq,
+     $            firstcall,lastcall,
+     $		  wday_ini,
+     $            pday,ptime,ptimestep,
+     $            pplev,pplay,pphi,
+     $            pu,pv,pt,pq,
+     $            pw,
+     $            pdu,pdv,pdt,pdq,pdpsrf,tracerdyn,
+     $		  wtsurf,wtsoil,wemis,wq2,wqsurf,wco2ice,
+     $		  wecritphys,
+     $            output_tab2d, output_tab3d)
+
+
+
+      IMPLICIT NONE
+c=======================================================================
+c
+c	CAREFUL: THIS IS A VERSION TO BE USED WITH WRF !!!
+c
+c	... CHECK THE ****WRF lines
+c
+c=======================================================================
+c
+c   subject:
+c   --------
+c
+c   Organisation of the physical parametrisations of the LMD 
+c   martian atmospheric general circulation model.
+c
+c   The GCM can be run without or with tracer transport
+c   depending on the value of Logical "tracer" in file  "callphys.def"
+c   Tracers may be water vapor, ice OR chemical species OR dust particles
+c
+c   SEE comments in initracer.F about numbering of tracer species...
+c
+c   It includes:
+c
+c      1. Initialisation:
+c      1.5 Calculation of mean mass and cp, R and thermal conduction coeff.
+c      2. Calcul of the radiative tendencies : radiative transfer
+c         (longwave and shortwave) for CO2 and dust.
+c      3. Gravity wave and subgrid scale topography drag :
+c      4. Vertical diffusion (turbulent mixing):
+c      5. convective adjustment
+c      6.  TRACERS :
+c       6a. water and water ice
+c       6b. call for photochemistry when tracers are chemical species
+c       6c. other scheme for tracer (dust) transport (lifting, sedimentation)
+c       6d. updates (CO2 pressure variations, surface budget)
+c      7.  condensation and sublimation of carbon dioxide.
+c      8. Surface and sub-surface temperature calculations
+c      9. Writing output files :
+c           - "startfi", "histfi" (if it's time)
+c           - Saving statistics (if "callstats = .true.")
+c           - Dumping eof (if "calleofdump = .true.")
+c           - Output any needed variables in "diagfi" 
+c      10. Diagnostic: mass conservation of tracers
+c 
+c   author: 
+c   ------- 
+c           Frederic Hourdin	15/10/93
+c           Francois Forget		1994
+c           Christophe Hourdin	02/1997 
+c           Subroutine completly rewritten by F.Forget (01/2000)
+c           Introduction of the photochemical module: S. Lebonnois (11/2002)
+c           Introduction of the thermosphere module: M. Angelats i Coll (2002)
+c           Water ice clouds: Franck Montmessin (update 06/2003)
+c	    WRF version: Aymeric Spiga (01-03/2007)
+c           
+c
+c
+c   arguments:
+c   ----------
+c
+c   input:
+c   ------
+c    ecri                  period (in dynamical timestep) to write output
+c    ngrid                 Size of the horizontal grid.
+c                          All internal loops are performed on that grid.
+c    nlayer                Number of vertical layers.
+c    nq                    Number of advected fields
+c    firstcall             True at the first call
+c    lastcall              True at the last call
+c    pday                  Number of days counted from the North. Spring
+c                          equinoxe.
+c    ptime                 Universal time (0<ptime<1): ptime=0.5 at 12:00 UT
+c    ptimestep             timestep (s)
+c    pplay(ngrid,nlayer)   Pressure at the middle of the layers (Pa)
+c    pplev(ngrid,nlayer+1) intermediate pressure levels (pa)
+c    pphi(ngrid,nlayer)    Geopotential at the middle of the layers (m2s-2)
+c    pu(ngrid,nlayer)      u component of the wind (ms-1)
+c    pv(ngrid,nlayer)      v component of the wind (ms-1)
+c    pt(ngrid,nlayer)      Temperature (K)
+c    pq(ngrid,nlayer,nq)   Advected fields
+c    pudyn(ngrid,nlayer)    \ 
+c    pvdyn(ngrid,nlayer)     \ Dynamical temporal derivative for the
+c    ptdyn(ngrid,nlayer)     / corresponding variables
+c    pqdyn(ngrid,nlayer,nq) /
+c    pw(ngrid,?)           vertical velocity
+c 
+c
+c    ****WRF 
+c	day_ini,tsurf,tsoil,emis,q2,qsurf,co2ice are inputs 
+c		and locally saved variables
+c    			(no need to call phyetat0)
+c
+c
+c   output:
+c   -------
+c
+c    pdu(ngrid,nlayermx)        \
+c    pdv(ngrid,nlayermx)         \  Temporal derivative of the corresponding
+c    pdt(ngrid,nlayermx)         /  variables due to physical processes.
+c    pdq(ngrid,nlayermx)        /
+c    pdpsrf(ngrid)             /
+c    tracerdyn                 call tracer in dynamical part of GCM ?
+
+c
+c=======================================================================
+c
+c    0.  Declarations :
+c    ------------------
+
+#include "dimensions.h"
+#include "dimphys.h"
+#include "comgeomfi.h"
+#include "surfdat.h"
+#include "comdiurn.h"
+#include "callkeys.h"
+#include "comcstfi.h"
+#include "planete.h"
+#include "comsaison.h"
+#include "control.h"
+#include "dimradmars.h"
+#include "comg1d.h"
+#include "tracer.h"
+#include "nlteparams.h"
+
+#include "chimiedata.h"
+#include "watercap.h"
+#include "fisice.h"
+#include "param.h"
+#include "param_v3.h"
+#include "conc.h"
+
+#include "netcdf.inc"
+
+#include "slope.h"
+!!#include "wrf_output.h"
+
+
+
+c Arguments :
+c -----------
+
+c   inputs:
+c   -------
+      INTEGER ngrid,nlayer,nq
+      REAL ptimestep
+      REAL pplev(ngridmx,nlayer+1),pplay(ngridmx,nlayer)
+      REAL pphi(ngridmx,nlayer)
+      REAL pu(ngridmx,nlayer),pv(ngridmx,nlayer)
+      REAL pt(ngridmx,nlayer),pq(ngridmx,nlayer,nq)
+      REAL pw(ngridmx,nlayer) !Mars pvervel transmit par dyn3d
+      REAL zh(ngridmx,nlayermx)      ! potential temperature (K)
+      LOGICAL firstcall,lastcall
+c ****WRF
+      INTEGER wday_ini  
+      REAL wtsurf(ngridmx)	! input only ay firstcall - output            
+      REAL wtsoil(ngridmx,nsoilmx)    
+      REAL wco2ice(ngridmx)             
+      REAL wemis(ngridmx)             
+      REAL wqsurf(ngridmx,nqmx)       
+      REAL wq2(ngridmx,nlayermx+1) 
+      REAL wecritphys	
+c      REAL output_tau(ngridmx)
+c      REAL output_swsurf(ngridmx),output_lwsurf(ngridmx)
+c      REAL output_rice(ngridmx,nlayer)
+c
+c LE NOMBRE DE SORTIES EST CODE EN DUR
+c
+      REAL output_tab2d(ngridmx,10)
+      REAL output_tab3d(ngridmx,nlayer,1)
+      
+      REAL sl_ls, sl_lct, sl_lat, sl_tau, sl_alb, sl_the, sl_psi
+      REAL sl_fl0, sl_flu
+c ****WRF
+      REAL pday
+      REAL ptime 
+      logical tracerdyn
+
+c   outputs:
+c   --------
+c     physical tendencies
+      REAL pdu(ngridmx,nlayer),pdv(ngridmx,nlayer)
+      REAL pdt(ngridmx,nlayer),pdq(ngridmx,nlayer,nq)
+      REAL pdpsrf(ngridmx)
+
+
+c Local saved variables:
+c ----------------------
+c     aerosol (dust or ice) extinction optical depth  at reference wavelength 
+c     "longrefvis" set in dimradmars.h , for one of the "naerkind"  kind of
+c      aerosol optical properties  :
+      REAL aerosol(ngridmx,nlayermx,naerkind) 
+
+      INTEGER day_ini  ! Initial date of the run (sol since Ls=0) 
+      INTEGER icount     ! counter of calls to physiq during the run.
+      REAL tsurf(ngridmx)            ! Surface temperature (K)
+      REAL tsoil(ngridmx,nsoilmx)    ! sub-surface temperatures (K)
+      REAL co2ice(ngridmx)           ! co2 ice surface layer (kg.m-2)  
+      REAL albedo(ngridmx,2)         ! Surface albedo in each solar band
+      REAL emis(ngridmx)             ! Thermal IR surface emissivity
+      REAL dtrad(ngridmx,nlayermx)   ! Net atm. radiative heating rate (K.s-1)
+      REAL fluxrad(ngridmx)          ! Net radiative surface flux (W.m-2)
+      REAL capcal(ngridmx)           ! surface heat capacity (J m-2 K-1)
+      REAL fluxgrd(ngridmx)          ! surface conduction flux (W.m-2)
+      REAL qsurf(ngridmx,nqmx)       ! tracer on surface (e.g. kg.m-2)
+      REAL q2(ngridmx,nlayermx+1)    ! Turbulent Kinetic Energy 
+      INTEGER ig_vl1                 ! Grid Point near VL1   (for diagnostic) 
+
+      SAVE day_ini, icount
+      SAVE aerosol, tsurf,tsoil
+      SAVE co2ice,albedo,emis, q2
+      SAVE capcal,fluxgrd,dtrad,fluxrad, qsurf
+      SAVE ig_vl1
+
+      REAL stephan   
+      DATA stephan/5.67e-08/  ! Stephan Boltzman constant
+      SAVE stephan
+
+c Local variables :
+c -----------------
+      CHARACTER*80 fichier 
+      INTEGER l,ig,ierr,igout,iq, tapphys
+      INTEGER iqmin                     ! Used if iceparty engaged
+
+      REAL fluxsurf_lw(ngridmx)      !incident LW (IR) surface flux (W.m-2)
+      REAL fluxsurf_sw(ngridmx,2)    !incident SW (solar) surface flux (W.m-2)
+      REAL fluxtop_lw(ngridmx)       !Outgoing LW (IR) flux to space (W.m-2)
+      REAL fluxtop_sw(ngridmx,2)     !Outgoing SW (solar) flux to space (W.m-2)
+c     for clear area (uncovered by clouds) :
+      REAL clsurf_lw(ngridmx)      !incident LW (IR) surface flux (W.m-2) 
+      REAL clsurf_sw(ngridmx,2)    !incident SW (solar) surface flux (W.m-2)
+      REAL cltop_lw(ngridmx)       !Outgoing LW (IR) flux to space (W.m-2)
+      REAL cltop_sw(ngridmx,2)     !Outgoing SW (solar) flux to space (W.m-2)
+      REAL tauref(ngridmx)           ! Reference column optical depth at 700 Pa
+                                     ! (used if active=F) 
+      REAL tau(ngridmx,naerkind)     ! Column dust optical depth at each point
+      REAL zls                       !  solar longitude (rad)
+      REAL zday                      ! date (time since Ls=0, in martian days)
+      REAL zzlay(ngridmx,nlayermx)   ! altitude at the middle of the layers
+      REAL zzlev(ngridmx,nlayermx+1) ! altitude at layer boundaries
+      REAL latvl1,lonvl1             ! Viking Lander 1 point (for diagnostic)
+
+
+c     Tendancies due to various processes:
+      REAL dqsurf(ngridmx,nqmx)
+      REAL zdtlw(ngridmx,nlayermx)     ! (K/s)
+      REAL zdtsw(ngridmx,nlayermx)     ! (K/s)
+      REAL cldtlw(ngridmx,nlayermx)     ! (K/s) LW heating rate for clear area
+      REAL cldtsw(ngridmx,nlayermx)     ! (K/s) SW heating rate for clear area
+      REAL zdtnirco2(ngridmx,nlayermx) ! (K/s)
+      REAL zdtnlte(ngridmx,nlayermx)   ! (K/s)
+      REAL zdtsurf(ngridmx)            ! (K/s)
+      REAL zdtcloud(ngridmx,nlayermx)
+      REAL zdvdif(ngridmx,nlayermx),zdudif(ngridmx,nlayermx)  ! (m.s-2)
+      REAL zdhdif(ngridmx,nlayermx), zdtsdif(ngridmx)         ! (K/s)
+      REAL zdvadj(ngridmx,nlayermx),zduadj(ngridmx,nlayermx)  ! (m.s-2)
+      REAL zdhadj(ngridmx,nlayermx)                           ! (K/s)
+      REAL zdtgw(ngridmx,nlayermx)                            ! (K/s)
+      REAL zdugw(ngridmx,nlayermx),zdvgw(ngridmx,nlayermx)    ! (m.s-2)
+      REAL zdtc(ngridmx,nlayermx),zdtsurfc(ngridmx)
+      REAL zdvc(ngridmx,nlayermx),zduc(ngridmx,nlayermx)
+
+      REAL zdqdif(ngridmx,nlayermx,nqmx), zdqsdif(ngridmx,nqmx)
+      REAL zdqsed(ngridmx,nlayermx,nqmx), zdqssed(ngridmx,nqmx)
+      REAL zdqdev(ngridmx,nlayermx,nqmx), zdqsdev(ngridmx,nqmx)
+      REAL zdqadj(ngridmx,nlayermx,nqmx)
+      REAL zdqc(ngridmx,nlayermx,nqmx)
+      REAL zdqcloud(ngridmx,nlayermx,nqmx)
+      REAL zdqscloud(ngridmx,nqmx)
+      REAL zdqchim(ngridmx,nlayermx,nqmx)
+      REAL zdqschim(ngridmx,nqmx)
+
+      REAL zdteuv(ngridmx,nlayermx)    ! (K/s)
+      REAL zdtconduc(ngridmx,nlayermx) ! (K/s)
+      REAL zdumolvis(ngridmx,nlayermx)
+      REAL zdvmolvis(ngridmx,nlayermx)
+      real zdqmoldiff(ngridmx,nlayermx,nqmx)
+
+c     Local variable for local intermediate calcul:
+      REAL zflubid(ngridmx)
+      REAL zplanck(ngridmx),zpopsk(ngridmx,nlayermx)
+      REAL zdum1(ngridmx,nlayermx)
+      REAL zdum2(ngridmx,nlayermx)
+      REAL ztim1,ztim2,ztim3, z1,z2
+      REAL ztime_fin
+      REAL zdh(ngridmx,nlayermx)
+      REAL pclc_min ! minimum of the cloud fraction over the whole domain
+      INTEGER length
+      PARAMETER (length=100)
+
+c local variables only used for diagnostic (output in file "diagfi" or "stats")
+c -----------------------------------------------------------------------------
+      REAL ps(ngridmx), zt(ngridmx,nlayermx)
+      REAL zu(ngridmx,nlayermx),zv(ngridmx,nlayermx)
+      REAL zq(ngridmx,nlayermx,nqmx)
+      REAL fluxtop_sw_tot(ngridmx), fluxsurf_sw_tot(ngridmx)
+      character*2 str2
+      character*5 str5
+      real zdtdif(ngridmx,nlayermx), zdtadj(ngridmx,nlayermx)
+      real reff(ngridmx,nlayermx) ! effective dust radius (used if doubleq=T)
+      real qtot1,qtot2 ! total aerosol mass
+      integer igmin, lmin
+      logical tdiag
+
+
+      REAL zplev(ngrid,nlayermx+1),zplay(ngrid,nlayermx)
+      real hco2(nqmx),tmean, zlocal(nlayermx)
+      real rho(ngridmx,nlayermx) ! density
+      real vmr(ngridmx,nlayermx) ! volume mixing ratio
+
+      REAL time_phys
+     
+c=======================================================================
+
+c 1. Initialisation:
+c -----------------
+ 
+
+c     Initialisation only at first call
+c     ---------------------------------
+      IF(firstcall) THEN
+
+c        variables set to 0
+c        ~~~~~~~~~~~~~~~~~~
+         call zerophys(ngrid*nlayer*naerkind,aerosol)
+         call zerophys(ngrid*nlayer,dtrad)
+         call zerophys(ngrid,fluxrad)
+
+c ****WRF
+c
+c	No need to use startfi.nc
+c		> part of the job of phyetat0 is done in inifis
+c		> remaining initializations are passed here from the WRF variables
+c		> beware, some operations were done by phyetat0 (ex: tracers)
+c			> if any problems, look in phyetat0
+c
+	tsurf(:)=wtsurf(:)
+        	PRINT*,'check: tsurf ',tsurf(1),tsurf(ngridmx)
+	tsoil(:,:)=wtsoil(:,:)
+        	PRINT*,'check: tsoil ',tsoil(1,1),tsoil(ngridmx,nsoilmx)
+	emis(:)=wemis(:)
+        	PRINT*,'check: emis ',emis(1),emis(ngridmx)
+	q2(:,:)=wq2(:,:)
+        	PRINT*,'check: q2 ',q2(1,1),q2(ngridmx,nlayermx+1)
+	qsurf(:,:)=wqsurf(:,:)
+        	PRINT*,'check: qsurf ',qsurf(1,1),qsurf(ngridmx,nqmx)
+	co2ice(:)=wco2ice(:)
+        	PRINT*,'check: co2 ',co2ice(1),co2ice(ngridmx)
+	day_ini=wday_ini
+
+c	artificially filling dyn3d/control.h is also required
+c	> iphysiq is put in WRF to be set easily (cf ptimestep)
+c	> day_step is simply deduced:
+c
+	day_step=daysec/ptimestep
+	PRINT*,'Call to LMD physics:',day_step,' per Martian day'
+c
+        ecritphy=wecritphys
+                !!PRINT*,ecri_phys  
+                !!PRINT*,float(ecri_phys) ...
+                !!renvoient tous deux des nombres absurdes 
+                !!pourtant callkeys.h est inclus ...
+                !!
+                !!donc ecritphys est passe en argument ... 
+        PRINT*,'Write LMD physics each:',ecritphy,' seconds'
+
+        iphysiq=ptimestep
+
+c
+c ****WRF
+
+
+         if (pday.ne.day_ini) then
+           write(*,*) "***ERROR Pb de synchronisation entre phys et dyn"
+           write(*,*) "jour dynamique: ",pday
+           write(*,*) "jour physique: ",day_ini
+           stop
+         endif
+
+         write (*,*) 'In physic day_ini =', day_ini
+
+	
+
+c        Initialize albedo and orbital calculation
+c        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+         CALL surfini(ngrid,co2ice,qsurf,albedo)
+         CALL iniorbit(aphelie,periheli,year_day,peri_day,obliquit)
+
+c        initialisation soil 
+c        ~~~~~~~~~~~~~~~~~~~
+         IF (callsoil) THEN
+            CALL soil(ngrid,nsoilmx,firstcall,inertiedat,
+     s          ptimestep,tsurf,tsoil,capcal,fluxgrd)
+         ELSE
+            PRINT*,'WARNING! Thermal conduction in the soil turned off'
+            DO ig=1,ngrid
+               capcal(ig)=1.e5
+               fluxgrd(ig)=0.
+            ENDDO
+         ENDIF
+         icount=1
+
+
+c        initialisation pour les traceurs
+c        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+         tracerdyn=tracer
+         IF (tracer) THEN
+            CALL initracer(qsurf,co2ice)
+         ENDIF  ! end tracer
+
+c ****WRF
+c
+c nosense in mesoscale modeling
+c
+cc        Determining gridpoint near Viking Lander 1 (used for diagnostic only)
+cc        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c         if(ngrid.ne.1) then
+c           latvl1= 22.27 
+c           lonvl1= -47.94 
+c           ig_vl1= 1+ int( (1.5-(latvl1-90.)*jjm/180.)  -2 )*iim +
+c     &              int(1.5+(lonvl1+180)*iim/360.)
+c           write(*,*) 'Viking Lander 1 GCM point: lat,lon',
+c     &              lati(ig_vl1)*180/pi, long(ig_vl1)*180/pi
+c         end if 
+c
+c ****WRF
+
+
+c        Initializing thermospheric parameters
+c        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+         if (callthermos) call param_read
+
+c        Initializing R and Cp as constant
+
+         if (.not.callthermos .and. .not.photochem) then
+                 do l=1,nlayermx
+                  do ig=1,ngridmx
+                   rnew(ig,l)=r
+                   cpnew(ig,l)=cpp
+                   mmean(ig,l)=mugaz
+                   enddo
+                  enddo  
+         endif         
+                   
+      ENDIF        !  (end of "if firstcall")
+
+c    ------------------------------------------
+c    Initialisations at every physical timestep:
+c    ------------------------------------------
+c
+      IF (ngrid.NE.ngridmx) THEN
+         PRINT*,'STOP in PHYSIQ'
+         PRINT*,'Probleme de dimensions :'
+         PRINT*,'ngrid     = ',ngrid
+         PRINT*,'ngridmx   = ',ngridmx
+         STOP
+      ENDIF
+
+      zday=pday+ptime
+
+	
+
+c     Computing Solar Longitude (Ls) :
+c     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      if (season) then 
+	 PRINT*,'day',zday
+         CALL solarlong(zday,zls)
+      else
+         PRINT*,'day_ini',day_ini
+         call solarlong(float(day_ini),zls) 
+      end if
+
+
+c     Initializing various variable
+c     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      call zerophys(ngrid*nlayer, pdv)
+      call zerophys(ngrid*nlayer, pdu)
+      call zerophys(ngrid*nlayer, pdt)
+      call zerophys(ngrid*nlayer*nq, pdq)
+      call zerophys(ngrid, pdpsrf)
+      call zerophys(ngrid, zflubid)
+      call zerophys(ngrid, zdtsurf)
+      call zerophys(ngrid*nq, dqsurf)
+      igout=ngrid/2+1 
+
+c     computing geopotentiel at interlayer levels
+c     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c     ponderation des altitudes au niveau des couches en dp/p
+
+      DO l=1,nlayer
+         DO ig=1,ngrid
+            zzlay(ig,l)=pphi(ig,l)/g    
+         ENDDO
+      ENDDO
+      DO ig=1,ngrid
+         zzlev(ig,1)=0.
+         zzlev(ig,nlayer+1)=1.e7    ! dummy top of last layer above 10000 km...
+      ENDDO
+      DO l=2,nlayer
+         DO ig=1,ngrid
+            z1=(pplay(ig,l-1)+pplev(ig,l))/(pplay(ig,l-1)-pplev(ig,l))
+            z2=(pplev(ig,l)+pplay(ig,l))/(pplev(ig,l)-pplay(ig,l))
+            zzlev(ig,l)=(z1*zzlay(ig,l-1)+z2*zzlay(ig,l))/(z1+z2)
+         ENDDO
+      ENDDO
+
+
+!     Potential temperature calculation not the same in physiq and dynamic
+
+c     Computing potential temperature
+c     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      DO l=1,nlayer
+         DO ig=1,ngrid 
+            zpopsk(ig,l)=(pplay(ig,l)/pplev(ig,1))**rcp
+            zh(ig,l)=pt(ig,l)/zpopsk(ig,l)
+         ENDDO
+      ENDDO
+
+c-----------------------------------------------------------------------
+c    1.5 Calculation of mean mass, cp, and R
+c    ---------------------------------------
+
+      if(photochem.or.callthermos) then
+         call concentrations(pplay,pt,pdt,pq,pdq,ptimestep)
+      endif
+c-----------------------------------------------------------------------
+c    2. Calcul of the radiative tendencies :
+c    ---------------------------------------
+
+
+      IF(callrad) THEN
+         IF( MOD(icount-1,iradia).EQ.0) THEN
+
+c          Local Solar zenith angle
+c          ~~~~~~~~~~~~~~~~~~~~~~~~
+        
+           CALL orbite(zls,dist_sol,declin)
+
+           IF(diurnal) THEN
+               ztim1=SIN(declin)
+               ztim2=COS(declin)*COS(2.*pi*(zday-.5))
+               ztim3=-COS(declin)*SIN(2.*pi*(zday-.5))
+
+               CALL solang(ngrid,sinlon,coslon,sinlat,coslat,
+     s         ztim1,ztim2,ztim3, mu0,fract)
+
+           ELSE
+               CALL mucorr(ngrid,declin, lati, mu0, fract,10000.,rad)
+           ENDIF
+
+
+	
+c          NLTE cooling from CO2 emission
+c          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+           IF(callnlte) CALL nltecool(ngrid,nlayer,pplay,pt,zdtnlte)
+
+
+c          Find number of layers for LTE radiation calculations
+           IF(MOD(iphysiq*(icount-1),day_step).EQ.0) THEN          
+		CALL nlthermeq(ngrid,nlayer,pplev,pplay)
+	   ENDIF	
+
+		
+c          Atmospheric dust opacity and aerosol distribution:
+c          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+cc*****WRF
+         CALL meso_dustopacity(ngrid,nlayer,nq,
+     $          zday,pplay,pplev,zls,pq,
+     $      tauref,tau,aerosol)
+
+cc*****WRF
+
+        
+c          Calling main radiative transfer scheme
+c          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c          Transfer through dust and CO2, except NIR CO2 absorption
+
+c ----------
+c partie rajoutee par Franck, commentee pour l'instant
+c ----------
+c
+c           if (ngridmx.eq.1) pclc(1)=1. !TEST for 1D simulation
+c
+c           pclc_min=1.
+c           if (activice.and.naerkind.gt.1) then
+c             do ig=1,ngrid
+c               pclc_min=min(pclc_min,pclc(ig))
+c             enddo
+c           endif
+c
+c           IF(activice.and.naerkind.gt.1.and.pclc_min.lt.1) THEN
+c          Computing radiative tendencies accounting for a cloudy area (0< pclc(ngrid) <1)
+c          pclc is set in initracer (prescribed for the moment).
+c          two steps : 1/rad. tend. without clouds (aerosol(*,*,2)=0.)
+c          ~~~~~~~~~   2/rad. tend. with clouds
+c                      3/final tendencies=average of 1/ and 2/ weighted by the
+cloud area (pclc)
+c
+c
+c 1/
+c           call zerophys(nlayer*ngrid,aerosol(1,1,2))  !remettre
+c           CALL callradite(icount,ngrid,nlayer,aerosol,albedo,
+c     $     emis,mu0,pplev,pplay,pt,tsurf,fract,dist_sol,igout,
+c     $     cldtlw,cldtsw,clsurf_lw,clsurf_sw,cltop_lw,cltop_sw)
+c
+c 2/
+c           CALL h2oiceopacity(ngrid,nlayer,nq,pplay,pplev,pt,pq,
+c     $     tau,aerosol,zls,co2ice)
+c
+c           CALL callradite(icount,ngrid,nlayer,aerosol,albedo,
+c     $     emis,mu0,pplev,pplay,pt,tsurf,fract,dist_sol,igout,
+c     $     zdtlw,zdtsw,fluxsurf_lw,fluxsurf_sw,fluxtop_lw,fluxtop_sw)
+c
+c 3/
+c           do l=1,nlayer
+c             do ig=1,ngrid
+c             zdtlw(ig,l)=(1.-pclc(ig))*cldtlw(ig,l)+pclc(ig)*zdtlw(ig,l)
+c             zdtsw(ig,l)=(1.-pclc(ig))*cldtsw(ig,l)+pclc(ig)*zdtsw(ig,l)
+c             enddo
+c           enddo
+c           do ig=1,ngrid
+c             fluxsurf_lw(ig)=(1.-pclc(ig))*clsurf_lw(ig)+
+c     $        pclc(ig)*fluxsurf_lw(ig)
+c             fluxtop_lw(ig)=(1.-pclc(ig))*cltop_lw(ig)+
+c     $        pclc(ig)*fluxtop_lw(ig)
+c
+c             fluxsurf_sw(ig,1)=(1.-pclc(ig))*clsurf_sw(ig,1)+
+c     $        pclc(ig)*fluxsurf_sw(ig,1)
+c             fluxsurf_sw(ig,2)=(1.-pclc(ig))*clsurf_sw(ig,2)+
+c     $        pclc(ig)*fluxsurf_sw(ig,2)
+c
+c             fluxtop_sw(ig,1)=(1.-pclc(ig))*cltop_sw(ig,1)+
+c     $        pclc(ig)*fluxtop_sw(ig,1)
+c             fluxtop_sw(ig,2)=(1.-pclc(ig))*cltop_sw(ig,2)+
+c     $        pclc(ig)*fluxtop_sw(ig,2)
+c           enddo
+c
+c           ELSE
+c
+c          Atmospheric water ice opacity and particle distribution:
+c          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c
+c           if (activice.and.naerkind.gt.1)
+c     &      CALL h2oiceopacity(ngrid,nlayer,nq,pplay,pplev,pt,pq,
+c     &      tau,aerosol,zls,co2ice)
+c
+c
+c ----------
+c  fin partie rajoutee par Franck (plus ENDIF ci-dessous)
+c ----------
+
+           CALL callradite(icount,ngrid,nlayer,aerosol,albedo,
+     $     emis,mu0,pplev,pplay,pt,tsurf,fract,dist_sol,igout,
+     $     zdtlw,zdtsw,fluxsurf_lw,fluxsurf_sw,fluxtop_lw,fluxtop_sw)
+
+c ----------
+c           ENDIF ! end of condition on the cloudy fraction
+c ----------
+
+
+ccccc
+ccccc PARAM SLOPE
+ccccc
+
+c          Insolation (direct + scaterred) on a slope
+c          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+           DO ig=1,ngrid  
+
+                DO l=1,2
+           
+		sl_ls = 180.*zls/pi
+		sl_lct = ptime*24. + 180.*long(ig)/pi/15.
+		sl_lat = 180.*lati(ig)/pi
+		sl_tau = tau(ig,1)
+		sl_alb = albedo(ig,l)
+		sl_the = theta_sl(ig)
+		sl_psi = psi_sl(ig)
+		sl_fl0 = fluxsurf_sw(ig,l)
+
+           if (ig .eq. 1) then
+                write(*,*) 'ls ', 'lct ' , 'lat ', 'tau ',
+     &                   'alb ', 'the ', 'psi ', 'fl0 '
+		write(*,*) sl_ls, sl_lct, sl_lat, sl_tau, 
+     &                   sl_alb, sl_the, sl_psi, sl_fl0
+           endif
+                   
+		CALL param_slope(sl_ls, sl_lct, sl_lat, 
+     &                   sl_tau, sl_alb, 
+     &                   sl_the, sl_psi, sl_fl0, sl_flu)
+
+                fluxsurf_sw(ig,l) = sl_flu
+             ENDDO
+           ENDDO
+
+ccccc
+ccccc PARAM SLOPE
+ccccc
+
+
+c          CO2 near infrared absorption
+c          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+           call zerophys(ngrid*nlayer,zdtnirco2)
+           if (callnirco2) then
+              call nirco2abs (ngrid,nlayer,pplay,dist_sol,
+     .                       mu0,fract,declin, zdtnirco2)
+           endif
+
+c          Net radiative surface flux (W.m-2)
+c          ~~~~~~~~~~~~~~~~~~~~~~~~~~
+           DO ig=1,ngrid
+               fluxrad(ig)=emis(ig)*fluxsurf_lw(ig)
+     $         +fluxsurf_sw(ig,1)*(1.-albedo(ig,1))
+     $         +fluxsurf_sw(ig,2)*(1.-albedo(ig,2))
+               zplanck(ig)=tsurf(ig)*tsurf(ig)
+               zplanck(ig)=emis(ig)*
+     $         stephan*zplanck(ig)*zplanck(ig)
+               fluxrad(ig)=fluxrad(ig)-zplanck(ig)
+           ENDDO
+
+c          Net atmospheric radiative heating rate (K.s-1)
+c          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+           IF(callnlte) THEN
+              CALL blendrad(ngrid, nlayer, pplay,
+     &             zdtsw, zdtlw, zdtnirco2, zdtnlte, dtrad)
+           ELSE
+              DO l=1,nlayer
+                 DO ig=1,ngrid
+                    dtrad(ig,l)=zdtsw(ig,l)+zdtlw(ig,l)
+     &                          +zdtnirco2(ig,l)
+                  ENDDO
+              ENDDO
+           ENDIF
+
+
+
+        ENDIF ! mod(icount-1,iradia).eq.0
+
+
+c    Transformation of the radiative tendencies:
+c    -----------------------------------------------
+
+         DO l=1,nlayer
+            DO ig=1,ngrid
+               pdt(ig,l)=pdt(ig,l)+dtrad(ig,l)
+            ENDDO
+         ENDDO
+
+      ENDIF
+
+
+
+c-----------------------------------------------------------------------
+c    3. Gravity wave and subgrid scale topography drag :
+c    -------------------------------------------------
+
+
+      IF(calllott)THEN
+
+        CALL calldrag_noro(ngrid,nlayer,ptimestep,
+     &                 pplay,pplev,pt,pu,pv,zdtgw,zdugw,zdvgw)
+ 
+        DO l=1,nlayer
+          DO ig=1,ngrid
+            pdv(ig,l)=pdv(ig,l)+zdvgw(ig,l)
+            pdu(ig,l)=pdu(ig,l)+zdugw(ig,l)
+            pdt(ig,l)=pdt(ig,l)+zdtgw(ig,l)
+          ENDDO
+        ENDDO
+      ENDIF
+
+c-----------------------------------------------------------------------
+c    4. Vertical diffusion (turbulent mixing):
+c    -----------------------------------------
+c
+      IF(calldifv) THEN
+
+
+         DO ig=1,ngrid
+            zflubid(ig)=fluxrad(ig)+fluxgrd(ig)
+         ENDDO
+
+         CALL zerophys(ngrid*nlayer,zdum1)
+         CALL zerophys(ngrid*nlayer,zdum2)
+         do l=1,nlayer
+            do ig=1,ngrid
+               zdh(ig,l)=pdt(ig,l)/zpopsk(ig,l)
+            enddo
+         enddo
+
+
+c        Calling vdif (Martian version WITH CO2 condensation)
+         CALL vdifc(ngrid,nlayer,nq,co2ice,zpopsk,
+     $        ptimestep,capcal,lwrite,
+     $        pplay,pplev,zzlay,zzlev,z0,
+     $        pu,pv,zh,pq,tsurf,emis,qsurf,
+     $        zdum1,zdum2,zdh,pdq,zflubid,
+     $        zdudif,zdvdif,zdhdif,zdtsdif,q2,
+     &        zdqdif,zdqsdif)
+
+         DO l=1,nlayer
+            DO ig=1,ngrid
+
+               pdv(ig,l)=pdv(ig,l)+zdvdif(ig,l)
+               pdu(ig,l)=pdu(ig,l)+zdudif(ig,l)
+               pdt(ig,l)=pdt(ig,l)+zdhdif(ig,l)*zpopsk(ig,l)
+
+               zdtdif(ig,l)=zdhdif(ig,l)*zpopsk(ig,l) ! for diagnostic only
+
+            ENDDO
+         ENDDO
+
+         DO ig=1,ngrid
+            zdtsurf(ig)=zdtsurf(ig)+zdtsdif(ig)
+         ENDDO
+
+         if(tracer) then 
+           DO iq=1, nq
+            DO l=1,nlayer
+              DO ig=1,ngrid
+                 pdq(ig,l,iq)=pdq(ig,l,iq)+ zdqdif(ig,l,iq) 
+              ENDDO
+            ENDDO
+           ENDDO
+           DO iq=1, nq
+              DO ig=1,ngrid
+                 dqsurf(ig,iq)=dqsurf(ig,iq) + zdqsdif(ig,iq)
+              ENDDO
+           ENDDO
+         end if
+
+      ELSE    
+         DO ig=1,ngrid
+            zdtsurf(ig)=zdtsurf(ig)+
+     s      (fluxrad(ig)+fluxgrd(ig))/capcal(ig)
+         ENDDO
+      ENDIF
+
+
+c-----------------------------------------------------------------------
+c   5. Dry convective adjustment:
+c   -----------------------------
+
+      IF(calladj) THEN
+
+         DO l=1,nlayer
+            DO ig=1,ngrid
+               zdh(ig,l)=pdt(ig,l)/zpopsk(ig,l)
+            ENDDO
+         ENDDO
+         CALL zerophys(ngrid*nlayer,zduadj)
+         CALL zerophys(ngrid*nlayer,zdvadj)
+         CALL zerophys(ngrid*nlayer,zdhadj)
+
+         CALL convadj(ngrid,nlayer,nq,ptimestep,
+     $                pplay,pplev,zpopsk,
+     $                pu,pv,zh,pq,
+     $                pdu,pdv,zdh,pdq,
+     $                zduadj,zdvadj,zdhadj,
+     $                zdqadj)
+
+         DO l=1,nlayer
+            DO ig=1,ngrid
+               pdu(ig,l)=pdu(ig,l)+zduadj(ig,l)
+               pdv(ig,l)=pdv(ig,l)+zdvadj(ig,l)
+               pdt(ig,l)=pdt(ig,l)+zdhadj(ig,l)*zpopsk(ig,l)
+
+               zdtadj(ig,l)=zdhadj(ig,l)*zpopsk(ig,l) ! for diagnostic only
+            ENDDO
+         ENDDO
+
+         if(tracer) then 
+           DO iq=1, nq
+            DO l=1,nlayer
+              DO ig=1,ngrid
+                 pdq(ig,l,iq)=pdq(ig,l,iq)+ zdqadj(ig,l,iq) 
+              ENDDO
+            ENDDO
+           ENDDO
+         end if
+      ENDIF
+
+c-----------------------------------------------------------------------
+c   6. Carbon dioxide condensation-sublimation:
+c   -------------------------------------------
+
+      IF(callcond) THEN
+         CALL newcondens(ngrid,nlayer,nq,ptimestep,
+     $              capcal,pplay,pplev,tsurf,pt,
+     $              pphi,pdt,pdu,pdv,zdtsurf,pu,pv,pq,pdq,
+     $              co2ice,albedo,emis,
+     $              zdtc,zdtsurfc,pdpsrf,zduc,zdvc,zdqc,
+     $	            fluxsurf_sw) 
+
+         DO l=1,nlayer
+           DO ig=1,ngrid
+             pdt(ig,l)=pdt(ig,l)+zdtc(ig,l)
+             pdv(ig,l)=pdv(ig,l)+zdvc(ig,l)
+             pdu(ig,l)=pdu(ig,l)+zduc(ig,l)
+           ENDDO
+         ENDDO
+         DO ig=1,ngrid
+            zdtsurf(ig) = zdtsurf(ig) + zdtsurfc(ig)
+            ps(ig)=pplev(ig,1) + pdpsrf(ig)*ptimestep
+         ENDDO
+
+         IF(tracer) THEN
+           DO iq=1, nq
+            DO l=1,nlayer
+              DO ig=1,ngrid
+                pdq(ig,l,iq)=pdq(ig,l,iq)+ zdqc(ig,l,iq) 
+              ENDDO
+            ENDDO
+           ENDDO
+         END IF !(tracer)
+
+      ENDIF  !(callcond) 
+
+c        print*,'condens ok'
+c-----------------------------------------------------------------------
+c   7. Specific parameterizations for tracers 
+c:   -----------------------------------------
+
+      if(tracer) then 
+
+c   7a. Water and ice
+c     ---------------
+
+c        ---------------------------------------
+c        Water ice condensation in the atmosphere
+c        ----------------------------------------
+         IF (water) THEN
+
+
+c--------------------sursis with g95
+           call watercloud(ngrid,nlayer, ptimestep,
+     &                pplev,pplay,pdpsrf,zzlev,zzlay, pt,pdt,
+     &                pq,pdq,zdqcloud,qsurf,zdqscloud,zdtcloud,
+     &                nq,naerkind,tau,icount,zls)
+c--------------------problem with g95
+
+           if (activice) then
+c Temperature variation due to latent heat release
+           DO l=1,nlayer
+             DO ig=1,ngrid
+               pdt(ig,l)=pdt(ig,l)+zdtcloud(ig,l)
+             ENDDO
+           ENDDO
+           endif
+
+           IF (iceparty) then
+             iqmin=nq-1
+           ELSE
+             iqmin=nq
+           ENDIF
+
+           DO iq=iqmin,nq
+             DO l=1,nlayer
+                DO ig=1,ngrid
+                   pdq(ig,l,iq)=pdq(ig,l,iq)+ zdqcloud(ig,l,iq)
+                ENDDO
+             ENDDO
+             DO ig=1,ngrid
+                dqsurf(ig,iq)= dqsurf(ig,iq) + zdqscloud(ig,iq)
+             ENDDO
+           ENDDO
+
+         END IF  ! (water)
+
+c   7b. Chemical species
+c     ------------------
+
+c        --------------
+c        photochemistry :
+c        --------------
+         IF(photochem .or. thermochem) then
+          call calchim(ptimestep,pplay,pplev,pt,pdt,dist_sol,mu0,
+     .      zzlay,zday,pq,pdq,zdqchim,zdqschim,zdqcloud,zdqscloud)
+           
+c Photochemistry includes condensation of H2O2
+
+           do iq=nqchem_min,nq
+            if (noms(iq).eq."h2o2") then
+             DO l=1,nlayer
+               DO ig=1,ngrid
+                    pdq(ig,l,iq)=pdq(ig,l,iq)+ zdqchim(ig,l,iq)
+                    pdq(ig,l,iq)=pdq(ig,l,iq)+ zdqcloud(ig,l,iq)
+               ENDDO
+             ENDDO
+            else
+             DO l=1,nlayer
+               DO ig=1,ngrid
+                    pdq(ig,l,iq)=pdq(ig,l,iq)+ zdqchim(ig,l,iq)
+               ENDDO
+             ENDDO
+            endif
+           ENDDO
+           do iq=nqchem_min,nq
+            if (noms(iq).eq."h2o2") then
+               DO ig=1,ngrid
+                    dqsurf(ig,iq)= dqsurf(ig,iq) + zdqschim(ig,iq)
+                    dqsurf(ig,iq)= dqsurf(ig,iq) + zdqscloud(ig,iq)
+               ENDDO
+            else
+               DO ig=1,ngrid
+                    dqsurf(ig,iq)= dqsurf(ig,iq) + zdqschim(ig,iq)
+               ENDDO
+            endif
+           ENDDO
+
+         END IF  ! (photochem.or.thermochem)
+c        print*,'photochem ok'
+
+c   7c. Aerosol particles
+c     -------------------
+
+c        ----------
+c        Dust devil :
+c        ----------
+         IF(callddevil) then 
+           call dustdevil(ngrid,nlayer,nq, pplev,pu,pv,pt, tsurf,q2,
+     &                zdqdev,zdqsdev)
+ 
+           if (dustbin.ge.1) then
+              do iq=1,nq
+                 DO l=1,nlayer
+                    DO ig=1,ngrid
+                       pdq(ig,l,iq)=pdq(ig,l,iq)+ zdqdev(ig,l,iq)
+                    ENDDO
+                 ENDDO
+              enddo
+              do iq=1,nq
+                 DO ig=1,ngrid
+                    dqsurf(ig,iq)= dqsurf(ig,iq) + zdqsdev(ig,iq)
+                 ENDDO
+              enddo
+           endif  ! (test sur dustbin)
+
+         END IF
+
+c        ------------- 
+c        Sedimentation :   acts also on water ice
+c        ------------- 
+         IF (sedimentation) THEN 
+           call zerophys(ngrid*nlayer*nq, zdqsed)
+           call zerophys(ngrid*nq, zdqssed)
+
+           if(doubleq) then
+            call callsedim2q(ngrid,nlayer, ptimestep,
+     &                pplev,zzlev, pt,
+     &                pq, pdq, zdqsed, zdqssed,nq)
+           else
+            call callsedim(ngrid,nlayer, ptimestep,
+     &                pplev,zzlev, pt,
+     &                pq, pdq, zdqsed, zdqssed,nq)
+           end if
+
+
+           DO iq=1, nq
+             DO l=1,nlayer
+               DO ig=1,ngrid
+                    pdq(ig,l,iq)=pdq(ig,l,iq)+ zdqsed(ig,l,iq)
+               ENDDO
+             ENDDO
+           ENDDO
+           DO iq=1, nq
+             DO ig=1,ngrid
+                dqsurf(ig,iq)= dqsurf(ig,iq) + zdqssed(ig,iq)
+             ENDDO
+           ENDDO
+         END IF   ! (sedimentation)
+
+c        print*,'sedim ok'
+
+c   7d. Updates
+c     ---------
+
+        DO iq=1, nq
+          DO ig=1,ngrid
+
+c       ---------------------------------
+c       Updating tracer budget on surface
+c       ---------------------------------
+            qsurf(ig,iq)=qsurf(ig,iq)+ptimestep*dqsurf(ig,iq)
+
+          ENDDO  ! (ig)
+        ENDDO    ! (iq)
+
+      END IF    ! (tracer) 
+
+c        print*,'tracers ok'
+
+
+c-----------------------------------------------------------------------
+c   8.5 THERMOSPHERE CALCULATION
+c-----------------------------------------------------------------------
+
+      if (callthermos) then
+        call thermosphere(pplev,pplay,dist_sol,
+     $     mu0,ptimestep,ptime,zday,tsurf,zzlev,zzlay,
+     &     pt,pq,pu,pv,pdt,pdq,
+     $     zdteuv,zdtconduc,zdumolvis,zdvmolvis,zdqmoldiff)
+c           do iq=nqchem_min,nq
+c           write(*,*) 'thermo iq,pq',iq,pq(690,1,iq)
+c           enddo
+
+        DO l=1,nlayer
+          DO ig=1,ngrid
+            dtrad(ig,l)=dtrad(ig,l)+zdteuv(ig,l)
+            pdt(ig,l)=pdt(ig,l)+zdtconduc(ig,l)
+     &                         +zdteuv(ig,l)
+            pdv(ig,l)=pdv(ig,l)+zdvmolvis(ig,l)
+            pdu(ig,l)=pdu(ig,l)+zdumolvis(ig,l)
+            DO iq=1, nq
+              pdq(ig,l,iq)=pdq(ig,l,iq)+zdqmoldiff(ig,l,iq)
+            ENDDO
+          ENDDO
+        ENDDO
+
+
+      endif
+c-----------------------------------------------------------------------
+c   8. Surface  and sub-surface soil temperature
+c-----------------------------------------------------------------------
+c
+c
+c   Surface temperature incrementation :
+c   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+      DO ig=1,ngrid
+         tsurf(ig)=tsurf(ig)+ptimestep*zdtsurf(ig) 
+      ENDDO
+
+
+c  Prescription piege froid au pole sud (Except at high obliquity !!)
+c  temperature en surface = temperature equilibre de phases du CO2
+       
+      IF (tracer.AND.water.AND.ngridmx.NE.1) THEN
+         if (caps.and.(obliquit.lt.27.)) then
+           tsurf(ngrid)=1/(1/136.27-r/5.9e+5*alog(0.0095*ps(ngrid)))
+         endif
+c       -------------------------------------------------------------
+c       Change of surface albedo (set to 0.4) in case of ground frost
+c       everywhere except on the north permanent cap and in regions
+c       covered by dry ice. 
+c              ALWAYS PLACE these lines after newcondens !!!
+c       -------------------------------------------------------------
+         do ig=1,ngrid
+
+c       -------------- Version originale Franck ------------
+          if (co2ice(ig).eq.0.and.qsurf(ig,nqmx).gt.0.005) then
+            if (.not.watercaptag(ig)) then
+              albedo(ig,1)=0.4
+              albedo(ig,2)=0.4
+            endif
+          endif
+c       -------------- version Francois ---------------
+c          if (co2ice(ig).eq.0.and.
+c    &        ((qsurf(ig,nqmx).gt.0.005).or.(watercaptag(ig)))) then
+c              albedo(ig,1)=max(0.4,albedodat(ig))
+c              albedo(ig,2)=albedo(ig,1)
+c          endif
+c       ---------------------------------------------
+         enddo  ! (ig)
+      ENDIF  ! (tracer, water and 3D)
+
+c        print*,'tracer, water and 3D ok'
+
+c
+c   soil temperatures and subsurface heat flux:
+c   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      IF (callsoil) THEN
+         CALL soil(ngrid,nsoilmx,.false.,inertiedat,
+     s          ptimestep,tsurf,tsoil,capcal,fluxgrd)
+      ENDIF
+
+c        print*,'soil ok'
+
+
+
+
+
+c-----------------------------------------------------------------------
+c  9. Writing output files
+c  ------------------------
+
+c    -------------------------------
+c    Dynamical fields incrementation
+c    -------------------------------
+c (FOR OUTPUT ONLY : the actual model integration is performed in the dynamics)
+
+      DO l=1,nlayer
+        DO ig=1,ngrid
+          zt(ig,l)=pt(ig,l)  + pdt(ig,l)*ptimestep
+          zu(ig,l)=pu(ig,l)  + pdu(ig,l)*ptimestep
+          zv(ig,l)=pv(ig,l)  + pdv(ig,l)*ptimestep
+        ENDDO
+      ENDDO
+      DO iq=1, nq
+        DO l=1,nlayer
+          DO ig=1,ngrid
+            zq(ig,l,iq)=pq(ig,l,iq) +pdq(ig,l,iq)*ptimestep
+          ENDDO
+        ENDDO
+      ENDDO
+      DO ig=1,ngrid
+          ps(ig)=pplev(ig,1) + pdpsrf(ig)*ptimestep !already in 7
+      ENDDO
+      DO l=1,nlayer
+        DO ig=1,ngrid
+             zplev(ig,l)=pplev(ig,l)/pplev(ig,1)*ps(ig)
+             zplay(ig,l)=pplay(ig,l)/pplev(ig,1)*ps(ig)
+        ENDDO
+      ENDDO
+      ! Density calculation
+      DO l=1,nlayer
+         DO ig=1,ngrid
+            rho(ig,l) = zplay(ig,l)/(rnew(ig,l)*zt(ig,l))
+         ENDDO
+      ENDDO
+
+c     Sum of fluxes in solar spectral bands (for output only)
+      DO ig=1,ngrid
+	     fluxtop_sw_tot(ig)=fluxtop_sw(ig,1) + fluxtop_sw(ig,2)
+	     fluxsurf_sw_tot(ig)=fluxsurf_sw(ig,1) + fluxsurf_sw(ig,2)
+      ENDDO
+c ******* TEMPORAIRE ************************************************
+      ztim1 = 999
+      DO l=1,nlayer
+        DO ig=1,ngrid
+           if (pt(ig,l).lt.ztim1) then
+               ztim1 = pt(ig,l)
+               igmin = ig
+               lmin = l 
+           end if
+        ENDDO
+      ENDDO
+      if(min(pt(igmin,lmin),zt(igmin,lmin)).lt.70.) then	
+        write(*,*) 'stability WARNING :' 
+        write(*,*) 'pt, zt Tmin = ', pt(igmin,lmin), zt(igmin,lmin),
+     &              'ig l =', igmin, lmin
+      end if
+c *******************************************************************
+
+c     --------------------
+c     Output on the screen 
+c     --------------------
+
+
+      IF (lwrite) THEN
+         PRINT*,'Global diagnostics for the physics'
+         PRINT*,'Variables and their increments x and dx/dt * dt'
+         WRITE(*,'(a6,a10,2a15)') 'Ts','dTs','ps','dps'
+         WRITE(*,'(2f10.5,2f15.5)')
+     s   tsurf(igout),zdtsurf(igout)*ptimestep,
+     s   pplev(igout,1),pdpsrf(igout)*ptimestep
+         WRITE(*,'(a4,a6,5a10)') 'l','u','du','v','dv','T','dT'
+         WRITE(*,'(i4,6f10.5)') (l,
+     s   pu(igout,l),pdu(igout,l)*ptimestep,
+     s   pv(igout,l),pdv(igout,l)*ptimestep,
+     s   pt(igout,l),pdt(igout,l)*ptimestep,
+     s   l=1,nlayer)
+      ENDIF
+
+cc****WRF
+cc      IF (ngrid.NE.1) THEN
+c	PRINT*,'check - values after update at ngrid/2+1'
+c         WRITE(*,'(a4,a6,2a10)') 'l','u','v','T'
+c         WRITE(*,'(i4,3f10.5)') (l,
+c     s   zu(igout,l),
+c     s   zv(igout,l),
+c     s   zt(igout,l),
+c     s   l=1,nlayer)
+c
+cc****WRF
+
+
+         print*,'Ls =',zls*180./pi,
+     &   ' tauref(700 Pa,lat=0) =',tauref(ngrid/2)
+c     &   ' tau(Viking1) =',tau(ig_vl1,1)
+
+
+
+ccc
+ccc
+ccc**************** WRF OUTPUT *********************
+ccc
+ccc
+	
+	do ig=1,ngrid       
+
+           ! output surface temperature 
+           ! ... it was updated above, and not below
+           ! ... we directly output tsurf to WRF (and not tsurf+zdtsurf*ptimestep !)
+           wtsurf(ig) = tsurf(ig)           
+
+	   ! output co2ice
+           wco2ice(ig) = co2ice(ig)         
+!
+! TAB2D
+!           
+           ! output dust opacity      
+           output_tab2d(ig,1) = tauref(ig)   !! tau(ig,1)  !! when dust is transp.
+	   ! output visible ground flux
+	   output_tab2d(ig,2) = fluxsurf_sw_tot(ig)
+	   ! output IR ground flux
+	   output_tab2d(ig,3) = fluxsurf_lw(ig)
+	   ! output visible top flux
+	   output_tab2d(ig,4) = fluxtop_sw_tot(ig)
+	   ! output IR top flux
+	   output_tab2d(ig,5) = fluxtop_lw(ig)
+!	   ! output total mass of water vapor (kg/m2)
+!	   output_tab2d(ig,6) = mtot(ig)
+!	   ! output total mass of water ice (kg/m2)
+!	   output_tab2d(ig,7) = icetot(ig)
+!	   ! output mean ice radius (meter)
+!	   output_tab2d(ig,8) = rave(ig)
+ 	   !
+	   output_tab2d(ig,9) = 0.
+	   output_tab2d(ig,10) = 0.	 
+!
+! TAB3D
+!
+!          if (tracer) then
+            if (iceparty) then         
+              ! output ice radius  
+              DO l=1,nlayer 
+                output_tab3d(ig,l,1) = rice(ig,l)  
+              ENDDO
+            else
+             DO l=1,nlayer 
+                output_tab3d(ig,l,1) = 0.  
+              ENDDO           
+            endif
+!           endif
+
+        enddo
+
+ccc
+ccc
+ccc**************** WRF OUTPUT *********************
+ccc
+ccc
+
+
+
+
+c        -------------------------------------------------------------------
+c        Writing NetCDF file  "RESTARTFI" at the end of the run
+c        -------------------------------------------------------------------
+c        Remarque : On  stocke restarfi 
+c        juste avant que la dynamique ne le soit dans restart.
+c        entre maintenant et l'ecriture de restart,
+c        on aura itau = itau +1 et remise a jour de time.
+c        (lastcall = .true. lorsque itau+1 = itaufin)
+c        Donc on stocke  avec time = time + dtvr
+
+         IF(lastcall) THEN
+            ztime_fin = ptime + ptimestep/(float(iphysiq)*daysec) 
+            write(*,*)'pour physdem ztime_fin =',ztime_fin
+            call physdem1("restartfi.nc",long,lati,nsoilmx,nq,
+     .              ptimestep,pday,
+     .              ztime_fin,tsurf,tsoil,co2ice,emis,q2,qsurf,
+     .              area,albedodat,inertiedat,zmea,zstd,zsig,
+     .              zgam,zthe)
+         ENDIF
+
+
+
+c        -----------------------------------------------------------------
+c        Saving statistics :
+c        -----------------------------------------------------------------
+c        ("stats" stores and accumulates 8 key variables in file "stats.nc"
+c        which can later be used to make the statistic files of the run:
+c        "stats")          only possible in 3D runs !
+
+         
+         IF (callstats) THEN
+
+
+            call wstats(ngrid,"ps",
+     .          "Surface pressure","K",2,ps)
+            call wstats(ngrid,"tsurf",
+     .          "Surface temperature","K",2,tsurf)
+            call wstats(ngrid,"co2ice",
+     .          "CO2 ice cover",
+     .                  "kg.m-2",2,co2ice)
+c            call wstats(ngrid,
+c     .          "emis","Surface emissivity","w.m-1",2,
+c     .                  emis)
+             call wstats(ngrid,"fluxsurf_lw",
+     .                 "Thermal IR radiative flux to surface","W.m-2",2,
+     .                 fluxsurf_lw)
+             call wstats(ngrid,"fluxsurf_sw",
+     .                  "Solar radiative flux to surface","W.m-2",2,
+     .                   fluxsurf_sw_tot)
+             call wstats(ngrid,"fluxtop_lw",
+     .                  "Thermal IR radiative flux to space","W.m-2",2,
+     .                  fluxtop_lw)
+             call wstats(ngrid,"fluxtop_sw",
+     .                  "Solar radiative flux to space","W.m-2",2,
+     .                  fluxtop_sw_tot)
+            call wstats(ngrid,"dod",
+     .          "Dust optical depth"," ",2,tauref)
+
+            call wstats(ngrid,"temp",
+     .          "Atmospheric temperature","K",3,zt)
+            call wstats(ngrid,"u",
+     .          "Zonal (East-West) wind","m.s-1",3,zu)
+            call wstats(ngrid,"v",
+     .          "Meridional (North-South) wind",
+     .                  "m.s-1",3,zv)
+            call wstats(ngrid,"w",
+     .          "Vertical (down-up) wind",
+     .                  "m.s-1",3,pw)
+            call wstats(ngrid,"rho",
+     .          "Atmospheric density","none",3,rho)
+             call wstats(ngrid,"q2",
+     .          "Boundary layer eddy kinetic energy","m2.s-2",3,q2)
+
+           if (tracer) then
+            if (water) then
+               vmr=zq(1:ngridmx,1:nlayermx,nqmx)*mugaz/mmol(nqmx)
+               call wstats(ngrid,"vmr_h2ovapor",
+     .                    "H2O vapor volume mixing ratio","mol/mol",
+     .                    3,vmr)
+               if (iceparty) then
+                  vmr=zq(1:ngridmx,1:nlayermx,nqmx-1)*mugaz/mmol(nqmx-1)
+                  call wstats(ngrid,"vmr_h2oice",
+     .                       "H2O ice volume mixing ratio","mol/mol",
+     .                       3,vmr)
+               endif
+            endif
+
+             if (thermochem.or.photochem) then
+                do iq=1,nq
+                   if ((noms(iq).eq."o").or.(noms(iq).eq."co2").or.
+     .               (noms(iq).eq."co").or.(noms(iq).eq."n2").or.
+     .               (noms(iq).eq."h2").or.
+     .               (noms(iq).eq."o3")) then
+                        do l=1,nlayer
+                          do ig=1,ngrid
+                            vmr(ig,l)=zq(ig,l,iq)*mmean(ig,l)/mmol(iq)
+                          end do
+                        end do
+                        call wstats(ngrid,"vmr_"//trim(noms(iq)),
+     .                     "Volume mixing ratio","mol/mol",3,vmr)
+                   endif
+                enddo
+             endif
+           endif !tracer 
+
+            IF(lastcall) THEN
+              write (*,*) "Writing stats..."
+              call mkstats(ierr)
+            ENDIF
+          ENDIF !if callstats
+
+cc ****WRF: desactivated
+ccc        (Store EOF for Mars Climate database software)
+cc         IF (calleofdump) THEN
+cc            CALL eofdump(ngrid, nlayer, zu, zv, zt, rho, ps)
+cc         ENDIF
+cc ****WRF
+
+cc        ----------------------------------------------------------------------
+cc        output in netcdf file "DIAGFI", containing any variable for diagnostic
+cc        (output with  period "ecritphy", set in "run.def")
+cc        ----------------------------------------------------------------------
+cc        meso_WRITEDIAGFI can ALSO be called from any other subroutines
+cc        for any variables !!
+cc       call meso_WRITEDIAGFI(ngrid,"emis","Surface emissivity","w.m-1",2,
+cc    .                  emis)
+
+cc        call meso_WRITEDIAGFI(ngrid,"xlon","2D projected longitude","rad",2,
+cc     .                  long)
+cc        call meso_WRITEDIAGFI(ngrid,"xlat","2D projected latitude","rad",2,
+cc     .                  lati)
+cc        call meso_WRITEDIAGFI(ngrid,"zplay","Layer altitudes","m",3,
+cc     .                  zplay)
+cc        call meso_WRITEDIAGFI(ngrid,"zplev","Level altitudes","m",3,
+cc     .                  zplev)
+c      call meso_WRITEDIAGFI(ngrid,"tsurf",
+c     .  "Surface temperature","K",2,
+c     .                  tsurf)
+c      call meso_WRITEDIAGFI(ngrid,"ps",
+c     .  "surface pressure","Pa",2,ps)
+c      call meso_WRITEDIAGFI(ngrid,"co2ice","co2 ice thickness",
+c     .  "kg.m-2",2,
+c     .                  co2ice)
+cc       call meso_WRITEDIAGFI(ngrid,"rho","density","none",3,rho)
+c      call meso_WRITEDIAGFI(ngrid,"fluxsurf_lw",
+c     .  "fluxsurf_lw","W.m-2",2,
+c     .       fluxsurf_lw)
+c      call meso_WRITEDIAGFI(ngrid,"fluxsurf_sw",
+c     .  "fluxsurf_sw","W.m-2",2,
+c     .       fluxsurf_sw_tot)
+      call meso_WRITEDIAGFI(ngrid,"fluxtop_lw",
+     .  "fluxtop_lw","W.m-2",2,
+     .       fluxtop_lw)
+      call meso_WRITEDIAGFI(ngrid,"fluxtop_sw",
+     .  "fluxtop_sw","W.m-2",2,
+     .       fluxtop_sw_tot)
+c      call meso_WRITEDIAGFI(ngrid,"tauref",
+c     .  "tauref"," ",2,tauref)
+
+cc        call meso_WRITEDIAGFI(ngrid,"temp","temperature","K",3,zt)
+
+      call meso_WRITEDIAGFI(ngrid,"zu",
+     .  "Zonal wind","m.s-1",3,zu)
+      call meso_WRITEDIAGFI(ngrid,"zv",
+     .  "Meri. wind","m.s-1",3,zv)
+      call meso_WRITEDIAGFI(ngrid,"zt",
+     .  "Temperature","m.s-1",3,zt)
+
+c      call meso_WRITEDIAGFI(ngrid,"du","Td. Zonal wind","m.s-1",3,zu-pu)
+c      call meso_WRITEDIAGFI(ngrid,"dv","Td. Meri. wind","m.s-1",3,zv-pv)
+c      call meso_WRITEDIAGFI(ngrid,"dt","Td. Temperat.", "m.s-1",3,zt-pt)
+
+cc      TEMPORAIRE **************
+c         do l=1, nlayer
+c            write(*,*) 'lev', l, pplev(ngrid/2,l)
+c            write(*,*) 'lay', l, pplay(ngrid/2,l)
+c         end do
+c            write(*,*) 'lev', nlayer+1, pplev(ngrid/2,nlayer+1)
+c            stop
+
+
+
+cc        call meso_WRITEDIAGFI(ngrid,"u","Zonal wind","m.s-1",3,zu)
+cc        call meso_WRITEDIAGFI(ngrid,"v","Meridional wind","m.s-1",3,zv)
+cc       call meso_WRITEDIAGFI(ngrid,"w","Vertical wind","m.s-1",3,pw)
+cc       call meso_WRITEDIAGFI(ngrid,"q2","q2","kg.m-3",3,q2)
+cc       call meso_WRITEDIAGFI(ngridm,'Teta','T potentielle','K',3,zh)
+cc       call meso_WRITEDIAGFI(ngridm,'Pression','Pression','Pa',3,pplay)
+
+cc       OUTPUT of tracer mass mixing ratio and surface value :    
+cc       if (tracer) then
+cc         (for photochemistry, outputs are done in calchim)
+cc          do iq=1,nqmx
+cc            write(str2(1:2),'(i2.2)') iq
+cc            call meso_WRITEDIAGFI(ngridmx,'q'//str2,noms(iq),
+cc    &                         'kg/kg',3,zq(1,1,iq))
+cc            call meso_WRITEDIAGFI(ngridmx,'qsurf'//str2,noms(iq),
+cc    &                     'kg.m-2',2,qsurf(1,iq))
+cc          end do
+cc        end if
+cc ***************************************************
+c
+cc  Outputs for H2O
+c       if (tracer) then
+c        if (activice) then
+cc         call meso_WRITEDIAGFI(ngridmx,'tauice','tau','SI',2,tau(1,2))
+cc         call meso_WRITEDIAGFI(ngridmx,'sw_htrt','sw heat. rate',
+cc     &                   'w.m-2',3,zdtsw)
+cc         call meso_WRITEDIAGFI(ngridmx,'lw_htrt','lw heat. rate',
+cc     &                   'w.m-2',3,zdtlw)
+c        endif  !(activice)
+c
+c        if (water.and..not.photochem) then
+c           iq=nq
+cc          write(str2(1:2),'(i2.2)') iq
+cc          call meso_WRITEDIAGFI(ngridmx,'dqs'//str2,'dqscloud',
+cc     &                    'kg.m-2',2,zdqscloud(1,iq))
+cc          call meso_WRITEDIAGFI(ngridmx,'dqch'//str2,'var chim',
+cc     &                    'kg/kg',3,zdqchim(1,1,iq))
+cc          call meso_WRITEDIAGFI(ngridmx,'dqd'//str2,'var dif',
+cc     &                    'kg/kg',3,zdqdif(1,1,iq))
+cc          call meso_WRITEDIAGFI(ngridmx,'dqa'//str2,'var adj',
+cc     &                    'kg/kg',3,zdqadj(1,1,iq))
+cc          call meso_WRITEDIAGFI(ngridmx,'dqc'//str2,'var c',
+cc     &                    'kg/kg',3,zdqc(1,1,iq))
+c        endif  !(water.and..not.photochem)
+c
+cc       if (iceparty) then
+cc          iq=nq-1
+cc          write(str2(1:2),'(i2.2)') iq
+cc          call meso_WRITEDIAGFI(ngridmx,'q'//str2,'mix. ratio',
+cc    &                     'kg/kg',3,zq(1,1,iq))
+cc       endif  !(iceparty)
+c       endif
+c
+cc  Outputs for dust tracers
+c
+cc ****WRF: careful, have to correct floating exception
+c
+c         if (tracer.and.(dustbin.ne.0)) then
+c            call meso_WRITEDIAGFI(ngridmx,'tau','taudust','SI',2,tau(1,1))
+c            if (doubleq) then
+c               call meso_WRITEDIAGFI(ngridmx,'qsurf','qsurf',
+c     &                         'kg.m-2',2,qsurf(1,1))
+c               call meso_WRITEDIAGFI(ngridmx,'Nsurf','N particles',
+c     &                         'N.m-2',2,qsurf(1,2))
+c               call meso_WRITEDIAGFI(ngridmx,'dqsdev','ddevil lift',
+c     &                         'kg.m-2.s-1',2,zdqsdev(1,1))
+c               call meso_WRITEDIAGFI(ngridmx,'dqssed','sedimentation',
+c     &                         'kg.m-2.s-1',2,zdqssed(1,1))
+c               do  l=1,nlayer
+c                  do ig=1, ngrid
+c                     reff(ig,l)= ref_r0 *
+c     &               (r3n_q*pq(ig,l,1)/max(pq(ig,l,2),0.01))**(1./3.)
+c                     reff(ig,l)=min(max(reff(ig,l),1.e-10),500.e-6)
+c                  end do
+c               end do
+c               call meso_WRITEDIAGFI(ngridmx,'reff','reff','m',3,reff)
+c            else
+c               do iq=1,dustbin
+c                  write(str2(1:2),'(i2.2)') iq
+c                  call meso_WRITEDIAGFI(ngridmx,'q'//str2,'mix. ratio',
+c     &                            'kg/kg',3,zq(1,1,iq))
+c                  call meso_WRITEDIAGFI(ngridmx,'qsurf'//str2,'qsurf',
+c     &                            'kg.m-2',2,qsurf(1,iq))
+c               end do
+c            endif ! (doubleq)
+c         end if  ! (tracer.and.(dustbin.ne.0))
+c
+c
+c      ELSE     ! if(ngrid.eq.1)
+c
+c         print*,'Ls =',zls*180./pi,
+c     &  '  tauref(700 Pa) =',tauref,' local tau =',tau(1,1)
+cc      ----------------------------------------------------------------------
+cc      Output in grads file "g1d" (ONLY when using testphys1d)
+cc      (output at every X physical timestep)
+cc      ----------------------------------------------------------------------
+cc
+cc        CALL writeg1d(ngrid,1,fluxsurf_lw,'Fs_ir','W.m-2')
+cc        CALL writeg1d(ngrid,1,tsurf,'tsurf','K')
+c         CALL writeg1d(ngrid,1,ps,'ps','Pa')
+c         
+c         CALL writeg1d(ngrid,nlayer,zt,'T','K')
+cc        CALL writeg1d(ngrid,nlayer,pu,'u','m.s-1')
+cc        CALL writeg1d(ngrid,nlayer,pv,'v','m.s-1')
+cc        CALL writeg1d(ngrid,nlayer,pw,'w','m.s-1')
+c
+c         if(tracer) then
+cc           CALL writeg1d(ngrid,1,tau,'tau','SI')
+c            do iq=1,nq
+c              CALL writeg1d(ngrid,nlayer,zq(1,1,iq),noms(iq),'kg/kg') 
+c            end do
+c         end if
+c
+c         zlocal(1)=-log(pplay(1,1)/pplev(1,1))* Rnew(1,1)*zt(1,1)/g
+c
+c         do l=2,nlayer-1
+c            tmean=zt(1,l)
+c            if(zt(1,l).ne.zt(1,l-1))
+c     &        tmean=(zt(1,l)-zt(1,l-1))/log(zt(1,l)/zt(1,l-1))
+c              zlocal(l)= zlocal(l-1)
+c     &        -log(pplay(1,l)/pplay(1,l-1))*rnew(1,l)*tmean/g
+c         enddo
+c         zlocal(nlayer)= zlocal(nlayer-1)-
+c     &                   log(pplay(1,nlayer)/pplay(1,nlayer-1))*
+c     &                   rnew(1,nlayer)*tmean/g
+c
+cc         if(tracer) then
+cc         do l=2,nlayer
+cc            do iq=1,nq
+cc               hco2(iq)=zq(1,l,iq)/zq(1,l-1,iq)
+cc               hco2(iq)=-(zlocal(l)-zlocal(l-1))/log(hco2(iq))/1000.
+cc            enddo
+cc            write(225,*) l,pt(1,l),(hco2(iq),iq=1,6)
+cc            write(226,*) l,(hco2(iq),iq=7,13)
+cc         enddo
+cc         endif
+c
+c      END IF       ! if(ngrid.ne.1)
+
+
+
+      icount=icount+1
+
+      RETURN
+      END

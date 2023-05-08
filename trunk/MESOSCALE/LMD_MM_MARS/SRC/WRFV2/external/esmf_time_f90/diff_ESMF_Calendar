@@ -1,0 +1,23 @@
+52c52,58
+< 
+---
+> !      INTEGER, PARAMETER :: MONTHS_PER_YEAR = 07
+> !      INTEGER, PARAMETER :: mday(MONTHS_PER_YEAR)   &
+> !                          = (/99,99,99,99,99,99,75/)
+> !      INTEGER, PARAMETER :: mdayleap(MONTHS_PER_YEAR) &
+> !                          = (/99,99,99,99,99,99,75/)
+> !
+> !*****Similar monthes as the GCM
+55c61
+<                           = (/31,28,31,30,31,30,31,31,30,31,30,31/)
+---
+>                           = (/61,66,66,65,60,54,50,46,47,47,51,56/)
+57,59c63,66
+<                           = (/31,29,31,30,31,30,31,31,30,31,30,31/)
+<       INTEGER, DIMENSION(365) :: daym
+<       INTEGER, DIMENSION(366) :: daymleap
+---
+>                           = (/61,66,66,65,60,54,50,46,47,47,51,56/)
+> !*****
+>       INTEGER, DIMENSION(669) :: daym
+>       INTEGER, DIMENSION(669) :: daymleap

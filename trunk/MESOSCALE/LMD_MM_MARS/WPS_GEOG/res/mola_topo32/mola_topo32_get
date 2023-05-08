@@ -1,0 +1,7 @@
+#! /bin/bash
+
+echo get MOLA 32 topography ... this could be long
+wget http://pds-geosciences.wustl.edu/geo/mgs-m-mola-5-megdr-l3-v1/mgsl_300x/meg032/megt90n000fb.img . > /dev/null 2>&1
+wget http://pds-geosciences.wustl.edu/geo/mgs-m-mola-5-megdr-l3-v1/mgsl_300x/meg032/megt90n000fb.lbl . > /dev/null 2>&1
+
+

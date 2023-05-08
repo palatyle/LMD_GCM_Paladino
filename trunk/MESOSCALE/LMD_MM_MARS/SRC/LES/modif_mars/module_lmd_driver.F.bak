@@ -1,0 +1,977 @@
+!*******************************************************************************
+! PURPOSE: LMD_driver is the WRF mediation layer routine that provides the
+! interface to LMD physics packages in the WRF model layer. For those familiar
+! with the LMD GCM, the aim of this driver is to do part of the job of the
+! calfis.F routine.
+!*******************************************************************************
+! AUTHOR: A. Spiga - January 2007
+!*******************************************************************************
+! UPDATES:  - included all final updates for the paper - March 2008
+!           - general cleaning of code and comments - October 2008 
+!*******************************************************************************
+MODULE module_lmd_driver
+CONTAINS
+    SUBROUTINE lmd_driver(id,max_dom,DT,ITIMESTEP,XLAT,XLONG, &
+        IDS,IDE,JDS,JDE,KDS,KDE,IMS,IME,JMS,JME,KMS,KME, &
+        i_start,i_end,j_start,j_end,kts,kte,num_tiles, &
+        DX,DY, &
+        MSFT,MSFU,MSFV, &
+        GMT,JULYR,JULDAY, &
+        P8W,DZ8W,T8W,Z,HT, &
+        U,V,TH,T,P,EXNER,RHO, &
+        PTOP, &
+        RADT,CUDT, &
+        TSK,PSFC, &
+        RTHBLTEN,RUBLTEN,RVBLTEN, &
+        num_3d_s,SCALAR, &
+        MARS_MODE, &
+        MARS_ALB,MARS_TI,MARS_CICE,MARS_EMISS, &
+        MARS_TSOIL, &
+        MARS_GW, &
+        NUM_SOIL_LAYERS, &
+        CST_AL, &
+        CST_TI, &
+        isfflx, &
+#include "../modif_mars/module_lmd_driver_output1.inc"
+        SLPX,SLPY)
+! NB: module_lmd_driver_output1.inc : output arguments generated from Registry
+
+!        IPS,IPE,JPS,JPE,KPS,KPE, &
+
+
+
+!==================================================================
+! USES
+!==================================================================
+   USE module_model_constants
+   USE module_wrf_error
+! add new modules here, if needed ...
+
+!==================================================================
+  IMPLICIT NONE
+!==================================================================
+
+!==================================================================
+! COMMON
+!==================================================================
+
+!! the only common needed is the one defining the physical grid
+!! -- path is hardcoded, but the structure is not subject to change
+!! -- please put # if needed by the pre-compilation process	
+!
+!
+include "../modif_mars/dimphys.h"
+!
+!--to be commented because there are tests in the physics ?
+!--TODO: get rid of the ...mx first in this routine and .inc
+
+!
+! INCLUDE AUTOMATIQUEMENT GENERE A PARTIR DU REGISTRY
+!
+include "../modif_mars/wrf_output_2d.h"
+include "../modif_mars/wrf_output_3d.h"
+
+!==================================================================
+! VARIABLES
+!==================================================================
+
+! WRF Dimensions
+INTEGER, INTENT(IN   )    ::   &
+      ids,ide,jds,jde,kds,kde, &
+      ims,ime,jms,jme,kms,kme, &
+!      ips,ipe,jps,jpe,kps,kpe, &
+            kts,kte,num_tiles, &
+              NUM_SOIL_LAYERS
+INTEGER, DIMENSION(num_tiles), INTENT(IN) ::  &
+      i_start,i_end,j_start,j_end   
+! Scalars
+INTEGER, INTENT(IN  ) :: JULDAY, itimestep, julyr,id,max_dom,MARS_MODE,isfflx
+REAL, INTENT(IN  ) :: GMT,dt,dx,dy,RADT,CUDT
+REAL, INTENT(IN  ) :: CST_AL, CST_TI 
+REAL, INTENT(IN  ) :: PTOP
+! 2D arrays          
+REAL, DIMENSION( ims:ime, jms:jme ), INTENT(IN   )  :: &
+     MSFT,MSFU,MSFV, &
+     XLAT,XLONG,HT,  &
+     MARS_ALB,MARS_TI,MARS_EMISS,MARS_CICE, &
+     SLPX,SLPY
+! 3D arrays 
+REAL, DIMENSION( ims:ime, kms:kme, jms:jme ), INTENT(IN ) :: &
+     dz8w,p8w,p,exner,t,t8w,rho,u,v,z,th
+REAL, DIMENSION( ims:ime, NUM_SOIL_LAYERS, jms:jme ), INTENT(IN   )  :: &
+     MARS_TSOIL 
+REAL, DIMENSION( ims:ime, 5, jms:jme ), INTENT(IN   )  :: &
+     MARS_GW
+! 4D arrays
+INTEGER, INTENT(IN ) :: num_3d_s
+REAL, DIMENSION( ims:ime, kms:kme, jms:jme, 1:num_3d_s ), INTENT(INOUT ) :: &
+     scalar
+
+!-------------------------------------------
+! OUTPUT VARIABLES
+!-------------------------------------------
+!
+! Generated from Registry
+!
+! default definitions :
+! 2D : TSK, PSFC
+! 3D : RTHBLTEN,RUBLTEN,RVBLTEN
+#include "../modif_mars/module_lmd_driver_output2.inc"
+   REAL, DIMENSION(:,:), ALLOCATABLE :: output_tab2d
+   REAL, DIMENSION(:,:,:), ALLOCATABLE :: output_tab3d
+!-------------------------------------------
+! OUTPUT VARIABLES
+!-------------------------------------------
+
+
+!-------------------------------------------   
+! LOCAL  VARIABLES
+!-------------------------------------------
+   INTEGER ::    i,j,k,ij  
+   INTEGER ::    its,ite,jts,jte
+   INTEGER ::    subs
+
+   ! *** for LMD physics
+   ! ------> inputs:
+   INTEGER :: ngrid,nlayer,nq,nsoil,nqmx 
+   REAL :: pday,ptime,MY  
+   REAL :: aire_val,lat_val,lon_val
+   REAL :: phisfi_val,albedodat_val,inertiedat_val
+   REAL :: tsurf_val,co2ice_val,emis_val
+   REAL :: zmea_val,zstd_val,zsig_val,zgam_val,zthe_val
+   REAL :: theta_val, psi_val
+   LOGICAL :: firstcall,lastcall,tracerdyn
+   REAL,DIMENSION(:),ALLOCATABLE :: q2_val, qsurf_val, tsoil_val
+   REAL,DIMENSION(:),ALLOCATABLE :: aire_vec,lat_vec,lon_vec
+   REAL,DIMENSION(:),ALLOCATABLE :: walbedodat,winertiedat,wphisfi
+   REAL,DIMENSION(:),ALLOCATABLE :: wzmea,wzstd,wzsig,wzgam,wzthe
+   REAL,DIMENSION(:),ALLOCATABLE :: wtheta, wpsi
+   ! v--- can they be modified ?
+   REAL,DIMENSION(:),ALLOCATABLE :: wtsurf,wco2ice,wemis
+   REAL,DIMENSION(:,:),ALLOCATABLE :: wq2,wqsurf,wtsoil 
+   ! ----------	
+   REAL,DIMENSION(:,:),ALLOCATABLE :: pplev,pplay,pphi,pu,pv,pt,pw
+   REAL,DIMENSION(:,:,:),ALLOCATABLE :: pq  
+
+   ! <------ outputs:
+   !     physical tendencies
+   REAL,DIMENSION(:),ALLOCATABLE :: pdpsrf
+   REAL,DIMENSION(:,:),ALLOCATABLE :: pdu,pdv,pdt
+   REAL,DIMENSION(:,:,:),ALLOCATABLE :: pdq
+   ! ... intermediate arrays
+   REAL, DIMENSION(:), ALLOCATABLE  :: &
+     dz8w_prof,p8w_prof,p_prof,t_prof,t8w_prof, &
+     u_prof,v_prof,z_prof, &
+     water_vapor_prof, water_ice_prof
+!!   pi_prof, rho_prof, th_prof, &
+
+   ! Additional control variables
+   INTEGER :: sponge_top,relax,ips,ipe,jps,jpe,kps,kpe
+   REAL :: elaps, ptimestep, wecri_phys_sec
+   INTEGER :: wappel_phys, wecri_phys, wday_ini, test
+   LOGICAL :: flag_LES
+
+!**************************************************
+! IMPORTANT: pour travailler avec grid nesting
+!       mieux vaut ne pas utiliser de SAVE ??
+!**************************************************
+      REAL, DIMENSION(:), ALLOCATABLE, SAVE :: &
+             dp_save
+      REAL, DIMENSION(:,:), ALLOCATABLE, SAVE :: &
+             du_save, dv_save, dt_save
+      REAL, DIMENSION(:,:,:), ALLOCATABLE, SAVE :: &
+             dq_save      
+
+!!!IDEALIZED IDEALIZED
+      REAL :: lat_input, lon_input, ls_input, lct_input
+!!!IDEALIZED IDEALIZED
+
+
+
+!==================================================================
+! CODE
+!==================================================================
+
+!! SPECIAL LES
+IF (isfflx .ne. 0) THEN
+     flag_LES = .true.
+ELSE
+     flag_LES = .false.
+ENDIF
+!! SPECIAL LES
+
+print *,'** Mars ** DOMAIN',id
+
+!-------------------------!
+! TWEAK on WRF DIMENSIONS !
+!-------------------------!
+its = i_start(1)   ! define here one big tile
+ite = i_end(num_tiles)
+jts = j_start(1)
+jte = j_end(num_tiles)
+!!
+!relax=0
+!sponge_top=0               ! another value than 0 triggers instabilities  
+!IF (id .gt. 1) relax=2     ! fix to avoid noise in nesting simulations ; 1 >> too much noise ...
+ips=its
+ipe=ite
+jps=jts
+jpe=jte
+!IF (ips .eq. ids)   ips=its+relax !! IF tests necesary for parallel runs
+!IF (ipe .eq. ide-1) ipe=ite-relax
+!IF (jps .eq. jds)   jps=jts+relax
+!IF (jpe .eq. jde-1) jpe=jte-relax
+kps=kts         !! start at surface 
+kpe=kte !-sponge_top
+
+!----------------------------!
+! DIMENSIONS FOR THE PHYSICS !
+!----------------------------!
+wday_ini = JULDAY - 1      !! GCM convention
+wappel_phys = int(RADT)
+wecri_phys = int(CUDT)
+ptimestep = dt*float(wappel_phys)     ! physical timestep (s)
+ngrid=(ipe-ips+1)*(jpe-jps+1)         ! size of the horizontal grid: ngridmx = wiim * wjjm
+nlayer = kpe-kps+1                    ! number of vertical layers: nlayermx
+nsoil = NUM_SOIL_LAYERS               ! number of soil layers: nsoilmx
+if (num_3d_s > 1) then                ! number of advected fields: nqmx
+        nq = num_3d_s-1               
+        nqmx = num_3d_s-1
+else
+        nq = 1
+        nqmx = 1
+endif
+! **** needed but hardcoded
+lastcall = .false.
+! **** needed but hardcoded
+
+
+PRINT *, ips, ipe, jps, jpe
+PRINT *, ngrid
+
+
+
+elaps = (float(itimestep)-1.)*dt  ! elapsed seconds of simulation
+!----------------------------------------------!
+! what is done at the first step of simulation !
+!----------------------------------------------!
+IF (elaps .eq. 0.) THEN
+firstcall=.true.  !! for continuity with GCM, physics are always called at the first WRF timestep
+test=0
+ALLOCATE(dp_save(ngrid)) !! here are the arrays that would be useful to save physics tendencies
+ALLOCATE(du_save(ngrid,nlayer))
+ALLOCATE(dv_save(ngrid,nlayer)) 
+ALLOCATE(dt_save(ngrid,nlayer))     
+ALLOCATE(dq_save(ngrid,nlayer,nq)) 
+dp_save(:)=0.    !! initialize these arrays ...
+du_save(:,:)=0.
+dv_save(:,:)=0.
+dt_save(:,:)=0.    
+dq_save(:,:,:)=0.
+!! put here some general information you'd like to print just once
+    print *, 'TILES: ', i_start,i_end, j_start, j_end  ! numbers for simple runs, arrays for parallel runs
+    print *, 'DOMAIN: ', ids, ide, jds, jde 
+    print *, 'MEMORY: ', ims, ime, jms, jme
+    print *, 'ADVECTED TRACERS: ', num_3d_s-1
+    print *, 'PHYSICS IS CALLED EACH...',wappel_phys
+!! put here some general information you'd like to print just once
+ELSE
+!-------------------------------------------------!
+! what is done for the other steps of simulation  !
+!-------------------------------------------------!
+IF (wappel_phys .gt. 0) THEN
+firstcall = .false.
+test = MODULO(itimestep-1,wappel_phys) ! WRF time is integrated time (itimestep=1 at the end of first step) 
+                                       ! -- same strategy as diagfi in the LMD GCM 
+ELSE
+firstcall = .false.
+test = 9999   
+ENDIF
+ENDIF 
+
+
+!!!******!!
+!!! TIME !!
+!!!******!!
+IF (JULYR .ne. 9999) THEN
+  !
+  ! specified
+  !
+  ptime = (GMT + elaps/3700.) !! universal time (0<ptime<1): ptime=0.5 at 12:00 UT 
+  ptime = MODULO(ptime,24.)   !! the two arguments of MODULO must be of the same type 
+  ptime = ptime / 24.
+  pday = (JULDAY - 1 + INT((3700*GMT+elaps)/88800))
+  pday = MODULO(int(pday),669)
+  MY = (JULYR-2000) + (88800.*(JULDAY - 1)+3700.*GMT+elaps)/59496000.
+  MY = INT(MY)
+ELSE
+  !
+  ! idealized
+  !
+  PRINT *,'** Mars ** IDEALIZED SIMULATION'
+  open(unit=14,file='input_coord',form='formatted',status='old')
+  rewind(14)
+  read(14,*) lon_input
+  read(14,*) lat_input
+  read(14,*) ls_input
+  read(14,*) lct_input
+  close(14)
+  ptime = lct_input - lon_input / 15. + elaps/3700.
+  ptime = MODULO(ptime,24.)
+  ptime = ptime / 24.
+  pday = floor(ls2sol(ls_input)) + INT((3700*(lct_input - lon_input / 15.) + elaps)/88800)
+  pday = MODULO(int(pday),669)
+  MY = 2024
+  wday_ini = floor(ls2sol(ls_input))
+ENDIF
+print *,'** Mars ** TIME IS', pday, ptime*24.
+
+
+!!****************!!
+!! CHECK DYNAMICS !!
+!!****************!!
+!IF ((MAXVAL(t) > 500).OR.(MINVAL(t,MASK = t > 0) <= 50)) THEN
+!        PRINT *,'******************   CRASH   *******************'
+!        PRINT *,'Irrealistic temperature...', MAXLOC(t), MINLOC(t)
+!PRINT *, t
+!        PRINT *,'************************************************'
+!        STOP
+!ENDIF   
+!
+!!! PB SAUF SI debug = 200 ?!!?
+!IF (float(itimestep) > 200.) THEN        ! to allow initialisation with zero-wind or constant
+!                                         ! and allow some outputs to locate the NaNs :)
+!IF (         (abs(MAXVAL(u)) == 0.) &
+!        .OR. (MINVAL(u) > MAXVAL(u)) &
+!        .OR. (abs(MAXVAL(v)) == 0.) &
+!        .OR. (MINVAL(v) > MAXVAL(v)) ) THEN
+!!IF (          (ANY(isNaN(u)) .EQV. .true.) &
+!!         .OR. (ANY(isNaN(v)) .EQV. .true.) &  
+!!         .OR. (ANY(isNaN(t)) .EQV. .true.) ) THEN
+!IF (         ANY(u*0. /= 0.) &
+!        .OR. ANY(v*0. /= 0.)        ) THEN
+!        PRINT *,'******************   CRASH   *******************'
+!        PRINT *,'************************************************'
+!        PRINT *,'NaN appeared in the simulation ...'
+!        PRINT *,'...this may be due to numerical or dynamical instability'
+!        PRINT *,'************************************************'
+!        PRINT *,'POSSIBLE SOLUTIONS:'
+!        PRINT *,'>> IF nonhydrostatic mode,' 
+!        PRINT *,'   --> check that smdiv, emdiv and epssm are not 0.'
+!        PRINT *,'>> IF cfl is violated, '
+!        PRINT *,'   --> try to lower the dynamical timestep'
+!        PRINT *,'>> IF topographical gradients are high near specified bdy,'
+!        PRINT *,'   --> try to redefine the domain'
+!        PRINT *,'************************************************'
+!        STOP
+!ENDIF
+!ENDIF
+        !IF (          ANY(isNaN(u)) &
+        !         .OR. ANY(isNaN(v)) &
+        !         .OR. ANY(isNaN(t)) ) THEN
+        ! >>> ne marche qu'avec g95
+!print *, 'check dynamics'
+!print *, 'u', MAXVAL(u), MINVAL(u)
+!print *, 'v', MAXVAL(v), MINVAL(v)
+!print *, 't', MAXVAL(t), MINVAL(t, MASK = t > 0) 
+
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!----------!
+! ALLOCATE !
+!----------!
+ALLOCATE(pdpsrf(ngrid))
+ALLOCATE(pdu(ngrid,nlayer))
+ALLOCATE(pdv(ngrid,nlayer))
+ALLOCATE(pdt(ngrid,nlayer))
+ALLOCATE(pdq(ngrid,nlayer,nq))
+!!!
+!!! BIG LOOP : 1. no call for physics, used saved values
+!!!
+IF (test.NE.0) THEN
+print *,'** Mars ** NO CALL FOR PHYSICS, go to next step...',test
+pdpsrf(:)=dp_save(:)
+pdu(:,:)=du_save(:,:)
+pdv(:,:)=dv_save(:,:)
+pdt(:,:)=dt_save(:,:)
+pdq(:,:,:)=dq_save(:,:,:)
+        !!!!!TEST TEST
+        !!!!!pour le nesting c est mieux de les mettre dans la physique, les SAVE
+!!!
+!!! BIG LOOP : 2. calculate physical tendencies
+!!!
+ELSE
+!----------!
+! ALLOCATE !
+!----------!
+! inputs ...
+ALLOCATE(aire_vec(ngrid))
+ALLOCATE(lon_vec(ngrid))
+ALLOCATE(lat_vec(ngrid))
+ALLOCATE(walbedodat(ngrid))
+ALLOCATE(winertiedat(ngrid))
+ALLOCATE(wphisfi(ngrid))
+ALLOCATE(wzmea(ngrid))
+ALLOCATE(wzstd(ngrid))
+ALLOCATE(wzsig(ngrid))
+ALLOCATE(wzgam(ngrid))
+ALLOCATE(wzthe(ngrid))
+ALLOCATE(wtheta(ngrid))
+ALLOCATE(wpsi(ngrid))
+ALLOCATE(wtsurf(ngrid))
+ALLOCATE(output_tab2d(ngrid,n2d))
+ALLOCATE(output_tab3d(ngrid,nlayer,n3d))
+ALLOCATE(wco2ice(ngrid))
+ALLOCATE(wemis(ngrid))
+ALLOCATE(q2_val(nlayer+1))
+ALLOCATE(qsurf_val(nq))
+ALLOCATE(tsoil_val(nsoil))
+ALLOCATE(wq2(ngrid,nlayer+1))
+ALLOCATE(wqsurf(ngrid,nq)) 
+ALLOCATE(wtsoil(ngrid,nsoil))
+ALLOCATE(pplev(ngrid,nlayer+1))
+ALLOCATE(pplay(ngrid,nlayer))
+ALLOCATE(pphi(ngrid,nlayer))
+ALLOCATE(pu(ngrid,nlayer))
+ALLOCATE(pv(ngrid,nlayer))
+ALLOCATE(pt(ngrid,nlayer))
+ALLOCATE(pw(ngrid,nlayer))
+ALLOCATE(pq(ngrid,nlayer,nq))
+! interm
+ALLOCATE(dz8w_prof(nlayer))
+ALLOCATE(p8w_prof(nlayer))
+ALLOCATE(p_prof(nlayer))
+ALLOCATE(t_prof(nlayer))
+ALLOCATE(t8w_prof(nlayer))
+ALLOCATE(u_prof(nlayer))
+ALLOCATE(v_prof(nlayer))
+ALLOCATE(z_prof(nlayer))
+!ALLOCATE(th_prof(nlayer))
+!ALLOCATE(rho_prof(nlayer))
+!ALLOCATE(pi_prof(nlayer))
+ALLOCATE(water_vapor_prof(nlayer))
+ALLOCATE(water_ice_prof(nlayer))
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!! PREPARE PHYSICS INPUTS !!  
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+DO j = jps,jpe
+DO i = ips,ipe
+
+!!*******************************************!!
+!! FROM 3D WRF FIELDS TO 1D PHYSICS PROFILES !!
+!!*******************************************!!
+
+!-----------------------------------!
+! 1D subscript for physics "cursor" !
+!-----------------------------------!
+subs = (j-jps)*(ipe-ips+1)+(i-ips+1)
+
+!--------------------------------------!
+! 1D columns : inputs for the physics  !
+! ... vert. coord., meteor. fields ... !
+!--------------------------------------!
+dz8w_prof(:) = dz8w(i,kps:kpe,j)   ! dz between full levels (m)   
+p8w_prof(:) = p8w(i,kps:kpe,j)     ! pressure full level (Pa) >> pplev
+p_prof(:) = p(i,kps:kpe,j)         ! pressure half level (Pa) >> pplay
+t_prof(:) = t(i,kps:kpe,j)         ! temperature half level (K) >> pt
+t8w_prof(:) = t8w(i,kps:kpe,j)     ! temperature full level (K)
+u_prof(:) = u(i,kps:kpe,j)         ! zonal wind (A-grid: unstaggered) half level (m/s) >> pu  
+v_prof(:) = v(i,kps:kpe,j)         ! meridional wind (A-grid: unstaggered) half level (m/s) >> pv
+z_prof(:) = z(i,kps:kpe,j)         ! geopotential height half level (m) >> pphi/g
+!pi_prof(:) = exner(i,kps:kpe,j)    ! exner function (dimensionless) half level 
+!rho_prof(:) = rho(i,kps:kpe,j)     ! density half level  
+!th_prof(:) = th(i,kps:kpe,j)       ! pot. temperature half level (K)
+
+!--------------------------------!
+! specific treatment for tracers !
+!--------------------------------!
+SELECT CASE (MARS_MODE)
+    CASE(0)  !! NO TRACERS (mars=0)
+    water_vapor_prof(:) = 0.
+    water_ice_prof(:) = 0.
+    CASE(1)  !! WATER CYCLE (mars=1)
+    water_vapor_prof(:) = scalar(i,kps:kpe,j,2)  !! H2O vapor is tracer 1 in the Registry for mars=1
+    water_ice_prof(:) = scalar(i,kps:kpe,j,3)    !! H2O ice is tracer 2 in the Registry for mars=1
+    CASE(2)  !! DUST CYCLE (mars=2)
+    water_vapor_prof(:) = 0.
+    water_ice_prof(:) = 0.
+END SELECT
+
+!!**********************************************************!!
+!! STATIC FIELDS FOR THE PHYSICS - NEEDED ONLY AT FIRSTCALL !!
+!!**********************************************************!!
+needed_ini_phys : IF (firstcall .EQV. .true.) THEN
+
+!----------------------------------------!
+! Surface of each part of the grid (m^2) !
+!----------------------------------------!
+!aire_val = dx*dy                           !! 1. idealized cases - computational grid
+aire_val = (dx/msft(i,j))*(dy/msft(i,j))    !! 2. WRF map scale factors - assume that msfx=msfy (msf=covariance)
+!aire_val=dx*dy/msfu(i,j)                   !! 3. special for Mercator GCM-like simulations
+
+!!---------------------------------------------!
+!! Mass-point latitude and longitude (radians) !
+!!---------------------------------------------!
+!lat_val = XLAT(i,j)*DEGRAD
+!lon_val = XLONG(i,j)*DEGRAD
+lat_val = lat_input*DEGRAD
+lon_val = lon_input*DEGRAD
+
+!!-----------------------------------------!
+!! Gravity wave parametrization            !
+!! NB: usually 0 in mesoscale applications !
+!!-----------------------------------------!
+!zmea_val=MARS_GW(i,1,j)
+!zstd_val=MARS_GW(i,2,j)
+!zsig_val=MARS_GW(i,3,j)
+!zgam_val=MARS_GW(i,4,j)
+!zthe_val=MARS_GW(i,5,j)
+zmea_val=0.
+zstd_val=0.
+zsig_val=0.
+zgam_val=0.
+zthe_val=0.
+
+!!---------------------------------!
+!! Ground albedo & Thermal Inertia !
+!!---------------------------------!
+!albedodat_val=MARS_ALB(i,j)
+!inertiedat_val=MARS_TI(i,j)
+albedodat_val=CST_AL
+inertiedat_val=CST_TI
+
+!---------------------------------------------!
+! Ground geopotential                         !
+! (=g*HT(i,j), only used in the microphysics) !
+!---------------------------------------------! 
+phisfi_val=g*(z_prof(1)-dz8w_prof(1)/2.)   !! NB: z_prof are half levels, so z_prof(1) is not the surface
+
+!-----------------------------------------------!
+! Ground temperature, emissivity, CO2 ice cover !
+!-----------------------------------------------!
+tsurf_val=tsk(i,j)
+emis_val=MARS_EMISS(i,j)
+co2ice_val=MARS_CICE(i,j)
+
+!!------------------------!
+!! Deep soil temperatures ! 
+!!------------------------!
+!tsoil_val(:)=MARS_TSOIL(i,:,j)
+do k=1,nsoil
+ tsoil_val(k) = tsurf_val
+enddo
+
+!!-------------------!
+!! Slope inclination !
+!!-------------------!
+!theta_val=atan(sqrt( (1000.*SLPX(i,j))**2 + (1000.*SLPY(i,j))**2 ))
+!theta_val=theta_val/DEGRAD
+theta_val=0.
+
+!!-------------------------------------------!
+!! Slope orientation; 0 is north, 90 is east !
+!!-------------------------------------------!
+!psi_val=-90.*DEGRAD-atan(SLPY(i,j)/SLPX(i,j))
+!if (SLPX(i,j) .ge. 0.) then
+!   psi_val=psi_val-180.*DEGRAD
+!endif
+!psi_val=360.*DEGRAD+psi_val
+!psi_val=psi_val/DEGRAD
+!psi_val = MODULO(psi_val+180.,360.)
+psi_val=0.
+
+!
+! PRINT
+!
+IF ( (i == ips) .AND. (j == jps) ) THEN
+PRINT *,'lat/lon ', lat_val/DEGRAD, lon_val/DEGRAD
+PRINT *,'emiss ', emis_val
+PRINT *,'albedo ', albedodat_val
+PRINT *,'inertie ', inertiedat_val
+PRINT *,'phi ',phisfi_val
+PRINT *,'tsurf ',tsurf_val
+PRINT *,'aire ',aire_val
+PRINT *,'z_prof ',z_prof
+PRINT *,'dz8w_prof',dz8w_prof
+PRINT *,'p8w_prof ',p8w_prof
+PRINT *,'p_prof ',p_prof
+PRINT *,'t_prof ',t_prof
+PRINT *,'t8w_prof ',t8w_prof
+PRINT *,'u_prof ',u_prof
+PRINT *,'v_prof ',v_prof
+PRINT *,'tsoil ',tsoil_val 
+ENDIF
+
+!-------------------------!
+!-------------------------!
+!      PROVISOIRE         !
+!-------------------------!
+!-------------------------!
+q2_val(:)=0      !PBL wind variance
+qsurf_val(:)=0   !Tracer on surface
+
+!-----------------!
+! Fill the arrays !
+!-----------------!
+aire_vec(subs) = aire_val   !! NB: total area in square km is SUM(aire_vec)/1.0E6
+lat_vec(subs) = lat_val
+lon_vec(subs) = lon_val
+wphisfi(subs) = phisfi_val
+walbedodat(subs) = albedodat_val
+winertiedat(subs) = inertiedat_val
+wzmea(subs) = zmea_val
+wzstd(subs) = zstd_val
+wzsig(subs) = zsig_val
+wzgam(subs) = zgam_val
+wzthe(subs) = zthe_val
+wtsurf(subs) = tsurf_val
+wco2ice(subs) = co2ice_val
+wemis(subs) = emis_val
+wq2(subs,:) = q2_val(:)
+wqsurf(subs,:) = qsurf_val(:)
+wtsoil(subs,:) = tsoil_val(:)
+wtheta(subs) = theta_val
+wpsi(subs) = psi_val
+
+ENDIF needed_ini_phys
+
+!!*****************************!!
+!! PREPARE "FOOD" FOR PHYSIQ.F !!
+!!*****************************!!
+
+!---------------------------------------------!
+! in LMD physics, geopotential must be        !
+! expressed with respect to the local surface !
+!---------------------------------------------!
+pphi(subs,:) = g*( z_prof(:)-(z_prof(1)-dz8w_prof(1)/2.) )
+
+!--------------------------------!
+! Dynamic fields for LMD physics !
+!--------------------------------!
+pplev(subs,1:nlayer) = p8w_prof(1:nlayer)  !! NB: last level: no data
+pplay(subs,:) = p_prof(:)
+pt(subs,:) = t_prof(:)
+pu(subs,:) = u_prof(:)
+pv(subs,:) = v_prof(:)
+pw(subs,:) = 0   !! NB: not used in the physics, only diagnostic...
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!! for IDEALIZED CASES (NO NEED in pplay)
+pplev(subs,nlayer+1) = 0.
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+! NOTE:
+! IF ( pplev(subs,nlayer+1) .le. 0 ) pplev(subs,nlayer+1)=ptop
+! cree des diagnostics delirants et aleatoires dans le transfert radiatif 
+
+!---------!
+! Tracers !
+!---------!
+SELECT CASE (MARS_MODE)
+    CASE(0)  !! NO TRACERS (mars=0)
+    pq(subs,:,nq) = water_vapor_prof(:) !! NB: which is 0, actually (see above) 
+    CASE(1)  !! WATER CYCLE (mars=1)
+    pq(subs,:,nq) = water_vapor_prof(:)
+    pq(subs,:,nq-1) = water_ice_prof(:)
+    CASE(2)  !! DUST CYCLE (mars=2)
+    pq(subs,:,nq) = water_vapor_prof(:) !! NB: which is 0, actually (see above)
+END SELECT
+
+ENDDO
+ENDDO
+
+!!*****************!!
+!! CLEAN THE PLACE !!
+!!*****************!!
+DEALLOCATE(q2_val)
+DEALLOCATE(qsurf_val)
+DEALLOCATE(tsoil_val)
+DEALLOCATE(dz8w_prof)
+DEALLOCATE(z_prof)
+DEALLOCATE(p8w_prof)
+DEALLOCATE(p_prof)
+DEALLOCATE(t_prof)
+DEALLOCATE(u_prof)
+DEALLOCATE(v_prof)
+DEALLOCATE(water_vapor_prof)
+DEALLOCATE(water_ice_prof)
+    !!! no use
+    !DEALLOCATE(pi_prof)
+    !DEALLOCATE(rho_prof)
+    !DEALLOCATE(th_prof)
+
+
+!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!
+!! CALL LMD PHYSICS !!  
+!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!
+
+
+!!***********************!!
+!! INIFIS, AT FIRST CALL !!
+!!***********************!!
+IF (firstcall .EQV. .true.) THEN
+print *, '** Mars ** LMD INITIALIZATION'
+include "../modif_mars/call_meso_inifis.inc"
+DEALLOCATE(aire_vec)
+DEALLOCATE(lat_vec)
+DEALLOCATE(lon_vec)
+DEALLOCATE(walbedodat)
+DEALLOCATE(winertiedat)
+DEALLOCATE(wphisfi)
+DEALLOCATE(wzmea)
+DEALLOCATE(wzstd)
+DEALLOCATE(wzsig)
+DEALLOCATE(wzgam)
+DEALLOCATE(wzthe)
+DEALLOCATE(wtheta)
+DEALLOCATE(wpsi)
+ENDIF
+        !! nearly obsolete
+        !print *, '** Mars ** Diagnostic files each ',wecri_phys,' phys. steps'
+        wecri_phys_sec=dt*float(wecri_phys)*float(wappel_phys)
+
+!!********!!
+!! PHYSIQ !!
+!!********!!
+call_physics : IF (wappel_phys .ne. 0) THEN
+
+!-------------------------------------------------------------------------------!
+! outputs:									!	
+!    pdu(ngrid,nlayermx)        \						!
+!    pdv(ngrid,nlayermx)         \  Temporal derivative of the corresponding	!
+!    pdt(ngrid,nlayermx)         /  variables due to physical processes.	!
+!    pdq(ngrid,nlayermx)        /						!
+!    pdpsrf(ngrid)             /						!
+!    tracerdyn                 call tracer in dynamical part of GCM ?		!
+!-------------------------------------------------------------------------------!
+print *, '** Mars ** CALL TO LMD PHYSICS'
+pdpsrf(:)=0.
+pdu(:,:)=0.
+pdv(:,:)=0.
+pdt(:,:)=0.
+pdq(:,:,:)=0.
+include "../modif_mars/call_meso_physiq.inc" 
+DEALLOCATE(pplev)
+DEALLOCATE(pplay)
+DEALLOCATE(pphi)
+DEALLOCATE(pu)
+DEALLOCATE(pv)
+DEALLOCATE(pt)
+DEALLOCATE(pw)
+DEALLOCATE(pq)
+DEALLOCATE(wtsurf)
+DEALLOCATE(wco2ice)
+DEALLOCATE(wemis)
+DEALLOCATE(wq2)
+DEALLOCATE(wqsurf)
+DEALLOCATE(wtsoil)
+
+
+!-------------------------------!
+! PHYSIQ OUTPUT IN THE WRF FILE !
+!-------------------------------!
+DO j = jps,jpe
+DO i = ips,ipe
+subs = (j-jps)*(ipe-ips+1)+(i-ips+1)
+#include "../modif_mars/module_lmd_driver_output3.inc"  
+       !  ^-- generated from Registry
+TSK(i,j) = output_tab2d(subs,ind_TSURF)
+ENDDO
+ENDDO
+DEALLOCATE(output_tab2d)
+DEALLOCATE(output_tab3d)
+
+!---------------------------------------------------------------------------------!
+! PHYSIQ TENDENCIES ARE SAVED TO BE SPLIT WITHIN INTERMEDIATE DYNAMICAL TIMESTEPS !
+!---------------------------------------------------------------------------------!
+dp_save(:)=pdpsrf(:)
+du_save(:,:)=pdu(:,:)
+dv_save(:,:)=pdv(:,:)
+dt_save(:,:)=pdt(:,:)
+dq_save(:,:,:)=pdq(:,:,:)
+
+ENDIF call_physics
+
+ENDIF    ! end of BIG LOOP 2.
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+!!***************************!!
+!! DEDUCE TENDENCIES FOR WRF !!
+!!***************************!!
+RTHBLTEN(ims:ime,kms:kme,jms:jme)=0.
+RUBLTEN(ims:ime,kms:kme,jms:jme)=0.
+RVBLTEN(ims:ime,kms:kme,jms:jme)=0.
+PSFC(ims:ime,jms:jme)=p8w(ims:ime,kms,jms:jme) ! was done in surface driver in regular WRF 
+!------------------------------------------------------------------!
+! WRF adds the physical and dynamical tendencies                   !
+! thus the tendencies must be passed as 'per second' tendencies    !
+! --when physics is not called, the applied physical tendency      !
+! --is the one calculated during the last call to physics          !
+!------------------------------------------------------------------!
+DO j = jps,jpe
+DO i = ips,ipe
+subs = (j-jps)*(ipe-ips+1)+(i-ips+1)
+
+!------------!
+! zonal wind !
+!------------!
+RUBLTEN(i,kps:kpe,j) = pdu(subs,kps:kpe)                        
+
+!-----------------!
+! meridional wind !
+!-----------------!
+RVBLTEN(i,kps:kpe,j) = pdv(subs,kps:kpe)                        
+
+!-----------------------!
+! potential temperature !
+!-----------------------!
+! (dT = dtheta * exner for isobaric coordinates or if pressure variations are negligible)
+RTHBLTEN(i,kps:kpe,j) = pdt(subs,kps:kpe) / exner(i,kps:kpe,j)   
+
+!---------------------------!
+! update surface pressure   !
+! (cf CO2 cycle in physics) !
+!---------------------------!
+PSFC(i,j)=PSFC(i,j)+pdpsrf(subs)  
+
+!---------!
+! Tracers !
+!---------!
+SELECT CASE (MARS_MODE)
+CASE(0)
+        SCALAR(i,kps:kpe,j,:)=0.
+CASE(1)
+        !!! Water vapor
+        SCALAR(i,kps:kpe,j,2)=SCALAR(i,kps:kpe,j,2)+pdq(subs,kps:kpe,nq)
+        !!! Water ice
+        SCALAR(i,kps:kpe,j,3)=SCALAR(i,kps:kpe,j,3)+pdq(subs,kps:kpe,nq-1)
+CASE(2)
+        !!! Dust 
+        SCALAR(i,kps:kpe,j,2)=SCALAR(i,kps:kpe,j,2)+pdq(subs,kps:kpe,nq)
+END SELECT
+
+        !!TODO: check if adding the whole tendency once, and set the
+        !!TODO: following tendencies to 0 until physics is called again
+        !!TODO: is a good strategy ?
+        !RUBLTEN(i,kps:kpe,j) = pdu(subs,kps:kpe)*ptimestep/dt
+        !RVBLTEN(i,kps:kpe,j) = pdv(subs,kps:kpe)*ptimestep/dt
+        !RTHBLTEN(i,kps:kpe,j) = pdt(subs,kps:kpe)*ptimestep/dt
+        !RTHBLTEN(i,kps:kpe,j) = RTHBLTEN(i,kps:kpe,j)/exner(i,kps:kpe,j) 
+        !PSFC(i,j)=PSFC(i,j)+pdpsrf(subs)*ptimestep/dt      
+        !SELECT CASE (MARS_MODE)
+        !CASE(0)
+        !SCALAR(i,kps:kpe,j,:)=0.
+        !CASE(1)
+        !!!! Water vapor
+        !SCALAR(i,kps:kpe,j,2)=SCALAR(i,kps:kpe,j,2)+pdq(subs,kps:kpe,nq)*ptimestep/dt
+        !!!! Water ice
+        !SCALAR(i,kps:kpe,j,3)=SCALAR(i,kps:kpe,j,3)+pdq(subs,kps:kpe,nq-1)*ptimestep/dt
+        !CASE(2)
+        !!!! Dust 
+        !SCALAR(i,kps:kpe,j,2)=SCALAR(i,kps:kpe,j,2)+pdq(subs,kps:kpe,nq)*ptimestep/dt
+        !END SELECT
+
+ENDDO
+ENDDO
+DEALLOCATE(pdpsrf)
+DEALLOCATE(pdu)
+DEALLOCATE(pdv)
+DEALLOCATE(pdt)
+DEALLOCATE(pdq)
+
+!!---------!
+!! display !
+!!---------!
+PRINT *, '** Mars ** Results from LMD physics'
+!PRINT *, 'u non-zero tendencies'
+!PRINT *, 'max',MAXVAL(RUBLTEN, MASK=RUBLTEN/=0.),&
+!        ' at',MAXLOC(RUBLTEN, MASK=RUBLTEN/=0.)
+!PRINT *, 'min',MINVAL(RUBLTEN, MASK=RUBLTEN/=0.),&
+!        ' at',MINLOC(RUBLTEN, MASK=RUBLTEN/=0.)
+!PRINT *, 'v non-zero tendencies'
+!PRINT *, 'max',MAXVAL(RVBLTEN, MASK=RVBLTEN/=0.),&
+!        ' at',MAXLOC(RVBLTEN, MASK=RVBLTEN/=0.)
+!PRINT *, 'min',MINVAL(RVBLTEN, MASK=RVBLTEN/=0.),&
+!        ' at',MINLOC(RVBLTEN, MASK=RVBLTEN/=0.)
+PRINT *, 'th non-zero tendencies'
+PRINT *, 'max',MAXVAL(RTHBLTEN, MASK=RTHBLTEN/=0.),&
+        ' at',MAXLOC(RTHBLTEN, MASK=RTHBLTEN/=0.)
+PRINT *, 'min',MINVAL(RTHBLTEN, MASK=RTHBLTEN/=0.),&
+        ' at',MINLOC(RTHBLTEN, MASK=RTHBLTEN/=0.)
+!!! STOP IF CRASH
+!IF (MAXVAL(RUBLTEN, MASK=RUBLTEN/=0.) == 0.) STOP
+!IF (MAXVAL(RVBLTEN, MASK=RVBLTEN/=0.) == 0.) STOP
+
+!!*****!!
+!! END !!
+!!*****!!
+print *,'** Mars ** END LMD PHYSICS'
+!----------------------------------------------------------------!
+! use debug (see solve_em) if you wanna display some message ... !
+!----------------------------------------------------------------!
+END SUBROUTINE lmd_driver
+
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+      real function ls2sol(ls)
+
+!c  Returns solar longitude, Ls (in deg.), from day number (in sol),
+!c  where sol=0=Ls=0 at the northern hemisphere spring equinox
+
+      implicit none
+
+!c  Arguments:
+      real ls
+
+!c  Local:
+      double precision xref,zx0,zteta,zz
+!c	xref: mean anomaly, zteta: true anomaly, zx0: eccentric anomaly
+      double precision year_day 
+      double precision peri_day,timeperi,e_elips
+      double precision pi,degrad 
+      parameter (year_day=668.6d0) ! number of sols in a amartian year
+!c      data peri_day /485.0/
+      parameter (peri_day=485.35d0) ! date (in sols) of perihelion
+!c  timeperi: 2*pi*( 1 - Ls(perihelion)/ 360 ); Ls(perihelion)=250.99
+      parameter (timeperi=1.90258341759902d0)
+      parameter (e_elips=0.0934d0)  ! eccentricity of orbit
+      parameter (pi=3.14159265358979d0)
+      parameter (degrad=57.2957795130823d0)
+
+      if (abs(ls).lt.1.0e-5) then
+         if (ls.ge.0.0) then
+            ls2sol = 0.0
+         else
+            ls2sol = year_day
+         end if
+         return
+      end if
+
+      zteta = ls/degrad + timeperi
+      zx0 = 2.0*datan(dtan(0.5*zteta)/dsqrt((1.+e_elips)/(1.-e_elips)))
+      xref = zx0-e_elips*dsin(zx0)
+      zz = xref/(2.*pi)
+      ls2sol = zz*year_day + peri_day
+      if (ls2sol.lt.0.0) ls2sol = ls2sol + year_day
+      if (ls2sol.ge.year_day) ls2sol = ls2sol - year_day
+
+      return
+      end function ls2sol
+!!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+END MODULE module_lmd_driver
+

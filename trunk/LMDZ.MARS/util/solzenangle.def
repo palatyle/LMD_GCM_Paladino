@@ -1,0 +1,27 @@
+diagfi.nc
+tsurf
+ps
+temp
+
+morning
+90
+0
+
+-----------------------------------------------------------------------
+ABOVE is the list of inputs to be fed to "solzenangle.e" if you don t want
+to reply directly to the program:
+
+1) complete name of file to be read
+2) List of X variables to be kept (X lines) or 'all'
+3) blank line at the end
+4) planet side wrt to noon (morning or evening)
+5) solar zenith angle (within [0;180[ deg)
+0deg = zenith ; 90deg = terminator at the surface ; >90deg = terminator in altitude
+6) starttimeoffset :
+    - for a diagfi/concat : sol value at the beginning of the run, wrt Ls=0
+    - for a stats : sol value at the middle of the run, wrt Ls=0
+
+USE :
+solzenangle.e < solzenangle.def
+
+

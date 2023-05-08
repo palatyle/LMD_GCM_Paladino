@@ -1,0 +1,79 @@
+101c101,103
+< 
+---
+> !****Mars
+>     REAL    :: x_param,y_param,rho_param,dilat
+> !****Mars
+171,172c173,180
+<    hm = 100.
+<    xa = 5.0
+---
+> !   hm = 100.
+> !   xa = 5.0
+> !****Mars
+> !!   hm = 4000.
+> !!   xa = 5.0
+>    hm = 2000.
+>    xa = 6.0 
+> !****Mars
+174a183,191
+> !****Mars
+>    jcm = jde/2
+> !
+> !   xa1  = 5000./500.
+> !   xal1 = 4000./500.
+> !   pii  = 2.*asin(1.0)
+> !   hm1  = 250.
+> !!   hm1  = 1000.
+> !****Mars
+177,184c194,197
+<    xa1  = 5000./500.
+<    xal1 = 4000./500.
+<    pii  = 2.*asin(1.0)
+<    hm1  = 250.
+< !   hm1  = 1000.
+< 
+< 
+<    stretch_grid = .true.
+---
+> !****Mars
+> !   stretch_grid = .true.
+>    stretch_grid = .false.
+> !****Mars
+301a315,336
+> 
+> !****Mars
+> !!3D hill    
+> !        grid%ht(i,j) = hm/(1.+(float(i-icm)/xa)**2+(float(j-jcm)/xa)**2)
+> !!3D crater    
+> !	 grid%ht(i,j) = hm - hm/(1.+(float(i-icm)/xa)**2+(float(j-jcm)/xa)**2)
+> !!3D crater w/ rims
+>      x_param = float(i-icm)
+>      y_param = float(j-jcm)
+>      dilat = xa/2
+>      rho_param = sqrt(x_param**2 + y_param**2)
+>      
+>      ! revolution surface ; seed is a fourth order polynom
+>      grid%ht(i,j) = (rho_param+6*dilat)*(rho_param+10*dilat)
+>      grid%ht(i,j) = (rho_param-6*dilat)*(rho_param-10*dilat)*grid%ht(i,j)
+>          ! flat terrain elsewhere - smooth gradient (no abrupt fall)
+>          grid%ht(i,j) = grid%ht(i,j)*(tanh(rho_param+7*dilat)/2 - tanh(rho_param-7*dilat)/2)
+>          grid%ht(i,j) = hm - (hm*.4/1500)*grid%ht(i,j)/(dilat**4)    
+>      
+>          !if (rho_param .GE. dilat*10) ht(i,j) = hm
+> 
+> 
+580c615,618
+<       parameter( debug = .false.)
+---
+> 
+> !      parameter( debug = .false.)
+> !****Mars
+>       parameter( debug = .true.)
+596c634,637
+<       parameter (p1000mb = 1.e+05, r = 287, cp = 1003., cv = cp-r, cvpm = -cv/cp, g=9.81 )
+---
+> !****Mars
+> !      parameter (p1000mb = 1.e+05, r = 287, cp = 1003., cv = cp-r, cvpm = -cv/cp, g=9.81 )
+>       parameter (p1000mb = 610, r = 192, cp = 845., cv = cp-r, cvpm = -cv/cp,g=3.72)
+> !****Mars

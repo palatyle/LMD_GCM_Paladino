@@ -1,0 +1,56 @@
+\documentclass{report}
+\usepackage{epsf}
+\usepackage{times}
+\usepackage{epsfig}
+\usepackage[round]{natbib}
+
+%\usepackage{makeidx}
+\usepackage{a4}
+\usepackage{graphicx}
+\usepackage[french,english]{babel}
+\scrollmode
+
+%\makeindex
+
+\newcommand{\indexentry}[2]{\item #1 #2}
+% numero de la derniere section numerotee
+\setcounter{secnumdepth}{3}
+% numero de la derniere section a apparaitre dans la table des matieres
+\setcounter{tocdepth}{3}
+
+% For title page
+\title{User Manual for the LMD Generic Climate Model}
+\author{E. Millour, F. Forget, J. Leconte, R. Wordsworth.}
+\date{\today}
+
+
+\begin{document}
+\bibliographystyle{abbrv}
+
+\input{def}
+
+\selectlanguage{english}
+
+\maketitle
+\tableofcontents
+
+\input{intro}
+\input{principe}
+\input{dynamics}
+\input{phystd}
+\input{run.tex}
+\input{compilation}
+\input{io.tex}
+\input{water.tex}
+\input{rcm1d.tex}
+\input{zoom.tex}
+\input{kspectrum.tex}
+
+\appendix
+
+%\printindex
+
+\bibliography{newfred.bib}
+\bibliographystyle{plain}
+
+\end{document}

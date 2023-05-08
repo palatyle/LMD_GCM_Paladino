@@ -1,0 +1,100 @@
+#! /bin/bash
+
+#---------------------------------------#
+# A script to install the preproc tools #
+#---------------------------------------#
+# Author: Aymeric Spiga - November 2008 #
+#---------------------------------------#
+
+
+echo "If you use new physics, few modifications will be needed"
+
+
+if [[ "${LMDMOD}" = "" ]]
+then
+    echo "No LMDMOD defined...assuming default folders"
+    LMDMOD=$PWD"/../.."
+fi
+
+
+###############
+tmpdir=$LMDMOD/TMPDIR
+lmdmeso=$LMDMOD/LMD_MM_MARS
+sourceprepmars=$lmdmeso"/SRC/PREP_MARS"
+sourcewps=$lmdmeso"/SRC/WPS"
+###############
+
+echo create tmpdir directories
+mkdir $tmpdir/WPSFEED 2> /dev/null
+mkdir $tmpdir/WRFFEED 2> /dev/null
+#mkdir $tmpdir/WRFFEED/current 2> /dev/null
+mkdir $tmpdir/GCMINI 2> /dev/null
+
+here=$PWD
+\rm -rf $here/PREP_MARS $here/WPS 2> /dev/null
+
+echo link PREP_MARS in $here
+
+mkdir $here/PREP_MARS
+cd $here/PREP_MARS
+ln -sf ${sourceprepmars}/* .
+ln -sf $tmpdir/WPSFEED .
+ln -sf $tmpdir/GCMINI/diagfi.nc input_diagfi.nc
+cd $here
+
+echo prepare WPS in $here
+
+	####### done in prepare
+	###cd ${sourcewps}
+	###cp ${sourcewps}/wps_mars/switch_WPS_Mars ${sourcewps}
+	###./switch_WPS_Mars
+
+cd ${here}
+mkdir $here/WPS
+cd ${here}/WPS
+ln -sf ${sourcewps}/compile .
+ln -sf ${sourcewps}/configure .
+ln -sf ${sourcewps}/clean .
+ln -sf ${sourcewps}/arch .
+ln -sf $tmpdir/WPSFEED .
+ln -sf $tmpdir/WRFFEED .
+
+mkdir ${here}/WPS/geogrid
+cd ${here}/WPS/geogrid
+	#cp -f ${sourcewps}/geogrid/GEOGRID.TBL.ARW GEOGRID.TBL
+	#echo "attention GEOGRID.TBL n est pas le bon !!!!"
+ln -sf ${sourcewps}/wps_mars/geogrid/GEOGRID.TBL.ARW_Mars GEOGRID.TBL
+cp -f ${sourcewps}/geogrid/Makefile .
+mkdir src
+cd src
+ln -sf ${sourcewps}/geogrid/src/* .  
+cd ${here}/WPS  
+
+mkdir ${here}/WPS/metgrid
+cd ${here}/WPS/metgrid
+	#cp -f ${sourcewps}/metgrid/METGRID.TBL.ARW METGRID.TBL
+	#echo "attention METGRID.TBL n est pas le bon !!!!"
+ln -sf ${sourcewps}/wps_mars/metgrid/METGRID.TBL.ARW_MarsBase_newphys METGRID.TBL
+cp -f ${sourcewps}/metgrid/Makefile .
+mkdir src
+cd src
+ln -sf ${sourcewps}/metgrid/src/* .
+cd ${here}/WPS
+
+##
+## examples and plots
+##
+#ln -sf ${sourcewps}/wps_mars/out_geo.pro .
+ln -sf ${sourcewps}/wps_mars/namelist.wps* .
+#ln -sf ${lmdmeso}/SRC/ARWpost/idl/colorbar__define.pro .
+#ln -sf ${lmdmeso}/SRC/ARWpost/idl/colorbar.pro .
+#ln -sf ${lmdmeso}/SRC/ARWpost/idl/map_latlon.pro .
+
+#
+# link to static data
+#
+ln -sf ${lmdmeso}/WPS_GEOG .
+
+exit
+
+

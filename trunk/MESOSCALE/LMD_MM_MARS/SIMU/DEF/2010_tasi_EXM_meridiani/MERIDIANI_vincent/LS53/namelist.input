@@ -1,0 +1,60 @@
+ &time_control
+ start_year       = 2024,    !! (p1) Start Martian Year (20XX for MY XX)
+ start_month      = 02,      !! (p1) Start Martian Month 
+ start_day        = 48,      !! (p1) Start Martian Day 
+ start_hour       = 06,      !! (p1) Start Martian Hour (at longitude 0)
+ end_year         = 2024,    !! (p1) End Martian Year (20XX for MY XX)
+ end_month        = 02,      !! (p1) End Martian Month
+ end_day          = 53,      !! (p1) End Martian Day
+ end_hour         = 06,      !! (p1) End Martian Hour (at longitude 0)
+ history_interval    = 37,   !! Frequency of outputs (37 --> 3700s = 1 Martian hour)  
+ frames_per_outfile  = 24,   !! Size of time dimension in files 
+ restart          = .false.  !! (*) Output restart files ?
+ restart_interval = 8880     !! (*) Frequency of output restart files ?
+ io_form_history  = 2        !! (*) Choice of NETCDF for ouputs
+ io_form_restart  = 2        !! (*) Choice of NETCDF for ouputs     
+ io_form_input    = 2        !! (*) Choice of NETCDF for ouputs
+ io_form_boundary = 2        !! (*) Choice of NETCDF for ouputs
+ debug_level      = 0        !! (*) Verbose level
+ !!
+ !! OPTIONAL
+ !!
+ interval_seconds = 3700     !! (p2) Frequency of large-scale fields update (s)
+ /
+
+
+ &domains
+ time_step   = 37            !! Dynamical timestep
+ dx = 10000,                 !! (p2) Horizontal resolution
+ dy = 10000,                 !! (p2) Horizontal resolution (should be equal to dx)
+ e_we   = 201,               !! (r)(p2) Number of longitude grid points
+ e_sn   = 201,               !! (r)(p2) Number of latitude grid points
+ e_vert = 101,               !! (r)(p2) Number of vertical levels
+ p_top_requested = 5         !! (p3) Chosen value of pressure at the top of the model
+ !!
+ !! OPTIONAL
+ !!
+ force_sfc_in_vinterp = 6    !! (p3) Number of levels hardwired in the PBL 
+                             !!         NB: decrease this parameter when low model top
+ /
+
+ &physics
+ /
+
+ &dynamics
+ tiso = 100.
+ /
+
+ &bdy_control
+ /
+
+ &grib2
+ /
+
+ &fdda
+ /
+
+ &namelist_quilt              !! (*)
+ nio_tasks_per_group = 0,     !! (*)
+ nio_groups = 1,              !! (*)
+ /                            !! (*)

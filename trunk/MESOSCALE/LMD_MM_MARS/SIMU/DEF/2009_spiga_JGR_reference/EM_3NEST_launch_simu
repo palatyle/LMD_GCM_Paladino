@@ -1,0 +1,141 @@
+#! /bin/bash
+
+
+#
+# USE: launch_simu &
+#
+
+#
+# must set env. var. 	WRF_current 
+#			
+
+# PRELIMINARY STEP
+# - model must be compiled and linked (wrf.exe, real.exe)
+# - domain must be correctly set with geogrid.exe
+# - put namelist.input, namelist.wps, callphys*.def
+
+# 'ls' must yield:
+# callphys*.def  launch_simu  namelist.input  namelist.wps  real.exe  wrf.exe
+#
+
+
+###############################################################
+gcmstep=0  #1
+wpsstep=0  #1
+realstep=1
+wrfstep=1
+###############################################################
+# GCM STEP
+   daygcm=371
+# WPS STEP
+   name='em2'     # un nom de dossier non pris dans WRFFEED
+# WRF STEP
+   proc=4
+###############################################################
+# FOLDERS
+   wheregcm=$GCM
+   whereprep=$WRF_current/PREP_MARS
+   wherewps=$WRF_current/WPS
+###############################################################
+
+
+#
+# LOG FILE HEADER
+#
+
+where=$PWD
+echo "check what's happening in " ${where}/log_launch
+
+rm -rf ${where}/log_launch 2> /dev/null
+echo SIMU folder is ${where} > ${where}/log_launch
+echo SIMU WILL BE LAUNCHED on the machine >> ${where}/log_launch
+hostname >> ${where}/log_launch
+
+#
+# 0. GCM step
+#
+if [ ${gcmstep} -eq 1 ]
+then
+
+   echo "0. GCM run and output preparation for WPS" >> ${where}/log_launch
+
+   cd ${wheregcm}
+   ln -sf ../STARTBASE_64_48_25_t2/start/start${daygcm}.nc start.nc
+   ln -sf ../STARTBASE_64_48_25_t2/startfi/startfi${daygcm}.nc startfi.nc
+
+   rm -rf restart.nc
+   rm -rf restartfi.nc
+   rm -rf log_gcm
+
+   echo running the GCM - check in ${wheregcm}/log_gcm >> ${where}/log_launch
+   nohup gcm.e > log_gcm
+
+   echo preparing outputs for WPS >> ${where}/log_launch
+   cd ${whereprep}
+   compile_and_exec >> ${where}/log_launch
+
+fi
+
+#
+# 1. WPS step
+#
+if [ ${wpsstep} -eq 1 ]
+then
+
+   echo "1. WPS: horizontal interpolations of static and meteorological data" >> ${where}/log_launch
+
+#   rm -rf ${where}/met_em 
+   mkdir ${where}/met_em
+   cd ${where}/met_em
+   ln -sf ../namelist.wps .
+
+   cd ${wherewps}
+   rm -rf WHERE_SIMU_IS
+   ln -sf ${where}/met_em WHERE_SIMU_IS
+   mkdir ./WRFFEED/current
+   nohup geogrid.exe >> ${where}/log_launch
+   nohup metgrid.exe >> ${where}/log_launch 
+   mv ./WRFFEED/current ./WRFFEED/${name}
+
+   ln -sf $FEED/WRFFEED/${name}/* ${where}/met_em/
+
+fi
+
+#
+# 2. REAL.EXE
+#
+if [ ${realstep} -eq 1 ]
+then
+
+   echo "2. REAL.EXE: vertical interpolation and preparation of boundary conditions" >> ${where}/log_launch
+
+   cd ${where}/met_em
+   rm -rf rsl.* 2> /dev/null
+   rm -rf wrfbdy* 2> /dev/null
+   rm -rf wrfinput* 2> /dev/null
+
+   ln -sf ../namelist.input .
+   ln -sf ../real.exe .
+   real.exe 
+   cd .. 
+   ln -sf ./met_em/wrf*d0* .
+
+fi
+
+
+#
+# 3. WRF.EXE
+#
+if [ ${wrfstep} -eq 1 ]
+then
+
+   echo "3. WRF.EXE: launch the mesoscale simulation" >> ${where}/log_launch
+
+   rm -rf rsl.*
+   rm -rf wrfout*
+
+   $WHERE_MPI/mpirun -np ${proc} wrf.exe < /dev/null &
+   echo OK, simulation launched !
+
+fi
+

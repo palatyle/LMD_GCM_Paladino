@@ -1,0 +1,28 @@
+# @ job_name=kmatrix
+# @ output = $(job_name).$(jobid)
+# @ error = $(output)
+# @ job_type = serial
+# @ class = B
+# @ queue
+
+BANDS_DIR=80x36
+
+cp $LMDGCM/utilities/generate_kmatrix.exe .
+
+## make kmatrix in the infrared and save it in a GCM-friendly format
+cp $BANDS_DIR/narrowbands_IR.in narrowbands.in
+generate_kmatrix.exe > log.out
+mv corrk_gcm.dat $BANDS_DIR/corrk_gcm_IR.dat 
+mv log.out $BANDS_DIR/logIR.out 
+rm narrowbands.in
+
+## make kmatrix in the visible and save it in a GCM-friendly format
+cp $BANDS_DIR/narrowbands_VI.in narrowbands.in
+generate_kmatrix.exe > log.out
+mv corrk_gcm.dat $BANDS_DIR/corrk_gcm_VI.dat 
+mv log.out $BANDS_DIR/logVI.out 
+rm narrowbands.in
+
+rm generate_kmatrix.exe
+
+exit 0

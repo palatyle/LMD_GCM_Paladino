@@ -1,0 +1,8 @@
+MCS_MY29_tempandLT_mo1.nc
+diagfi1_P.nc
+0
+
+##----------------------------------------------------------------
+# 1st line is the Observer file (containing dtemp,dtimeave,dtimemax,dtimemin,ntemp,ntimeave,ntimemax,ntimemin)
+# 2nd line is the GCM file : diagfi,concatnc or stats (containing temp and with the same altitude type as MCS)
+# 3rd line is the starttimeoffset of the GCM file (not needed for stats)

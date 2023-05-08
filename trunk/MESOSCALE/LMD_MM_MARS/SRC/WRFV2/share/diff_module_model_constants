@@ -1,0 +1,100 @@
+2a3
+> !PLANET MARS
+17c18
+<    REAL    , PARAMETER :: g = 9.81  ! acceleration due to gravity (m {s}^-2)
+---
+>    REAL    , PARAMETER :: g = 3.72  ! acceleration due to gravity (m {s}^-2)
+20,21c21,22
+<    REAL    , PARAMETER :: r_d          = 287.04
+<    REAL    , PARAMETER :: cp           = 1004.6
+---
+>    REAL    , PARAMETER :: r_d          = 192.  ! gas constant m2 s-2 K-1
+>    REAL    , PARAMETER :: cp           = 844.6   ! r= 8.314511E+0 *1000.E+0/mugaz
+23,24c24,25
+<    REAL    , PARAMETER :: r_d          = 287.
+<    REAL    , PARAMETER :: cp           = 7.*r_d/2.
+---
+>    REAL    , PARAMETER :: r_d          = 192.
+>    REAL    , PARAMETER :: cp           = 844.6
+27c28
+<    REAL    , PARAMETER :: r_v          = 461.6
+---
+>    REAL    , PARAMETER :: r_v          = 461.6  ! gas constant for water vapor
+29c30
+<    REAL    , PARAMETER :: cpv          = 4.*r_v
+---
+>    REAL    , PARAMETER :: cpv          = 4.4*r_v  ! cp / R = 4.4 ?? ! rcp = r/cp  ~0.256793
+40,42c41,43
+<    REAL    , PARAMETER :: p1000mb      = 100000.
+<    REAL    , PARAMETER :: t0           = 300.
+<    REAL    , PARAMETER :: p0           = p1000mb
+---
+>    REAL    , PARAMETER :: p1000mb      = 610.
+>    REAL    , PARAMETER :: t0           = 220. ! earth : 300 ... à remplacer par 220 ?
+>    REAL    , PARAMETER :: p0           = 610.
+47c48
+<    REAL    , PARAMETER :: reradius     = 1./6370.0e03 
+---
+>    REAL    , PARAMETER :: reradius     = 1./3397200	! Rayon de mars (m)  ~3397200 m
+49,50c50,78
+<    REAL    , PARAMETER :: asselin      = .025
+< !   REAL    , PARAMETER :: asselin      = .0
+---
+> !-------------------------------
+> !****MARS
+> ! here some LMD stuff
+> ! >> TODO: possible modification with startfi.nc values ?
+>    REAL    , PARAMETER :: wdaysec       = 88800.     ! duree du sol (s)  ~88775 s
+>    REAL    , PARAMETER :: wmugaz        = 43.49      ! Masse molaire de l'atm (g.mol-1) ~43.49
+>    REAL    , PARAMETER :: womeg         = 7.0721E-5  ! omega (rad.s-1)
+>    REAL    , PARAMETER :: wyear_day     = 669        ! Duree de l'annee (sols) ~668.6
+>    REAL    , PARAMETER :: wperiheli     = 206.66     ! Dist.min. soleil-mars (Mkm) ~206.66      
+>    REAL    , PARAMETER :: waphelie      = 249.22     ! Dist.max. soleil-mars (Mkm) ~249.22
+>    REAL    , PARAMETER :: wperi_day     = 485.       ! Date du perihelie (sols depuis printemps)
+>    REAL    , PARAMETER :: wobliquit     = 25.2       ! Obliquite de la planete (deg) ~25.2
+>    REAL    , PARAMETER :: wz0           = 1.e-2      ! surface roughness (m) ~0.01
+>    REAL    , PARAMETER :: wlmixmin      = 30         ! longueur de melange ~100
+>    REAL    , PARAMETER :: wemin_turb    = 1.e-6      ! energie minimale ~1.e-8 
+>    REAL    , PARAMETER :: wemissiv      = 0.95       ! Emissivite du sol martien ~.95
+>    REAL    , PARAMETER :: wemissiceN    = 0.95       ! Emissivite calotte nord
+>    REAL    , PARAMETER :: wemissiceS    = 0.95       ! Emissivite calotte sud
+>    REAL    , PARAMETER :: walbediceN    = 0.65        ! Albedo calotte nord !0.5
+>    REAL    , PARAMETER :: walbediceS    = 0.65        ! Albedo calotte sud  !0.5
+>    REAL    , PARAMETER :: wiceradiusN   = 100.e-6    ! mean scat radius of CO2 snow (north)
+>    REAL    , PARAMETER :: wiceradiusS   = 100.e-6    ! mean scat radius of CO2 snow (south)
+>    REAL    , PARAMETER :: wdtemisiceN   = 0.4  ! time scale for snow metamorphism (north) !2  
+>    REAL    , PARAMETER :: wdtemisiceS   = 0.4  ! time scale for snow metamorphism (south) !2 
+> !
+> !-------------------------------
+> 
+> !   REAL    , PARAMETER :: asselin      = .025
+>    REAL    , PARAMETER :: asselin      = .0
+64,65c92,93
+<    REAL    , PARAMETER :: rhoair0      = 1.28
+< 
+---
+>    REAL    , PARAMETER :: rhoair0      = 0.02   !Earth Surface density: 1.217 kg/m3
+>                                                 !Mars Surface density: 0.020 kg/m3
+67c95
+<    REAL    , PARAMETER :: DPD          = 360./365.
+---
+>    REAL    , PARAMETER :: DPD          = 360./669. ! longitude solaire d'un jour?
+75,77c103,105
+<    REAL    , PARAMETER ::  KARMAN=0.4
+<    REAL    , PARAMETER ::  EOMEG=7.2921E-5
+<    REAL    , PARAMETER ::  STBOLT=5.67051E-8
+---
+>    REAL    , PARAMETER ::  KARMAN=0.4  ! von karman constant 
+>    REAL    , PARAMETER ::  EOMEG=7.0721E-5 ! angular rotation rate (rad.s-1)
+>    REAL    , PARAMETER ::  STBOLT=5.67051E-8 ! stefan-boltzmann constant
+89c117,118
+< !      REAL , PARAMETER ::  epsq2=0.02
+---
+> !try both ?
+> !       REAL , PARAMETER ::  epsq2=0.02
+106a136
+> !       REAL , PARAMETER ::  fcm=0.003
+107a138
+> !       REAL , PARAMETER ::  fcm=0.0
+127a159
+> !       REAL , PARAMETER ::  z0max=0.01

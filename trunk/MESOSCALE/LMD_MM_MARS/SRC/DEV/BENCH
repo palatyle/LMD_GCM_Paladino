@@ -1,0 +1,236 @@
+**** TESTCASE du USER MANUAL ****
+LMD_MM_MARS avec ancienne physique
+run sur 4 processeurs
+mm reglages et conditions limite
+physique complete avec transfert 
+-- radiatif appelee a chaque pas de temps
+
+**** ULRICH [poweredge aymeric local] + PGF90
+*********************************************
+**** [RIEN EN LOCAL, SAUF SORTIES. COMPILATIONS SUR ULRICH]
+Timing for Writing wrfout_d01_2024-01-17_03:00:00 for domain        1:    0.02314 elapsed seconds.
+Timing for processing lateral boundary for domain        1:    0.00407 elapsed seconds.
+Timing for main: time 2024-01-17_03:00:50 on domain   1:    0.40065 elapsed seconds.
+Timing for main: time 2024-01-17_03:01:00 on domain   1:    0.26680 elapsed seconds.
+Timing for main: time 2024-01-17_03:01:50 on domain   1:    0.37349 elapsed seconds.
+Timing for main: time 2024-01-17_03:02:00 on domain   1:    0.26571 elapsed seconds.
+Timing for main: time 2024-01-17_03:02:50 on domain   1:    0.37397 elapsed seconds.
+Timing for main: time 2024-01-17_03:03:00 on domain   1:    0.26652 elapsed seconds.
+Timing for main: time 2024-01-17_03:03:50 on domain   1:    0.37360 elapsed seconds.
+Timing for main: time 2024-01-17_03:04:00 on domain   1:    0.26612 elapsed seconds.
+Timing for main: time 2024-01-17_03:04:50 on domain   1:    0.37473 elapsed seconds.
+Timing for main: time 2024-01-17_03:05:00 on domain   1:    0.26497 elapsed seconds.
+**** [TOUT EN LOCAL: LIB NETCDF, OPENMPI, COMPILATION -- PAS DATAFILE]
+Timing for Writing wrfout_d01_2024-01-17_03:00:00 for domain        1:    0.02330 elapsed seconds.
+Timing for processing lateral boundary for domain        1:    0.00409 elapsed seconds.
+Timing for main: time 2024-01-17_03:00:50 on domain   1:    0.40320 elapsed seconds.
+Timing for main: time 2024-01-17_03:01:00 on domain   1:    0.26623 elapsed seconds.
+Timing for main: time 2024-01-17_03:01:50 on domain   1:    0.37511 elapsed seconds.
+Timing for main: time 2024-01-17_03:02:00 on domain   1:    0.26635 elapsed seconds.
+Timing for main: time 2024-01-17_03:02:50 on domain   1:    0.37413 elapsed seconds.
+Timing for main: time 2024-01-17_03:03:00 on domain   1:    0.26715 elapsed seconds.
+Timing for main: time 2024-01-17_03:03:50 on domain   1:    0.37417 elapsed seconds.
+Timing for main: time 2024-01-17_03:04:00 on domain   1:    0.26785 elapsed seconds.
+Timing for main: time 2024-01-17_03:04:50 on domain   1:    0.37543 elapsed seconds.
+Timing for main: time 2024-01-17_03:05:00 on domain   1:    0.26784 elapsed seconds.
+**** [TOUT EN LOCAL: LIB NETCDF, OPENMPI, DATAFILES, COMPILATION]
+Timing for Writing wrfout_d01_2024-01-17_03:00:00 for domain        1:    0.02536 elapsed seconds.
+Timing for processing lateral boundary for domain        1:    0.00635 elapsed seconds.
+Timing for main: time 2024-01-17_03:00:50 on domain   1:    0.39876 elapsed seconds.
+Timing for main: time 2024-01-17_03:01:00 on domain   1:    0.29662 elapsed seconds.
+Timing for main: time 2024-01-17_03:01:50 on domain   1:    0.37271 elapsed seconds.
+Timing for main: time 2024-01-17_03:02:00 on domain   1:    0.30512 elapsed seconds.
+Timing for main: time 2024-01-17_03:02:50 on domain   1:    0.36549 elapsed seconds.
+Timing for main: time 2024-01-17_03:03:00 on domain   1:    0.29042 elapsed seconds.
+Timing for main: time 2024-01-17_03:03:50 on domain   1:    0.35004 elapsed seconds.
+Timing for main: time 2024-01-17_03:04:00 on domain   1:    0.28724 elapsed seconds.
+Timing for main: time 2024-01-17_03:04:50 on domain   1:    0.36737 elapsed seconds.
+Timing for main: time 2024-01-17_03:05:00 on domain   1:    0.29685 elapsed seconds.
+**** [COMPILATION SUR PENN]
+Timing for Writing wrfout_d01_2024-01-17_03:00:00 for domain        1:    0.01938 elapsed seconds.
+Timing for processing lateral boundary for domain        1:    0.00538 elapsed seconds.
+Timing for main: time 2024-01-17_03:00:50 on domain   1:    0.44229 elapsed seconds.
+Timing for main: time 2024-01-17_03:01:00 on domain   1:    0.30861 elapsed seconds.
+Timing for main: time 2024-01-17_03:01:50 on domain   1:    0.41548 elapsed seconds.
+Timing for main: time 2024-01-17_03:02:00 on domain   1:    0.30718 elapsed seconds.
+Timing for main: time 2024-01-17_03:02:50 on domain   1:    0.41650 elapsed seconds.
+Timing for main: time 2024-01-17_03:03:00 on domain   1:    0.30997 elapsed seconds.
+Timing for main: time 2024-01-17_03:03:50 on domain   1:    0.41756 elapsed seconds.
+Timing for main: time 2024-01-17_03:04:00 on domain   1:    0.30706 elapsed seconds.
+Timing for main: time 2024-01-17_03:04:50 on domain   1:    0.41613 elapsed seconds.
+Timing for main: time 2024-01-17_03:05:00 on domain   1:    0.30891 elapsed seconds.
+**** [COMPILATION SUR ULRICH]
+Timing for Writing wrfout_d01_2024-01-17_03:00:00 for domain        1:    0.01938 elapsed seconds.
+Timing for processing lateral boundary for domain        1:    0.00547 elapsed seconds.
+Timing for main: time 2024-01-17_03:00:50 on domain   1:    0.44636 elapsed seconds.
+Timing for main: time 2024-01-17_03:01:00 on domain   1:    0.30860 elapsed seconds.
+Timing for main: time 2024-01-17_03:01:50 on domain   1:    0.41693 elapsed seconds.
+Timing for main: time 2024-01-17_03:02:00 on domain   1:    0.30779 elapsed seconds.
+Timing for main: time 2024-01-17_03:02:50 on domain   1:    0.41639 elapsed seconds.
+Timing for main: time 2024-01-17_03:03:00 on domain   1:    0.30656 elapsed seconds.
+Timing for main: time 2024-01-17_03:03:50 on domain   1:    0.41724 elapsed seconds.
+Timing for main: time 2024-01-17_03:04:00 on domain   1:    0.30721 elapsed seconds.
+Timing for main: time 2024-01-17_03:04:50 on domain   1:    0.41772 elapsed seconds.
+Timing for main: time 2024-01-17_03:05:00 on domain   1:    0.31679 elapsed seconds.
+
+**** PENN [nouvelle ferme de calcul] + PGF90
+********************************************
+Timing for Writing wrfout_d01_2024-01-17_03:00:00 for domain        1:    0.02036 elapsed seconds.
+Timing for processing lateral boundary for domain        1:    0.00628 elapsed seconds.
+Timing for main: time 2024-01-17_03:00:50 on domain   1:    0.40152 elapsed seconds.
+Timing for main: time 2024-01-17_03:01:00 on domain   1:    0.25887 elapsed seconds.
+Timing for main: time 2024-01-17_03:01:50 on domain   1:    0.37387 elapsed seconds.
+Timing for main: time 2024-01-17_03:02:00 on domain   1:    0.25844 elapsed seconds.
+Timing for main: time 2024-01-17_03:02:50 on domain   1:    0.37397 elapsed seconds.
+Timing for main: time 2024-01-17_03:03:00 on domain   1:    0.25864 elapsed seconds.
+Timing for main: time 2024-01-17_03:03:50 on domain   1:    0.37400 elapsed seconds.
+Timing for main: time 2024-01-17_03:04:00 on domain   1:    0.25871 elapsed seconds.
+Timing for main: time 2024-01-17_03:04:50 on domain   1:    0.37362 elapsed seconds.
+Timing for main: time 2024-01-17_03:05:00 on domain   1:    0.25855 elapsed seconds.
+**** OPTIONS AGGRESSIVES
+Timing for Writing wrfout_d01_2024-01-17_03:00:00 for domain        1:    0.02100 elapsed seconds.
+Timing for processing lateral boundary for domain        1:    0.00592 elapsed seconds.
+Timing for main: time 2024-01-17_03:00:50 on domain   1:    0.40633 elapsed seconds.
+Timing for main: time 2024-01-17_03:01:00 on domain   1:    0.29322 elapsed seconds.
+Timing for main: time 2024-01-17_03:01:50 on domain   1:    0.35327 elapsed seconds.
+Timing for main: time 2024-01-17_03:02:00 on domain   1:    0.28635 elapsed seconds.
+Timing for main: time 2024-01-17_03:02:50 on domain   1:    0.36557 elapsed seconds.
+Timing for main: time 2024-01-17_03:03:00 on domain   1:    0.29840 elapsed seconds.
+Timing for main: time 2024-01-17_03:03:50 on domain   1:    0.36257 elapsed seconds.
+Timing for main: time 2024-01-17_03:04:00 on domain   1:    0.29930 elapsed seconds.
+Timing for main: time 2024-01-17_03:04:50 on domain   1:    0.35682 elapsed seconds.
+Timing for main: time 2024-01-17_03:05:00 on domain   1:    0.30329 elapsed seconds.
+**** [TOUT EN LOCAL: LIB NETCDF, OPENMPI, DATAFILES, COMPILATION] + OPTIONS AGGRESSIVES
+Timing for Writing wrfout_d01_2024-01-17_03:00:00 for domain        1:    0.02536 elapsed seconds.
+Timing for processing lateral boundary for domain        1:    0.00635 elapsed seconds.
+Timing for main: time 2024-01-17_03:00:50 on domain   1:    0.39876 elapsed seconds.
+Timing for main: time 2024-01-17_03:01:00 on domain   1:    0.29662 elapsed seconds.
+Timing for main: time 2024-01-17_03:01:50 on domain   1:    0.37271 elapsed seconds.
+Timing for main: time 2024-01-17_03:02:00 on domain   1:    0.30512 elapsed seconds.
+Timing for main: time 2024-01-17_03:02:50 on domain   1:    0.36549 elapsed seconds.
+Timing for main: time 2024-01-17_03:03:00 on domain   1:    0.29042 elapsed seconds.
+Timing for main: time 2024-01-17_03:03:50 on domain   1:    0.35004 elapsed seconds.
+Timing for main: time 2024-01-17_03:04:00 on domain   1:    0.28724 elapsed seconds.
+Timing for main: time 2024-01-17_03:04:50 on domain   1:    0.36737 elapsed seconds.
+Timing for main: time 2024-01-17_03:05:00 on domain   1:    0.29685 elapsed seconds.
+
+**** ULRICH + IFORT [open MPI ciclad]
+*************************************
+Timing for Writing wrfout_d01_2024-01-17_03:00:00 for domain        1:    0.03150 elapsed seconds.
+Timing for processing lateral boundary for domain        1:    0.00600 elapsed seconds.
+Timing for main: time 2024-01-17_03:00:50 on domain   1:    0.37020 elapsed seconds.
+Timing for main: time 2024-01-17_03:01:00 on domain   1:    0.26710 elapsed seconds.
+Timing for main: time 2024-01-17_03:01:50 on domain   1:    0.33070 elapsed seconds.
+Timing for main: time 2024-01-17_03:02:00 on domain   1:    0.26710 elapsed seconds.
+Timing for main: time 2024-01-17_03:02:50 on domain   1:    0.33040 elapsed seconds.
+Timing for main: time 2024-01-17_03:03:00 on domain   1:    0.26650 elapsed seconds.
+Timing for main: time 2024-01-17_03:03:50 on domain   1:    0.33100 elapsed seconds.
+Timing for main: time 2024-01-17_03:04:00 on domain   1:    0.26700 elapsed seconds.
+Timing for main: time 2024-01-17_03:04:50 on domain   1:    0.32990 elapsed seconds.
+Timing for main: time 2024-01-17_03:05:00 on domain   1:    0.26660 elapsed seconds.
+
+**** FERME UPMC [gnome iDataPlex] + IFORT
+*****************************************
+Timing for Writing wrfout_d01_2024-01-17_03:00:00 for domain        1:    0.90020 elapsed seconds.
+Timing for processing lateral boundary for domain        1:    0.00600 elapsed seconds.
+Timing for main: time 2024-01-17_03:00:50 on domain   1:    1.25950 elapsed seconds.
+Timing for main: time 2024-01-17_03:01:00 on domain   1:    0.25290 elapsed seconds.
+Timing for main: time 2024-01-17_03:01:50 on domain   1:    0.35220 elapsed seconds.
+Timing for main: time 2024-01-17_03:02:00 on domain   1:    0.25500 elapsed seconds.
+Timing for main: time 2024-01-17_03:02:50 on domain   1:    0.42830 elapsed seconds.
+Timing for main: time 2024-01-17_03:03:00 on domain   1:    0.25290 elapsed seconds.
+Timing for main: time 2024-01-17_03:03:50 on domain   1:    0.35430 elapsed seconds.
+Timing for main: time 2024-01-17_03:04:00 on domain   1:    0.25310 elapsed seconds.
+Timing for main: time 2024-01-17_03:04:50 on domain   1:    0.35210 elapsed seconds.
+Timing for main: time 2024-01-17_03:05:00 on domain   1:    0.25240 elapsed seconds.
+
+**** ULRICH + IFORT [open MPI ciclad] 8 procs
+*********************************************
+Timing for Writing wrfout_d01_2024-01-17_03:00:00 for domain        1:    0.05560 elapsed seconds.
+Timing for processing lateral boundary for domain        1:    0.01020 elapsed seconds.
+Timing for main: time 2024-01-17_03:00:50 on domain   1:    0.39620 elapsed seconds.
+Timing for main: time 2024-01-17_03:01:00 on domain   1:    0.29870 elapsed seconds.
+Timing for main: time 2024-01-17_03:01:50 on domain   1:    0.32720 elapsed seconds.
+Timing for main: time 2024-01-17_03:02:00 on domain   1:    0.27110 elapsed seconds.
+Timing for main: time 2024-01-17_03:02:50 on domain   1:    0.34010 elapsed seconds.
+Timing for main: time 2024-01-17_03:03:00 on domain   1:    0.27070 elapsed seconds.
+Timing for main: time 2024-01-17_03:03:50 on domain   1:    0.32590 elapsed seconds.
+Timing for main: time 2024-01-17_03:04:00 on domain   1:    0.26950 elapsed seconds.
+Timing for main: time 2024-01-17_03:04:50 on domain   1:    0.32590 elapsed seconds.
+Timing for main: time 2024-01-17_03:05:00 on domain   1:    0.27030 elapsed seconds.
+
+**** PENN [nouvelle ferme de calcul] + PGF90 [MPI sur 1 proc seulement]
+***********************************************************************
+Timing for Writing wrfout_d01_2024-01-17_03:00:00 for domain        1:    0.01476 elapsed seconds.
+Timing for processing lateral boundary for domain        1:    0.00443 elapsed seconds.
+Timing for main: time 2024-01-17_03:00:50 on domain   1:    1.14924 elapsed seconds.
+Timing for main: time 2024-01-17_03:01:00 on domain   1:    0.66135 elapsed seconds.
+Timing for main: time 2024-01-17_03:01:50 on domain   1:    1.14865 elapsed seconds.
+Timing for main: time 2024-01-17_03:02:00 on domain   1:    0.70446 elapsed seconds.
+Timing for main: time 2024-01-17_03:02:50 on domain   1:    1.16477 elapsed seconds.
+Timing for main: time 2024-01-17_03:03:00 on domain   1:    0.68162 elapsed seconds.
+Timing for main: time 2024-01-17_03:03:50 on domain   1:    1.13741 elapsed seconds.
+Timing for main: time 2024-01-17_03:04:00 on domain   1:    0.66107 elapsed seconds.
+Timing for main: time 2024-01-17_03:04:50 on domain   1:    1.14676 elapsed seconds.
+Timing for main: time 2024-01-17_03:05:00 on domain   1:    0.69579 elapsed seconds.
+
+**** PENN [nouvelle ferme de calcul] + IFORT [SINGLE PROC avec netcdf gfortran]
+*******************************************************************************
+Timing for Writing wrfout_d01_2024-01-17_03:00:00 for domain        1:    0.01410 elapsed seconds.
+Timing for processing lateral boundary for domain        1:    0.00410 elapsed seconds.
+Timing for main: time 2024-01-17_03:00:50 on domain   1:    0.85280 elapsed seconds.
+Timing for main: time 2024-01-17_03:01:00 on domain   1:    0.58400 elapsed seconds.
+Timing for main: time 2024-01-17_03:01:50 on domain   1:    0.73700 elapsed seconds.
+Timing for main: time 2024-01-17_03:02:00 on domain   1:    0.53530 elapsed seconds.
+Timing for main: time 2024-01-17_03:02:50 on domain   1:    0.74670 elapsed seconds.
+Timing for main: time 2024-01-17_03:03:00 on domain   1:    0.55410 elapsed seconds.
+Timing for main: time 2024-01-17_03:03:50 on domain   1:    0.74380 elapsed seconds.
+Timing for main: time 2024-01-17_03:04:00 on domain   1:    0.53040 elapsed seconds.
+Timing for main: time 2024-01-17_03:04:50 on domain   1:    0.73200 elapsed seconds.
+Timing for main: time 2024-01-17_03:05:00 on domain   1:    0.52310 elapsed seconds.
+**** avec libraires NETCDF compilees avec ifort par Ehouarn
+***********************************************************
+Timing for Writing wrfout_d01_2024-01-17_03:00:00 for domain        1:    0.01240 elapsed seconds.
+Timing for processing lateral boundary for domain        1:    0.00330 elapsed seconds.
+Timing for main: time 2024-01-17_03:00:50 on domain   1:    0.76390 elapsed seconds.
+Timing for main: time 2024-01-17_03:01:00 on domain   1:    0.54920 elapsed seconds.
+Timing for main: time 2024-01-17_03:01:50 on domain   1:    0.75020 elapsed seconds.
+Timing for main: time 2024-01-17_03:02:00 on domain   1:    0.54490 elapsed seconds.
+Timing for main: time 2024-01-17_03:02:50 on domain   1:    0.75930 elapsed seconds.
+Timing for main: time 2024-01-17_03:03:00 on domain   1:    0.56080 elapsed seconds.
+Timing for main: time 2024-01-17_03:03:50 on domain   1:    0.76490 elapsed seconds.
+Timing for main: time 2024-01-17_03:04:00 on domain   1:    0.55860 elapsed seconds.
+Timing for main: time 2024-01-17_03:04:50 on domain   1:    0.77670 elapsed seconds.
+Timing for main: time 2024-01-17_03:05:00 on domain   1:    0.54820 elapsed seconds.
+
+**** ULRICH [poweredge aymeric local] + executable ci-dessus
+************************************************************
+Timing for Writing wrfout_d01_2024-01-17_03:00:00 for domain        1:    0.01220 elapsed seconds.
+Timing for processing lateral boundary for domain        1:    0.00290 elapsed seconds.
+Timing for main: time 2024-01-17_03:00:50 on domain   1:    0.69490 elapsed seconds.
+Timing for main: time 2024-01-17_03:01:00 on domain   1:    0.48290 elapsed seconds.
+Timing for main: time 2024-01-17_03:01:50 on domain   1:    0.67980 elapsed seconds.
+Timing for main: time 2024-01-17_03:02:00 on domain   1:    0.48270 elapsed seconds.
+Timing for main: time 2024-01-17_03:02:50 on domain   1:    0.67950 elapsed seconds.
+Timing for main: time 2024-01-17_03:03:00 on domain   1:    0.48260 elapsed seconds.
+Timing for main: time 2024-01-17_03:03:50 on domain   1:    0.67960 elapsed seconds.
+Timing for main: time 2024-01-17_03:04:00 on domain   1:    0.48270 elapsed seconds.
+Timing for main: time 2024-01-17_03:04:50 on domain   1:    0.67960 elapsed seconds.
+Timing for main: time 2024-01-17_03:05:00 on domain   1:    0.50120 elapsed seconds.
+
+**** ULRICH [poweredge aymeric local] + PGF90 [PGF single proc]
+***************************************************************
+Timing for Writing wrfout_d01_2024-01-17_03:00:00 for domain        1:    0.01468 elapsed seconds.
+Timing for processing lateral boundary for domain        1:    0.00421 elapsed seconds.
+Timing for main: time 2024-01-17_03:00:50 on domain   1:    1.10895 elapsed seconds.
+Timing for main: time 2024-01-17_03:01:00 on domain   1:    0.64522 elapsed seconds.
+Timing for main: time 2024-01-17_03:01:50 on domain   1:    1.09015 elapsed seconds.
+Timing for main: time 2024-01-17_03:02:00 on domain   1:    0.64544 elapsed seconds.
+Timing for main: time 2024-01-17_03:02:50 on domain   1:    1.08960 elapsed seconds.
+Timing for main: time 2024-01-17_03:03:00 on domain   1:    0.64575 elapsed seconds.
+Timing for main: time 2024-01-17_03:03:50 on domain   1:    1.08922 elapsed seconds.
+Timing for main: time 2024-01-17_03:04:00 on domain   1:    0.64583 elapsed seconds.
+Timing for main: time 2024-01-17_03:04:50 on domain   1:    1.09003 elapsed seconds.
+Timing for main: time 2024-01-17_03:05:00 on domain   1:    0.64583 elapsed seconds.
+
+

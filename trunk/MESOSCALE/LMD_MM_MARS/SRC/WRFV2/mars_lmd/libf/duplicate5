@@ -1,0 +1,76 @@
+#!/bin/bash
+
+./duplicate4  
+
+echo 'duplicate sources for domain 5'
+
+cd aeronomars
+cp ../generate5 .
+find * -exec generate5 {} \;
+\rm *generate5
+cd ..
+
+cd bibio
+cp ../generate5 .
+find * -exec generate5 {} \;
+\rm *generate5
+cd ..
+
+cd phymars
+cp ../generate5 .
+find *.F -exec generate5 {} \;
+find *.h -exec generate5 {} \;
+find *.F90 -exec generate5 {} \;
+find *.inc -exec generate5 {} \;
+\rm *generate5
+cd ..
+
+cd grid
+cp ../generate5 .
+find * -exec generate5 {} \;
+\rm *generate5
+\rm d5_dimension
+cd ..
+
+cd dyn3d
+cp ../generate5 .
+find * -exec generate5 {} \;
+\rm *generate5
+cd ..
+
+\rm aeronomars/d5_d4*
+\rm bibio/d5_d4*
+\rm phymars/d5_d4*
+\rm grid/d5_d4*
+\rm dyn3d/d5_d4*
+
+\rm aeronomars/d4_d5*
+\rm bibio/d4_d5*
+\rm phymars/d4_d5*
+\rm grid/d4_d5*
+\rm dyn3d/d4_d5*
+
+\rm aeronomars/d5_d3*
+\rm bibio/d5_d3*
+\rm phymars/d5_d3*
+\rm grid/d5_d3*
+\rm dyn3d/d5_d3*
+
+\rm aeronomars/d3_d5*
+\rm bibio/d3_d5*
+\rm phymars/d3_d5*
+\rm grid/d3_d5*
+\rm dyn3d/d3_d5*
+
+\rm aeronomars/d5_d2*
+\rm bibio/d5_d2*
+\rm phymars/d5_d2*
+\rm grid/d5_d2*
+\rm dyn3d/d5_d2*
+
+\rm aeronomars/d2_d5*
+\rm bibio/d2_d5*
+\rm phymars/d2_d5*
+\rm grid/d2_d5*
+\rm dyn3d/d2_d5*
+  

@@ -1,0 +1,44 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+nlev=61
+altmax=120.    ;; altitude maximale en km
+;;
+epsilon=30.    ;; augmentation totale en pourcentage de l'ecart max (modifie inflexion)
+               ;; -- epsilon = 0   : point d'inflexion parfaitement plat
+               ;; -- epsilon = 100 : pas de point d'inflexion
+elong_cos=2./3.  ;; plus petit rapproche l'inflexion du sol ;; 2/3 parfait pour un nlev divisible par 3
+elong_cos=0.64
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;nlev=61
+;altmax=150.
+;epsilon=30.
+;elong_cos=2./3.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+nlev=61
+altmax=150.
+epsilon=100.
+elong_cos=2.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+nlev=201
+altmax=150.
+epsilon=0.
+elong_cos=2.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;nlev=101
+;altmax=80. ;;100.
+;epsilon=100.
+;elong_cos=60.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+nlev=61
+altmax=60. ;;100.
+epsilon=100.
+elong_cos=2.*3.14/3.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+nlev=61
+altmax=20. ;;100.
+epsilon=100.
+elong_cos=2.*3.14/3.
+elong_cos=20.

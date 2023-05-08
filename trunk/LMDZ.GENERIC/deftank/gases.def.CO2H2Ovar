@@ -1,0 +1,13 @@
+# gases
+2
+CO2
+H2O
+1.0
+-1
+
+# First line is number of gases
+# Followed by gas names (always 3 characters)
+# and then mixing ratios.
+# mixing ratio -1 means the gas is variable.
+# Gases should be in the same order as in the Q.dat
+# correlated-k radiative transfer file.

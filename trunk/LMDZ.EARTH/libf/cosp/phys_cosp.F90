@@ -1,0 +1,532 @@
+! Simulateur COSP : Cfmip Observation Simulator Package
+! ISCCP, Radar (QuickBeam), Lidar et Parasol (ACTSIM), MISR, RTTOVS
+!Idelkadi Abderrahmane Aout-Septembre 2009
+
+
+  subroutine phys_cosp( itap,dtime,freq_cosp, &
+                        ok_mensuelCOSP,ok_journeCOSP,ok_hfCOSP, &
+                        ecrit_mth,ecrit_day,ecrit_hf, &
+                        Nptslmdz,Nlevlmdz,lon,lat, presnivs,overlaplmdz, &
+                        ref_liq,ref_ice,fracTerLic,u_wind,v_wind,phi,ph,p,skt,t, &
+                        sh,rh,tca,cca,mr_lsliq,mr_lsice,fl_lsrainI,fl_lssnowI, &
+                        fl_ccrainI,fl_ccsnowI,mr_ozone,dtau_s,dem_s)
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!! Inputs :
+! itap,                                 !Increment de la physiq
+! dtime,                                !Pas de temps physiq
+! overlap,                              !Overlap type in SCOPS
+! Npoints,                              !Nb de points de la grille physiq
+! Nlevels,                              !Nb de niveaux verticaux
+! Ncolumns,                             !Number of subcolumns
+! lon,lat,                              !Longitudes et latitudes de la grille LMDZ
+! ref_liq,ref_ice,                      !Rayons effectifs des particules liq et ice (en microm)
+! fracTerLic,                               !Fraction terre a convertir en masque
+! u_wind,v_wind,                        !Vents a 10m ???
+! phi,                                  !Geopotentiel
+! ph,                                   !pression pour chaque inter-couche
+! p,                                    !Pression aux milieux des couches
+! skt,t,                                !Temp au sol et temp 3D
+! sh,                                   !Humidite specifique
+! rh,                                   !Humidite relatif
+! tca,                                  !Fraction nuageuse
+! cca                                   !Fraction nuageuse convective
+! mr_lsliq,                             !Liq Cloud water content
+! mr_lsice,                             !Ice Cloud water content
+! mr_ccliq,                             !Convective Cloud Liquid water content  
+! mr_ccice,                             !Cloud ice water content
+! fl_lsrain,                            !Large scale precipitation lic
+! fl_lssnow,                            !Large scale precipitation ice
+! fl_ccrain,                            !Convective precipitation lic
+! fl_ccsnow,                            !Convective precipitation ice
+! mr_ozone,                             !Concentration ozone (Kg/Kg)
+! dem_s                                 !Cloud optical emissivity
+! dtau_s               			!Cloud optical thickness
+! emsfc_lw = 1.        			!Surface emissivity dans radlwsw.F90
+
+!!! Outputs :
+! calipso2D,                            !Lidar Low/heigh/Mean/Total-level Cloud Fraction
+! calipso3D,                            !Lidar Cloud Fraction (532 nm)
+! cfadlidar,                            !Lidar Scattering Ratio CFAD (532 nm)
+! parasolrefl,                          !PARASOL-like mono-directional reflectance
+! atb,                                  !Lidar Attenuated Total Backscatter (532 nm)
+! betamol,                              !Lidar Molecular Backscatter (532 nm)
+! cfaddbze,                             !Radar Reflectivity Factor CFAD (94 GHz)
+! clcalipso2,                           !Cloud frequency of occurrence as seen by CALIPSO but not CloudSat
+! dbze,                                 !Efective_reflectivity_factor
+! cltlidarradar,                        !Lidar and Radar Total Cloud Fraction
+! clMISR,                               !Cloud Fraction as Calculated by the MISR Simulator
+! clisccp2,                             !Cloud Fraction as Calculated by the ISCCP Simulator
+! boxtauisccp,                          !Optical Depth in Each Column as Calculated by the ISCCP Simulator
+! boxptopisccp,                         !Cloud Top Pressure in Each Column as Calculated by the ISCCP Simulator
+! tclisccp,                             !Total Cloud Fraction as Calculated by the ISCCP Simulator
+! ctpisccp,                             !Mean Cloud Top Pressure as Calculated by the ISCCP Simulator
+! tauisccp,                             !Mean Optical Depth as Calculated by the ISCCP Simulator
+! albisccp,                             !Mean Cloud Albedo as Calculated by the ISCCP Simulator
+! meantbisccp,                          !Mean all-sky 10.5 micron brightness temperature as calculated by the ISCCP Simulator
+! meantbclrisccp                        !Mean clear-sky 10.5 micron brightness temperature as calculated by the ISCCP Simulator
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  USE MOD_COSP_CONSTANTS
+  USE MOD_COSP_TYPES
+  USE MOD_COSP
+  USE mod_phys_lmdz_para
+  USE mod_grid_phy_lmdz
+  use ioipsl
+  use iophy
+ 
+  IMPLICIT NONE
+
+  ! Local variables
+  character(len=64),PARAMETER  :: cosp_input_nl='cosp_input_nl.txt'
+  character(len=64),PARAMETER  :: cosp_output_nl='cosp_output_nl.txt'
+  character(len=512), save :: finput ! Input file name
+  character(len=512), save :: cmor_nl
+  integer, save :: isccp_topheight,isccp_topheight_direction,overlap
+  integer,save  :: Ncolumns     ! Number of subcolumns in SCOPS
+  integer,parameter :: Ncollmdz=20
+  integer, save :: Npoints      ! Number of gridpoints
+!$OMP THREADPRIVATE(Npoints)
+  integer, save :: Nlevels      ! Number of levels
+  Integer :: Nptslmdz,Nlevlmdz ! Nb de points issus de physiq.F
+  integer, save :: Nlr          ! Number of levels in statistical outputs
+  integer, save :: Npoints_it   ! Max number of gridpoints to be processed in one iteration
+  integer :: i
+  type(cosp_config),save :: cfg   ! Configuration options
+!$OMP THREADPRIVATE(cfg)
+  type(cosp_gridbox) :: gbx ! Gridbox information. Input for COSP
+  type(cosp_subgrid) :: sgx     ! Subgrid outputs
+  type(cosp_sgradar) :: sgradar ! Output from radar simulator
+  type(cosp_sglidar) :: sglidar ! Output from lidar simulator
+  type(cosp_isccp)   :: isccp   ! Output from ISCCP simulator
+  type(cosp_misr)    :: misr    ! Output from MISR simulator
+  type(cosp_vgrid)   :: vgrid   ! Information on vertical grid of stats
+  type(cosp_radarstats) :: stradar ! Summary statistics from radar simulator
+  type(cosp_lidarstats) :: stlidar ! Summary statistics from lidar simulator
+
+  integer :: t0,t1,count_rate,count_max
+  integer :: Nlon,Nlat,geomode
+  real,save :: radar_freq,k2,ZenAng,co2,ch4,n2o,co,emsfc_lw
+!$OMP THREADPRIVATE(emsfc_lw)
+  integer,dimension(RTTOV_MAX_CHANNELS),save :: Channels
+  real,dimension(RTTOV_MAX_CHANNELS),save :: Surfem
+  integer, save :: surface_radar,use_mie_tables,use_gas_abs,do_ray,melt_lay
+  integer, save :: Nprmts_max_hydro,Naero,Nprmts_max_aero,lidar_ice_type
+  integer, save :: platform,satellite,Instrument,Nchannels
+  logical, save :: use_vgrid,csat_vgrid,use_precipitation_fluxes,use_reff
+
+! Declaration necessaires pour les sorties IOIPSL
+  integer :: ii,idayref
+  real    :: zjulian,zstoday,zstomth,zstohf,zout,ecrit_day,ecrit_hf,ecrit_mth
+  logical :: ok_mensuelCOSP,ok_journeCOSP,ok_hfCOSP
+  integer :: nhori,nvert,nvertp,nvertisccp,nvertm,nvertcol
+  integer, save :: nid_day_cosp,nid_mth_cosp,nid_hf_cosp
+!$OMP THREADPRIVATE(nid_day_cosp,nid_mth_cosp,nid_hf_cosp)
+  logical, save :: debut_cosp=.true.
+!$OMP THREADPRIVATE(debut_cosp)
+  integer :: itau_wcosp
+  character(len=10),dimension(Ncollmdz),parameter :: chcol=(/'c01','c02','c03','c04','c05','c06','c07','c08','c09','c10', &
+                                                   'c11','c12','c13','c14','c15','c16','c17','c18','c19','c20'/)
+  real,dimension(Ncollmdz) :: column_ax
+  integer, save :: Nlevout
+!$OMP THREADPRIVATE(Nlevout)
+
+  include "dimensions.h"
+  include "temps.h"  
+  
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Input variables from LMDZ-GCM
+  integer                         :: overlaplmdz   !  overlap type: 1=max, 2=rand, 3=max/rand ! cosp input (output lmdz)
+!  real,dimension(Npoints,Nlevels) :: height,phi,p,ph,T,sh,rh,tca,cca,mr_lsliq,mr_lsice,mr_ccliq,mr_ccice, &
+  real,dimension(Nptslmdz,Nlevlmdz) :: height,phi,p,ph,T,sh,rh,tca,cca,mr_lsliq,mr_lsice,mr_ccliq,mr_ccice, & 
+                                     fl_lsrain,fl_lssnow,fl_ccrain,fl_ccsnow,fl_lsgrpl, &
+                                     zlev,mr_ozone,radliq,radice,dtau_s,dem_s,ref_liq,ref_ice
+  real,dimension(Nptslmdz,Nlevlmdz) ::  fl_lsrainI,fl_lssnowI,fl_ccrainI,fl_ccsnowI
+  real,dimension(Nptslmdz)        :: lon,lat,skt,fracTerLic,u_wind,v_wind
+  real,dimension(Nlevlmdz)        :: presnivs
+  integer                         :: itap,k,ip
+  real                            :: dtime,freq_cosp
+
+!
+   namelist/COSP_INPUT/cmor_nl,overlap,isccp_topheight,isccp_topheight_direction, &
+              npoints_it,ncolumns,nlevels,use_vgrid,nlr,csat_vgrid,finput, &
+              radar_freq,surface_radar,use_mie_tables, &
+              use_gas_abs,do_ray,melt_lay,k2,Nprmts_max_hydro,Naero,Nprmts_max_aero, &
+              lidar_ice_type,use_precipitation_fluxes,use_reff, &
+              platform,satellite,Instrument,Nchannels, &
+              Channels,Surfem,ZenAng,co2,ch4,n2o,co
+
+!---------------- End of declaration of variables --------------
+   
+
+!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+! Read namelist with COSP inputs
+!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+ if (debut_cosp) then
+  NPoints=Nptslmdz
+! Lecture du namelist input 
+  CALL read_cosp_input
+
+! Clefs Outputs 
+  call read_cosp_output_nl(cosp_output_nl,cfg)
+
+    if ( (Ncollmdz.ne.Ncolumns).or. (Nlevlmdz.ne.Nlevels) ) then
+       print*,'Nb points Horiz, Vert, Sub-col passes par physiq.F = ', &
+               Nptslmdz, Nlevlmdz, Ncollmdz
+       print*,'Nb points Horiz, Vert, Sub-col lus dans namelist = ', &
+               Npoints, Nlevels, Ncolumns
+       print*,'Nb points Horiz, Vert, Sub-col passes par physiq.F est different de celui lu par namelist '
+       call abort
+    endif
+    
+    if (overlaplmdz.ne.overlap) then
+       print*,'Attention overlaplmdz different de overlap lu dans namelist '
+    endif
+   print*,'Fin lecture Namelists, debut_cosp =',debut_cosp
+
+  print*,' Cles sorties cosp :'
+  print*,' Lradar_sim,Llidar_sim,Lisccp_sim,Lmisr_sim,Lrttov_sim', &
+          cfg%Lradar_sim,cfg%Llidar_sim,cfg%Lisccp_sim,cfg%Lmisr_sim,cfg%Lrttov_sim
+
+  endif ! debut_cosp
+
+  print*,'Debut phys_cosp itap,dtime,freq_cosp,ecrit_mth,ecrit_day,ecrit_hf ', &
+          itap,dtime,freq_cosp,ecrit_mth,ecrit_day,ecrit_hf
+!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+! Allocate local arrays
+!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+!        call system_clock(t0,count_rate,count_max) !!! Only for testing purposes
+        
+        
+!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+! Allocate memory for gridbox type
+!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        print *, 'Allocating memory for gridbox type...'
+
+        call construct_cosp_gridbox(dble(itap),radar_freq,surface_radar,use_mie_tables,use_gas_abs,do_ray,melt_lay,k2, &
+                                    Npoints,Nlevels,Ncolumns,N_HYDRO,Nprmts_max_hydro,Naero,Nprmts_max_aero,Npoints_it, &
+                                    lidar_ice_type,isccp_topheight,isccp_topheight_direction,overlap,emsfc_lw, &
+                                    use_precipitation_fluxes,use_reff, &
+                                    Platform,Satellite,Instrument,Nchannels,ZenAng, &
+                                    channels(1:Nchannels),surfem(1:Nchannels),co2,ch4,n2o,co,gbx)
+        
+!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+! Here code to populate input structure
+!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+        print *, 'Populating input structure...'
+        gbx%longitude = lon
+        gbx%latitude = lat
+
+        gbx%p = p !
+        gbx%ph = ph
+        gbx%zlev_half = phi/9.81
+
+       do k = 1, Nlevels-1
+       do ip = 1, Npoints
+        zlev(ip,k) = phi(ip,k)/9.81 + (phi(ip,k+1)-phi(ip,k))/9.81 * (ph(ip,k)-ph(ip,k+1))/p(ip,k)
+       enddo
+       enddo
+       do ip = 1, Npoints
+        zlev(ip,Nlevels) = zlev(ip,Nlevels-1)+ 2.*(phi(ip,Nlevels)/9.81-zlev(ip,Nlevels-1))
+       END DO
+        gbx%zlev = zlev
+
+        gbx%T = T
+        gbx%q = rh*100.
+        gbx%sh = sh
+        gbx%cca = cca !convective_cloud_amount (1)
+        gbx%tca = tca ! total_cloud_amount (1)
+        gbx%psfc = ph(:,1) !pression de surface
+        gbx%skt  = skt !Skin temperature (K)
+
+        do ip = 1, Npoints
+          if (fracTerLic(ip).ge.0.5) then
+             gbx%land(ip) = 1.
+          else
+             gbx%land(ip) = 0.
+          endif
+        enddo
+        gbx%mr_ozone  = mr_ozone !mass_fraction_of_ozone_in_air (kg/kg)
+! A voir l equivalent LMDZ (u10m et v10m)
+        gbx%u_wind  = u_wind !eastward_wind (m s-1)
+        gbx%v_wind  = v_wind !northward_wind
+! Attention
+        gbx%sunlit  = 1
+
+! A voir l equivalent LMDZ
+  mr_ccliq = 0.0
+  mr_ccice = 0.0
+        gbx%mr_hydro(:,:,I_LSCLIQ) = mr_lsliq !mixing_ratio_large_scale_cloud_liquid (kg/kg)
+        gbx%mr_hydro(:,:,I_LSCICE) = mr_lsice !mixing_ratio_large_scale_cloud_ic
+        gbx%mr_hydro(:,:,I_CVCLIQ) = mr_ccliq !mixing_ratio_convective_cloud_liquid
+        gbx%mr_hydro(:,:,I_CVCICE) = mr_ccice !mixing_ratio_convective_cloud_ice
+! A revoir
+        fl_lsrain = fl_lsrainI + fl_ccrainI
+        fl_lssnow = fl_lssnowI + fl_ccsnowI
+        gbx%rain_ls = fl_lsrain !flux_large_scale_cloud_rain (kg m^-2 s^-1)
+        gbx%snow_ls = fl_lssnow !flux_large_scale_cloud_snow
+!  A voir l equivalent LMDZ
+        fl_lsgrpl=0.
+        fl_ccsnow = 0.
+        fl_ccrain = 0.
+        gbx%grpl_ls = fl_lsgrpl  !flux_large_scale_cloud_graupel
+        gbx%rain_cv = fl_ccrain  !flux_convective_cloud_rain
+        gbx%snow_cv = fl_ccsnow  !flux_convective_cloud_snow
+
+!Attention Teste
+!       do k = 1, Nlevels
+!        do ip = 1, Npoints
+!!     liquid particles :
+!         radliq(ip,k) = 12.0e-06
+!         if (k.le.3) radliq(ip,k) = 11.0e-06
+
+!    ice particles :
+!        if ( (t(ip,k)-273.15).gt.-81.4 ) then
+!          radice(ip,k) = (0.71*(t(ip,k)-273.15)+61.29)*1e-6
+!        else
+!          radice(ip,k) = 3.5*1e-6
+!        endif
+!       END DO
+!      END DO
+
+!      gbx%Reff(:,:,I_LSCLIQ) = radliq
+!      gbx%Reff(:,:,I_LSCICE) = radice
+!      gbx%Reff(:,:,I_CVCLIQ) = radliq
+!      gbx%Reff(:,:,I_CVCICE) = radice
+!      print*,'radliq(1,:)=',radliq(1,:)
+!      print*,'radice(1,:)=',radice(1,:)
+
+     gbx%Reff(:,:,I_LSCLIQ) = ref_liq*1e-6
+     gbx%Reff(:,:,I_LSCICE) = ref_ice*1e-6
+     gbx%Reff(:,:,I_CVCLIQ) = ref_liq*1e-6
+     gbx%Reff(:,:,I_CVCICE) = ref_ice*1e-6
+!     print*,'ref_liq(1,:)=',ref_liq(1,:)*1e-6
+!     print*,'ref_liq(1,:)=',ref_ice(1,:)*1e-6
+
+        ! ISCCP simulator
+        gbx%dtau_s   = dtau_s
+        gbx%dtau_c   = 0.
+        gbx%dem_s    = dem_s
+        gbx%dem_c    = 0.
+
+! Surafce emissivity
+       emsfc_lw = 1.
+               
+!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        ! Define new vertical grid
+!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        print *, 'Defining new vertical grid...'
+        call construct_cosp_vgrid(gbx,Nlr,use_vgrid,csat_vgrid,vgrid)
+
+ if (debut_cosp) then
+! Creer le fichier de sorie, definir les variable de sortie
+  ! Axe verticale (Pa ou Km)
+     Nlevout = vgrid%Nlvgrid
+   
+        do ii=1,Ncolumns
+          column_ax(ii) = real(ii)
+        enddo
+
+ if (ok_mensuelCOSP) then
+     include "ini_histmthCOSP.h"
+ endif
+ if (ok_journeCOSP) then
+     include "ini_histdayCOSP.h"
+ endif
+ if (ok_hfCOSP) then
+     include "ini_histhfCOSP.h"
+ endif
+
+!   print*,'Fin Initialisation des sorties COSP, debut_cosp =',debut_cosp 
+!   print*,'R_UNDEF=',R_UNDEF
+
+   debut_cosp=.false.
+  endif ! debut_cosp
+
+!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+       ! Allocate memory for other types
+!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        print *, 'Allocating memory for other types...'
+        call construct_cosp_subgrid(Npoints, Ncolumns, Nlevels, sgx)
+        call construct_cosp_sgradar(cfg,Npoints,Ncolumns,Nlevels,N_HYDRO,sgradar)
+        call construct_cosp_radarstats(cfg,Npoints,Ncolumns,vgrid%Nlvgrid,N_HYDRO,stradar)
+        call construct_cosp_sglidar(cfg,Npoints,Ncolumns,Nlevels,N_HYDRO,PARASOL_NREFL,sglidar)
+        call construct_cosp_lidarstats(cfg,Npoints,Ncolumns,vgrid%Nlvgrid,N_HYDRO,PARASOL_NREFL,stlidar)
+        call construct_cosp_isccp(cfg,Npoints,Ncolumns,Nlevels,isccp)
+        call construct_cosp_misr(cfg,Npoints,misr)
+!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        ! Call simulator
+!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        print *, 'Calling simulator...'
+        call cosp(overlap,Ncolumns,cfg,vgrid,gbx,sgx,sgradar,sglidar,isccp,misr,stradar,stlidar)
+!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        ! Write outputs to CMOR-compliant NetCDF
+!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+! A traiter le cas ou l on a des valeurs indefinies
+! Attention teste
+
+! if(1.eq.0)then
+
+
+   do k = 1,Nlevout
+     do ip = 1,Npoints
+     if(stlidar%lidarcld(ip,k).eq.R_UNDEF)then
+      stlidar%lidarcld(ip,k)=0.
+     endif
+     enddo
+
+
+     do ii= 1,SR_BINS
+      do ip = 1,Npoints
+       if(stlidar%cfad_sr(ip,ii,k).eq.R_UNDEF)then
+        stlidar%cfad_sr(ip,ii,k)=0.
+       endif
+      enddo
+     enddo
+   enddo   
+   
+  do ip = 1,Npoints
+   do k = 1,Nlevlmdz 
+     if(sglidar%beta_mol(ip,k).eq.R_UNDEF)then
+      sglidar%beta_mol(ip,k)=0.
+     endif
+    
+     do ii= 1,Ncolumns
+       if(sglidar%beta_tot(ip,ii,k).eq.R_UNDEF)then
+        sglidar%beta_tot(ip,ii,k)=0.
+       endif  
+     enddo
+
+    enddo    !k = 1,Nlevlmdz
+   enddo     !ip = 1,Npoints
+
+   do k = 1,LIDAR_NCAT
+    do ip = 1,Npoints
+     if(stlidar%cldlayer(ip,k).eq.R_UNDEF)then
+      stlidar%cldlayer(ip,k)=0.
+     endif
+    enddo
+   enddo
+
+! endif 
+
+   do ip = 1,Npoints
+    if(isccp%totalcldarea(ip).eq.-1.E+30)then
+      isccp%totalcldarea(ip)=0.
+    endif
+    if(isccp%meanptop(ip).eq.-1.E+30)then
+      isccp%meanptop(ip)=0.
+    endif
+    if(isccp%meantaucld(ip).eq.-1.E+30)then
+      isccp%meantaucld(ip)=0.
+    endif
+    if(isccp%meanalbedocld(ip).eq.-1.E+30)then
+      isccp%meanalbedocld(ip)=0.
+    endif
+    if(isccp%meantb(ip).eq.-1.E+30)then
+      isccp%meantb(ip)=0.
+    endif
+    if(isccp%meantbclr(ip).eq.-1.E+30)then
+      isccp%meantbclr(ip)=0.
+    endif
+
+    do k=1,7
+     do ii=1,7
+     if(isccp%fq_isccp(ip,ii,k).eq.-1.E+30)then
+      isccp%fq_isccp(ip,ii,k)=0.
+     endif
+     enddo
+    enddo
+
+    do ii=1,Ncolumns
+     if(isccp%boxtau(ip,ii).eq.-1.E+30)then
+       isccp%boxtau(ip,ii)=0.
+     endif
+    enddo
+
+    do ii=1,Ncolumns
+     if(isccp%boxptop(ip,ii).eq.-1.E+30)then
+       isccp%boxptop(ip,ii)=0.
+     endif
+    enddo
+   enddo
+
+ if (ok_mensuelCOSP) then
+  include "write_histmthCOSP.h"
+ endif
+ if (ok_journeCOSP) then
+  include "write_histdayCOSP.h"
+ endif
+ if (ok_hfCOSP ) then
+  include "write_histhfCOSP.h"
+ endif
+
+!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        ! Deallocate memory in derived types
+!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        print *, 'Deallocating memory...'
+        call free_cosp_gridbox(gbx)
+        call free_cosp_subgrid(sgx)
+        call free_cosp_sgradar(sgradar)
+        call free_cosp_radarstats(stradar)
+        call free_cosp_sglidar(sglidar)
+        call free_cosp_lidarstats(stlidar)
+        call free_cosp_isccp(isccp)
+        call free_cosp_misr(misr)
+        call free_cosp_vgrid(vgrid)  
+  
+!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  ! Time in s. Only for testing purposes
+!  call system_clock(t1,count_rate,count_max)
+!  print *,(t1-t0)*1.0/count_rate
+ 
+  CONTAINS 
+  
+  SUBROUTINE read_cosp_input
+    
+    IF (is_master) THEN
+      OPEN(10,file=cosp_input_nl,status='old')
+      READ(10,nml=cosp_input)
+      CLOSE(10)
+    ENDIF
+    CALL bcast(cmor_nl)
+    CALL bcast(overlap)
+    CALL bcast(isccp_topheight)
+    CALL bcast(isccp_topheight_direction)
+    CALL bcast(npoints_it)
+    CALL bcast(ncolumns)
+    CALL bcast(nlevels)
+    CALL bcast(use_vgrid)
+    CALL bcast(nlr)
+    CALL bcast(csat_vgrid)
+    CALL bcast(finput)
+    CALL bcast(radar_freq)
+    CALL bcast(surface_radar)
+    CALL bcast(use_mie_tables)
+    CALL bcast(use_gas_abs)
+    CALL bcast(do_ray)
+    CALL bcast(melt_lay)
+    CALL bcast(k2)
+    CALL bcast(Nprmts_max_hydro)
+    CALL bcast(Naero)
+    CALL bcast(Nprmts_max_aero)
+    CALL bcast(lidar_ice_type)
+    CALL bcast(use_precipitation_fluxes)
+    CALL bcast(use_reff)
+    CALL bcast(platform)
+    CALL bcast(satellite)
+    CALL bcast(Instrument)
+    CALL bcast(Nchannels)
+    CALL bcast(Channels)
+    CALL bcast(Surfem)
+    CALL bcast(ZenAng)
+    CALL bcast(co2)
+    CALL bcast(ch4)
+    CALL bcast(n2o)
+    CALL bcast(co)
+!$OMP BARRIER  
+  END SUBROUTINE read_cosp_input 
+
+end subroutine phys_cosp

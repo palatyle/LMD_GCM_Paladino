@@ -1,0 +1,20 @@
+# $Id: arch-X64_JEANZAY.fcm 3572 2019-10-01 15:26:00Z emillour $
+%COMPILER            mpiifort
+%LINK                mpiifort
+%AR                  ar
+%ARFLAGS             rs
+%MAKE                gmake
+%FPP_FLAGS           -P -traditional
+%CPP_FLAGS           -P
+%FPP_DEF             NC_DOUBLE LAPACK FFT_MKL
+%BASE_FFLAGS         -integer-size 32 -real-size 64 -auto -align all
+%PROD_FFLAGS         -O2 -ip -fp-model strict -axAVX,SSE4.2
+%DEV_FFLAGS          -fp-model strict -p -g -O2 -traceback -fp-stack-check
+%DEBUG_FFLAGS        -fp-model strict -p -g -O0 -fpe-all=0 -traceback -fp-stack-check -ftrapuv -ftrapuv -check bounds,noarg_temp_created,pointers,stack,uninit -debug full -ftz -init=arrays,snan
+%C_COMPILER          gcc
+%C_OPTIM             -O3
+%MPI_FFLAGS
+%OMP_FFLAGS          -openmp -openmp-threadprivate=compat
+%BASE_LD             -i4 -r8 -auto -lmkl_intel_lp64 -lmkl_core -lmkl_sequential -lpthread
+%MPI_LD
+%OMP_LD              -openmp -openmp-threadprivate=compat

@@ -1,0 +1,50 @@
+#!/bin/bash
+# Usage:
+# ./build_gcm [path]
+# where 'path' is an optional argument to this script specifying
+# the full path to where the 'fcm' command is to be found
+
+if test -f '.lock' 
+  then
+    echo 'ATTENTION: vous etes sans doute en train de compiler le modele par ailleurs'
+    echo "Attendez que la premiere compilation soit terminee pour relancer la suivante."
+    echo "Si vous etes sur que vous ne compilez pas le modele par ailleurs,"
+    echo "vous pouvez continuer en repondant oui."
+    echo "Voulez-vous vraiment continuer?"
+    echo ""
+    echo "WARNING: you are probably already compiling the model somewhere else."
+    echo "Wait until the first compilation is finished before launching this one."
+    echo "If you are sure that you are not compiling elsewhere, just answer "
+    echo "yes (or 'oui') to the question below to proceed."
+    echo "Do you wish to continue?"
+    read ouinon
+    if [[ $ouinon == "oui" || $ouinon == "yes" ]] 
+	then
+	echo OK 
+    else
+	exit
+    fi
+else
+    echo "compiling..." > '.lock'
+fi
+
+job=1
+dirname="" #path to where the fcm command will be found
+if (( $# >= 1 )) ; then
+  dirname=$1
+  # check that "dirname" exists and is a directory
+  if [[ ! -d $dirname ]] ; then
+    echo "$0 error : $dirname is not a directory"
+    exit
+  fi
+  # add a trailing "/" to $dirname
+  dirname=${dirname}"/"
+  shift;
+fi
+
+# run "fcm build" command
+${dirname}fcm build $*
+
+# cleanup
+\rm -f '.lock' 
+

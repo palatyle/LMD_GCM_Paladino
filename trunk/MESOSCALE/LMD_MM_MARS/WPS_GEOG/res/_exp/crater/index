@@ -1,0 +1,17 @@
+type=continuous
+signed=yes
+projection=regular_ll
+dx=0.0078
+dy=0.0078
+known_x = 1.
+known_y = 1.
+known_lat = 13.
+known_lon = 157.
+wordsize=2
+tile_x=641
+tile_y=641
+tile_z=1
+tile_bdr=0
+missing_value=0
+units="meters"
+description="Baratoux topography"

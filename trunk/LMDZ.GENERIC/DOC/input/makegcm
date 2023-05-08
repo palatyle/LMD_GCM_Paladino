@@ -1,0 +1,464 @@
+#!/bin/csh
+
+# penser a mettre le -autopar pour le -O (optimisation) pour PARALLEL 2
+setenv PARALLEL 2
+
+# path a changer contenant les sources et les objets du modele
+if ( ! $?LMDGCM ) then
+   echo You must initialize the variable LMDGCM in your environnement
+   echo for instance: "setenv LMDGCM /usr/myself/supergcm" in .cshrc
+   exit
+endif
+if ( ! $?LIBOGCM ) then
+   set LIBOGCM=$LMDGCM/libo
+endif
+if ( ! $?DRSDIR ) then
+   echo You must initialize the variable DRSDIR in your environnement
+   echo for instance: "setenv DRSDIR /usr/myself/drs" in .cshrc
+   exit
+endif
+set model=$LMDGCM
+set libo=$LIBOGCM
+
+########################################################################
+#  Les differentes platformes reconnues
+########################################################################
+set HP=0
+set IBM=0
+set SUN=0
+set CRAY=0
+if ( `uname` == HP-UX ) then
+   set machine=HP
+   set HP=1
+else if (`uname` == SunOS ) then
+   set machine=SUN
+   set SUN=1
+else if ( `uname` == AIX ) then
+   set machine=IBM
+   set IBM=1
+else if ( `hostname` == atlas || `hostname` == axis ) then
+   set machine=CRAY
+   set CRAY=1
+else
+   echo Vous travaillez sur une machine non prevue par le reglement
+   exit
+endif
+
+if $CRAY then
+set libo=$WORKDIR/libo
+endif
+if ( ! -d $libo )  then
+   mkdir $libo
+endif
+set drs=$DRSDIR
+
+########################################################################
+# options par defaut pour la commande make
+########################################################################
+
+echo model $model
+set dim="32x24x25"
+set physique=mars
+set phys="PHYS=mars"
+set include='-I$(LIBF)/grid -I$(LIBF)/dyn3d -I$(LIBF)/bibio -I. '
+set ntrac = 0
+set filtre=filtrez
+set grille=reg
+
+set cray=""
+set dyn=
+set opt_link=""
+set adjnt=""
+set opt_dep=""
+
+########################################################################
+#  Optimisations par defaut suivant les machines
+########################################################################
+
+set libf=$model/libf
+set localdir="LOCAL_DIR=`pwd`"
+cd $model
+if $HP then
+   set optim=" +U77 -O -K +E1 "
+else if $SUN then
+   set optim=" -fast -autopar"
+#  set optim=" -Ztha -fast -autopar"
+#  set optim=" -C -g -Xlist"
+#   set optim=" -fast"
+else if $IBM then
+   set optim=" -O3 -qtune=pwr2 -qarch=pwr2"
+else
+   set optim=""
+endif
+
+if ( ! $CRAY ) then
+set nomlib=$machine
+endif
+
+
+########################################################################
+# lecture des options de mymake
+########################################################################
+
+top:
+if ($#argv > 0) then
+    switch ($1:q)
+
+    case -h:
+
+########################################################################
+# Manuel en ligne
+########################################################################
+more <<eod
+
+
+makegcm [Options] prog
+
+
+
+
+Par default, la commande makegcm:
+---------------------------------
+
+1. compile une serie de sous programmes se trouvant dans des sous-repertoires
+de $LMDGCM/libf
+2. Ensuite, makegcm compile le programme prog.f se trouvant par default sur
+$LMDGCM/libf/dyn3d et effectue le lien avec l'ensemble des librairies.
+
+La commande makegcm est faite pour permettre de gerer en parallele des
+versions differentes du modele, compilees avec des options de compilation
+et des dimensions differentes sans avoir a chaque fois a recompiler tout le
+modele.
+
+Les librairies FORTRAN sont stoquees sur le directory $LIBOGCM.
+
+
+OPTIONS:
+--------
+
+Les options suivantes peuvent etre definies soit par defaut en editant le
+"script" makegcm, soit en interactif:
+
+-d imxjmxlm  ou im, jm, et lm sont resp. le nombre de longitudes, latitudes
+             et couches verticales. 
+
+-t ntrac   selectionne le nombre de traceur advectes par la dynamique.
+           Dans les versions courantes du modele terrestre on a par exemple
+           ntrac=2 pour l'eau vapeur et liquide
+
+             L'effet des options -d et -t est d'ecraser le fichier 
+             $LMDGCM/libf/grid/dimensions.h
+             qui contient sous forme de 4 PARAMETER FORTRAN les 3 dimensions
+             de la grille horizontale im, jm, lm plus le nombre de traceurs
+             advectes passivement par la dynamique ntrac, par un nouveu fichier
+             $LMDGCM/libf/grid/dimension/dimensions.im.jm.lm.tntrac
+             Si ce fichier n'existe pas encore, il est cree par le script
+             $LMDGCM/libf/grid/dimension/makdim
+
+-p PHYS    pour selectionner le jeu de parametrisations physiques avec
+           lequel on veut compiler le modele.
+           Le modele sera alors compile en prenant les sources des
+           parametrisations physiques dans le repertoire:
+            $LMDGCM/libf/phyPHYS
+
+-g grille  selectionne le type de grille qu'on veut utiliser.
+           L'effet de cette option est d'ecraser le fichier
+           $LMDGCM/libf/grid/fxyprim.h avec le fichier
+           $LMDGCM/libf/grid/fxy_grille.h
+           La grille peut prendre les valeurs:
+           1. reg pour la grille reguliere
+           2. sin pour avoir des points equidistants en sinus de la latitude
+           3. new pour pouvoir zoomer sur une partie du globe
+
+-O "optimisation fortran" ou les optimisations fortran sont les options de la
+            commande f77
+
+-include path
+           Dans le cas ou on a dans des sous programmes des fichiers 
+           #include (cpp) qui se trouve sur des repertoires non references
+           par defaut
+
+-adjnt     Pour compiler la l'adjoint du code dynamique
+
+-filtre  filtre
+           Pour choisir le filtre en longitude dans les regions polaires.
+           "filtre" correspond au nom d'un repertoire se trouvant sur
+           $LMDGCM/libf. Le filtre standard du modele est "filtrez" qui peut
+           etre utilise aussi bien pour une grille reguliere que pour une 
+           grille zoomee en longitude.
+
+-link "-Ldir1 -lfile1 -Ldir2 -lfile2 ..."
+          Pour rajouter un lien avec les librairies FORTRAN
+          libfile1.a, libfile2.a ... se trouvant respectivement sur les
+          repertoires dir1, dir2 ...
+          Si dirn est un repertoire dont le chemin est automatique (comme
+          par exemple /usr/lib ...) il n'est pas besoin de specifier -Ldirn.
+
+Auteur: Frederic Hourdin  (hourdin@lmd.jussieu.fr)
+eod
+exit
+
+########################################################################
+# Lecture des differentes options
+########################################################################
+
+    case -d:
+        set dim=$2 ; shift ; shift ; goto top
+                        
+    case -O:
+        set optim="$2" ; shift ; shift ; goto top
+
+     case -p
+        set physique="$2" ; set phys="PHYS=$physique" ; shift ; shift ; goto top
+
+     case -g
+        set grille="$2" ; shift ; shift ; goto top
+
+     case -t
+        set ntrac=$2 ; shift ; shift ; goto top
+
+     case -include
+        set include="$include -I$2" ; shift ; shift ; goto top
+
+     case -adjnt
+        set opt_dep="$opt_dep adjnt" ; set adjnt="-ladjnt -ldyn3d "
+        set optim="$optim -Dadj" ; shift ; goto top
+
+     case -filtre
+        set filtre=$2 ; shift ; shift ; goto top
+
+     case -link
+        set opt_link="$2" ; shift ; shift ; goto top
+
+     default
+        set code="$1" ; shift ; goto top
+
+   endsw
+endif
+
+########################################################################
+# cas special sans physique
+########################################################################
+if ( "$physique" == 'nophys' ) then
+   set phys="L_PHY= LIBPHY="
+   echo PHYSIQUE $phys
+endif
+
+########################################################################
+# choix du nombre de traceur par defaut si il n'a pas ete choisi,
+# suivant la physique
+########################################################################
+if ( $ntrac == 0  ) then
+    if ( "$physique" == 'nophys' ) then
+        set ntrac=1
+    else if ( "$physique" == 'lmd' ) then
+        set ntrac=2
+    else if ( "$physique" == 'lmd_test_li' ) then
+        set ntrac=2
+    else if ( "$physique" == 'ec' ) then
+        set ntrac=1
+    else
+        set ntrac = 1
+    endif
+endif
+
+########################################################################
+#subtilites sur le nom de la librairie
+########################################################################
+\rm tmp ; touch tmp
+foreach i ( $optim )
+   echo $i >> tmp
+end
+set suf=
+foreach i ( `sort tmp | uniq ` )
+   set suf=$suf$i
+end
+if ( ! $IBM ) then
+   set nomlib="$nomlib$suf"
+endif
+if $IBM then
+   set dim=`echo $dim | sed -en 's/[^0-9]/ /g'`
+   set dim_=`echo $dim | sed -en 's/[^0-9]/_/g'`
+else
+   set dim=`echo $dim | sed -e 's/[^0-9]/ /gp'`
+   set dim_=`echo $dim | sed -e 's/[^0-9]/_/gp'`
+endif
+set nomlib=${nomlib}_${physique}_${dim_}_t${ntrac}_$grille
+
+########################################################################
+# path pour les #include
+########################################################################
+if $HP then
+set include="$include -I$drs/HP"
+else if $SUN then
+set include="$include -I$drs/SUN"
+else if  $IBM then
+set include="$include -I$drs/IBM"
+else
+set include="$include -I$drs"
+endif
+echo $include
+
+########################################################################
+# on cree ou remplace le fichier des dimensions/nombre de traceur
+########################################################################
+cd $libf/grid/dimension
+makdim $ntrac $dim
+set dimc=`echo $dim | wc -w`
+cat $libf/grid/dimensions.h
+
+
+set libo=$libo/$nomlib
+if ( ! -d $libo )  then
+   mkdir $libo
+   cd $model
+endif
+
+
+########################################################################
+# Differentes dynamiques
+########################################################################
+
+set dimension=`echo $dim | wc -w`
+echo dimension $dimension
+if ( $dimension == 1 ) then
+echo pas de dynamique
+set dyn="L_DYN= DYN= L_FILTRE= DIRMAIN=phy$physique "
+endif
+endif
+cd $model
+if ( $dimension == 3 ) then
+cd libf/grid
+\rm fxyprim.h
+cp -p fxy_${grille}.h fxyprim.h
+endif
+
+######################################################################
+# fonctions CRAY
+######################################################################
+
+if ! $CRAY then
+   set dircray=$model/cray/libf  # repertoire par defaut
+   if $HP then
+      if ( ` echo $optim | grep autodblpad ` != "" ) then
+         set opt_cray="-O +autodblpad"
+         set lib_cray=CrayHPr8
+      else
+         set dircray=$model/cray/libfhp  # versions optimisees pour HP
+         set opt_cray=-O
+         set lib_cray=CrayHP
+      endif
+   endif
+   if $SUN then
+      if ( ` echo $optim | grep r8 | wc -w ` != "0" ) then
+         set opt_cray=-r8
+         set lib_cray=CraySUNr8
+      else
+         set opt_cray=-O3
+         set lib_cray=CraySUN
+      endif
+   endif
+   if $IBM then
+      set opt_cray="-O3 -qtune=pwr2 -qarch=pwr2"
+      set lib_cray=CrayIBM
+   endif
+
+   cd $dircray
+   if ( ! -f makefile ) then
+      newmake
+   endif
+   make OPTIM="$opt_cray" NOM_LIB=$lib_cray
+   set cray="-L$dircray -l$lib_cray"
+
+endif
+
+######################################################################
+# execution de la commande make UNIX
+######################################################################
+
+if ( `expr $dimc \> 2` == 1 ) then
+   set filtre="FILTRE=$filtre"
+else
+   set filtre="FILTRE= L_FILTRE= "
+endif
+echo MACRO FILTRE $filtre
+
+echo $dimc
+
+########################################################################
+#  Avant de lancer le make, on recree le makefile si necessaire
+########################################################################
+# c'est a dire dans 3 cas:
+# 1. si la liste des fichiers .F et .h a ete modifiee depuis la
+#    derniere creation du makefile
+# 2. si le fichier contenant cette liste "liste_des_sources"
+#    n'existe pas.
+# 3. Si le makefile n'existe pas.
+########################################################################
+
+cd $model
+( find libf -name '*.[Fh]' -print ; grep include libf/*/*F ) >! tmp
+
+if (    `diff tmp liste_des_sources | wc -w` \
+     || ! -f makefile \
+     || ! -f liste_des_sources ) then
+        echo les fichiers suivants ont ete crees ou detruits
+        diff liste_des_sources tmp
+        \cp tmp liste_des_sources
+        echo On recree le makefile
+        ./create_make_gcm >! tmp
+        \mv tmp makefile
+        echo Nouveau makefile cree.
+endif
+
+########################################################################
+#  Execution de la comande make
+########################################################################
+
+echo PHYSIQUE $phys
+echo dynamique $dyn $dimension
+echo OPTIM="$optim" $filtre LIBO=$libo $dyn PHYS=$phys DIM=$dimc PROG=$code
+echo PATH pour les fichiers INCLUDE $include
+
+if $HP then
+   set f77='fort77 +OP'
+   set opt_link="$opt_link -lm"
+else
+   set f77=f77
+endif
+
+cd $model
+if ( $SUN || $IBM || $HP ) then
+
+make \
+OPTION_DEP="$opt_dep" OPTION_LINK="$opt_link" \
+OPTIM="$optim" \
+INCLUDE="$include" \
+L_CRAY="$cray" \
+$filtre \
+L_DRS="-L$drs/$machine -ldrs" \
+LIBO=$libo \
+$dyn \
+$phys \
+DIM=$dimc \
+L_ADJNT="$adjnt" \
+$localdir  \
+F77="$f77" \
+PROG=$code
+
+else if $CRAY then
+
+make \
+OPTION_DEP="$opt_dep" OPTION_LINK="$opt_link" \
+INCLUDE="$include" \
+L_DRS="-L$drs -ldrs" \
+$filtre \
+LIBO=$libo \
+$dyn \
+$phys \
+DIM=$dimc \
+L_ADJNT="$adjnt" \
+$localdir \
+PROG=$code
+
+endif

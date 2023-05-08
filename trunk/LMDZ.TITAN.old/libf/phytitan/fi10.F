@@ -1,0 +1,5 @@
+      FUNCTION FI10(X)
+      IMPLICIT REAL (A-H,O-Z)
+      FI10=.353/X+3.154000-.3060*X+.1410*X*X-2.887E-3*X**3
+      RETURN
+      END

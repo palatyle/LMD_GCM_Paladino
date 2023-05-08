@@ -1,0 +1,134 @@
+########################################
+##                                    ##
+##  BIENVENUE SUR LE SVN PLANETO !!!  ##
+##                                    ##
+##  PETIT MEMO                        ##
+##                                    ##
+##  -- AS 11/2010, 01/2011, 03/2011   ##
+##                                    ##
+########################################
+
+si vous lisez ceci, votre nom doit figurer sur 000-USERS.
+si ce n'est pas le cas, contacter la LMD team.
+
+##
+## OU CHERCHER DE L'AIDE ???
+##
+
+-- doc officielle [livre open source]
+	http://svnbook.red-bean.com/
+
+-- resume pratique des commandes
+	http://www.yolinux.com/TUTORIALS/Subversion.html 
+
+-- page wikipedia pas mal
+	http://fr.wikipedia.org/wiki/Subversion_%28logiciel%29
+
+-- si vous etes perdus avec les commandes, faites
+                svn help
+
+##
+## VOUS ETES USER : COMMENT RECUPERER LES SOURCES SUR LE SERVEUR ?
+##
+
+-- pour faire descendre les sources il faut taper
+		svn co "http://svn.lmd.jussieu.fr/Planeto/trunk"
+		svn checkout "http://svn.lmd.jussieu.fr/Planeto/trunk" 
+                svn checkout -r 67 "http://svn.lmd.jussieu.fr/Planeto/trunk" trunk.r67  [recuperer la version 67]
+[les fichiers relatifs au controle de version sont dans les repertoires caches .svn : ne pas effacer !!!]
+[la copie cachee, miroir de la derniere version sur le serveur, se trouve dans les repertoires .svn]
+
+-- pour faire descendre une partie des sources il faut d'abord taper
+		svn co "http://svn.lmd.jussieu.fr/Planeto/trunk" -N le_nom_de_mon_dossier
+   afin de creer un dossier racine 'le_nom_de_mon_dossier' qui contient les informations de l'arborescence
+   ... ensuite il suffit de faire
+                svn update DOC LMDZ.COMMON LMDZ.VENUS
+   pour ne recuperer qu'une partie des sources
+   ... toute commande 'svn update' et 'svn commit' ne porte alors que sur ces seuls dossiers descendus
+   [voir 000-MODELS pour plus de details sur l'arborescence]
+
+-- pour faire descendre les sources sans controle de version [utilise moins d'espace disque]
+		svn export "http://svn.lmd.jussieu.fr/Planeto/trunk"
+
+-- vous pouvez ne faire descendre qu'une partie des sources
+		svn co "http://svn.lmd.jussieu.fr/Planeto/trunk/mars" [GCM martien]
+                svn co "http://svn.lmd.jussieu.fr/Planeto/trunk/mesoscale" [Mesoscale martien]
+
+-- pour voir les changements effectues faire
+                svn log
+                svn log | more
+                svn log un_fichier_ou_un_dossier [n'affiche que les log concernant la cible]
+                svn log -v [liste les routines modifiees par chaque revision]
+
+-- pour mettre a jour avec la derniere version sur le serveur
+		svn update
+[NB: svn update est une commande qui met a jour la copie cachee avec la derniere revision]
+                svn update *
+[si l'on n'a qu'une partie du trunk]
+
+-- pour afficher les infos du serveur, faites
+                svn info
+
+-- pour voir un fichier avec une historique des changements et des personnes "coupables" de ces changements
+                svn blame **fichier**
+
+-- pour ramener un fichier modifie localement a sa version sur le serveur 
+                svn revert **fichier**
+[pratique quand on a teste des modifications que l'on veut annuler pour revenir a la version de reference]
+
+-- ASTUCE : si on a un conflit, svn nous indique
+Select: (p) postpone, (df) diff-full, (e) edit,
+        (mc) mine-conflict, (tc) theirs-conflict,
+--> si on pense que sa version est la meilleure, repondre 'mc'
+--> si on pense que la version du serveur est la meilleure, repondre 'tc'
+--> sinon choisir 'p' et resoudre la conflit a la main. ne pas oublier de taper a la fin 'svn resolved le_fichier_en_question'
+
+##
+## VOUS ETES en plus CONTRIBUTOR : COMMENT MODIFIER LES SOURCES SUR LE SERVEUR ?
+##
+
+-- pour propager les changements locaux au repertoire commun sur le serveur
+   ... meme pour un changement mineur il faut commenter
+                svn ci -m "bla bla bla bla"
+		svn commit -m "bla bla bla bla"
+		svn commit -F un_fichier_plein_de_remarques.txt
+                svn commit -m "commit seulement sur un fichier bla bla bla" **fichier**
+
+-- le mot de passe est demande au premier commit [il faut avoir modifie qqch sinon ca ne marche pas]
+
+-- au moment ou l'on commence a travailler dans le dossier, toujours faire 
+		svn update 
+SINON RISQUE DE TRAVAILLER SUR UNE VERSION ANCIENNE... voire RISQUE DE CONFLIT SVN
+
+-- refaire un 
+		svn update
+avant de faire un commit pour les memes raisons [normalement on ne perd pas ses changements]
+
+-- pour verifier les changements effectues avant un commit, faire
+		svn diff
+		svn diff **fichier**
+qui permet de comparer les nouvelles versions locales avec la derniere revision officielle 
+(non modifiee donc si vous n'avez pas fait commit)
+
+-- pour verifier les fichiers modifies, ajoutes, etc... avant un commit faire
+		svn status
+                svn status -qu  [pour enlever les cas "?"]
+ATTENTION: svn status montre vos changements comparés à la version locale de départ, contrairement à
+svn diff qui compare vos changements à la dernière version officielle du serveur
+
+-- pour ajouter un fichier (ou repertoire) a synchroniser avec le serveur, utiliser
+		svn add **fichier** 
+NB: tant que le fichier n'est pas ajoute a la base des fichiers synchronises avec cette commande, 
+svn ne le voit pas. pratique pour les fichiers locaux temporaires !
+
+-- similairement
+		svn delete **fichier**
+		svn mv **fichier** **ailleurs**
+		svn mkdir **directory**
+
+-- une fois le commit effectue, la copie locale peut etre entierement effacee (eventuellement); 
+il suffit de faire redescendre les sources au prochain usage avec
+		svn co "http://svn.lmd.jussieu.fr/Planeto/trunk"
+NB: si on choisit de garder sa copie locale, penser au
+		svn update
+lorsqu'on revient y travailler apres quelque temps

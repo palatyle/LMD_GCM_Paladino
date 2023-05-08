@@ -1,0 +1,53 @@
+#! /bin/bash
+# A. Spiga & E. Millour 
+
+\rm ~/log > /dev/null 2> /dev/null ; touch ~/log
+touch ~/log1
+touch ~/log2
+touch ~/log3
+
+echo "*********************************************************"
+echo "Salut, utilisatrice/teur de la ferme planeto !"
+echo "--> merci de repartir les jobs sur les differentes machines (pas plus de 8 par machine)"
+echo "--> utiliser les disques /d*, /san*, ou /tmp* pour ecrire les donnees"
+echo "--> s'il n'y a pas de proc libre, negocie avec tes ami(e)s de l'equipe"
+
+##################################################################################################################
+#####################
+machine='levan'
+#####################
+ssh $machine -t "ps --sort=-pcpu -e -o '%C %u %c %x %p' -G lmdjus r | grep -v ps | grep -v root | grep -v grep | grep -v bash >> ~/log1" > /dev/null 2> /dev/null
+echo "*********************************************************" >> ~/log
+echo " $machine ... "`head -n -1 ~/log1 | wc -l`" processeurs utilises sur 8"  >> ~/log
+echo "*********************************************************" >> ~/log
+cat ~/log1 >> ~/log 2> /dev/null
+\rm ~/log1
+
+#####################
+machine='penn'
+#####################
+ssh $machine -t "ps --sort=-pcpu -e -o '%C %u %c %x %p' -G lmdjus r | grep -v ps | grep -v root | grep -v grep | grep -v bash >> ~/log2" > /dev/null 2> /dev/null
+echo "*********************************************************" >> ~/log
+echo " $machine ... "`head -n -1 ~/log2 | wc -l`" processeurs utilises sur 8"  >> ~/log
+echo "*********************************************************" >> ~/log
+cat ~/log2 >> ~/log 2> /dev/null
+\rm ~/log2
+
+#####################
+machine='viccaro'
+#####################
+ssh $machine -t "ps --sort=-pcpu -e -o '%C %u %c %x %p' -G lmdjus r | grep -v ps | grep -v root | grep -v grep | grep -v bash >> ~/log3" > /dev/null 2> /dev/null
+echo "*********************************************************" >> ~/log 
+echo " $machine ... "`head -n -1 ~/log3 | wc -l`" processeurs utilises sur 8"  >> ~/log
+echo "*********************************************************" >> ~/log
+cat ~/log3 >> ~/log 2> /dev/null
+\rm ~/log3
+
+##################################################################################################################
+
+#echo "ok !" 
+cat ~/log ; \rm ~/log
+
+##
+#ssh smith -t "ps -e -o '%u %p %C %x %c' | grep 'gcm' >> ~/log ; ps -e -o '%u %p %C %x %c' | grep '.exe' >> ~/log" > /dev/null 2> /dev/null
+

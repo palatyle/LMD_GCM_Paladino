@@ -1,0 +1,73 @@
+which: no fcm in (/opt/pbs/bin:/opt/sgi/sbin:/opt/sgi/bin:/home/palatyle/bin:/usr/local/bin:/usr/bin:/bin:/usr/bin/X11:/usr/games:/opt/c3/bin:/sbin)
+dirname: missing operand
+Try 'dirname --help' for more information.
+Path to fcm:
+/home/palatyle/LMD_gen/trunk/LMDZ.COMMON/ioipsl/modipsl/modeles/IOIPSL/tools/FCM_V1.2/bin
+calcul de la dimension
+dim 64 48 20
+dimc 3
+!-----------------------------------------------------------------------
+!   INCLUDE 'dimensions.h'
+!
+!   dimensions.h contient les dimensions du modele
+!   ndm est tel que iim=2**ndm
+!-----------------------------------------------------------------------
+
+      INTEGER iim,jjm,llm,ndm
+
+      PARAMETER (iim= 64,jjm=48,llm=20,ndm=1)
+
+!-----------------------------------------------------------------------
+bands file already exists!
+!-----------------------------------------------------------------------
+!   INCLUDE 'bands.h'
+!
+!   bands.h contains the visible & infrared bands in the model
+!
+!   NBinfrared = L_NSPECTI in the model
+!   NBvisible  = L_NSPECTV in the model
+!-----------------------------------------------------------------------
+
+      INTEGER, parameter :: NBinfrared=32
+      INTEGER, parameter :: NBvisible=26
+
+
+!-----------------------------------------------------------------------
+dimension 3
+MACRO FILTRE FILTRE=filtrez
+3
+Warning: /home/palatyle/LMD_gen/trunk/LMDZ.COMMON/bld.cfg: variable "%C_COMPILER" not expanded.
+Warning: /home/palatyle/LMD_gen/trunk/LMDZ.COMMON/bld.cfg: variable "%C_OPTIM" not expanded.
+Warning: /home/palatyle/LMD_gen/trunk/LMDZ.COMMON/bld.cfg: variable "%CPP_FLAGS" not expanded.
+Warning: /home/palatyle/LMD_gen/trunk/LMDZ.COMMON/bld.cfg: variable "%CPP_DEF" not expanded.
+Warning: /home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libo/local_64x48x20_phystd_para.e/.config/.cache/.bld_tool: variable "%CPP_DEF" not expanded.
+Warning: /home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libo/local_64x48x20_phystd_para.e/.config/.cache/.bld_tool: variable "%C_OPTIM" not expanded.
+Warning: /home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libo/local_64x48x20_phystd_para.e/.config/.cache/.bld_tool: variable "%CPP_FLAGS" not expanded.
+Warning: /home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libo/local_64x48x20_phystd_para.e/.config/.cache/.bld_tool: variable "%C_COMPILER" not expanded.
+Warning: no make rule file for source package: chem
+Warning: no make rule file for source package: cloud
+Warning: no make rule file for source package: cosp
+Warning: no make rule file for source package: dust
+Warning: no make rule file for source package: muphy
+Warning: no make rule file for source package: rrtm
+Warning: no make rule file for source package: sisvat
+Warning: no make rule file for source package: strataer
+Build command started on Wed Jul  8 10:24:27 2020.
+->Setup              : start
+# Config file (bld): /home/palatyle/LMD_gen/trunk/LMDZ.COMMON/bld.cfg
+# Config file (bld): arch.fcm
+# Config file (bld): config.fcm
+# Config file (bld): arch.opt
+->Setup              : 0 second
+->Pre-process        : start
+->Pre-process        : 0 second
+->Scan dependency    : start
+Scanned files in 1 package(s) for dependency
+Updated make rules for 1 package(s).
+->Scan dependency    : 1 second
+->Generate interface : start
+->Generate interface : 0 second
+->Make               : start
+->Make               : 0 second
+->TOTAL              : 1 second
+Build command finished on Wed Jul  8 10:24:28 2020.

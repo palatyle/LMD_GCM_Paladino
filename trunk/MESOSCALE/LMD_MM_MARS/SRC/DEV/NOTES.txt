@@ -1,0 +1,486 @@
+
+
+        -----------------------------------------------------------------------
+        -- si possible comment determiner taille ?
+
+        soit nn = e_we-1
+
+        1. nproc (souvent =4) doit diviser nn (mother domain)
+        2. grid_ratio (souvent =3) doit diviser nn+4 (nested domain)
+        3. nproc (souvent =4) doit diviser nn+4 (nested domain)
+
+        si 1 realisee --> 3 est realisee avec nproc=4 (standard pour nest simulation)
+
+        1 <--> nn = 4*i
+        2 <--> nn+4 = 3*j
+
+        les deux OK si nn+4 = 12*k
+        i.e.
+        e_we-1 pour le nested est multiple de 12
+
+        ex: 177,181,181
+            117,121,121
+        ------------------------------------------------------------------------
+
+
+
+bad synchronization physics / dynamics with LES
+--> si on a fait un update, il faut reinstaller les SOURCES du LES.
+
+
+si le systeme est sensible il vaut mieux r_aspect=1 et nsplit = 4 que
+r_aspect=0.7 et nsplit=2
+
+#nsplit_thermals = 2  !! BOF PAR RAPPORT A DEF 4
+#r_aspect_thermals = 1.0 !! MIEUX QUE DEF 0.7 si systeme sensible
+
+
+
+Mhh c'est un peu plus compliqué, car en toute rigueur il peut y avoir plusieurs traceurs poussières si on considère le cas où l'on tourne avec plusieurs bins radiativement actifs...
+
+Donc il vaut mieux détecter les scatterers poussières au début de la physique avec un code du style (à tester et corriger):
+
+-------------------------------------------------------------
+#include "aerkind.h" ! (qui contient name_iaer)
+
+ (...blabla)
+
+      INTEGER :: iaer
+      CHARACTER(LEN=20) :: txt
+      INTEGER,SAVE :: iaerdust(naerkind)
+      INTEGER,SAVE :: naerdust ! number of dust scatterers
+
+      (...blablablabla)
+
+      IF (firstcall) THEN
+        naerdust=0
+        DO iaer=1,naerkind
+          txt=name_iaer(iaer)
+          IF (txt(1:4).eq."dust") THEN
+            naerdust=naerdust+1
+            iaerdust(naerdust)=iaer
+          ENDIF
+        ENDDO
+      ENDIF
+-------------------------------------------------------------
+
+Et ensuite en toute rigueur encore une fois il faut sommer les taus des différents scatterers poussières dans la partie slope de ton code:
+
+-------------------------------------------------------------
+      DO ig=1,ngrid
+        DO l=1,2
+          (...blabla yeah blabla)
+          sl_tau = 0.
+          DO iaer=1,naerdust
+            sl_tau = sl_tau + tau(ig,iaerdust(iaer))
+          ENDDO
+          (...blabla yeah)
+        ENDDO
+      ENDDO
+------------------------------------------------------------- 
+
+
+-f total. enlever Registry et faire Regitry.bash ne sufit pas. sinon il met un
+e erreur absurde avec le fait que les dx ne matchent pas.
+
+
+********************************* compilation API
+Il fallait faire trois choses:
+1) Spécifier le chemin vers la librairie NetCDF grâce à l'option --include-paths de f2py, autrement dit ajouter:
+--include-paths $NETCDF/include:$NETCDF/lib
+2) Ceci entrainait un bug:
+"readfortrancode: could not find include file" car une partie de la routine crackfortran.py du paquet EPD était mal écrite; j'ai installé la nouvelle version de EPD (7.2) et ce premier problème fut écarté car ils ont corrigé les lignes correspondantes dans crackfortran.py;
+3) Autre bug:
+"libnetcdf.a: could not read symbols: Bad value > collect2"
+L'ajoût de l'option --with-pic lors de la compilation de NetCDF résout le problème. Autrement dit, il faut faire:
+./configure --with-pic ...
+Cette option permet de créer un "position independent code, needed for shared libraries". Je ne comprends pas exactement ce que ça veut dire, mais maintenant ça marche! 
+*******************************
+
+NE PASE UTILISER NOMBRES NEGATIFS DANS LE CAS HILL !!!!
+>>> OK
+
+il faudrait parler du staggering U et V et de sa solution avec api
+
+pour les trucs octave il faut executer dans octave en interactif
+
+https://bi.offis.de/wisent/tiki-index.php?page=WRF-gFortran
+
+
+
+solved with openMPI !!!!
+beware of use of openMPI with NFS
+faster with local disks
+
+NOUVELLE FERME
+- OK avec pgf_64_single
+- OK avec mpi_64 sur 1 proc
+- pas OK avec mpi_64 et 4 proc
+  cas Hellas crashe entre la sortie 9 et 10
+  .... fastsse ou pas ne change rien [mpich fast dans les deux cas]
+  .... changer radt ne fait que retarder
+  .... baisser le pas de temps pose probleme plus tot
+  .... ne marche pas en phasant les options WRF avec les options LMD physics
+  .... avec fastsse partout (mm MPI), crash ds la sortie 2
+  .... option de base SVN avec mpich sans fast, marche pas non plus crashe entre 9 et 10
+  .... iradia=1 ne change rien, toujours le probleme
+  .... la simulation tourne lorsqu'on fait callrad = F
+  .... test avec Mbounds ne renvoie aucuune erreur
+  .... test avec juste -Ktrap=fp et rien d'autre renvoie aucune erreur
+  .... semble OK avec iaervar=1, probleme dans meso_dustopacity ??? ou avec la lecture NETCDF ???
+  .... crashe direct avec WHERE_MPI=/donnees/aslmd/MPI/mpich2-1.3.1_normal/bin
+  .... alors que ca passe nickel avec iaervar=1
+  .... crashe direct avec mes librairies netcdf3.6.1 compilees avec le dernier pgf2011
+  .... ne crashe pas direct avec mes librairies netcdf4.0.1 compilees avec le
+         dernier pgf2011 et les options utilisees dans le modele ajoutees aux options
+         dans la librairie compilee dans /distrib/local
+       mais crashe entre la sortie 9 et 10 comme les autres !!!!
+  .... marche bien aussi avec iaervar=3... probleme de lecture netcdf ???
+  .... experience: on a iaervar=4 mais juste apres readtesassim
+       on regle tauref a 0.3 et ca passe. donc ce n est pas un bug structurel.
+       les valeurs lues ne sont probablement les bonnes soit par probleme
+       dans le fichier soit par probleme structurel dans readtesassim
+  .... pourtant en affichant les valeurs on ne voit pas de pb particulier !
+  .... en changeant le nom hfx en sensheat et en enlevant z0 qui pose un pb
+       avec l'ancienne physique, ca ne marche toujours pas.
+  .... crash: semble stocker les variables qui sortent de la physique OK
+       mais le reste, par exemple tsurf, est NaN c'est bizarre
+  .... avec ndomainsz=ngridmx le modele va plus loin et crashe le second jour
+       a la sortie 2
+  .... mm comportement sur ulrich que sur penn
+  .... avec mcmodel crashe tout de suite
+  .... idem en invalidant les options d optimisation dans WRF et LMD phys [non en fait il faut enlever dans MPI]
+  .... test avec netcdf3: marche pas. mais ne faut-il pas enlever toutes les options?
+  .... avec aucune option d'optimisation et netcdf3: Nan avant la sortie 2
+  .... avec aucune option d'optimisation et netcdf4: va plus loin mais NaN entre 9 et 10
+  .... options d'optimisation en -O3 toujours le mm probleme
+  .... toujours le mm probleme mm avec ulimit -s unlimited
+
+  .... test qui donne des sortie 2 des NaN en recompilant avec -fast partout
+       avec mpirun -np 1, aucun souci tout va bien
+       avec mpirun -np 8, souci egalement des la sortie 2
+       ... visiblement un souci avec readtesassim ???
+       .... MAIS NON CAR SOUCI AUSSI AVEC iaervar=1 avec 8 procs
+       .... ALORS QUE PAS DE SOUCI AVEC iaervar=1 avec 4 procs
+export NETCDF=/donnees/aslmd/MODELES/MESOSCALE_DEV/NETCDF/pgfortran_64_netcdf-4.0.1_fast
+export WHERE_MPI=/donnees/aslmd/MPI/pgfortran_mpich2-1.3.1/bin
+  .... corrections readtesassim ne semblent rien changer...
+  .... sorties frequentes permettent de voir que le probleme est localisee
+       mais rempli tres vite le domaine
+       avec dt=40s probleme apparait au bout de 700s
+       avec dt=10s probleme apparait au bout de 300s
+       avec dt=100s problemen apparait au bout de 1200s
+       ... visiblement le probleme apparait aux jointures des domaines ?
+       ... probleme sur le vitesse verticale calculee ???
+       ... visiblement non puisque mm comportement avec non_hydrostatic ou W est normal
+       ... apparemment il s'agit vraiment d'une instabilite numerique
+       ... mettre les tendances R..BLEN a 0 ne change rien...
+       ... changer dimradmars n'arrange pas en fait lorsquon met des sorties frequentes
+       ... bizarre un des 4 processes wrf.exe passe en D quelques fois ????
+... ne marche pas avec les options de compilation de WRF3 !!!
+     (mais domain met moins de temps a compiler)
+... toujours le mm probleme en acces local disque
+
+... mpich compile sans fast crash entre sortie 1 et 2
+    mpich compile avec fast crash entre sortie 9 et 10
+... mpich2-1.4.1 compile avec fast crash entre sortie 9 et 10
+
+
+TEST AVEC DEBUG
+  .... s'arrete au beau milieu d integrations sans sortir de message d'erreur
+TEST AVEC LES POUR VOIR SI PB CORRIGE AVEC WRF3
+  .... rsl_lite ne compile pas avec l'option -fast
+  .... OK avec nofast_nemesis version compilee de mpich2
+TEST avec le vieux mpich2... CRASH aussi entre la sortie 9 et 10
+
+memes erreurs avec RSL_LITE de WRF3
+alors qu il compile sans souci chez LES
+.... un probleme d'options de compilations ????
+.... pendre direct la librairie compilee chez WRF3 ???
+LES: run OK
+juste des NaN a la toute fin...
+
+peut etre faut il regler dans WRFV2 les warnings relies a la compilation de rsl_lite
+------- il y a probablement des choses a corriger
+------- coupler avec gcc [-CC=gcc] comme dans LES ????
+.... mais lorsqu on utilise le vieux mpi compile avec pgf7 pas de warnings !
+
+
+...le debugger voir une floating exception sur lwtt dans la boucle avec kdlon
+...avec les options debug le modele semble aller loin OK --> a verifier??
+...les warnins a la compilation ont ils de l importance ?
+...le fait que netcdf4 ne soit pas supporte ???
+...longue compil sur module_domain....
+
+...des pistes ici
+http://www.mmm.ucar.edu/wrf/users/wrfv3/known-prob-3.0.1.html
+
+fonctionne avec le vieux mpi dans pgf2011 [et netcdf4]
+mais les jobs ne sont pas a 100% sur les procs
+probleme donc... c est tres lent
+
+test basique avec WRFV2.2.1 et le cas em_quarter_ss et mpipgf
+memes resultats avec un proc ou plusieurs
+pas de crash
+
+
+---------------------------------------------------------------------------------
+
+--- sur nouvelles machines problemes run parallele avec nouvelle physique
+
+--- makegcm_g95 ne marche pas avec -no-second-underscore
+    marche sans et semble compiler correctement
+    ne compile pas les exec avec mais OK pour liblmd.a
+
+--- conflits quelque soit la combinaison (f-no-second-underscore ou pas) lors
+de la compilation du dynamical core WRF avec g95 64 bits
+http://forum.wrfforum.com/viewtopic.php?f=5&t=3467
+
+--- absurde: fonctionne avec les librairies NETCDF gfortran compilees par
+Ehouarn sur auric
+et en remplacant readtesassim par le vieux readtesassim
+dans ce cas meme testphys1d.e compile correctement
+... il y a quelques erreurs netcdf dans la physique visiblement ss conseq [testphys1d compile....]
+... surveiller tout de meme, en rapport avec ncf90
+... faut-il enlever #include netcdf.inc dans readtesassim soit dit en passant?
+
+
+gfortran https://bi.offis.de/wisent/tiki-index.php?page=WRF-gFortran
+---> MAIS GROS PROBLEMES (time mgmt and seg fault)
+
+
+cc-----------------------------------
+cc you can still use meso_WRITEDIAGFI (e.g. for debugging purpose), 
+cc though this is not the default strategy now
+cc-----------------------------------
+cc please use cudt in namelist.input to set frequency of outputs
+cc----------------------------------- 
+cc BEWARE: if at least one call to meso_WRITEDIAGFI is performed,
+cc cudt cannot be 0 - otherwise you'll get a "Floating exception"
+cc-----------------------------------         
+!      call meso_WRITEDIAGFI(ngrid,"tauref",
+!     .  "tauref","W.m-2",2,
+!     .       tauref)
+!      call meso_WRITEDIAGFI(ngrid,"zt",
+!     .  "zt","W.m-2",3,
+!     .       zt)
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!! note WRF MESOSCALE AYMERIC -- mot cle "caps"
+!!!!! watercaptag n'est plus utilise que dans vdifc
+!!!!! ... pour que la sublimation ne soit pas stoppee 
+!!!!! ... dans la calotte permanente nord si qsurf=0
+!!!!! on desire garder cet effet regle par caps=T
+!!!!! on a donc commente "if (caps.and.(obliquit.lt.27.))" ci-dessus
+!!!!! --- remplacer ces lignes par qqch de plus approprie
+!!!!!      si on s attaque a la calotte polaire sud
+!!!!! pas d'autre occurrence majeure du mot-cle "caps"
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+kvdif ne sert a rien dans le mesoscale martien, en raison de l'appel a la
+physique et MY
+
+Venus_est_dans_SOURCES_FORTRAN
+
+adapter runmeso pour les runs ideal et les ???
+
+faire comme storm mais avec les pour eviter les recouvrements
+user manual
+
+changer la gestion topo dans LES comme fait dans modele general
+
+	13min_si_Registry_modifie     
+	15min_makemeso_moins_f        
+	1min_phys_plus_dyn_chgtresol  
+
+	PD_SCALAR est T par defaut desormais !!
+
+
+	il faudrait regler le prob du Registry dans le LES
+il y a un souci avec les variables liees a l'eau et d'autres
+
+	---anciennes notes lES sur gnome pb avec ideal.exe
+	## jusque 201 OK avec ideal.exe sequentiel
+	## ensuite il vaut mieux utiliser
+	## mpirun -n 4 ideal.exe
+	## le MP_STACK_SIZE est dans le bashrc
+
+
+
+concat.e puis localtime.e puis
+localtime.e (tres long) puis concatnc.e pour avoir en ls
+le resultat doit etre strider a 10... sinon bug affichage
+
+ncwa -O -v mtot,icetot -a longitude -d longitude,-179.0,179.0 diagfi.nc yeye.nc
+ncwa -O -v mtot -a longitude -d longitude,-180.0,180.0 concat_LT.nc mawd.nc
+(si trop gros faire ncrcat -v mtot -d Time,,,2 concat_LT.nc yorgl.nc)
+
+resumee
+--> localtime.e tres long
+--> concatnc.e en ls tres court
+--> renomme le fichier
+--> ncwa -O -v mtot,Time -a longitude -d longitude,-180.0,180.0 gcm_LT14_a035.nc mawd_a035.nc 
+
+	A FAIRE:::: mettre des flags precompilo dans les meso_
+	les reporter dans makegcm
+
+changer le renormalisation dans aeropacity ????
+on ne laisse pas aerosol comme le lifting veut qu'il soit !
+tenter des taux de soulevement pour que taudust_tmp soit les obs
+en prescivant une dust bomb fixe d opacite, on aura au moins la structure verticale
+
+	tester traceurs radiativement actifs avec la nouvelle physique ?????
+
+	A FAIRE: PB LES sur iDATAPLEX (les points HFX nuls) (pas de soucis sur ciclad)
+METTRE SUR LE svn LA BASE d'ETATS INITIAUX ????
+
+more than 4 procs w/ nest ??? y reflechir
+	-----------------------------------------------------------------------
+	-- si possible comment determiner taille ?
+	nproc doit diviser e_we-1 (1er nest)
+	grid_ratio doit diviser e_we-1 +4 (1er nest)
+	soit e_we=ye+1
+	grid_ratio divise ye+4 et nproc divise ye
+	soit nproc=8, ye=8*i
+	ainsi il existe j tel que 8i + 4 = 3j ou encore 4*[2i+1] = 3j
+	verifie par exemple si 2i+1 est multiple de 3
+	il suffit donc de trouver un multiple impair de 3 et de deduire i
+	par exemple 2i+1=33 >>>> i=16
+	>>>> e_we = 129 pour le 1er nest (et ajouter 4 pour les suivants)
+	------------------------------------------------------------------------
+
+	ne pas utiliser le FASTCASE avec traceurs (instabilites en haut)
+            ces instabilites sont cependant reglees si on augmente radt a 10 par exemple
+
+	pour le cycle de l'eau c'est OK de regler caps=F dans le mesoscale
+	sauf si on commence a devoiler la calotte permanente nord
+	---> corrige, scenario caps specifique au mesoscale
+
+	NE SERAIT-CE PAS MIEUX DE TOUT TRANSMETTRE AUX BORNES ???
+	tous les traceurs, pas seulement vapor
+
+
+	- attention il faut les trois MARS sinon il s arrete sans message clair
+	- attention a ne pas lancer le modele s il est deja lance
+	- important que pd_scalar soit a T ... le mettre par defaut ????
+
+
+ROUTINES a AJOUTER sont dans COMMON_GCM
+- passer aux nouveaux makegcm [en commun avec Ehouarn si on veut le nouveau
+  readtesassim qui est en F90]
+- il faut tester le nest pour verifier les lignes trop longues
+
+	(ok) lier gr_fi_dyn qui est dans dyn3d
+	(ok) regler le pb du nouveau readtesassim (ou alors le lier tout simplement ou
+	  l'appeler meso_readtesassim)
+	(ok) regler le pb meso_dustlift (le lier dans makemeso comme point precedent)
+	     (car le souci c que dustlift est appele dans vdifc)
+
+        [c fait normalement]
+	RESTE a ADAPTER le LES a la NOUVELLE PHYSIQUE
+	il y a normalement peu a faire
+	reste a faire egalement le -DNEWPHYS pour le LES
+
+	attention pb d'affichage des valeurs dans le fichier texte avec LES ???
+	bien que les valeurs du fichier soient tout a fait raisonnables
+	... n'est-ce pas un effet de bord cache ????
+
+
+	apres fusion, le LES est reconnu par module_lmd_driver lorsque diff_opt=2 km_opt=2
+
+
+	-attention PB si on ne sort pas HFX et USTM (note dans le Registry)
+	-il faut run.def nouvelle physique [c est meme ce qui est utilise par runmeso]
+	- IL FAUT SE PENCHER SUR LE FAIT QU'ON INDIQUE q2val=0 dans lmd_driver ....
+
+-----------------------
+ATTENTION NOUVELLE PHYSIQUE
+Oui, c'est quelque chose qu'il faut probablement changer partout 
+maintenant que la version de pgf90 à changé (sur les machines du LMD).
+Avec cette nouvelle version (7.1-6), le '-fast' est plus agressif 
+qu'avant (et inclue entre autre les horribles '-Mvect=sse -Mscalarsse' 
+qui dégradent la précision de certains calculs pour accélérer le code); 
+je préconise de ne plus s'en servir. Bon d'accord, je n'ai pas fait une 
+étude approfondie de l'impact de '-fast', mais j'ai vu qu'avec, 
+j'obtenais des résultats différents lorsque je changeais simplement 
+l'ordre des traceurs...
+
+Aymeric Spiga wrote:
+> je détecte ces changements d'option de compilation ; ont-ils de
+> l'importance ?
+>
+> Aymeric
+>
+> < #   set optim90=" -fast"
+> < #   set optimtru90=" -fast -c -Mfree "
+> < #   set optim90=" -O2 -Munroll=c:1 -Mnoframe -Mcache_align"
+> < #   set optimtru90=" -O2 -Munroll=c:1 -Mnoframe -Mcache_align"
+> <    set optim90=" -O2 -Munroll -Mcache_align"
+> <    set optimtru90=" -O2 -Munroll -Mcache_align"
+> ---
+>   
+>>    set optim90=" -fast"
+>>    set optimtru90=" -fast -c -Mfree "
+------------------------------
+
+
+	- attention a cp et R, normaliser une bonne fois pour toutes
+	- il manque sur le SVN les cas idealises
+- il manque sur le SVN les scripts MPI
+	- il faut recompiler les librairies NETCDF
+	- mettre la nouvelle physique
+	- mettre les DEF du meso-echelle
+
+	- modele ok sur auric
+- modele pas ok sur ciclad avec pgf2010, erreur inedite un seul module manquant
+	- modele LES OK sur ciclad
+	- modele LES ok sur auric
+
+	24/01/2011
+	tests g95 en 64bits natif sur systeme Linux
+	-- modifications de makemeso, tests
+	-- tout est OK sauf les libraires NETCDF, probleme d'underscore
+	-- OK avec libraires maison compilees avec g95 standard sur flores [et tourne OK]
+
+
+
+	mpi_64_pgf7_ncdf4_mpi1.2.txt
+	- probleme lors de la compilation de solve_em : LINUX runs out of memory [huchard]
+	- IL FAUT COMPILER SUR auric
+	nougaro est lent a la compilation, utiliser surtout auric
+
+
+
+
+______________________________________________________
+
+
+PB MPI
+/donnees/aslmd/MODELES/MPI/mpich2-1.2.1p1_PGF7/lib/libmpich.a(simple_pmi.o):
+In function `PMI_Init':
+simple_pmi.c:(.text+0x15c0): warning: Using 'gethostbyname' in statically
+linked applications requires at runtime the shared libraries from the glibc
+version used for linking
+/donnees/aslmd/MODELES/MPI/mpich2-1.2.1p1_PGF7/lib/libmpich.a(simple_pmi.o):
+In function `PMI_Init':
+simple_pmi.c:(.text+0x15c0): warning: Using 'gethostbyname' in statically
+linked applications requires at runtime the shared libraries from the glibc
+version used for linking
+/donnees/aslmd/MODELES/MPI/mpich2-1.2.1p1_PGF7/lib/libmpich.a(simple_pmi.o):
+In function `PMI_Init':
+simple_pmi.c:(.text+0x15c0): warning: Using 'gethostbyname' in statically
+linked applications requires at runtime the shared libraries from the glibc
+version used for linking
+/donnees/aslmd/MODELES/MPI/mpich2-1.2.1p1_PGF7/lib/libmpich.a(simple_pmi.o):
+In function `PMI_Init':
+simple_pmi.c:(.text+0x15c0): warning: Using 'gethostbyname' in statically
+linked applications requires at runtime the shared libraries from the glibc
+version used for linking
+
+
+POSSIBLE mars.sed
+
+s+ *../frame/module_internal_header_util.o ../frame/pack_utils.o
+-L../external/esmf_time_f90 -lesmf_time+& -L../mars_lmd/libo -llmd
+-Mmpi=mpich2+g
+

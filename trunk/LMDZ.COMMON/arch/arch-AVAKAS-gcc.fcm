@@ -1,0 +1,17 @@
+%COMPILER            /cm/shared/apps/openmpi/gcc/64/1.4.2/bin/mpif90
+%LINK                /cm/shared/apps/openmpi/gcc/64/1.4.2/bin/mpif90
+%AR                  ar
+%MAKE                make
+%FPP_FLAGS           -P -traditional
+%FPP_DEF             NC_DOUBLE LAPACK BLAS SGEMV=DGEMV SGEMM=DGEMM
+%BASE_FFLAGS         -fcray-pointer -c -fdefault-real-8 -fdefault-double-8 -ffree-line-length-none -fno-align-commons
+%PROD_FFLAGS         -O3
+%DEV_FFLAGS          -O -Wall -fbounds-check
+%DEBUG_FFLAGS        -ffpe-trap=invalid,zero,overflow -fbounds-check -g3 -O0 -fstack-protector-all -finit-real=nan -fbacktrace
+%C_COMPILER          gcc
+%C_OPTIM             -O0
+%MPI_FFLAGS          -I/cm/shared/apps/openmpi/gcc/64/1.4.2/include/
+%OMP_FFLAGS          
+%BASE_LD             -llapack -lblas
+%MPI_LD              -L/cm/shared/apps/openmpi/gcc/64/1.4.2/lib64 -lmpi
+%OMP_LD              

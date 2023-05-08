@@ -1,0 +1,11 @@
+rm -rf ./obj
+rm -rf ./done
+rm -rf ./inc
+rm -rf ./flags
+rm -rf ./ppsrc
+rm -rf ./bld
+rm -rf ./etc
+rm -rf ./lib
+rm -rf ./bin
+rm -rf ./.cache
+

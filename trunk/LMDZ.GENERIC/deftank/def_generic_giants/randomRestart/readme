@@ -1,0 +1,12 @@
+#####
+createRandomStart copy a start.nc file and change ucov, vcov, teta variables:
+	teta -> teta +/- dTeta (K)
+	ucov -> (0 +/- duNat)*cu (m/s)
+	vcov -> (0 +/- dvNat)*cv (m/s)
+Perturbations are vertically the same.
+
+#####Compilation
+In compile, may have to change the path of netcdf library compiled with gfortran.
+To compile:
+./compile createRandomStart
+

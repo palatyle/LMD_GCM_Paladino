@@ -1,0 +1,23 @@
+fichntrac=ntraceur.$1
+
+if [ ! -f $fichntrac ] ; then
+# si le fichier de dimensions n'existe pas, on le cree
+
+cat << EOF > $fichntrac
+c-----------------------------------------------------------------------
+c   INCLUDE 'ntraceur.h'
+c
+c   ntraceur.h contient la dimension de la variable traceur q
+c   Generalement egale au nombre de traceur.
+c-----------------------------------------------------------------------
+
+      INTEGER nqmx
+
+      PARAMETER (nqmx=$1)
+
+c-----------------------------------------------------------------------
+EOF
+fi
+
+\rm ../ntraceur.h
+tar cf - $fichntrac | ( cd .. ; tar xf - ; mv $fichntrac ntraceur.h )

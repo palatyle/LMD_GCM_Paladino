@@ -1,0 +1,17 @@
+475a476,481
+> !!****MARS   
+> !!****
+> !!**** second line: special Mars stuff
+> !!****
+> !!****MARS
+> 
+476a483
+>                       grid%em_albedo_gcm,grid%em_therm_inert,                 & 
+523c530,531
+<                       itimestep=grid%itimestep, fdob=grid%fdob             &
+---
+>                       itimestep=grid%itimestep,  &
+> 			fdob=grid%fdob	&
+525a534,535
+> 
+> 

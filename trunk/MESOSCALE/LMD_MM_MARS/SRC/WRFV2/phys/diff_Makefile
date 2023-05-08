@@ -1,0 +1,19 @@
+57,58c57,59
+< 	module_fddaobs_driver.o
+<   
+---
+> 	module_fddaobs_driver.o \
+> 	module_lmd_driver.o 
+>  
+84a86
+> # si ce qui est à droite a changé, on recompile à gauche
+242a245,253
+> module_lmd_driver.o: \
+>                 ../frame/module_state_description.o \
+>                 ../frame/module_wrf_error.o \
+>                 ../frame/module_configure.o \
+>                 ../share/module_model_constants.o \
+> 
+> #               ../frame/module_wrf_error.o \
+> #               ../share/module_model_constants.o
+> 

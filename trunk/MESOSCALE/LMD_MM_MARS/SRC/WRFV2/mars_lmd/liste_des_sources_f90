@@ -1,0 +1,8 @@
+libf/phymars/meso_readtesassim.F90
+libf/phymars/wstats.F90
+libf/phymars/param_slope_full.F90
+libf/phymars/def_var.F90
+libf/phymars/mkstat.F90
+libf/phymars/readtesassim.F90
+libf/phymars/param_slope.F90
+libf/phymars/fill_save_2d.F90

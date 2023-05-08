@@ -1,0 +1,76 @@
+#!/bin/bash
+#set -xv
+
+# sanity check: do we have the required argument ?
+if (( $# < 1 )) || (( $# > 3 ))
+then
+ echo "Wrong number of parameters in $0 !!!"
+ echo " Usage:"
+ echo "  $0 [im] [jm] lm"
+ echo " where im, jm and lm are the dimensions"
+ exit 1
+fi
+
+if (($1 % 8 != 0)) && (( $# == 3 ))
+then
+    echo "The number of longitudes must be a multiple of 8."
+    echo "See the files dyn3d/groupe.F and dyn3dpar/groupe_p.F."
+    exit 1
+fi
+
+# build "fichnom", the relevant 'dimensions.im.jm.lm' file name
+for i in $*
+  do
+  list=$list.$i
+done
+fichdim=dimensions${list}
+
+if [ ! -f $fichdim ]
+    then
+#    echo "$fichdim does not exist"
+
+    # assign values of im, jm and lm
+    if [ $# -ge 3 ]
+        then
+        im=$1
+        jm=$2
+        lm=$3
+        ndm=1
+    elif [ $# -ge 2 ]
+        then
+        im=1
+        jm=$1
+        lm=$2
+        ndm=1
+    elif [ $# -ge 1 ]
+        then
+        im=1
+        jm=1
+        lm=$1
+        ndm=1
+    fi
+
+# since the file doesn't exist, we create it
+cat << EOF > $fichdim
+!-----------------------------------------------------------------------
+!   INCLUDE 'dimensions.h'
+!
+!   dimensions.h contient les dimensions du modele
+!   ndm est tel que iim=2**ndm
+!-----------------------------------------------------------------------
+
+      INTEGER iim,jjm,llm,ndm
+
+      PARAMETER (iim= $im,jjm=$jm,llm=$lm,ndm=$ndm)
+
+!-----------------------------------------------------------------------
+EOF
+
+fi
+
+# remove 'old' dimensions.h file (if any) and replace it with new one
+if [ -f ../dimensions.h ] ; then
+\rm ../dimensions.h
+fi
+tar cf - $fichdim | ( cd .. ; tar xf - ; mv $fichdim dimensions.h )
+# line above is a trick to preserve time of creation of dimensions.h files

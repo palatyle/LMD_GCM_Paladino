@@ -1,0 +1,28 @@
+# Script to submit simulations with the LMD MARS GCM on 
+# a farm of computers using the run manager named "Torque".
+# To run it, just type 
+# > qsub run_farm
+
+# Shell
+#PBS -S /bin/bash
+# Job Name
+#PBS -N run_mars
+# Merge output and error logs
+#PBS -j oe
+
+####################################
+# SELECT HERE THE RUN DURATION CLASS :
+# Queue std(6h) / day / week /infini
+
+#PBS -q std
+
+# Go to present working directory
+cd  $PBS_O_WORKDIR
+
+# SELECT HERE THE TYPE OF SCRIPT TO USE : "run0" OR "run_mcd"
+
+run0
+
+####################################
+
+

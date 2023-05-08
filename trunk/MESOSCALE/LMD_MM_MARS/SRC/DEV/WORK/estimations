@@ -1,0 +1,4 @@
+\item (base) 64 bits, 1 processeur, domaine 50x50x50, résolution 7 km, sans traceurs : 0.4 h/jour.
+\item (traceurs) 64 bits, 4 processeurs, domaine 201x201x61, résolution 20km, 2 traceurs : 8 h/jour.
+\item (domaines emboîtés) 64 bits, 4 processeurs, 3 domaines 155x155x61, résolutions 36 km, 9 km, 2 km, sans traceurs : 20 h/jour.
+\item (LES) 64 bits, 1 processeur, domaine 150x150x71, résolution 100 m, sans traceurs :  11 h/h.

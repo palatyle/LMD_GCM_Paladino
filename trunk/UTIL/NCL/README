@@ -1,0 +1,32 @@
+This is a set of scripts designed to plot GCM files using NCL graphics.
+=======================================================================
+First version: january 2012, S. Lebonnois
+
+Remarks:
+--------
+
+- Requires NCL to be installed on your system.
+
+- Your simulation file need time, pressure, lon and lat dimensions. 
+The names of the dimensions matter, so you may get an error message if yours are not supported. Just let me know and we'll get this fixed.
+
+- The second variable only gives contours on the 2D maps. 
+Not yet implemented for 1D nor for projections.
+Needs additional options to customize... 
+
+- Hopefully this script will improve with time.
+
+visu-ncl
+--------
+
+- copy the "visu-ncl" bash script to you bin directory 
+
+- modify this copy so that the NCLDIR environment variable correctly point to the UTIL/NCL directory
+
+- when you are in your simulation directory, do :
+   visu-ncl -h |more             : list of available options
+   visu-ncl -f <yoursimu>.nc     : list of variables in <yoursimu>.nc
+
+If you get errors or think of additional features that could be useful, let me know, I'll be happy to improve the script for wider use when possible.
+sllmd@lmd.jussieu.fr
+

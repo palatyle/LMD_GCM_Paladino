@@ -1,0 +1,113 @@
+#!/bin/csh
+###########################################################################
+# Script to perform several chained LMD UCM simulations
+# SET HERE the maximum total number of simulations
+
+set nummax=5
+
+###########################################################################
+
+
+
+echo "---------------------------------------------------------"
+echo "starting run0"
+
+set dir=`pwd`
+set machine=`hostname`
+set address=`whoami`
+
+# Look for file "num_run" which should contain 
+# the value of the previously computed season
+# (defaults to 0 if file "num_run" does not exist)
+if ( -f num_run ) then
+ echo "found file num_run"
+  set numold=`cat num_run`
+else
+  set numold=0
+endif
+echo "numold is set to" ${numold}
+
+
+# Set value of current season 
+set numnew=${numold}
+@ numnew = ${numnew} + 1
+echo "numnew is set to" ${numnew}
+
+# Look for initialization data files (exit if none found)
+if ( ( -f start${numold}.nc ) && ( -f startfi${numold}.nc ) ) then
+   \cp -f start${numold}.nc start.nc
+   \cp -f startfi${numold}.nc startfi.nc
+else if ( ${numold} == 99999 ) then
+    echo "No run because previous run crashed ! (99999 in num_run)"
+    exit
+else
+   echo "Where is file start"${numold}".nc??"
+   exit
+endif
+
+#
+
+# Run GCM
+gcm.e >! lrun${numnew} 
+
+
+# Check if run ended normaly and copy datafiles
+if ( ( -f restartfi.nc ) && ( -f restart.nc ) ) then
+  echo "Run seems to have ended normally"
+  \mv -f restartfi.nc startfi${numnew}.nc
+  \mv -f restart.nc start${numnew}.nc
+else
+  if ( -f num_run ) then
+    \mv -f num_run num_run.crash
+  else
+    echo "No file num_run to build num_run.crash from !!"
+    # Impose a default value of 0 for num_run
+    echo 0 >! num_run.crash
+  endif
+ echo 99999 >! num_run
+############## To receive an email message if the run crashes ########
+#mail -s "crash run GCM" $address <<ENDMAIL
+#The run on $machine in $dir has just crashed.
+#ENDMAIL
+############################################"" 
+ exit
+endif
+
+# Copy other datafiles that may have been generated
+if ( -f diagfi.nc ) then
+  \mv -f diagfi.nc diagfi${numnew}.nc
+endif
+if ( -f diagspec.nc ) then
+  \mv -f diagspec.nc diagspec${numnew}.nc
+endif
+if ( -f diagsoil.nc ) then
+  \mv -f diagsoil.nc diagsoil${numnew}.nc
+endif
+if ( -f stats.nc ) then
+  \mv -f stats.nc stats${numnew}.nc
+endif
+if ( -f profiles.dat ) then
+  \mv -f profiles.dat profiles${numnew}.dat
+  \mv -f profiles.hdr profiles${numnew}.hdr
+endif
+
+
+# Prepare things for upcoming runs by writing
+# value of computed season in file num_run
+echo ${numnew} >! num_run
+
+if ( -f rad_bal.out ) then
+    mv rad_bal.out rad_bal${numnew}.out
+endif
+
+if ( -f h2o_bal.out ) then
+    mv h2o_bal.out h2o_bal${numnew}.out
+endif
+
+# If we are over nummax : stop
+if ( `expr $numnew + 1 \> $nummax ` == 1) then
+   exit
+else
+   \cp -f run0 exe_planet
+   exe_planet
+endif 

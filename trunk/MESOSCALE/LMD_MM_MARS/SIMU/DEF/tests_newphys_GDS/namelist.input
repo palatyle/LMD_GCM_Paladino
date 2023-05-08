@@ -1,0 +1,65 @@
+ &time_control
+ start_year       = 2024,    !! (p1) Start Martian Year (20XX for MY XX)
+ start_month      = 07,      !! (p1) Start Martian Month
+ start_day        = 08,      !! (p1) Start Martian Day
+ start_hour       = 00,      !! (p1) Start Martian Hour (at longitude 0)
+ end_year         = 2024,    !! (p1) End Martian Year (20XX for MY XX)
+ end_month        = 07,      !! (p1) End Martian Month
+ end_day          = 12,      !! (p1) End Martian Day
+ end_hour         = 00,      !! (p1) End Martian Hour (at longitude 0)
+ history_interval_s  = 925   !! Frequency of outputs (s)
+ frames_per_outfile  = 24,   !! Size of time dimension in files 
+ restart          = .false.  !! (*) Output restart files ?
+ restart_interval = 8880     !! (*) Frequency of output restart files ?
+ io_form_history  = 2        !! (*) Choice of NETCDF for ouputs
+ io_form_restart  = 2        !! (*) Choice of NETCDF for ouputs     
+ io_form_input    = 2        !! (*) Choice of NETCDF for ouputs
+ io_form_boundary = 2        !! (*) Choice of NETCDF for ouputs
+ debug_level      = 0        !! (*) Verbose level
+ /
+
+ &domains
+ time_step  = 20             !! Dynamical timestep
+ dx = 20000,                  !! (p2) Horizontal resolution
+ dy = 20000,                  !! (p2) Horizontal resolution (should be equal to dx)
+ e_we   = 181,               !! (r)(p2) Number of longitude grid points
+ e_sn   = 181,               !! (r)(p2) Number of latitude grid points
+ e_vert = 101,               !! (r)(p2) Number of vertical levels
+ p_top_requested = 1.0       !! (p3) Chosen value of pressure at the top of the model
+ eta_levels =     1.000000,
+    0.000000
+ !!
+ !! OPTIONAL
+ !!
+ num_metgrid_levels = 30     !! (p1) number of vertical levels in GCM inputs (+1)
+ /
+
+ &physics
+ mars = 3,
+ num_soil_layers = 18 !!! NOUVELLE PHYSIQUE
+ /
+
+ &dynamics
+ !!
+ !! OPTIONAL
+ !!
+ !tiso = 100.       !! -- temperature for isotherm level (mesosphere) in init
+ !diff_6th_opt = 0  !! -- swith off correction filter for WRF integrations. normally works when switched on (default).
+ !khdif = 10.,      !! ** a more straightforward diffusion for tests. horizontal diffusion constant (m^2/s)
+ !kvdif = 10.,      !! ** a more straightforward diffusion for tests. vertical diffusion constant (m^2/s)
+ !km_opt = 1,       !! ** a more straightforward diffusion for tests. eddy coefficient option
+ /
+
+ &bdy_control
+ /
+
+ &grib2
+ /
+
+ &fdda
+ /
+
+ &namelist_quilt              !! (*)
+ nio_tasks_per_group = 0,     !! (*)
+ nio_groups = 1,              !! (*)
+ /                            !! (*)

@@ -1,0 +1,121 @@
+\chapter{Zoomed simulations}
+
+\label{sc:zoom}
+
+The LMD GCM can use a zoom to enhance the resolution locally.
+In practice, one can
+increase the latitudinal resolution on the one hand,
+and the longitudinal resolution on
+the other hand. 
+
+\section{To define the zoomed area}
+
+The zoom is defined in {\tt run.def}.
+Here are the variables that you want to set:
+
+\begin{itemize}
+\item East longitude (in degrees) of zoom center {\tt clon}
+\item latitude (in degrees) of zoom center {\tt clat}
+\item zooming factors, along longitude {\tt grossismx}.
+      {\it Typically 1.5, 2 or even 3 (see below)}
+\item zooming factors, along latitude {\tt grossismy}. {\it Typically 1.5, 2
+or even 3 (see below)}
+\item {\tt fxyhypb}:
+      {\it {\bf must be set to "T" for a zoom}, whereas it must be F otherwise}
+\item extention in longitude  of zoomed area {\tt dzoomx}.
+      This is the total
+      longitudinal extension of the zoomed region (degree). \newline
+      {\it It is recommended that {\tt grossismx} $\times$
+      {\tt dzoomx} $< 200^o$}
+\item extention in latitude of the zoomed region {\tt dzoomy}.
+      This is the total
+      latitudinal extension of the zoomed region (degree). \newline
+      {\it It is recommended that {\tt
+      grossismy} $\times$ {\tt dzoomy} $< 100^o$}
+\item stiffness of the zoom along longitudes {\tt taux}.
+      2 is for a smooth transition in
+      longitude, more means sharper transition.
+\item stiffness of the zoom along latitudes {\tt taux}.
+      2 is for a smooth transition in
+      latitude, more means sharper transition.
+\end{itemize}
+
+\section{Making a zoomed initial state}
+
+One must start from an initial state archive {\tt start\_archive.nc}
+obtained from a previous
+simulation (see section~\ref{sc:newstart})
+Then compile and run {\tt newstart.e} {\bf using the {\tt run.def}
+file designed for the zoom}.
+
+After running {\tt newstart.e}. The zoomed grid may be visualized
+using grads, for instance.
+Here is a grads script that can be used to map the grid above a topography
+map:
+
+\begin{verbatim}
+set mpdraw off
+set grid off
+sdfopen restart.nc
+set gxout grid
+set digsiz 0
+set lon -180 180
+d ps
+close 1
+*** replace the path to surface.nc in the following line:
+sdfopen  /u/forget/WWW/datagcm/datafile/surface.nc
+set lon -180 180
+set gxout contour
+set clab off
+set cint 3
+d zMOL
+\end{verbatim}
+
+
+\section{Running a zoomed simulation and stability issue}
+
+\begin{itemize}
+
+\item {\bf dynamical timestep}
+Because of their higher resolution, zoomed simulation requires a higher
+timestep.
+Therefore in {\tt run.def}, the number of dynamical timestep per day
+{\tt day\_step} must be increased by more than {\tt grossismx} or
+{\tt grossismy} (twice that if necessary).
+However, you can keep the same physical timestep (48/sol) and thus increase
+ {\tt iphysiq} accordingly ({\tt iphysiq = day\_step/48}).
+
+\item It has been found that when zooming in longitude, on must set
+{\tt ngroup=1} in
+{\tt dyn3d/groupeun.F}. Otherwise the run is less stable.
+
+\item The very first initial state made with {\tt newstart.e} can be noisy and
+dynamically unstable.
+It may be necessary to strongly increase the intensity of the
+dissipation and increase {\tt day\_step} in {\tt run.def} for 1 to 3 sols,
+and then use less strict values. 
+
+\item If the run remains very unstable and requires too much dissipation
+or a too small timestep, a good tip to help stabilize the model
+is to decrease the vertical extension of your run and the number of
+layer (one generally zoom to study near-surface process, so 20 to 22
+layers and a vertical extension up to 60 or 80 km is usually enough).
+
+\end{itemize}
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+

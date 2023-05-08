@@ -1,0 +1,109 @@
+#
+#----------------------------------------------------------------------- 
+#GCM run control parameters:                                          
+#---------------------------                                     
+
+# planet type
+   planet_type=mars
+
+# Number of days to run model for                                      
+     nday=9999
+
+# Number of dynamical steps per day (must be a multiple of iperiod)
+ day_step = 480
+
+# Apply a Matsuno step every iperiod dynamical step
+  iperiod=5
+
+# Control output information in the dynamics every iconser dynamical steps
+  iconser=120
+
+# Apply dissipation every idissip dynamical steps
+  idissip=1
+
+# dissipation operator to use (star or non-star)
+ lstardis=.true.
+
+# use hybrid vertical coordinate (else will use sigma levels)
+ hybrid=.true.
+
+# iterate lateral dissipation operator gradiv nitergdiv times 
+nitergdiv=1
+
+# iterate lateral dissipation operator nxgradrot nitergrot times         
+nitergrot=2
+
+# iterate lateral dissipation operator divgrad niterh times          
+   niterh=2
+
+# time scale (s) for shortest wavelengths for u,v (gradiv)
+ tetagdiv= 3000.
+
+# time scale (s) for shortest wavelengths for u,v (nxgradrot)
+ tetagrot=9000.
+
+# time scale (s) for shortest wavelengths for h (divgrad)
+ tetatemp=9000.
+
+# coefficient for gamdissip                                            
+  coefdis=0.
+
+# time marching scheme (Matsuno if purmats is true, else Matsuno-Leapfrog) 
+  purmats=.false.
+
+# run with (true) or without (false) physics
+   physic=.true.
+
+# call physics every iphysiq dynamical steps
+  iphysiq=10
+
+# Use a regular grid 
+  grireg=.true.
+
+# Output in diagfi file every ecritphy dynamical steps 
+ ecritphy=120
+
+# longitude (degrees) of zoom center
+   clon=63.
+
+# latitude (degrees) of zoom center
+   clat=0.
+
+# enhancement factor of zoom, along longitudes
+  grossismx=1.
+
+# enhancement factor of zoom, along latitudes                      
+ grossismy=1.
+
+#  Use an hyperbolic function f(y) if .true., else use a sine      
+  fxyhypb=.false.
+
+# extention along longitudes of zoom region (fraction of global domain)
+   dzoomx= 0.
+
+# extention along latitudes of zoom region (fraction of global domain)
+   dzoomy=0.
+
+# zoom stiffness along longitudes
+    taux=2.
+
+# zoom stiffness along latitudes
+    tauy=2.
+
+#  Fonction  f(y) as y = Sin(latitude) if = .true. ,  else  y = latitude
+  ysinus= .false.
+
+# Use a sponge layer
+  callsponge  = .true.
+ 
+# Sponge layer extends over topmost nsponge layers
+  nsponge = 3
+
+# Sponge:  mode0(u=v=0), mode1(u=umoy,v=0), mode2(u=umoy,v=vmoy)
+  mode_sponge= 2
+
+# Sponge layer time scale (s):  tetasponge
+  tetasponge = 30000
+
+# some definitions for the physics, in file 'callphys.def'
+INCLUDEDEF=callphys.def

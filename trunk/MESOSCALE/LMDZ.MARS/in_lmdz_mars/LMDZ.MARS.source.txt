@@ -1,0 +1,306 @@
+--------------------------------------------------------------------
+Changes in the LMD MARS GCM reference sources 
+(most recent version available in LMDZ.MARS.source.tar)
+--------------------------------------------------------------------
+
+09/2008 dyn3d/physdem1.F
+Correct possible bugs on some computers + english text & comments
+
+09/2008 dyn3d/defrun_new.F
+Corrected small bug (tapedef argument should not be altered)
+
+09/2008 dyn3d/eofdump.F
+Corrected small bug in the sampling time
+
+09/2008 dyn3d/vanleer.F
+removed inapropriate 'EXTERNAL' statement
+
+O9/2008 aeronomars/euvheat.F
+removed print of 'ngrid','nlayer' (undefined and unused variables)
+
+O9/2008 phymars/mkstat.F90
+Cleaned up (removed unused variables)
+
+09/2008 phymars/uniplot.F bibio/uniplot.F are removed because useless
+
+O9/2008 phymars/comcstfi.h
+09/2008 phymars/writediagfi.F
+08/2007 phymars/tabfi.F
+Cosmetic: english text & comments
+
+09/2008 dyn3d/iniwrite.F => phymars/iniwrite.F 
+- moved it from dyn3d to phymars
+- cleanup & english
+
+09/2008 phymars/physdem1.F
+commented unused (wrong) 'external' qualifiers
+
+09/2008 phymars/orosetup.F
+Replaced logical 'xor' with 'neqv' (for standards compliance)
+
+09/2008 phymars/physiq.F
+- Change to ice albedo to fit new TES observation (Franck L.)
+- cleanup + comments in english (Ehouarn)
+
+09/2008 phymars/watercloud.F
+cleaned version with reduced number of nuclei, and TES like output. 
+
+09/2008 phymars/growthrate.F
+updated to improved version provided by F. Montmessin (Feb 2006...)
+ 
+09/2008 phymars/vdifc.F
+Change to remove an old quick fix to take into account condensation in
+vertical diffusion
+
+09/2008  
+- phymars/mkstat.F90 
+- phymars/def_var.F90
+Slight change to improve compilation (include => #include)
+
+O7/2008 MAJOR CHANGE to solve the "warm polar night" problem
+- dyn3d/addfi.F
+- dyn3d/gcm.F
+Recompute mass after incrementation of ps in addfi.F (masse is added in the argument
+list of addfi). 
+Also : the call of groupeun is now controlled by a flag.  
+
+
+07/2008 phymars/physiq.F
+- Change made (by Aymeric) to improve the models when iradia > 1 (iradia
+  is set is callphys.def). 
+(i.e. when one don't want to compute radiative transfer at every timestep):
+The change has no impact when iradia=1
+=> The net radiative surface flux  "fluxrad" is computed outside the
+test on iradia    
+=> Add intermediate variable "fluxrad_sky" (rad. flux from sky absorbed 
+by surface) to be saved when rad. transfer is not computed.
+- Cleaning of old commented lines about radiative transfer in clouds
+
+
+07/2008 Utility concatnc.F90 (not used by the gcm): improvement in order
+to 1) concatenate 1D variable and 2) increase the number of input files
+up to 1000
+
+12/2007 dyn3d/lect_start_archive.F
+some old stuuf is commented to avoid bugs with some start_archive with
+many tracers
+
+12/2007 dyn3d/dump2d.F
+Changed to improve crazy output to screen with newstart...
+
+12/2007 bibio/mxva.F
+Changed to avoid array bounds problems on some compilers
+
+12/2007 
+aeronomars/conduction.F
+aeronomars/molvis.F
+Changed to ensure variable initialisation on some compilers. 
+
+12/2007 phymars/convadj.F
+Improvement regarding convection in the polar night
+
+12/2007 
+-phymars/callsedim.F  
+-phymars/initracer.F  
+-phymars/tracer.h
+-phymars/callsedim2q.F
+Changed to initialize tracer particle densities in initracer.F, and
+transfer it with common in tracer.h
+
+12/2007 script "makegcm" "create_make_gcm"
+Improved to separate object compiled files in LIBO depending on the type
+of machine you are (32bits or 64bits). Also allow to compute with LMDZ.2
+dynamics.  
+
+10/2007 Utility lslin.F90 (not used by the gcm)
+changed evaluation of 'start_var' from hard-coded values to a computed value
+
+09/2007 phymars/wstats.F90 and phymars/readtesassim.F90
+change " include" to "#include" to force recompilation by makegcm
+
+08/2007 dyn3d/newstart.F90
+Translate french questions asked by program in english...
+Improve options to remove topography... (for intercomparison)
+
+08/2007 phymars/dustopacity.F
+add possibility for scenario iaervar=5 (for paleoclimate...)
+
+08/2007 phymars/tabfi.F
+Translate french questions asked by program in english...
+
+11/2006 phymars/convadj.F
+Correction to remove a bug for compiler which did not "save" variable 
+by default (e.g. pgf on opteron, or g95)
+
+11/2006 aeronomars/thermosphere.F
+Correction to remove a bug if tracer=F and callthermos=T 
+
+10/2006 phymars/readtesassim.F90
+Correction to use dust scenario MY24 at high horizontal resolution
+
+10/2006 dyn3d/dynredem.F and phymars/physdem1.F
+Syntax changes to avoid problem when writing start files when compiling
+on 64bits computers.
+
+05/2006 : phymars/writediagfi.F
+Add a test to be sure not to use writediagfi with 1D version of GCM 
+
+09/2005 : phymars/mucorr.F
+Fix a weird bug that occured when running the model with "Diurnal=F"
+on Linux, pgf90
+
+-----------------------------------
+Update in june 2005
+-----------------------------------
+
+06/2005 : deftank/run0
+Improved so that the "run manager" run0 send you an E-mail when a run crash
+(this can easily be commented)
+
+06/2005 : deftank/run_mcd and deftank/callphys.def
+Cosmetic changes to make thing clearer in english
+
+06/2005 : makegcm
+IMPORTANT FOR 1D GCM VERSION ON LINUX : modified to follow a change in
+the Linux syntax of "sed"
+
+06/2005 : aeronomars/calchim.F
+NEW version provided by S. Lebonnois and F. Lefevre on May, 11, 2005
+("Cosmetic changes")+syntax changes by FF (1 line > 72 characters)
+
+06/2005 : phymars/convadj.F
+Modified if one tracer is CO2, take into account the
+Molecular mass variation (e.g. when CO2 condense) to trigger convection
+
+06/2005 : phymars/newcondens.F
+The CO2 deplation induced convection is now skipped, since it is properly
+done in convadj.F (see above)
+
+06/2005 : phymars/watercloud.F
+IMPORTANT (especially for PALEOCLIMATE) : correction if a lot of subliming 
+CO2 fills the 1st layer. The number of input is modified (see below)
+
+06/2005 : phymars/physiq.F
+- Change in the input argument of watercloud.F : "pdpsrf" is added (see
+above)
+- If "caps", the cold trap at the south pole is only active for
+obliquity lower than 27 deg (only useful for paleoclimate...)
+
+06/2005 : dyn3d/groupe.F
+Just cleaned to remove ambiguity of where "ngroup" is set (in groupeun, and
+not in groupe). 
+
+06/2005 : phymars/inistats.F
+remove declaration of "pseudoalt", already in comvert.h 
+(was a problem only for some compiler)
+
+06/2005 : dyn3d/newstart.F
+Cosmetic changes in some format for compatibility with gnu compiler
+
+06/2005 : dyn3d/readhead_NC.F
+Cosmetic changes in some format for compatibility with gnu compiler
+
+06/2005 : dyn3d/sortvarc.F
+Cosmetic changes in some format for compatibility with gnu compiler
+
+06/2005 : phymars/testphys1d.F
+Cleaning and changes in declaration for compatibility with gnu compiler
+
+06/2005 : phymars/lwflux.F
+Initialisation of "ksidb" for compiler that does not unitialized variable.
+
+06/2005 : phymars/lwxd.F
+Initialisation of "ksi_emis" for compiler that does not unitialized variable.
+
+06/2005 : phymars/nirco2abs.F
+Negligible change of one loop for compiler that does not like loop on real.
+
+06/2005 : aeronomars/paramfoto.F
+Negligible change of one loop for compiler that does not like loop on real.
+
+
+--------------------------------------------------------------
+Change in December 2004 - January 2005 
+--------------------------------------------------------------
+
+01/2005 : aeronomars/euvheat.F
+IMPORTANT FOR THERMOSPHERE : correction to avoid EUV flux time variation 
+and keep it constant throughout the run
+
+01/2005 : LMDZ.MARS/create_make_gcm
+add phymars on line 187 to ensure recompilation of aeronomars subroutines
+when any *.h file is updated in phymars
+
+01/2005 : dyn3d/dynetat0.F
+Add an option to reindex the tracer when using newstart if needed
+
+01/2005 : phymars/phyetat0.F
+Fix a bug when using newstart with more tracers than in old startfi
+Add an option to reindex the surface tracer if needed
+
+12/2004 : phymars/watercloud.F
+IMPORTANT: Several Changes to fix a bug that made watercloud
+to create negative mixing ratio in some conditions (past climate)
+
+12/2004 : dyn3d/interp_horiz.F
+IMPORTANT : add a test to fix a bug when using newstart with 
+a new grid size.
+
+12/2004 : phymars/vdifc.F
+FOR compilation on DEC machine :
+Just change order of declaration of pqsurf(ngrid,nq
+
+12/2004 : phymars/phyetat0.F
+FOR compilation on DEC machine :Just change order of declaration 
+
+12/2004 : dyn3d/addfi.F
+FOR compilation on DEC machine : qtestt = 1.0e-30 (before: qtestt = 1.0e-40)
+
+12/2004 : LMDZ.MARS/makefile
+Add new option to allow compilation on DEC machine
+
+--------------------------------------------------------------
+Change in August-september 2004 : before production of MCD V4.0
+--------------------------------------------------------------
+
+09/2004 : phymars/eofdump.F
+Change to store density in EOF to build Mars Climate Database
+
+09/2004 : phymars/physiq.F
+add rho in the input of eofdump:
+CALL eofdump(ngrid, nlayer, zu, zv, zt, rho, ps)
+
+09/2004 : phymars/ineofdump.F
+Change to store hybrid coordinates in EOF to build Mars Climate Database
+
+
+08/2004 : dyn3d/inidissip.F
+Form change to simplify the choice of dissipation parameters
+and use the same code for the thermosphere of only atmosphere model
+
+08/2004 : dyn3d/newstart.F
+Add an option "q=x" to initialise tracer manually
+
+08/2004 : aeronomars/chimiedata.h
+remove mmol,noms (now in tracer.h common)
+
+08/2004 : In aeronomars: calchim.F, concentrations.F, euvheat.F,
+inichim_newstart.F, moldiff.F, moldiffcoeff.F, perosat.F
+Add : #include "tracer.h"  (where tracer names are now)
+
+08/2004 : phymars/inifis.F
+Change some test on callphys.def options to allow any tracer transport...
+
+08/2004 : phymars/initracer
+Initialization of tracer name "noms(iq)" usable in many place
+
+08/2004 : phymars/tracer.h
+add noms,mmol to the common tracer
+
+08/2004 : phymars/newcondens.F
+IMPORTANT : major changes to allow proper treatment of non volatile 
+gaz enrichment when CO2 condense and depletion when CO2 sublime
+
+08/2004 : phymars/writediagfi.F
+remove the "abort" command so that the run does not stop due to a NETCDF bug
+(NETCDF cannot write in file larger than 2098184 kb

@@ -1,0 +1,63 @@
+#######################################################################
+####################################################################### nom
+# @ job_name		=	LMD_LES_MARS
+####################################################################### MPICH / serial 
+# @ job_type            =       MPICH
+####################################################################### 8 / 16 / 20 / 32 / 64
+# @ total_tasks         =       8		
+####################################################################### A / B / C / AP / BP / CP
+# @ class               =       AP		
+####################################################################### 24gb (cf. llps pendant fonctionnement)
+# @ resources 		= 	ConsumableCpus(1)ConsumableMemory(1gb)  
+####################################################################### real ou ideal ???
+# @ environment         =       real=0 ; tmpdir=$(job_name).$(jobid) ; para=$(job_type)
+#######################################################################
+
+#######################################################################
+#######################################################################
+# @ output 		= 	$(job_name).$(jobid)/LOG
+# @ error 		= 	$(output)
+# @ blocking 		= 	unlimited
+# @ notification 	= 	never
+# @ queue
+grep "^# @" $0
+set -vx
+#######################################################################
+mkdir $LOADL_STEP_INITDIR/${tmpdir}
+cd $LOADL_STEP_INITDIR
+\rm zeLAST
+ln -sf ${tmpdir} zeLAST
+cd zeLAST 
+#######################################################################
+cp      $LOADL_STEP_INITDIR/launch.gnome        .
+cp	$LOADL_STEP_INITDIR/*.def	.
+cp	$LOADL_STEP_INITDIR/*.exe	.
+cp	$LOADL_STEP_INITDIR/namelist*	.
+#cp	$LOADL_STEP_INITDIR/wrfi*	.	### executer sur la frontale
+#						### au prealable !!!
+ln -sf  $LOADL_STEP_INITDIR/wrfi*       .
+#######################################################################
+if [[ "${real}" == "0" ]]
+then
+  cp	$LOADL_STEP_INITDIR/input_* 	.
+  cp	$LOADL_STEP_INITDIR/ze_hill	.       ## topo
+  cp	$LOADL_STEP_INITDIR/levels	.	## custom vert levels
+  ##mpirun ideal.exe ##marche pas
+  ##mkdir ideal
+  ##mv rsl.* ideal/
+else
+#  cp $LOADL_STEP_INITDIR/wrfb* .
+ln -sf $LOADL_STEP_INITDIR/wrfb* .
+fi
+#######################################################################
+#### avant wrf.exe, necessaire ???
+#declare -x MP_STACK_SIZE=640000000
+#declare -x MP_STACK_SIZE=64000000
+#######################################################################
+if [[ "${para}" == "MPICH" ]]
+then
+   mpirun wrf.exe
+else
+   ./wrf.exe
+fi
+#######################################################################

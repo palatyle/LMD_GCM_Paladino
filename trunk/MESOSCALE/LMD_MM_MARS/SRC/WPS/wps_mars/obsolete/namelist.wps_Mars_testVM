@@ -1,0 +1,34 @@
+&share
+ wrf_core = 'ARW',
+ max_dom = 1,
+ start_date = '2003-02-15_00:00:00'
+ end_date   = '2003-02-16_12:00:00'
+ interval_seconds = 44400
+ io_form_geogrid = 2,
+ debug_level = 0
+/
+
+
+&geogrid
+ parent_id         =   1,
+ parent_grid_ratio =   1,
+ i_parent_start    =   1,
+ j_parent_start    =   1,
+ e_we              =  100,
+ e_sn              =  100,
+ geog_data_res     = '32ppd'
+ dx = 50000,
+ dy = 50000,
+ map_proj = 'mercator',
+ ref_lat   =  -10.00,
+ ref_lon   =  -75.00,
+ truelat1  =  0.0,
+ truelat2  =  0.0,
+ stand_lon =  00.00,
+ geog_data_path = '../WPS_GEOG'
+/
+
+&metgrid
+ fg_name = '../PREP_MARS/LMD/LMD'
+ io_form_metgrid = 2,
+/

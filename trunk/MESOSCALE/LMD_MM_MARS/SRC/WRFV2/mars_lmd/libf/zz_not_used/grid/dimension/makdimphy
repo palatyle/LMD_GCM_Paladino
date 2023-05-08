@@ -1,0 +1,28 @@
+for i in $* ; do
+   list=$list.$i
+done
+fichdim=dimphy$list
+
+if [ ! -f $fichdim ] ; then
+# si le fichier de dimensions n'existe pas, on le cree
+
+if [ $# -ge 3 ] ; then
+   im=$1
+   jm=$2
+   lm=$3
+else
+   echo il faut preciser les dimensions
+   exit
+fi
+
+cat << EOF > $fichdim
+c-----------------------------------------------------------------------
+      INTEGER KIDIA, KFDIA, KLON, KLEV
+      PARAMETER (KIDIA=1,KFDIA=$im*($jm-1)+2,
+     .           KLON=KFDIA-KIDIA+1,KLEV=$lm)
+c-----------------------------------------------------------------------
+EOF
+fi
+
+/bin/rm ../dimphy.h
+tar cf - $fichdim | ( cd .. ; tar xf - ; mv $fichdim dimphy.h )

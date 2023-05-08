@@ -1,0 +1,68 @@
+####################################################################
+# @ job_name		=	LMD_LES_MARS
+# @ job_type            =       MPICH
+# @ total_tasks         =       8
+# @ class               =       AP
+# @ environment         =       real=0;tmpdir=$(job_name).$(jobid).results
+####################################################################
+####################################################################
+####################################################################
+# @ output 		= 	$(job_name).$(jobid)
+# @ error 		= 	$(output)
+# @ blocking 		= 	unlimited
+# @ notification 	= 	never
+# @ queue
+grep "^# @" $0
+set -vx
+####################################################################
+mkdir $LOADL_STEP_INITDIR/${tmpdir}
+cd $LOADL_STEP_INITDIR/${tmpdir}
+####################################################################
+ln -sf $LOADL_STEP_INITDIR/*.exe .
+ln -sf $LOADL_STEP_INITDIR/*.def .
+ln -sf $LOADL_STEP_INITDIR/namelist.* .
+ln -sf $LOADL_STEP_INITDIR/wrfi* .   ### executer sur la frontale
+                                     ### au prealable !!!   
+####################################################################
+if [[ "${real}" == "0" ]]
+then
+  ln -sf $LOADL_STEP_INITDIR/input_* .
+else
+  ln -sf $LOADL_STEP_INITDIR/wrfb* .
+fi
+####################################################################
+declare -x MP_STACK_SIZE=640000000
+mpirun wrf.exe
+####################################################################
+####################################################################
+####################################################################
+
+
+
+####################################################################
+## @ total_tasks =16   ## ne fonctionne pas avec 241 points
+## @ total_tasks =20  ## semble mieux fonctionner... bof
+## @ total_tasks =24  ## il y a un souci a l'interface
+
+
+####################################################################
+####################################################################
+###############NE MARCHE PAS AVEC LES GRANDS DOMAINES ##############
+####################################################################
+####################################################################
+#echo "#! /bin/bash"                        > script
+#echo "ulimit -s unlimited"                >> script
+#echo "./ideal.exe"                        >> script
+#echo "mv rsl.out.0000 ideal_rsl.out.0000" >> script
+#chmod 755 script
+#mpirun ./script
+#\rm script
+####################################################################
+##declare -x MP_STACK_SIZE=64000000
+##mpirun ideal.exe      ### PB: ideal.exe est limite a un moment
+##                      ### mais mpirun ideal.exe donne des instabilites
+##ulimit -s unlimited   ### ne resout pas PB... ok 145 pas ok 201
+##./ideal.exe
+##mpirun "ulimit -s unlimited ; ./ideal.exe"
+##mv rsl.out.0000 ideal_rsl.out.0000
+####################################################################

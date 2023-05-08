@@ -1,0 +1,126 @@
+
+%
+% FICHIER STYLE
+%
+\input{these_spiga.sty}
+\usepackage{pstricks}
+\usepackage{pifont}
+\usepackage{paralist}
+%
+%
+% END FICHIER STYLE
+%
+
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\frontmatter
+
+%\pagestyle{fancy}
+\selectlanguage{english}
+%\maketitle
+
+\begin{titlepage} 
+\mbox{}\\ 
+%\Ovalbox{ 
+%\begin{minipage}{1\textwidth} \begin{center}
+%\Huge{LMD Martian Mesoscale Model [LMD-MMM]}\\\huge{User Manual}
+%\end{center} \end{minipage} 
+%}
+\Ovalbox{ 
+\begin{minipage}{1\textwidth} \begin{center}
+\Huge{LMD Martian Mesoscale Model [LMD-MMM]}
+\end{center} \end{minipage} 
+}
+\mbox{}\\
+\begin{center}\Huge{User Manual}\end{center}
+\mbox{}\\ 
+\begin{center} 
+\includegraphics[width=0.8\textwidth]{domain_100.png} 
+\end{center}
+\mbox{}\\ 
+\begin{center}
+\huge{A. Spiga}\\
+\email{aymeric.spiga}{upmc.fr}\\
+Laboratoire de M\'et\'eorologie Dynamique\\
+%Institut Pierre Simon Laplace\\
+Universit\'e Pierre et Marie Curie, Paris, France\\
+\mbox{}\\ 
+\large \today \normalsize
+\end{center} 
+\end{titlepage} 
+
+
+\clearemptydoublepage
+
+
+%%%%%%%%%%%%%%%%%%%%%%
+% TABLE DES MATIERES %
+%%%%%%%%%%%%%%%%%%%%%%
+\dominitoc
+\ajusterletitrecourant{User Manual for the LMD Martian Mesoscale Model}
+%\pagestyle{empty}
+\tableofcontents
+\clearemptydoublepage
+%\pagestyle{fancy}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\mainmatter
+
+%\clearemptydoublepage
+%\include{intro}  
+%
+%\clearemptydoublepage
+%\include{ch1}
+%
+\clearemptydoublepage
+\ajusterletitrecourant{User Manual for the LMD Martian Mesoscale Model}
+%\chapter*{
+%Realistic modeling of the 
+%Martian mesoscale and 
+%microscale circulation :
+%validation and first results.
+%}
+%\newpage
+
+
+
+
+
+%\newpage
+%\mbox{}
+%\newpage
+
+\include{foreword}
+\include{whatis}
+\include{installation}
+\include{compile_exec}
+\include{parameters}
+\include{preproc}
+\include{guide}
+\include{advance}
+\include{postproc}
+\include{faq}
+
+\backmatter
+
+\appendix
+\chapter{Martian calendars}
+
+\sk
+\scriptsize
+\codesource{calendar}
+\normalsize
+
+\footnotesize{
+\bibliographystyle{these}
+%\bibliographystyle{plain}
+%\bibliographystyle{natbib}
+%\bibliographystyle{abbrvnat}
+\bibliography{newfred}
+}
+
+\end{document}

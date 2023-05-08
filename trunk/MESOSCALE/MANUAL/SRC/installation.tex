@@ -1,0 +1,131 @@
+\chapter{Installing the model}\label{install}
+
+\vk
+This chapter is meant for first time users of the LMD Martian Mesoscale Model. We describe how to install the model on your system. Experience with either the terrestrial WRF mesoscale model or the LMD Martian GCM is not absolutely required, although it would help you getting more easily through the installation process.
+
+\mk
+\section{Prerequisites}
+
+\sk
+\subsection{General requirements}
+
+\sk
+In order to install the LMD Martian Mesoscale Model, please ensure the following prerequisites:
+\begin{citemize}
+\item your computer is connected to the internet;
+\item you have~\ttt{200 Mo} free disk space available;
+\item your OS is Linux\footnote{The model was also successfully compiled on MacOSX; ``howto" information is available upon request but could have become obsolete on recent versions of Apple hardware and software. It is probably possible to compile the model on Windows using Cygwin but this has not been implemented nor tested. This could work, but we recommend instead to install a Linux distribution on your computer (e.g. Ubuntu, Debian, Fedora, ...).} with a decent set of basic commmands (\ttt{sed}, \ttt{awk}, \ldots);
+\item \ttt{bash}, \ttt{m4} and \ttt{perl} are installed on your computer;
+\item at least one of the following Fortran compilers is installed on your computer
+\begin{itemize}
+\item Portland Group commercial compiler \ttt{pgf90}
+\item G95 free compiler\footnote{Sources and binaries available on \url{http://www.g95.org}} \ttt{g95} 
+\item Intel commercial compiler \ttt{ifort} 
+\item GNU Fortran compiler \ttt{gfortran}
+\end{itemize}
+\item your C compiler is \ttt{gcc} and C development libraries are included;
+\item \ttt{netCDF} libraries\footnote{The outputs from model computations are in netCDF format. This is a convenient self-describing file format widely used in atmospheric science and data analysis. Further information and downloads can be found in \url{http://www.unidata.ucar.edu/software/netcdf}.} have been compiled \emph{on your system with the Fortran compiler suite you aim to use to compile the model}. Three environment variables associated with the \ttt{NETCDF} libraries must be defined with the following commands\footnote{All command lines proposed in this document are defined in \ttt{bash} script language}:
+\begin{verbatim}
+declare -x NETCDF=/disk/user/netcdf  
+declare -x NCDFLIB=$NETCDF/lib       
+declare -x NCDFINC=$NETCDF/include       
+\end{verbatim}
+\end{citemize} 
+
+\sk
+\begin{finger}
+\item If you want the environment variables to be persistent in your system, copy the \ttt{declare} command lines spread in this user manual in your \ttt{.bashrc} or \ttt{.bash\_profile}. 
+\item You might also find useful -- though not mandatory -- to install on your system:
+\begin{citemize}
+\item \ttt{ncview}\footnote{ \url{http://meteora.ucsd.edu/~pierce/ncview\_home\_page.html} }: tool to visualize the contents of a netCDF file;
+\item \ttt{nco}\footnote{ \url{ http://nco.sourceforge.net } }: tools to manipulate and modify netCDF files;
+\item \ttt{epd}\footnote{ \url{ http://www.enthought.com/products/getepd.php }. A complete version is available free of charge for students and employees at degree-granting institutions. A limited version with essential librairies is available free of charge for any user (but e.g. cartography and \ttt{netCDF} python packages are not included in this free version). }: the python distribution suite packaged by Enthought, including many librairies for plotting, scientific computations, data analysis...
+\end{citemize}
+\end{finger}
+
+\sk
+\subsection{Compiling the terrestrial WRF model}\label{terrestrial}
+
+\sk The LMD Martian Mesoscale Model is based on the terrestrial NCEP/NCAR ARW-WRF Mesoscale Model. As a first step towards the compilation of the Martian version, we advise you to check that the terrestrial model compiles on your computer with either \ttt{g95} or \ttt{pgf90} or \ttt{ifort}. On the ARW-WRF website \url{http://www.mmm.ucar.edu/wrf/users/download/get\_source.html}, you will be allowed to freely download the model after a quick registration process (click on ``New users"). Make sure to download the version 2.2 of the WRF model and copy the \ttt{WRFV2.2.TAR.gz} archive to your current working directory. Then please extract the model sources and configure the compilation process:
+\begin{verbatim}
+tar xzvf WRFV2.2.TAR.gz
+cd WRFV2
+./configure
+\end{verbatim}
+
+\sk
+The \ttt{configure} script analyzes your architecture and proposes you several possible compilation options. Make sure to choose the ``single-threaded, no nesting" option related to either \ttt{g95} (should be option $13$ on a $32$~bits Linux PC) or \ttt{pgf90} (should be option $1$ on a $32$~bits Linux PC) or \ttt{ifort}. The next step is then to compile the WRF model by choosing the kind of simulations you would like to run. A simple and direct test consists in trying to compile the idealized case of a 2D flow impinging on a small hill:
+\begin{verbatim}
+./compile em_hill2d_x > log_compile 2> log_error &
+\end{verbatim}
+%
+\begin{finger} \item In case you encounter problems compiling the ARW-WRF model, please read documentation on the website \url{http://www.mmm.ucar.edu/wrf/users}, contact the WRF helpdesk or search the web for your error message. Our team will not be able to offer support for the LMD Martian Mesoscale Model if the ARW-WRF model does not compile and run on your system. \end{finger}
+
+\sk
+If the compilation is successful, the file \ttt{log\_error} should be empty or only reporting few warnings. In the \ttt{main} folder two executables \ttt{ideal.exe} and \ttt{run.exe} should be found, which allows you to run\footnote{If you compiled the model with \ttt{g95}, \ttt{ideal.exe} will possibly complain about an error reading the namelist. Please move the line \ttt{non\_hydrostatic} below the line \ttt{v\_sca\_adv\_order} in the \ttt{namelist.input} file to solve the problem.} the test simulation:
+\begin{verbatim}
+cd test/em_hill2d_x
+./ideal.exe
+./wrf.exe
+\end{verbatim}
+
+\sk
+During the simulation, the time taken by the computer to perform integrations at each dynamical timestep  is displayed in the standard output. The simulation should end with a message \ttt{SUCCESS COMPLETE WRF}. The model results are stored in a \ttt{wrfout} netCDF data file you might like to browse with a \ttt{NETCDF}-compliant software such as \ttt{ncview}, or read with your favorite graphical software. Once you have checked the WRF terrestrial model compiles and runs well on your system, you can delete all files related to the operations done in this section~\ref{terrestrial}.
+
+\mk
+\section{Main installation of the model sources}
+
+\paragraph{Method 1: You were given a \ttt{LMD\_MM\_MARS.tar.gz} archive} Please set the environment variable \ttt{\$MESO} to point at the directory where you will install the model, and set the environment variable \ttt{\$MMM} as \ttt{\$MESO/LMD\_MM\_MARS}. Copy the \ttt{LMD\_MM\_MARS.tar.gz} file in the \ttt{\$MESO} directory and extract the files. Then execute the \ttt{prepare} script that would perform all installation tasks\footnote{Deflate the various compressed archives contained into \ttt{LMD\_MM\_MARS}, download the ARW-WRF sources from the web, apply a (significant) ``Martian patch" to these sources and build the structure of your \ttt{LMD\_MM\_MARS} directory}:
+%
+\begin{verbatim}       
+declare -x MESO=/disk/user/MODELS
+declare -x MMM=$MESO/LMD_MM_MARS
+cp LMD_MM_MARS.tar.gz $MESO
+cd $MESO
+tar xzvf LMD_MM_MARS.tar.gz
+cd $MESO/LMD_MM_MARS
+ln -sf ./SRC/SCRIPTS/prepare .  ## not needed if script already in LMD_MM_MARS
+./prepare  
+\end{verbatim}
+
+\begin{finger}
+\item If you would like to use several versions of the model in separate folders, remember to change the \ttt{\$MESO} and \ttt{\$MMM} environment variables accordingly.
+\end{finger}
+
+\paragraph{Method 2: You were given a \ttt{svn} link \ttt{the\_link}} \emph{You must have Subversion (\ttt{svn}) installed on your system to follow this method}. Please use the name of our server repository combined to an \ttt{svn checkout} command to get the model sources\footnote{At this stage, it is essential to have registered to the WRF website (see foreword) because our server contains some part of the ARW-WRF sources.}. Please also set the environment variables \ttt{\$MESO} and \ttt{\$MMM} as is detailed below. The first download of the model sources could be a bit long. Compared to method~$1$, this method~$2$ using \ttt{svn} would allow you to easily get the latest updates and bug fixes done on the LMD Martian Mesoscale Model by the development team\footnote{If you are not interested by this feature, please replace the command line featuring \ttt{svn checkout} by the command line \ttt{svn export the\_link/LMDZ.MARS the\_link/MESOSCALE} }.
+
+\begin{verbatim}
+svn checkout the_link -N the_name_of_your_local_destination_folder
+cd the_name_of_your_local_destination_folder
+svn update MESOSCALE
+[svn update LMDZ.MARS] ## only if you use the new physics (not recommended for a starter)
+cd MESOSCALE
+declare -x MESO=$PWD  ## put absolute link in your .bashrc
+declare -x MMM=$MESO/LMD_MM_MARS
+    ## to get latest updates later on
+    cd the_name_of_your_local_destination_folder
+    svn update
+    svn log | more
+\end{verbatim}
+
+\mk
+\section{Parallel computations (optional)}
+
+\sk
+Parallel computations with the Message Passing Interface (MPI) standard are supported by the LMD Martian Mesoscale Model. If you want to use this capability, you would have to add the installation of \ttt{MPICH2} or \ttt{openMPI} as a additional prerequisite. Once the installation is completed, it is required to define the environment variable \ttt{\$WHERE\_MPI} to point in your MPI \ttt{bin} directory, even if you added this directory to your \ttt{\$PATH} variable. 
+
+%\begin{finger}
+%\scriptsize
+%\item An installation script for openMPI is available upon request (and information can be easily retrieved from the web).
+%\item Here is a brief ``how-to" to install MPICH2, although this surely does not replace reading carefully installation notes and choosing which installation suits best your system. Please download the current stable version of the sources (e.g. we choose here an old version \ttt{mpich2-1.0.8.tar.gz} for the sake of illustration) on the MPICH2 website \url{http://www.mcs.anl.gov/research/projects/mpich2} and install the MPICH2 utilities by the following commands:
+%\begin{verbatim}
+%mkdir $your_software_dir/MPI ; mv mpich2-1.0.8.tar.gz $your_software_dir/MPI/ ; cd $your_software_dir/MPI
+%tar xzvf mpich2-1.0.8.tar.gz ; cd mpich2-1.0.8
+%./configure --prefix=$PWD --with-device=ch3:nemesis > conf.log 2> conferr.log &
+%make > mk.log 2> mkerr.log &
+%declare -x WHERE_MPI=$your_software_dir/MPI/mpich2-1.0.8/bin
+%\end{verbatim}
+%\normalsize
+%\end{finger}
+
+\clearemptydoublepage

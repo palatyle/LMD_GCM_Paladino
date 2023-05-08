@@ -1,0 +1,72 @@
+#! /bin/bash
+
+###############################
+# use: - launch_gcm           #
+#      - echo 22 | launch_gcm #
+###############################
+
+# Author : A. Spiga - Spring/Winter 2008 
+# added link trick in 2011
+
+        if [[ ! -d startbase ]]
+        then
+          echo "please create in $PWD a symbolic link: startbase"
+          echo "for instance: ln -sf /san/home/spiga/DATAFILE/STARTBASE_64_48_32_t2 $PWD/startbase"
+          echo "(and compile the GCM with the correct dimensions)"
+          exit
+        fi
+
+startbase=./startbase/
+
+#
+# get simulation start day and compute start/startfi required date (simulation day - 1)
+#
+echo '>>>' choose start sol ? ; read daygcm
+  #if [[ "$daygcm" == 0 ]]
+  #then
+  #daygcm=669 
+  #fi
+daygcm=$(expr ${daygcm} - 1)
+
+#
+# find the correct start/startfi files among 3-day startbase
+#
+ls ${startbase}/start${daygcm}.nc > /dev/null 2> /dev/null
+if [[ "$?" == 0 ]]
+then
+    echo found ! ${daygcm}
+else
+    #echo not found ! ${daygcm}	
+    daygcm=$(expr ${daygcm} - 1)
+    ls ${startbase}/start${daygcm}.nc > /dev/null 2> /dev/null
+    if [[ "$?" == 0 ]]     # probably a 'while' loop would be better if more than 3
+    then
+	echo found ! ${daygcm}
+    else
+	#echo not found ! ${daygcm}    
+	daygcm=$(expr ${daygcm} - 1)
+        ls ${startbase}/start${daygcm}.nc > /dev/null 2> /dev/null	
+        echo found ! ${daygcm}
+    fi	
+fi	
+
+#
+# link start/startfi files
+#
+ln -sf ${startbase}/start${daygcm}.nc start.nc
+ln -sf ${startbase}/startfi${daygcm}.nc startfi.nc
+
+#
+# clean the place
+#
+rm -rf restart.nc 2> /dev/null 
+rm -rf restartfi.nc 2> /dev/null
+rm -rf log_gcm 2> /dev/null
+
+#
+# run !
+#
+echo running the GCM - check in ${PWD}/log_gcm 
+nohup gcm.e > log_gcm
+
+exit

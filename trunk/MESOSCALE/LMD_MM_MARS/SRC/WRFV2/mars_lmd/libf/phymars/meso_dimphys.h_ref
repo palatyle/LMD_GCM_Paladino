@@ -1,0 +1,13 @@
+!-----------------------------------------------------------------------
+!   INCLUDE 'dimphys.h'
+
+
+         INTEGER, parameter :: wiim=--xsize--
+         INTEGER, parameter :: wjjm=--ysize--
+         INTEGER, PARAMETER :: ngridmx=--physize--
+         INTEGER, parameter :: nlayermx=--zsize--
+         INTEGER, PARAMETER :: nsoilmx=--soilsize--
+	
+!-----------------------------------------------------------------------
+
+	 

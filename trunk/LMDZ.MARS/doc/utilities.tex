@@ -1,0 +1,74 @@
+\chapter{Utilities}
+
+\label{sc:utilities}
+
+A few post-processing tools, which handle GCM outputs (files
+{\tt diagfi.nc} and {\tt stats.nc}) are available in the
+{\tt LMDZ.MARS/util} subdirectory.
+This directory contains the sources codes along with a {\tt README.exec}
+file which explains what the various programs are for and
+how to compile them.
+
+\section{concatnc}
+This program concatenates consecutive
+output files ({\tt diagfi.nc} or even {\tt stats.nc} files) for a selection of 
+variable, in order to obtain one single big file.
+The time dimension of the output can
+be "sols" or "Ls" (note that in that latter case, Ls values won't be
+evenly distributed, and
+software like Grads may not be able to use and plot the data).\\
+To obtain an evenly sampled "Ls"
+timescale, you can use the {\tt lslin.e} program (described below).\\
+The output file created by {\tt conctanc.e} is {\tt concat.nc}
+
+\section{lslin}
+
+This program is designed to interpolate data given
+in  irregular Solar Longitude (Ls) into an evenly sampled
+linear time coordinate (usable with Grads).
+Input Netcdf files may be {\tt diagfi.nc} or {\tt concat.nc}  
+files and the resulting
+output file is {\tt lslin.nc}
+lslin also create a {\tt lslin.ctl} file that can be read
+directly by grads (\verb+>xdfopen lslin.ctl+) to plot in Ls coordinate to
+avoid some problem with grads when Grads think that "the time interval
+is too small"...
+
+\section{localtime}
+
+The {\tt localtime.e} program is designed to re-interpolate data in order
+to yield values at the same given local time (useful to mimic satellite
+observations, or analyse day to day variations at given local time).\\
+Input files may be of {\tt diagfi.nc}, {\tt stats.nc} or {\tt concat.nc}
+type and the output file name is build from the input one, to which 
+{\tt \_LT.nc} is appened (e.g. if the input file is {\tt myfile.nc} then
+output file will be {\tt myfile\_LT.nc}).
+
+\section{zrecast}
+With this program you can recast atmospheric (i.e.: 4D-dimentional
+longitude-latitude-altitude-time) data from GCM outputs (e.g. as given in
+{\tt diagfi.nc}, {\tt concat.nc} and {\tt stats.nc} files) onto
+either {\it pressure} or {\it altitude above areoid} vertical coordinates.\\
+Since integrating the hydrostatic equation is required to recast the data,
+the input file must contain surface pressure and atmospheric temperature,
+as well as the ground geopotential.\\
+If recasting data onto {\it pressure} coordinates, then the output file name
+is given by the input file name to which {\tt\_P.nc} will be appened.
+If recasting data onto {\it altitude above areoid} coordinates, then a
+{\tt\_A.nc} will be appened.
+
+\section{hrecast}
+This program can interpolate GCM output on any horizontal grid
+(regular lat - lon) as long as it cover all the
+planet. Useful to compare runs obtained at different horizontal resolutions.
+
+\section{expandstartfi}
+This program takes a physics start file ({\tt startfi.nc}) and recasts it
+on the corresponding  lonxlat grid (so its contents may easily be displayed
+using Grads, Ferret, etc.)
+
+\section{extract}
+This program extracts (ie: interpolates) pointwise values of an atmospheric 
+variable from a 'zrecast'ed diagfi file (works if altitude is geometrical 
+height or a pressure vertical coordinates).
+

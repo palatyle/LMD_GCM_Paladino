@@ -1,0 +1,80 @@
+## Orbit / general options
+## ~~~~~~~~~~~~~~~~~~~~~~~
+# Run with or without tracer transport ?
+tracer    = .false.
+# Diurnal cycle ?  if diurnal=false, diurnally averaged solar heating
+diurnal   = .false.
+# Check to see if cpp, mugaz values used match gas mixture defined in gases.def (recommended) ?
+check_cpp_match = .false.
+
+## Radiative transfer options
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~
+# call radiative transfer?
+callrad    = .true.
+# call multilayer correlated-k radiative transfer ?
+corrk      = .true.
+# Include continuum absorption in radiative transfer (note CO2 is treated separately) ?
+Continuum  = .true.
+# folder in which correlated-k data is stored ?
+corrkdir   = N2_CO2step_H2Ovar/1E3ppmCO2
+# call visible gaseous absorption in radiative transfer ?
+callgasvis = .true.
+# Include Rayleigh scattering in the visible ?
+rayleigh   = .true.
+# Characteristic planetary equilibrium (black body) temperature
+# This is used only in the aerosol radiative transfer setup. (see aerave.F)
+tplanet    = 215.
+# Output spectral OLR in 1D/3D?
+specOLR    = .true.
+# Variable gas species: Radiatively active ?
+varactive  = .false.
+# Variable gas species: Fixed vertical distribution ?
+varfixed   = .true.
+# Variable gas species: Saturation percentage value at ground ?
+satval     = 0.0
+# Use fixed vertical profile, 1 step, no iteration ?
+kastprof   = .true.
+# Remove lower boundary (e.g. for gas giant sims)
+noradsurf  = .false.
+
+## Star type
+## ~~~~~~~~~
+startype = 1
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# The choices are:
+#
+#	startype = 1		Sol        (G2V-class main sequence)
+#	startype = 2		Ad Leo     (M-class, synthetic)
+#       startype = 3            GJ644
+#       startype = 4            HD128167
+#       startype = 9            TRAPPIST-1
+#       startype = 10           Proxima Centauri
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Stellar flux at 1 AU. Examples:
+# 1366.0 W m-2                Sol today
+# 1024.5 W m-2                Sol today x 0.75 = weak Sun 3.8 GYa
+# 18.462 W m-2                The feeble GJ581
+# 19.960 W m-2                GJ581 with e=0.38 orbital average
+Fat1AU = 956.0
+
+##################################
+## extra non-standard definitions 
+##################################
+
+## Tracer and aerosol options 
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Fixed aerosol distributions?
+aerofixed     = .true.
+# Varying H2O cloud fraction?
+CLFvarying    = .false.
+# H2O cloud fraction?
+CLFfixval     = 1.0
+# number mixing ratio of CO2 ice particles
+Nmix_co2      = 100000.
+# number mixing ratio of water ice particles
+Nmix_h2o      = 100000.
+# basic dust opacity
+dusttau       = 0.0
+# water cloud pressure level (norm. by psurf)
+cloudlvl      = 0.0
+

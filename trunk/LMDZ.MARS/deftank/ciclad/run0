@@ -1,0 +1,105 @@
+#!/bin/bash
+###########################################################################
+# Script to perform several chained LMD Mars GCM simulations
+# SET HERE the maximum total number of simulations
+
+nummax=1
+
+# Also, ensure that the gcm executable name is correct below:
+gcm=gcm_64x48x32_phymars_para.e
+#
+###########################################################################
+
+
+echo "---------------------------------------------------------"
+echo "starting run0"
+
+dir=`pwd`
+machine=`hostname`
+address=`whoami`
+
+# Look for file "num_run" which should contain 
+# the value of the previously computed season
+# (defaults to 0 if file "num_run" does not exist)
+if [[ -r num_run ]] ; then
+  echo "found file num_run"
+  numold=`cat num_run`
+else
+  numold=0
+fi
+echo "numold is set to" ${numold}
+
+
+# Set value of current season 
+(( numnew = ${numold} + 1 ))
+echo "numnew is set to" ${numnew}
+
+# Look for initialization data files (exit if none found)
+if [[ ( -r start${numold}.nc  &&  -r startfi${numold}.nc ) ]] ; then
+   \cp -f start${numold}.nc start.nc
+   \cp -f startfi${numold}.nc startfi.nc
+else
+   if (( ${numold} == 99999 )) ; then
+    echo "No run because previous run crashed ! (99999 in num_run)"
+    exit
+   else
+   echo "Where is file start"${numold}".nc??"
+   exit
+   fi
+fi
+
+
+# Run GCM
+mpirun $gcm > lrun${numnew}
+
+
+# Check if run ended normaly and copy datafiles
+if [[ ( -r restartfi.nc  &&  -r restart.nc ) ]] ; then
+  echo "Run seems to have ended normaly"
+  \mv -f restartfi.nc startfi${numnew}.nc
+  \mv -f restart.nc start${numnew}.nc
+else
+  if [[ -r num_run ]] ; then
+    \mv -f num_run num_run.crash
+  else
+    echo "No file num_run to build num_run.crash from !!"
+    # Impose a default value of 0 for num_run
+    echo 0 > num_run.crash
+  fi
+ echo 99999 > num_run
+############## To receive an Email message if the run crashes ########
+mail -s "crash run GCM" $address <<ENDMAIL
+The run on $machine in $dir has just crashed.
+ENDMAIL
+############################################"" 
+ exit
+fi
+
+# Copy other datafiles that may have been generated
+if [[ -r diagfi.nc ]] ; then
+  \mv -f diagfi.nc diagfi${numnew}.nc
+fi
+if [[ -r diagsoil.nc ]] ; then
+  \mv -f diagsoil.nc diagsoil${numnew}.nc
+fi
+if [[ -r stats.nc ]] ; then
+  \mv -f stats.nc stats${numnew}.nc
+fi
+if [[ -f profiles.dat ]] ; then
+  \mv -f profiles.dat profiles${numnew}.dat
+  \mv -f profiles.hdr profiles${numnew}.hdr
+fi
+
+# Prepare things for upcoming runs by writing
+# value of computed season in file num_run
+echo ${numnew} > num_run
+
+# If we are over nummax : stop
+if (( $numnew + 1 > $nummax )) ; then
+   exit
+else
+   \cp -f run0 exe_mars
+   ./exe_mars
+fi 
+
+

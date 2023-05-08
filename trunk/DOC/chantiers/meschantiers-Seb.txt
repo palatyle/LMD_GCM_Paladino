@@ -1,0 +1,20 @@
+-----------------------------------------------------------------
+********   PENSER A FAIRE UNE DOC POUR TOUT CHANTIER   **********
+-----------------------------------------------------------------
+
+- homogeneiser le traitement des bilans de moment cinetique: 
+   dyn3d/ bilan_dyn: 
+         separer transports (mettre sous flag independant) / bilans MC
+   phy/   calculs/sorties de aaam_bud (virer field.. ?)
+   mettre sous flags bilansmc
+   Reflechir au controle des frequences de sorties
+
+- dynamique: 
+   Il reste a voir tout ce qui est lie a l'etat initial 
+   et au newstart
+
+- I/O: evolution des I/O de Venus et Titan vers Terre ?
+       souplesse pour I/O Mars ?
+
+- testphys1d...
+

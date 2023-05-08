@@ -1,0 +1,98 @@
+\chapter{Post-processing}\label{postproc}
+
+\vk
+In this chapter, the user is introduced to the principles of choosing the outputs of the LMD Martian Mesoscale Model. Elements about post-processing (interpolation, graphics) are also proposed here, although it is obviously left to the user to choose and develop its own tools to analyze the results of LMD Martian Mesoscale Model computations.
+
+\mk
+\section{Controlling which fields to output in \ttt{wrfout} files}
+
+\sk
+All non-local variables communicated within subroutines and functions in the WRF dynamical core are declared in a text file named \ttt{Registry.EM} located in \ttt{\$MMM/SRC/WRFV2/Registry}. In this file, each useful variable is declared through a one-line instance organized as follows:
+
+\scriptsize
+\begin{verbatim}
+state  real  PSFC  ij  misc  1  -  i01rh  "PSFC"  "SFC PRESSURE"  "Pa"
+\end{verbatim}
+\normalsize
+
+\sk
+The fields which appears in \ttt{wrfout*} output files feature an \ttt{h} (which stands for history) in the 8th column. If you do not want the field to appear in \ttt{wrfout*} files, simply remove the letter \ttt{h} from the group of letters in the 8th column. If you want the field to appear in \ttt{wrfout*} files, simply add the letter \ttt{h} in the group of letters in the 8th column.  
+
+\sk
+It is also possible to output fields which are present only in the physical computations, i.e. appearing in \ttt{\$MMM/SRC/WRFV2/mars\_lmd/libf/phymars/physiq.F}. The method is simple. Assume you would like to output in the \ttt{wrfout*} files a 3D field named \ttt{zdtnirco2} and a 2D field named \ttt{qsurfice} in \ttt{physiq.F} with the new names \ttt{HR\_NIR} and \ttt{QSURFICE}. All you have to do is add the following lines to \ttt{Registry.EM} (see also examples around lines \ttt{75-120}). For 2D [3D] files the 4th column must be \ttt{ij} [\ttt{ikj}] and the 12th column \ttt{\#SAVEMARS2} [\ttt{\#SAVEMARS3}].
+
+\scriptsize
+\begin{verbatim}
+state  real  HR_NIR  ikj  misc  1  -  rhd  "HR_NIR"  "HEATING RATE nirco2"  "K/s"  #SAVEMARS3  zdtnirco2
+state  real  QSURFICE  ij  misc  1  -  rhd  "QSURFICE"  "WATER ICE AT SURFACE"  "kg m-2"  #SAVEMARS2  qsurfice
+\end{verbatim}
+\normalsize
+
+\sk
+Each change in \ttt{Registry.EM} must be followed by a complete recompilation because the model variables have changed. Whether you use \ttt{makemeso} or \ttt{runmeso}, use the option \ttt{-f} to force recompiling with a new/updated list of variables.
+%%%% now obsolete ! remove Registry and recompile, or use fresh start (-f).
+
+\sk
+\begin{finger}
+\item IMPORTANT: Each compilation directory \ttt{your\_compdir} in \ttt{\$MMM} (e.g. \ttt{g95\_32\_single}) has its own copy of \ttt{Registry.EM} in \ttt{your\_compdir/WRFV2/Registry}. This is the file that has to be modified. The file \ttt{\$MMM/SRC/WRFV2/Registry/Registry.EM} should not be modified: it is the reference file that is copied when the compilation directory is built by the \ttt{copy\_model} script (cf. section~\ref{sc:makemeso}).
+\end{finger}
+
+\mk
+\section{Interpolating outputs on altitude and pressure levels}
+
+\sk
+The fields output in \ttt{wrfout*} files are given for each grid point and model level. A vertical interpolation has to be performed to get those fields either in altitude or pressure levels. In addition, perturbation potential temperature \ttt{T}, x-component wind \ttt{U} and y-component \ttt{V} are output instead of the more informative (meteorologically-speaking) temperature \ttt{tk}, zonal wind \ttt{Um} and meridional wind \ttt{Vm}. This is why we developed a program named \ttt{api} (Altitude and Pressure Interpolator) which performs the tasks to convert the netCDF \ttt{wrfout*} files into another netCDF file featuring more useful fields to make plots and analyze the Martian mesoscale meteorology.
+
+\sk
+The source files for \ttt{api} are located in \ttt{\$MMM/SRC/POSTPROC/}. The program \ttt{api.F90} has to be compiled with the \ttt{comp\_api} command (which must be edited first, to uncomment the line corresponding to the Fortran compiler you are used to). Then the user has to fill in the parameter file \ttt{namelist.api} before launching the interpolator through the command \ttt{api}. A commented template for \ttt{namelist.api} is given below (this examples and many others can be found in \ttt{\$MMM/SRC/POSTPROC/}). The calculations might be long if you are requesting many fields and many interpolation levels. In the example below, temperature, meteorological winds and vertical velocity are interpolated at~$50$~m above the local surface. The results are output in a netCDF file having the same name as the input \ttt{wrfout*} files, with an additional suffix which depends on the chosen interpolation method.
+
+\scriptsize
+\codesource{namelist.api}
+\normalsize
+
+\mk
+\section{Generating maps for winds and meteorological fields simulated by the model}\label{plots}
+
+\sk
+%This section does not replace the need for you to develop your own plotting tools to suit your needs, which should be not too difficult. 
+The model outputs, as well as the results of \ttt{api} interpolations, are written using the netCDF format which can be read by most software with graphical capabilities. For a quick inspection of model results (especially for checking model outputs while the model is running), we recommend using \ttt{ncview}; for simple manipulations of netCDF files (e.g. concatenation, difference, extraction, \ldots), we recommend using commands from the \ttt{nco} package (see chapter~\ref{install} for website links). Graphical routines based on \ttt{idl}, \ttt{ferret} and \ttt{grads} can be made available upon request (as is, i.e. undocumented yet commented scripts). Successful reading/plotting of the LMD Martian Mesoscale Model outputs on \ttt{matlab}, \ttt{octave}, \ttt{idv} are also reported. It is possible to import the model's outputs to Geographical Information System (GIS) such as \ttt{arcgis}\footnote{\ttt{idl}, \ttt{matlab} and \ttt{arcgis} are neither open-source nor free.}. Since 2012, we developped our own tool named \ttt{PLANETOPLOT} based on \ttt{Python}. More information can be found here: \url{http://www.lmd.jussieu.fr/~aslmd/planetoplot}.
+
+%\sk
+%\subsection{Python scripts}
+%
+%\sk
+%Powerful scripts based on \ttt{python+numpy+matplotlib} have been developed to obtain plots from the mesoscale model outputs. All figures in this user manual are based on the script \ttt{pp.py}. This script can be obtained with the commands: \ttt{cd \$MESO ; cd .. ; svn update UTIL ; cd UTIL/PYTHON}. It is required that \ttt{python} and numerical/graphical librairies (\ttt{numpy}, \ttt{scipy}, \ttt{matplotlib}, \ttt{basemap}, \ttt{netcdf}) are installed on your system. Perhaps the simplest way to do so is to install the user-friendly complete python distribution \ttt{epd} (cf. link in chapter~\ref{install} and readme file \ttt{UTIL/PYTHON/README.INSTALL}). 
+%
+%\sk
+%One of the advantages of an approach using \ttt{python}, apart from its open-source philosophy and the abundant online documentation, is that it allows, in a common framework, for scripting with various options, integrating Fortran routines, manipulating arrays, making plots with various map projections. This is exemplified by the \ttt{pp.py} script. It can both perform interpolation with \ttt{api} for the level requested by the user then generate a map, all that in one simple command line. For instance, Figures~\ref{arsia} in chapter~\ref{compile} has been generated by the following two commands\footnote{The first plot can also be obtained by the command \ttt{domain.py -f name\_of\_file}}:
+%
+%\begin{verbatim}
+%pp.py -f wrfout_d01_2024-01-17_02:00:00 -p ortho -b vishires --title ""
+%pp.py -f wrfout_d01_2024-01-17_02:00:00 -i 4 -l 0.01 -v HGT -W -s 2 \
+%      --time 1 --axtime lt -m -1500. -M 20000. --div 20 -c nobar -z 25
+%\end{verbatim}
+%
+%\sk
+%Many options are implemented in our \ttt{pp.py} script. The information on the existing options to~\ttt{pp.py} can be obtained by typing \ttt{pp.py -h} (cf. next page). Examples on how to use the \ttt{pp.py} script can be found in \ttt{UTIL/PYTHON/README.PP}. The script can also be edited to suit your needs if the desired option does not exist.
+%
+%\begin{finger}
+%\item Please ensure that you have the rights to execute \ttt{pp.py} (otherwise use the \ttt{chmod} command). It is also necessary to set the following environment variables to ensure the command \ttt{pp.py} would execute in any working directory
+%\begin{verbatim}
+%PYTHONPATH=$MESO/../UTIL/PYTHON/
+%export PYTHONPATH
+%PATH=$PYTHONPATH:$PATH
+%\end{verbatim}
+%\item The option \ttt{-i} in \ttt{pp.py} make use of the Fortran routines \ttt{api.F90} and \ttt{time.F}. The routines have to be converted to \ttt{python} commands using \ttt{f2py}. Please execute the script amongst \ttt{api\_g95.sh}, \ttt{api\_ifort.sh}, \ttt{api\_pgf90.sh} which corresponds to the Fortran compiler installed on your system. Check for errors/warnings in the log files and ensure that the two files \ttt{api.so} and \ttt{timestuff.so} are generated.
+%\end{finger}
+%
+%\newpage
+%
+%\scriptsize
+%\codesource{winds.py.help}
+%\normalsize
+%
+%%% IMPORTANT IMPORTANT
+%%% now python inimeso.py in UTIL/PYTHON
+%%% mettre a jour le help
+
+\clearemptydoublepage

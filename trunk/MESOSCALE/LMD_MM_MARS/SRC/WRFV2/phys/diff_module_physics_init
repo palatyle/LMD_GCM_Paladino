@@ -1,0 +1,18 @@
+26a27
+> 			 MARS_ALB,MARS_TI,			 & !MARS Stuff
+75c76
+<                          itimestep                               & !Optional obs fdda
+---
+>                          itimestep                              & !Optional obs fdda
+151a153,158
+> !****MARS
+>    REAL,     DIMENSION( ims:ime , jms:jme ) , INTENT(INOUT) ::         &
+>              MARS_ALB,MARS_TI
+> !****MARS
+> 
+> 
+315a323,326
+> !!****MARS
+>       MARS_ALB(i,j)=0.
+>       MARS_TI(i,j)=0. 	  	
+> !!****MARS

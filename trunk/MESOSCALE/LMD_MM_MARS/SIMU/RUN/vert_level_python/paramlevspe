@@ -1,0 +1,12 @@
+#hache : scale height (km)
+#psurf : surface pressure (Pa)
+#nlev : nombre de niveaux.
+#altmax : altitude maximale en km
+#epsilon augmentation totale en pourcentage de l'ecart max (modifie inflexion). epsilon = 0   : point d'inflexion parfaitement plat. epsilon = 100 : pas de point d'inflexion
+#elong_cos plus petit rapproche l'inflexion du sol ;; 2/3 parfait pour un nlev divisible par 3
+10.
+1.e5
+201 
+280. 
+0
+0.000000044

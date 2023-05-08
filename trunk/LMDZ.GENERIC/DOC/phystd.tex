@@ -1,0 +1,124 @@
+\chapter{Physical parameterizations of the generic model: some references}
+
+\label{sc:phystd}
+
+\section{General}
+
+The Generic Climate Model uses a large number of physical parameterizations based on various scientific theories. Some also use specific numerical methods. A list of these parameterizations is given below, along with the most appropriate references for each one. Most of these documents can be found at\\ 
+\verb+http://www.lmd.jussieu.fr/mars.html+.
+
+\paragraph{General references:}
+No documents attempt to give a complete scientific description of the current
+version of the GCM. Here's a reference to a Mars GCM description:
+\begin{itemize}
+\item  {\it Forget et al.} [1999] (article
+published in the JGR)
+\item  ``Updated Detailed Design Document for the Model''
+(ESA contract, Work Package 6, 1999, available on the web)
+which is simply a compilation of the preceding article with
+a few additions that were published separately.
+\end{itemize}
+
+\nocite{Forg:99}
+
+\section{Radiative transfer}
+
+The radiative transfer parameterizations are used to calculate the heating
+and cooling ratios in the atmosphere and the radiative flux at the surface.
+
+[TO WRITE: IMPORTANT SECTION - REFERENCES HERE ARE FOR MARS ONLY]
+
+%\end{itemize}
+
+
+\subsection{\bf Absorption/emission and diffusion by dust:}
+
+\subsubsection*{Dust spatial distribution}
+ (\verb+ dustopacity+)
+
+\begin{itemize}
+\item Vertical distribution and description of ``MGS'' and ``Viking'' scenarios
+in the ESA report {\it Mars Climate Database V3.0 Detailed Design Document}
+by Lewis et al. (2001), available on the web.
+\item For the ``MY24'' scenario, dust distribution obtained from assimilation
+of TES data is used (and read via the \verb+readtesassim+ routine).
+\end{itemize}
+\nocite{Forg:99,Lewi:99}
+
+\subsubsection*{Thermal IR radiation}
+ (\verb+ lwmain+)
+\begin{itemize}
+\item Numerical method:  {\it Toon et al.} [1989]
+\item Optical properties of dust:  {\it Forget} [1998]
+\nocite{Toon:89,Forg:98grl}
+\end{itemize}
+
+\subsubsection*{Solar radiation}
+ (\verb+ swmain+)
+\begin{itemize}
+\item Numerical method: {\it Fouquart and Bonel} [1980]
+\nocite{Fouq:80}
+
+\item Optical properties of dust:
+see the discussion in {\it Forget et al. } [1999], which quotes
+ {\it Ockert-Bell et al.} [1997] and {\it Clancy and Lee} [1991].
+\nocite{Ocke:97,Clan:91}
+\end{itemize}
+
+\section{Subgrid atmospheric dynamical processes}
+
+\subsection{Turbulent diffusion in the upper layer}
+ (\verb+ vdifc+)
+
+\begin{itemize}
+\item Implicit numerical scheme in the vertical:
+see the thesis of Laurent Li (LMD, Universit\'e Paris 7, 1990), Appendix C2.
+
+\item Calculation of the turbulent diffusion coefficients:
+{\it Forget et al. } [1999].
+\end{itemize}
+
+\subsection{Convection}
+ (\verb+ convadj+)
+
+See {\it Hourdin et al.} [1993]
+\nocite{Hour:93}
+
+\section{Surface thermal conduction}
+ (\verb+soil+)
+
+Thesis of Fr\'ed\'eric Hourdin (LMD, Universit\'e Paris 7, 1992) :
+ section 3.3 (equations) and Appendix A (Numerical scheme).
+
+\section{CO$_2$ Condensation}
+
+In {\it Forget et al.} [1998] (article published in Icarus): \\
+- Numerical method for calculating the condensation and sublimation levels
+at the surface and in the atmosphere (\verb+ newcondens+)
+ explained in the appendix.
+\\
+- Description of the numerical scheme for calculating the evolution of CO$_2$
+snow emissivity (\verb+co2snow+) explained in section 4.1
+\nocite{Forg:98}
+
+\section{Tracer transport and sources}
+\begin{itemize}
+\item ``Van-Leer'' transport scheme used in the dynamical part
+(\verb+ tracvl+ and  \verb+ vlsplt+ in the dynamical part):
+{\it Hourdin and Armengaud} [1999] \nocite{Hour:99}
+
+\item Transport by turbulent diffusion  (in \verb+ vdifc+), convection
+(in  \verb+ convadj+), sedimentation  (\verb+ sedim+),
+dust lifting by winds (\verb+ dustlift+) :
+see note ``Preliminary design of dust lifting and transport in the Model''
+(ESA contract, Work Package 4, 1998, available on the web).
+
+
+%\item Simplified water cycle (source in {\tt vdifc}, {\tt
+%watercloud}) : and also see the Maitrise study by Delphine Nobileau, LMD, 2000.
+\item {\bf Watercycle}, see {\it Montmessin et al.} [2004]
+\nocite{Mont:04jgr}
+
+\end{itemize}
+
+

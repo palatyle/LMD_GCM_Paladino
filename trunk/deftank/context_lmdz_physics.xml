@@ -1,0 +1,155 @@
+<context id="LMDZ">
+
+    <!-- Definition of a calendar is done in code via wxios_set_cal -->
+    
+    <!-- Definition of domains and groups of domains -->
+    <domain_definition>
+        <domain id="dom_glo" data_dim="2" />
+    </domain_definition>
+        
+    <!-- Definition of vertical axes 
+         NB: these must be defined and set in code via
+         wxios_add_vaxis -->
+    <axis_definition>
+        <axis id="presnivs" 
+              standard_name="Pseudo-pressure of model vertical levels" 
+              unit="Pa">
+        </axis>
+        <axis id="altitude" 
+              standard_name="Pseudo-altitude of model vertical levels" 
+              unit="km">
+        </axis>
+    </axis_definition>
+    
+    <grid_definition>
+        <!-- toggle axis id below to change output vertical axis -->
+        <grid id="grid_3d">
+            <domain id="dom_glo" />
+                <!-- <axis id="presnivs" /> -->
+                <axis id="altitude" /> 
+        </grid>
+        
+        <grid id="grid_2d">
+            <domain id="dom_glo" />
+        </grid>
+
+        <!-- to output scalars -->
+        <grid id="scalarpoint" >
+            <scalar />
+        </grid>
+    </grid_definition>
+    
+    <!-- Definition of model variables -->
+    <field_definition prec="4" 
+                      freq_op="1ts"
+                      enabled=".TRUE.">
+        
+        <!-- 0D variables -->
+        <field_group id="fields_0D" grid_ref="scalarpoint">
+            <field id="ls"
+                   long_name="Solar longitude"
+                   unit="degrees" />
+        </field_group>    
+        
+        <!-- 2D variables -->
+        <field_group id="fields_2D" grid_ref="grid_2d">
+            <field id="ps"
+                   long_name="Surface Pressure" 
+                   unit="Pa" />
+            <field id="area"
+                   long_name="Mesh area"
+                   unit="m2" />
+            <field id="ISR"
+                   long_name="Incoming Stellar Radiation"
+                   unit="W/m2" />
+            <field id="OLR"
+                   long_name="Outgoing Longwave Radiation"
+                   unit="W/m2" />
+        </field_group>
+
+        <!-- 3D variables -->
+        <field_group id="fields_3D" grid_ref="grid_3d">
+            <field id="temperature"
+                   long_name="Atmospheric temperature"
+                   unit="K" />
+            <field id="u"
+                   long_name="Eastward Zonal Wind"
+                   unit="m/s" />
+            <field id="v" 
+                   long_name="Northward Meridional Wind" 
+                   unit="m/s" />
+            <field id="omega"
+                   long_name="Vertical velocity (>0 when downward)"
+                   unit="Pa/s" />
+            <field id="h2o_vap"
+                   long_name="H2O vapour mass mixing ratio"
+                   unit="kg/kg" />
+            <field id="h2o_ice"
+                   long_name="H2O ice mass mixing ratio"
+                   unit="kg/kg" />
+        </field_group>
+
+    </field_definition>
+    
+    <!-- Definition of output files -->
+    <file_definition>
+        <!-- Instantaneous outputs; Here output_freq in physics time steps -->
+        <file id="histins"
+              name="Xhistins"
+              output_freq="1ts" 
+              type="one_file"
+              enabled=".true.">
+                    
+            <!-- VARS 0D -->
+            <field_group operation="instant"
+                         freq_op="1ts">
+                <field field_ref="ls" />
+            </field_group>
+
+            <!-- VARS 2D -->
+            <field_group operation="instant"
+                         freq_op="1ts">
+                <field field_ref="area" operation="once" />
+                <field field_ref="ps" />
+            </field_group>
+
+            <!-- VARS 3D -->
+            <field_group operation="instant"
+                         freq_op="1ts">
+                <field field_ref="temperature" />
+                <field field_ref="u" />
+                <field field_ref="v" />
+            </field_group>
+        </file>
+
+        <!-- diurnal averages outputs; output_freq is every day -->
+        <file id="diurnalave"
+              name="Xdiurnalave"
+              output_freq="1d" 
+              type="one_file"
+              enabled=".true.">
+                    
+            <!-- VARS 0D -->
+            <field_group operation="average"
+                         freq_op="1ts">
+                <field field_ref="ls" />
+            </field_group>
+
+            <!-- VARS 2D -->
+            <field_group operation="average"
+                         freq_op="1ts">
+                <field field_ref="area" operation="once" />
+                <field field_ref="ps" />
+            </field_group>
+
+            <!-- VARS 3D -->
+            <field_group operation="average"
+                         freq_op="1ts">
+                <field field_ref="temperature" />
+                <field field_ref="u" />
+                <field field_ref="v" />
+            </field_group>
+        </file>
+    </file_definition>
+
+</context>

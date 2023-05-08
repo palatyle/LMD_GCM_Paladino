@@ -1,0 +1,18 @@
+%COMPILER            /usr/lib64/openmpi/bin/mpifort
+%LINK                /usr/lib64/openmpi/bin/mpifort
+%AR                  ar
+%MAKE                make
+%FPP_FLAGS           -P -traditional
+%FPP_DEF             NC_DOUBLE LAPACK BLAS SGEMV=DGEMV SGEMM=DGEMM
+%BASE_FFLAGS         -fcray-pointer -c -fdefault-real-8 -fdefault-double-8 -ffree-line-length-none -fno-align-commons
+%PROD_FFLAGS         -O3
+%DEV_FFLAGS          -O -Wall -fbounds-check
+%DEBUG_FFLAGS        -ffpe-trap=invalid,zero,overflow -fbounds-check -g3 -O0 -fstack-protector-all -finit-real=nan -fbacktrace
+%C_COMPILER          gcc
+%C_OPTIM             -O0
+%MPI_FFLAGS          -I/usr/include/openmpi-x86_64
+%OMP_FFLAGS
+%BASE_LD             -llapack -lblas
+%MPI_LD              -L/usr/lib64/openmpi/lib -lmpi
+%OMP_LD
+

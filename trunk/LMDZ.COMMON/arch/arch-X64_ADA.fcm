@@ -1,0 +1,19 @@
+%COMPILER            mpiifort
+%LINK                mpiifort
+%AR                  ar
+%MAKE                gmake
+%FPP_FLAGS           -P -traditional -I/smplocal/pub/FFTW/3.3.3_dyn/include
+%CPP_FLAGS           -P
+%FPP_DEF             NC_DOUBLE LAPACK  FFT_FFTW
+%BASE_FFLAGS         -integer-size 32 -real-size 64 -align all -auto
+%PROD_FFLAGS         -O2 -ip -fp-model strict -axAVX,SSE4.2
+%DEV_FFLAGS          -p -g -O1 -fpe0 -traceback
+%DEBUG_FFLAGS        -p -g -O0 -fpe-all=0 -traceback -ftrapuv -fp-stack-check -check bounds,format,output_conversion,pointers,uninit -debug -ftz -init=arrays,snan
+%C_COMPILER          gcc
+%C_OPTIM             -O3
+%MPI_FFLAGS
+%OMP_FFLAGS          -openmp -openmp-threadprivate=compat
+%BASE_LD             -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -liomp5 -lpthread -L/smplocal/pub/FFTW/3.3.3_dyn/lib -lfftw3 -Wl,-rpath=/smplocal/pub/FFTW/3.3.3_dyn/lib
+%MPI_LD
+%OMP_LD              -openmp -openmp-threadprivate=compat
+

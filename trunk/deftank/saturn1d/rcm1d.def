@@ -1,0 +1,109 @@
+#---------------------------------#
+# Run parameters for the 1D model #                                         
+#---------------------------------#
+
+## Planetary constants
+## ~~~~~~~~~~~~~~~~~~~~~~~
+## NB: those are mandatory
+## ~~~~~~~~~~~~~~~~~~~~~~~
+## LENGTH OF A DAY in s
+#daysec         = 38362. # Voyager System III
+#daysec         = 38640. # Cassini System IIIa
+daysec         = 38052. # Read System IIIw
+## GRAVITY in m s-2
+g              = 10.44
+##PLANETARY RADIUS in m
+rad            = 6.0268000E+07
+## LENGTH OF A YEAR in days
+#year_day       = 24232. # Voyager System III
+#year_day       = 24058. # Cassini System IIIa
+year_day       = 24430. # Read System IIIw
+## MIN DIST STAR-PLANET in AU [periastron]
+periastr       = 9.02152
+## MAX DIST STAR-PLANET in AU [apoastron]
+apoastr        = 10.05448
+## DATE OF PERIASTRON in days
+peri_day       = 19280.
+## OBLIQUITY in deg
+obliquit       = 26.73
+## SURFACE PRESSURE in Pa
+psurf          = 1.e6
+
+
+## Time integration parameters
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Initial date (in solar days,=0 at Ls=0)
+day0           = 0
+# Initial local time (in hours, between 0 and 24)
+time           = 12 
+# Number of time steps per sol
+day_step       = 1
+# Number of sols to run 
+ndt            = 342020
+# Number of steps between each writing in diagfi
+ecritphy=5000
+
+# OVERRIDE callphys.def settings
+# ... this to ensure compliancy with the low day_step value above
+iradia = 25
+
+tracer=.false.
+
+## Vertical levels
+## ~~~~~~~~~~~~~~~
+# hybrid vertical coordinate ? (.true. for hybrid and .false. for sigma levels)
+hybrid         = .false.
+# autocompute vertical discretisation? (useful for exoplanet runs)
+autozlevs      = .true.
+autozlevs      = .false.
+# Ceiling pressure (Pa) ? (only used if autozlevs = .true.)
+pceil          = 10.
+
+## Thermal properties
+## ~~~~~~~~~~~~~~~~~~
+# Simulate global averaged conditions ? 
+global1d       = .true.
+# Latitude (deg) [only used if global1d = F]
+latitude       = 0.0
+# Solar Zenith angle (deg) [only used if global1d = T]
+szangle        = 45. 
+# Albedo of bare ground
+albedo         = 0.0
+# Emissivity of bare ground
+emis           = 1.0
+# Soil thermal inertia (SI)
+inertia        = 0.001
+# Initial CO2 ice on the surface (kg.m-2)
+co2ice         = 0.
+
+## Wind profile
+## ~~~~~~~~~~~~
+## zonal eastward component of the geostrophic wind (m/s)
+u              = 0.
+# meridional northward component of the geostrophic wind (m/s)
+v              = 0.
+
+## Initial atmospheric temperature profile
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+# Type of initial temperature profile
+#         ichoice=1   Constant Temperature:  T=tref
+#         [Mars] ichoice=2   Savidjari profile (as Seiff but with dT/dz=cte)
+#         [Mars] ichoice=3   Lindner (polar profile)
+#         [Mars] ichoice=4   inversion
+#         [Mars] ichoice=5   Seiff  (standard profile, based on Viking entry)
+#         ichoice=6   constant T  +  gaussian perturbation (levels)
+#         ichoice=7   constant T  + gaussian perturbation (km)
+#         ichoice=8   Read in an ascii file "profile" 
+ichoice        = 8
+# Reference temperature tref (K)
+tref           = 200.
+# Add a perturbation to profile if isin=1
+isin           = 0
+# peak of gaussian perturbation (for ichoice=6 or 7)
+pic            = 26.522
+# width of the gaussian perturbation (for ichoice=6 or 7)
+largeur        = 10
+# height of the gaussian perturbation (for ichoice=6 or 7)
+hauteur        = 30.
+

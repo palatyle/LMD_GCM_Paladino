@@ -1,0 +1,16 @@
+!-----------------------------------------------------------------------
+!   INCLUDE 'dimensions.h'
+!
+!   dimensions.h continet les dimensions du modele
+!   ndm est tel que iim=2**ndm
+!   nqmx est la dimension de la variable traceur q
+!-----------------------------------------------------------------------
+
+      INTEGER, parameter :: iim= 32
+      INTEGER, parameter :: jjm=24
+      INTEGER, parameter :: llm=32
+      INTEGER, parameter :: ndm=1
+
+      integer, parameter :: nqmx=14
+
+!-----------------------------------------------------------------------

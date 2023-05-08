@@ -1,0 +1,161 @@
+
+
+makelmdz_fcm -s 1 -d 64x48x64 -b 20x30 -arch GNOMEp -parallel mpi -p generic gcm
+makelmdz_fcm -s 1 -d 128x96x64 -b 20x30 -arch GNOMEp -parallel mpi -p generic gcm
+#####################################
+## REF SANDRINE
+makelmdz_fcm -cpp NODYN -s 1 -d 8x128x64 -b 20x30 -arch GNOMEp -parallel mpi -p generic gcm
+#####################################
+
+
+
+
+
+makelmdz_fcm -s 1 -d 64x48x64 -b 17x23 -arch GNOMEp -parallel mpi -p generic gcm
+
+test rings
+makelmdz_fcm -cpp NODYN -s 1 -d 8x48x32 -b 17x23 -arch GNOMEp -parallel mpi -p generic gcm
+makelmdz_fcm -cpp NODYN -s 1 -d 8x48x32 -b 20x30 -arch GNOMEp -parallel mpi -p generic gcm
+
+-----------------------------------
+
+
+DO NOT FORGET SCATTERERS (for first time compilation at least)
+
+-----------------------------------
+
+gnome
+tests
+makelmdz_fcm -s 1 -d 64x48x64 -b 17x23 -arch GNOMEp -parallel mpi -p generic gcm
+makelmdz_fcm -s 1 -d 128x96x64 -b 17x23 -arch GNOMEp -parallel mpi -p generic gcm
+makelmdz_fcm -s 1 -d 256x192x64 -b 17x23 -arch GNOMEp_large -parallel mpi -p generic gcm
+
+
+***** en parallele dans LMDZ.UNIVERSAL
+--> ciclad
+makelmdz_fcm -s 1 -d 64x48x26 -b 38x36 -arch CICLADifort -parallel mpi -p generic gcm
+makelmdz_fcm -s 1 -d 64x48x26 -b 38x36 -arch CICLADifort -parallel mpi -p generic -debug gcm
+--> gnome
+makelmdz_fcm -s 1 -d 128x96x26 -b 38x36 -arch GNOMEp -parallel mpi -p generic gcm
+
+**** sequentiel dans LMDZ.UNIVERSAL
+makelmdz_fcm -s 1 -d 64x48x26 -b 38x36 -arch CICLADifort-seq -p generic -debug gcm
+
+**** pour comparer avec LMDZ.GENERIC (compiler dans le dossier de simu avec le lien absolu)
+**** (attention il faut utiliser un traceur.def legerement different)
+/home/spiga/MODELES/LMDZ.GENERIC/makegcm -s 1 -d 64x48x20 -t 2 gcm
+**** ou plutot pour ne pas s'embeter avec les traceurs et regler peu de bandes
+/home/spiga/MODELES/LMDZ.GENERIC/makegcm -s 1 -d 64x48x20 -t 0 -s 1 -b 3x2 gcm
+**** (attention il faut utiliser un traceur.def legerement different)
+
+**** ETAT INITIAUX
+**** POUR LE MOMENT DANS LMDZ.GENERIC
+--> pour start2archive (pas sur qu'il faille encore NOTRAC)
+/home/spiga/MODELES/LMDZ.GENERIC/makegcm -d 64x48x20 -t 0 -debug -cpp NOTRAC start2archive > logcomp
+--> pour newstart
+/home/spiga/MODELES/LMDZ.GENERIC/makegcm -d 64x48x20 -t 0 newstart
+/home/spiga/MODELES/LMDZ.GENERIC/makegcm -d 128x96x20 -t 0 -debug -cpp NOTRAC newstart
+
+--------------------------------------------------
+FOR LARGE DOMAINS (sur gnome au dela de 256x192)
+1. recompile netcdf (see below)
+2. apply patches for large domains in LMDZ.GENERIC (this is for newstart)
+3. compile with -arch GNOMEp_large
+makelmdz_fcm -d 256x256x20 -arch GNOMEp_large -parallel mpi -p generic gcm
+--------------------------------------------------
+
+profiling
+ajouter -pg
+compiler lancer
+puis gprof executable > prof.out
+
+
+--------------------------------------------------
+NETCDF RECOMPILE FOR LARGE DOMAINS
+--------------------------------------------------
+
+
+>>> Prepare things for install:
+gunzip netcdf.tar.gz
+tar xf netcdf.tar
+cd netcdf-4.0.1
+
+export CPP="icc -E"
+export F77=ifort
+export FFLAGS="-O2 -ip -no-prec-div -mcmodel=large -shared-intel -fPIC"
+export F90=ifort
+export FCFLAGS="-O2 -ip -no-prec-div -mcmodel=large -shared-intel -fPIC"
+export CC=icc
+export CFLAGS="-O2 -ip -no-prec-div -mcmodel=large -shared-intel -fPIC"
+export CXX=icpc
+export CXXFLAGS="-O2 -ip -no-prec-div -mcmodel=large -shared-intel -fPIC"
+#export LDFLAGS="-mcmodel=large -shared-intel -fPIC"
+
+
+make clean
+
+./configure --prefix=/san/home/spiga/netcdf.4.0.1 --enable-shared > configure.log 2>&1
+
+>>> go for it !
+make > make.log 2>&1
+>>>> some warnings, but no errors
+>> Tests:
+make test > make_test.log 2>&1
+>>>> Everything seems OK
+
+make install > make_install.log 2>&1
+
+
+-Wl,-rpath -Wl,
+
+----------------------------------------------------------------------
+Libraries have been installed in:
+   /san/home/spiga/netcdf.4.0.1/lib
+
+If you ever happen to want to link against installed libraries
+in a given directory, LIBDIR, you must either use libtool, and
+specify the full pathname of the library, or use the `-LLIBDIR'
+flag during linking and do at least one of the following:
+   - add LIBDIR to the `LD_LIBRARY_PATH' environment variable
+     during execution
+   - add LIBDIR to the `LD_RUN_PATH' environment variable
+     during linking
+   - use the `-Wl,-rpath -Wl,LIBDIR' linker flag
+   - have your system administrator add LIBDIR to `/etc/ld.so.conf'
+
+See any operating system documentation about shared libraries for
+more information, such as the ld(1) and ld.so(8) manual pages.
+----------------------------------------------------------------------
+
+
+
+vieilles notes lorsqu'on etait avec LMDZ5 et pas LMDZ.COMMON
+
+faire descendre
+http://svn.lmd.jussieu.fr/LMDZ/LMDZ5/trunk
+
+svn co http://svn.lmd.jussieu.fr/LMDZ/LMDZ5/trunk LMDZ5
+
+cd LMDZ5/libf
+executer
+$MOD/LMDZ.GENERIC/libf/phystd/for_lmdz5/linkgen.sh
+
+
+faire generatedoth.sh dans phygeneric
+(ou alors modifier makelmdz_fcm)
+
+
+penser |  compiler IOIPSL voir dans LMDZ.COMMON
+puis modifier arch.path
+et compiler et c'est bon
+
+EN FAIT LE CICLAD IFORT EST AUSSI VALABLE SUR LES MACHINES DU LMD
+mais IL FAUT ENLEVER LES OPTIONS APRES NC_DOUBLE
+
+makelmdz_fcm -d 48x36x19 -arch CICLADifort -parallel mpi -p dev gcm > log_makelmdz_fcm &
+ou pas dev
+makelmdz_fcm -d 48x36x19 -arch CICLADifort -parallel mpi -p dev gcm
+makelmdz_fcm -d 128x96x20 -arch GNOMEp -parallel mpi -p generic gcm
+
+pour initialisation idealisee, qqch comme iniaqua dans phyaqua ???
+

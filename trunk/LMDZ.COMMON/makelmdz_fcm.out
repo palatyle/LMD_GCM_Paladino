@@ -1,0 +1,39 @@
+which: no fcm in (/opt/pbs/bin:/opt/sgi/sbin:/opt/sgi/bin:/home/palatyle/bin:/usr/local/bin:/usr/bin:/bin:/usr/bin/X11:/usr/games:/opt/c3/bin:/sbin)
+dirname: missing operand
+Try 'dirname --help' for more information.
+Path to fcm:
+/home/palatyle/LMD_gen/trunk/LMDZ.COMMON/ioipsl/modipsl/modeles/IOIPSL/tools/FCM_V1.2/bin
+calcul de la dimension
+dim 64 48 29
+dimc 3
+!-----------------------------------------------------------------------
+!   INCLUDE 'dimensions.h'
+!
+!   dimensions.h contient les dimensions du modele
+!   ndm est tel que iim=2**ndm
+!-----------------------------------------------------------------------
+
+      INTEGER iim,jjm,llm,ndm
+
+      PARAMETER (iim= 64,jjm=48,llm=29,ndm=1)
+
+!-----------------------------------------------------------------------
+dimension 3
+MACRO FILTRE FILTRE=filtrez
+3
+Warning: /home/palatyle/LMD_gen/trunk/LMDZ.COMMON/bld.cfg: variable "%C_COMPILER" not expanded.
+Warning: /home/palatyle/LMD_gen/trunk/LMDZ.COMMON/bld.cfg: variable "%C_OPTIM" not expanded.
+Warning: /home/palatyle/LMD_gen/trunk/LMDZ.COMMON/bld.cfg: variable "%CPP_FLAGS" not expanded.
+Warning: /home/palatyle/LMD_gen/trunk/LMDZ.COMMON/bld.cfg: variable "%CPP_DEF" not expanded.
+Build command started on Thu Jun  4 13:17:47 2020.
+->Setup              : start
+# Config file (bld): /home/palatyle/LMD_gen/trunk/LMDZ.COMMON/bld.cfg
+# Config file (bld): arch.fcm
+# Config file (bld): config.fcm
+# Config file (bld): arch.opt
+=> rm -rf /home/palatyle/LMD_gen/trunk/LMDZ.COMMON/bin
+=> rm -rf /home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libo/local_64x48x29_phystd_para.e/.config/bld
+=> rm -rf /home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libo/local_64x48x29_phystd_para.e/.config/done
+=> rm -rf /home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libo/local_64x48x29_phystd_para.e/.config/etc
+=> rm -rf /home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libo/local_64x48x29_phystd_para.e/.config/flags
+rm -rf /home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libo/local_64x48x29_phystd_para.e/.config/flags failed (2) at /home/palatyle/LMD_gen/trunk/LMDZ.COMMON/ioipsl/modipsl/modeles/IOIPSL/tools/FCM_V1.2/lib/Fcm/Build.pm line 767.

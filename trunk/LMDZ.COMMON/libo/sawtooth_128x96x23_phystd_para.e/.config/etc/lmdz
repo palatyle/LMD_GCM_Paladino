@@ -1,0 +1,10 @@
+INC $HERE/libphy_common.cfg
+INC $HERE/libdyn_phys.cfg
+INC $HERE/libdyn.cfg
+INC $HERE/libphys.cfg
+INC $HERE/libdyn_phys_sub.cfg
+INC $HERE/libgrid.cfg
+INC $HERE/libaerono.cfg
+INC $HERE/libfiltrez.cfg
+INC $HERE/libdyn3d_common.cfg
+INC $HERE/libmisc.cfg

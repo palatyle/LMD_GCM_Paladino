@@ -1,0 +1,157 @@
+176,191c176,191
+< ! TBH:  TODO:  Replace this hack with run-time decision based on 
+< ! TBH:  TODO:  passed-in calendar.  
+< #ifdef NO_LEAP_CALENDAR
+<       num_days = 28 ! By default, February has 28 days ...
+< #else
+<       num_days = 28 ! By default, February has 28 days ...
+<       IF (MOD(year,4).eq.0) THEN
+<          num_days = 29  ! But every four years, it has 29 days ...
+<          IF (MOD(year,100).eq.0) THEN
+<             num_days = 28  ! Except every 100 years, when it has 28 days ...
+<             IF (MOD(year,400).eq.0) THEN
+<                num_days = 29  ! Except every 400 years, when it has 29 days.
+<             END IF
+<          END IF
+<       END IF
+< #endif
+---
+> !#ifdef NO_LEAP_CALENDAR
+> !      num_days = 28 ! By default, February has 28 days ...
+> !#else
+> !      num_days = 28 ! By default, February has 28 days ...
+> !      IF (MOD(year,4).eq.0) THEN
+> !         num_days = 29  ! But every four years, it has 29 days ...
+> !         IF (MOD(year,100).eq.0) THEN
+> !            num_days = 28  ! Except every 100 years, when it has 28 days ...
+> !            IF (MOD(year,400).eq.0) THEN
+> !               num_days = 29  ! Except every 400 years, when it has 29 days.
+> !            END IF
+> !         END IF
+> !      END IF
+> !#endif
+> num_days = 1
+> ! just to keep continuity 
+201,206c201,207
+<   INTEGER :: nfeb
+<   IF ( nfeb( year ) .EQ. 29 ) THEN
+<     num_diy = 366
+<   ELSE
+<     num_diy = 365
+<   ENDIF
+---
+> !  INTEGER :: nfeb
+> !  IF ( nfeb( year ) .EQ. 29 ) THEN
+> !    num_diy = 366
+> !  ELSE
+> !    num_diy = 365
+> !  ENDIF
+> num_diy = 669
+266,284c267,285
+< !$$$ useful, but not used at the moment...  
+< SUBROUTINE compute_dayinyear(YR,MM,DD,dayinyear)
+<   use ESMF_CalendarMod
+< IMPLICIT NONE
+<       INTEGER, INTENT(IN)  :: YR,MM,DD   ! DD is day of month
+<       INTEGER, INTENT(OUT) :: dayinyear
+<       INTEGER i
+<       integer nfeb
+< 
+<       dayinyear = 0
+<       DO i = 1,MM-1
+<         if (i.eq.2) then
+<           dayinyear = dayinyear + nfeb(YR)
+<         else
+<           dayinyear = dayinyear + mday(i)
+<         endif
+<       ENDDO
+<       dayinyear = dayinyear + DD
+< END SUBROUTINE compute_dayinyear
+---
+> !!$$$ useful, but not used at the moment...  
+> !SUBROUTINE compute_dayinyear(YR,MM,DD,dayinyear)
+> !  use ESMF_CalendarMod
+> !IMPLICIT NONE
+> !      INTEGER, INTENT(IN)  :: YR,MM,DD   ! DD is day of month
+> !      INTEGER, INTENT(OUT) :: dayinyear
+> !      INTEGER i
+> !      integer nfeb
+> !
+> !      dayinyear = 0
+> !      DO i = 1,MM-1
+> !        if (i.eq.2) then
+> !          dayinyear = dayinyear + nfeb(YR)
+> !        else
+> !          dayinyear = dayinyear + mday(i)
+> !        endif
+> !      ENDDO
+> !      dayinyear = dayinyear + DD
+> !END SUBROUTINE compute_dayinyear
+300,302c301,303
+<   IF ( nfeb(time%YR) == 29 ) THEN
+<     MMbdys => monthbdysleap
+<   ELSE
+---
+> !  IF ( nfeb(time%YR) == 29 ) THEN
+> !    MMbdys => monthbdysleap
+> !  ELSE
+304c305
+<   ENDIF
+---
+> !  ENDIF
+333,334c334,335
+< !$$$ fix this so init just points MMbdys to the one we want for this calendar?
+<   IF ( nfeb(time%YR) == 29 ) THEN
+---
+> !!$$$ fix this so init just points MMbdys to the one we want for this calendar?
+> !  IF ( nfeb(time%YR) == 29 ) THEN
+336,338c337,339
+<   ELSE
+<     MMbdys => monthbdys
+<   ENDIF
+---
+> !  ELSE
+> !    MMbdys => monthbdys
+> !  ENDIF
+373,376c374,377
+<   IF ( nfeb(time%YR) == 29 ) THEN
+< !  PRINT *,'DEBUG:  timeaddmonths(): leap year'
+<     MMbdys => monthbdysleap
+<   ELSE
+---
+> !  IF ( nfeb(time%YR) == 29 ) THEN
+> !!  PRINT *,'DEBUG:  timeaddmonths(): leap year'
+> !    MMbdys => monthbdysleap
+> !  ELSE
+379c380
+<   ENDIF
+---
+> !  ENDIF
+403,406c404,407
+<   IF ( nfeb(time%YR) == 29 ) THEN
+<     time%basetime%S = time%basetime%S + &
+<       ( INT( mdayleap(MM), ESMF_KIND_I8 ) * SECONDS_PER_DAY )
+<   ELSE
+---
+> !  IF ( nfeb(time%YR) == 29 ) THEN
+> !    time%basetime%S = time%basetime%S + &
+> !      ( INT( mdayleap(MM), ESMF_KIND_I8 ) * SECONDS_PER_DAY )
+> !  ELSE
+409c410
+<   ENDIF
+---
+> !  ENDIF
+433,436c434,437
+<   IF ( nfeb(time%YR) == 29 ) THEN
+<     time%basetime%S = time%basetime%S - &
+<       ( INT( mdayleap(MM), ESMF_KIND_I8 ) * SECONDS_PER_DAY )
+<   ELSE
+---
+> !  IF ( nfeb(time%YR) == 29 ) THEN
+> !    time%basetime%S = time%basetime%S - &
+> !      ( INT( mdayleap(MM), ESMF_KIND_I8 ) * SECONDS_PER_DAY )
+> !  ELSE
+439c440
+<   ENDIF
+---
+> !  ENDIF

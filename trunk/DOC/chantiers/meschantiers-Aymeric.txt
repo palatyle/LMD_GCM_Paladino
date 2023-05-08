@@ -1,0 +1,11 @@
+-----------------------------------------------------------------
+********   PENSER A FAIRE UNE DOC POUR TOUT CHANTIER   **********
+-----------------------------------------------------------------
+
+--- propager les changements de newtonien pour les planetes geantes
+
+--- faire un cas simple nettoye de phyplanet a appeler a partir de dyn3dpar
+    commencer par indiquer un newtonien simple dans une physique separee
+    puis raffiner avec ajout d un ajustement convectif, radiations, etc...
+
+

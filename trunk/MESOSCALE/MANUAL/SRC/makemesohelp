@@ -1,0 +1,30 @@
+[output of makemeso -h]
+# Use:    
+#
+# makemeso                   ## basic use (real-case configuration)
+#
+# makemeso -d                ## no compilation, just check the name of the compile folder
+#
+# makemeso -c ideal          ## idealized mode (convective cell, mountain wave, etc...)
+# makemeso -c les            ## large-eddy simulations mode based on WRFV3
+#
+# makemeso -n                ## do not recompile LMD physics (must have been compiled before)
+#
+# makemeso < last            ## basic use + skip questions [! script must have been executed at least once]
+# makemeso -r < last         ## basic use + skip questions + only known config
+# makemeso -nr < last        ## basic use + skip questions + only known config + no LMD phys recompile
+#
+# makemeso -j                ## just compile the LMD physics
+#
+# makemeso -g                ## debug mode
+#
+# makemeso -h                ## display options
+#
+# makemeso -p                ## with new LMD physics
+#
+# makemeso -f                ## fresh start [clean -a]
+#
+# makemeso -s storm          ## a specific scenario, you need a corresponding mars_lmd_... (only for newphys)
+#
+# makemeso -x                ## a case with no LMD physics included
+

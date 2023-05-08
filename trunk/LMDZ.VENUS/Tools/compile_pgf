@@ -1,0 +1,10 @@
+# path for netcdf should be adapted to your configuration !
+
+#\rm planet.h
+#ln -s $2.h planet.h
+ pgf95 -Bstatic cpdet.F90 moyzon.F moyzon2.F moytim.F dx_dp.F epflux.F90 \
+    io.F90 dmass.F90 reverse.F90 $1.F90 \
+-I/usr/include/netcdf-3 \
+-L/usr/lib64 -lnetcdff -lnetcdf -o $1-$2.e
+
+\rm *.o

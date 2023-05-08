@@ -1,0 +1,37 @@
+ok_guide=y
+# guidage sur niveaux modèle (y) ou standard
+guide_modele=y
+# inversion de l'ordre des niveaux verticaux
+ok_invertp=y
+ncep=y
+ ######################################
+ #### guidage de u #####
+ guide_u=y
+ ######################################
+ #### guidage de v #####
+ guide_v=y
+ ######################################
+ #### guidage de T #####
+ guide_T=y
+ ######################################
+ #### guidage de P #####
+ guide_P=n
+ ######################################
+ #### guidage de Q (hr=y:hum.rel,n:hum.spec) #####
+ guide_Q=n
+ guide_hr=n
+ ######################################
+ ## guidage dans la couche limite
+ guide_BL=n
+ ######################################
+ini_anal=n
+tau_min_u=0.04166667
+tau_max_u=0.125
+tau_min_v=0.04166667
+tau_max_v=0.125
+tau_min_T=0.04166667
+tau_max_T=10.
+tau_min_Q=0.2
+tau_max_Q=10.
+# gamma limité
+gamma4=n

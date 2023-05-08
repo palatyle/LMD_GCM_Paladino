@@ -1,0 +1,10 @@
+#! /bin/bash
+
+nproc=4
+
+ideal.exe
+mv rsl.out.0000 ideal_rsl.out.0000
+
+\rm rsl.*
+\rm wrfout*
+mpirun -np $nproc wrf.exe < /dev/null &

@@ -1,0 +1,4 @@
+add freedust to callphys.def
+run newstart.e to change starts with option freedust
+link modified starts
+run the model

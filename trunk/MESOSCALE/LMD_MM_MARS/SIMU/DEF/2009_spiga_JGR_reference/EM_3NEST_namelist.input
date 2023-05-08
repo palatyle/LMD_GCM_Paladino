@@ -1,0 +1,138 @@
+ &time_control
+ start_year       = 2024, 2024, 2024,
+ start_month      =   07,   07,   07,
+ start_day        =   01,   01,   01,
+ start_hour       =   01,   01,   01,
+ end_year         = 2024, 2024, 2024,
+ end_month        =   07,   07,   07,
+ end_day          =   04,   04,   04,
+ end_hour         =   01,   01,   01,
+ history_interval   = 37,   37,   37,    
+ frames_per_outfile = 24,   24,   24, 
+ restart          = .false.
+ restart_interval = 8880,
+ io_form_history  = 2
+ io_form_restart  = 2
+ io_form_input    = 2
+ io_form_boundary = 2
+ debug_level      = 0
+ input_from_file  =    T,    T,    T,     ! F en second pour que d1 init. d2 (smoother)
+ /
+
+ &domains
+ time_step   = 30 
+ dx     = 30000, 10000,  3333.333, 
+ dy     = 30000, 10000,  3333.333, 
+ e_we   =   153,   157,   157,            ! IF YOU CHANGE THIS YOU MUST RECOMPILE THE PHYSICS
+ e_sn   =   153,   157,   157,            ! IF YOU CHANGE THIS YOU MUST RECOMPILE THE PHYSICS
+ e_vert =    61,    61,    61,            ! IF YOU CHANGE THIS YOU MUST RECOMPILE THE PHYSICS
+ p_top_requested = 3
+!!!!! NESTING STUFF
+ max_dom = 3	!!!! PLEASE DO NOT FORGET callphysd*_.def	
+ grid_id                = 1,   2,   3,
+ parent_id              = 0,   1,   2,
+ i_parent_start         = 0,  51,  60,		! attention au raccord avec WPS !
+ j_parent_start         = 0,  55,  45,		! attention au raccord avec WPS !
+ parent_grid_ratio      = 1,   3,   3,
+ parent_time_step_ratio = 1,   3,   3,		
+ feedback               = 0  
+ smooth_option          = 2
+ blend_width            = 5
+!!!!! NESTING STUFF
+! p_top_requested = 0.5
+! eta_levels =       1.00000,
+!     0.999500,
+!     0.998000,
+!     0.995000,
+!     0.985000,
+!     0.970000,
+!     0.940000,
+!     0.900000,
+!     0.800000,
+!     0.700000,
+!     0.592538,
+!     0.501572,
+!     0.424571,
+!     0.359392,
+!     0.304219,
+!     0.257516,
+!     0.217982,
+!     0.184518,
+!     0.156191,
+!     0.132213,
+!     0.111916,
+!    0.0947347,
+!    0.0801912,
+!    0.0678804,    
+!    0.0574595,
+!    0.0486384,
+!    0.0411715,
+!    0.0348509,
+!    0.0295007,
+!    0.0249718,
+!    0.0211382,
+!    0.0178931,
+!    0.0151462,
+!    0.0128209,
+!    0.0108527,
+!   0.00918661,
+!   0.00777630,
+!   0.00658249,
+!   0.00557196,
+!   0.00471656,
+!   0.00399248,
+!   0.00337956,
+!   0.00286074,
+!   0.00242156,
+!   0.00204981,
+!   0.00173513,
+!   0.00146875,
+!   0.00124327,
+!   0.00105241,
+!  0.000890844,
+!  0.000754083,
+!  0.000638317,
+!  0.000540324,
+!  0.000457374,
+!  0.000387159,
+!  0.000327723,
+!  0.000277412,
+!  0.000234824,
+!  0.000198774,
+!  0.000168259,
+!      0.00000
+ /
+
+ &physics
+ radt =  1, 1, 1     ! 1 is the best (change iradia in callphys)
+ mars =  0, 0, 0     ! IF YOU CHANGE THIS YOU MUST RECOMPILE THE PHYSICS (AND CHANGE CALLPHYS.DEF)
+ /
+
+ &fdda
+ /
+
+ &dynamics
+ diff_6th_opt =      2,   2,   2,     !! NECESSAIRE 
+ diff_6th_factor =   0.2, 0.2, 0.2    !! NECESSAIRE 
+ diff_opt = 1,
+ km_opt = 4,
+ pd_scalar = F   !! no water cycle (mars = 0)
+ time_step_sound =    10,  10,  10
+ !!damp_opt = 1
+ !!dampcoef = 0.1, 0.1, 0.1
+ /
+
+ &grib2
+ /
+
+ &bdy_control
+ specified = T, F, F
+ nested    = F, T, T
+ /
+
+!! DO NOT MODIFY
+ &namelist_quilt
+ nio_tasks_per_group = 0,
+ nio_groups = 1,
+ /
+!! DO NOT MODIFY

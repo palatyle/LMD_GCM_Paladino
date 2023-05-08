@@ -1,0 +1,48 @@
+681,684d680
+< 
+< !IF (ru_tendf(i,k,j).NE.0) THEN 
+< !!!caca caca
+< !PRINT *, 'dynamics tendencies (compare)', ru_tend(i,k,j)
+687,688c683,685
+< !!!caca
+< !PRINT *, 'physics tendencies / mF (compare)', ru_tendf(i,k,j)/msfu(i,j)
+---
+> !!!!caca
+> !IF (ru_tendf(i,k,j).NE.0) THEN
+> !PRINT *, 'u physics tendencies / mF (compare)', ru_tendf(i,k,j)/msfu(i,j)
+691,692d687
+< 
+< 
+700,703d694
+< 
+< !IF (rv_tendf(i,k,j).NE.0) THEN 
+< !!!caca caca
+< !PRINT *, 'dynamics tendencies (compare)', rv_tend(i,k,j)
+706,707c697,699
+< !!!caca
+< !PRINT *, 'physics tendencies / mF (compare)', rv_tendf(i,k,j)/msfv(i,j)
+---
+> !!!!caca
+> !IF (rv_tendf(i,k,j).NE.0) THEN
+> !PRINT *, 'v physics tendencies / mF (compare)', rv_tendf(i,k,j)/msfv(i,j)
+710d701
+< 
+729,732d719
+< 
+< !IF (t_tendf(i,k,j).NE.0) THEN 
+< !!!caca caca
+< !PRINT *, 'dynamics tendencies (compare)', t_tend(i,k,j)
+736,737c723,725
+< !!!caca
+< !PRINT *, 'physics tendencies / mF (compare)', t_tendf(i,k,j)/msft(i,j)
+---
+> !!!!caca
+> !IF (t_tendf(i,k,j).NE.0) THEN
+> !PRINT *, 't physics tendencies / mF (compare)', t_tendf(i,k,j)/msft(i,j)
+739,740c727
+< !ENDIF
+< 
+---
+> !ENDIF 
+898a886
+> 

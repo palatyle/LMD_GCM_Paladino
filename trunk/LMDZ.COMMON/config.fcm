@@ -1,0 +1,29 @@
+%ARCH          sawtooth
+%INCDIR         -I/home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libf/aeronostd -I/apps/local/netcdf/netcdff/include
+%LIB            -L/apps/local/netcdf/netcdff/lib -lnetcdf -lnetcdff 
+%ROOT_PATH     /home/palatyle/LMD_gen/trunk/LMDZ.COMMON
+%LIBF          /home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libf
+%LIBO          /home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libo
+%DYN           dyn3d
+%DYN_COMMON    /home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libf/dyn3d_common
+%PHY_COMMON    /home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libf/phy_common
+%FILTRE        /home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libf/filtrez
+%PHYS          phystd
+%DYN_PHYS      /home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libf/dynphy_lonlat
+%DYN_PHYS_SUB  /home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libf/dynphy_lonlat/phystd
+%RRTM          /home/palatyle/LMD_gen/trunk/LMDZ.COMMON/.void_dir
+%DUST          /home/palatyle/LMD_gen/trunk/LMDZ.COMMON/.void_dir
+%STRATAER      /home/palatyle/LMD_gen/trunk/LMDZ.COMMON/.void_dir
+%SISVAT        /home/palatyle/LMD_gen/trunk/LMDZ.COMMON/.void_dir
+%COSP          /home/palatyle/LMD_gen/trunk/LMDZ.COMMON/.void_dir
+%CHEM          /home/palatyle/LMD_gen/trunk/LMDZ.COMMON/.void_dir
+%CLOUD         /home/palatyle/LMD_gen/trunk/LMDZ.COMMON/.void_dir
+%MUPHY         /home/palatyle/LMD_gen/trunk/LMDZ.COMMON/.void_dir
+%AERONO        /home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libf/aeronostd
+%CPP_KEY        CPP_PHYS
+%EXEC          start2archive
+%SUFF_NAME     _128x96x23_phystd_seq.e
+%COMPIL_FFLAGS %PROD_FFLAGS
+%PARA_FFLAGS   
+%PARA_LD       
+%EXT_SRC       

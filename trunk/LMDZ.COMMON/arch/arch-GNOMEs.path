@@ -1,0 +1,14 @@
+ROOT=$PWD
+
+NETCDF_LIBDIR="-L/usr/local/lib"
+NETCDF_LIB="-lnetcdf"
+NETCDF_INCDIR="-I/usr/local/include"
+
+IOIPSL_INCDIR="-I/san/home/millour/Planeto/work_dyn_830/trunk/LMDZ.COMMON/ioipsl/modipsl/lib"
+IOIPSL_LIBDIR="-L/san/home/millour/Planeto/work_dyn_830/trunk/LMDZ.COMMON/ioipsl/modipsl/lib"
+IOIPSL_LIB="-lioipsl"
+
+XIOS_INCDIR="-I$ROOT/../XIOS/inc"
+XIOS_LIBDIR="-L$ROOT/../XIOS/lib"
+XIOS_LIB="-lxios -lstdc++"
+

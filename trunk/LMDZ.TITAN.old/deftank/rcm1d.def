@@ -1,0 +1,18 @@
+0                       ! Date de depart
+0                       ! heure de debut de simulation
+2000                    ! nombre de pas de temps / jour
+2                      ! nombre de jours simules
+1.4e5                   ! psurf
+40                      ! Latitude
+0.1                     ! composante vers l   est du vent geostrophique (U)
+0.1                     ! composante vers le nord du vent geostrophique (V)
+
+! parametres pour profile.F
+
+1                       ! profil de T
+70.                     ! tref, sert pour T=cst
+0                       ! isin (pour perturbation)
+0.                      ! pic pour perturbation gaussienne
+0.                      ! largeur pour perturbation gaussienne
+0.                      ! hauteur pour perturbation gaussienne
+

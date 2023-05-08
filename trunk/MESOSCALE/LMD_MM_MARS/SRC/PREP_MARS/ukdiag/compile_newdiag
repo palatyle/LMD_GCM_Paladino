@@ -1,0 +1,79 @@
+#!/bin/sh
+
+# =======================================================
+# Compiler script for newdiag.F90 interpol_soil.F90
+# Liam Steele June 2014
+# =======================================================
+
+# Determine which Fortran compiler to use
+fcomp=0
+echo "Which Fortran compiler do you want to use?"
+echo "1. ifort"
+echo "2. g95"
+echo "3. pgf90"
+while [ $fcomp != 1 -a $fcomp != 2 -a $fcomp != 3 ] ; do 
+  read fcomp
+  if [ $fcomp != 1 -a $fcomp != 2 -a $fcomp != 3 ] ; then
+    echo "Not a valid compiler choice. Please try again:"
+  fi
+done
+
+# Look for NetCDF libraries
+if [ -n "$NETCDF" ] ; then
+  echo "Will use NetCDF in directory: $NETCDF"
+else
+  success=""
+  while [ -z "$success" ] ; do 
+    echo "Cannot find NetCDF library. Please enter full path:"
+    read ncdfpath
+    if [ ! -d "$ncdfpath" ] ; then
+      echo "invalid path: $ncdfpath" ; continue
+      success=""
+    else
+      success="yes"
+    fi
+    netcdfipath=$ncdfpath
+  done
+  echo "For future use you should put this path into your bash profile, i.e."
+  echo "export NETCDF="$ncdfpath
+fi
+
+# Check diagfi.nc exists for conversion
+if ! [ -e "diagfi.nc" ] ; then
+  echo 'Please link a valid diagfi.nc file'
+  exit
+fi
+
+# Check we are in the ukv_newdiag directory
+thispwd=`echo $(pwd)`
+length=${#thispwd}
+substr=`echo $thispwd | cut -c$((length-10))-$((length))`
+if [ $substr != "ukv_newdiag" ] ; then
+  echo 'Not in ukv_newdiag directory'
+  exit
+fi
+
+# Since all checks are complete, create new diagfi. If you want to use a
+# compiler other than ifort you'll have to change the compiler flags
+echo 'Compiling executable...'
+if [ -e "newdiag.exe" ] ; then
+  rm newdiag.exe
+fi
+if [ $fcomp == 1 ] ; then
+  ifort -convert big_endian -I$NETCDF newdiag.F90 interpol_soil.F90 -o newdiag.exe -L$NETCDF -lnetcdf
+elif [ $fcomp == 2 ] ; then
+  g95 -fno-second-underscore -I$NETCDF newdiag.F90 interpol_soil.F90 -o newdiag.exe -L$NETCDF -lnetcdf
+elif [ $fcomp == 3 ] ; then
+  pgf90 -byteswapio -I$NETCDF newdiag.F90 interpol_soil.F90 -o newdiag.exe -L$NETCDF -lnetcdf
+fi
+chmod u+x newdiag.exe
+./newdiag.exe
+
+# Create link in PREP_MARS
+echo 'Linking new diagfi to PREP_MARS'
+cd ..
+ln -sf ukv_newdiag/diagfi_new.nc input_diagfi.nc
+
+echo 'Done!'
+
+exit

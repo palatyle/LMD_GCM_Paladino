@@ -1,0 +1,8 @@
+#! /bin/bash
+
+for fich in $(cat ye) ; do
+
+  mv $fich $(echo $fich | tr ":" "z")
+
+done
+

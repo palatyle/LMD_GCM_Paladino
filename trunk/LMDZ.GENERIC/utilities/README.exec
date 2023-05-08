@@ -1,0 +1,188 @@
+This directory contains executable files (and their source) that can be
+used to process the LMD Mars GCM output files (like "diagfi" or
+"stats"), whatever the dimension. 
+In addition most output file from one of these program can be
+processes by another.
+
+The executable files should run on any Linux platform.
+
+Inputs can be provided by (1) replying to questions on screen or
+(2) filling the corresponding  *.def and direct the input of these *.def
+files instead. For example :
+> concatnc.e < concatnc.def
+> zrecast.e < zrecast.def
+
+--------------------------------------------------------------------
+1) concatnc.e 
+--------------------------------------------------------------------
+
+This program is used to concatenate consecutive
+output files ("diagfi", and even "stats") for a selection of 
+variable, in order to obtain one single big file. The time simension can
+be "sols" or "Ls" (in that last case, Ls will not be linear, and
+software like Grads may not be able to use it. To have a linear "Ls"
+timescale, you can use "Ls_Linear.e" (see below).
+
+Output file is : concat.nc
+
+MODIFICATION:
+07/2008 Utility concatnc.F90 (not used by the gcm): improvement in order
+to 1) concatenate 1D variable and 2) increase the number of input files
+up to 1000
+
+
+--------------------------------------------------------------------
+2) localtime.e
+--------------------------------------------------------------------
+
+Program to redistribute and interpolate the variable a the same
+local times everywhere (useful to mimic satellite observations, or
+analyse day to day variations at a given local time). 
+input : diagfi.nc  / concat.nc / stats.nc kind of files
+
+output file is :
+name_of_input_file_LT.nc with pressure coordinate
+
+--------------------------------------------------------------------
+3) zrecast.e
+--------------------------------------------------------------------
+
+This program reads 4D (lon-lat-alt-time) fields from GCM output files
+(ie: diagfi.nc time series or concat.nc or stats.nc files) and, by
+integrating the hydrostatic equation, recasts data along the vertical
+direction.
+The vertical coordinate can be either 1) pressure, 2) above areoid
+altitudes, 3) above local surface altitudes or 4) distance to center of
+the planet. Some interpolation along the vertical direction is also
+done, following instructions given by user (levels may be specified
+or given as minimu,maximum and number of levels).
+For "above areoid altitudes" output, Atmospheric pressure is added to
+output dataset; for "pressure coordinate" outputs, the above areoid
+altitude of pressure is added to output dataset.
+
+Minimal requirements and dependencies:
+The dataset must include the following data:
+- surface pressure
+- atmospheric temperature
+- hybrid coordinates aps() and bps(), or sigma levels() (see section
+1.3.2)
+- ground geopotential (in input file; if not found, it is sought
+  in a 'diagfi.nc' file. If not found there, it is then sought in
+  a 'phisinit.nc' file  (see section 1.3.3 of program)
+
+- When integration the hydrostatic equation, we assume that R, the
+molecular Gas Constant, may not be constant, so it is computed as
+R=P/(rho*T) (P=Pressure, rho=density, T=temperature)
+If 'rho' is not available, then we use a constant R (see section
+2.2 in source file)
+
+output file is : 
+name_of_input_file_P.nc with pressure coordinate 
+name_of_input_file_A.nc with altitude above areoid coordinate 
+name_of_input_file_S.nc with altitude above local surface coordinate 
+name_of_input_file_R.nc with altitude as distance to center of planet 
+
+MODIFICATION :
+01/2010 : correction to interpolate above surface if density is not available.
+03/2011 : added possibility to have output as distance to center of planet
+
+--------------------------------------------------------------------
+4) lslin.e
+--------------------------------------------------------------------
+
+This program has been designed to interpol data in Solar Longitude (Ls)
+linear time coordinate (usable with grads) from Netcdf diagfi or concatnc  
+files. 
+output file is : lslin.nc
+lslin also create a lslin.ctl file that can be read
+directly by grads (>xdfopen lsllin.ctl) to plot in Ls coordinate to
+avoid some problem with grads when grads think that "the time interval
+is too small"...
+
+MODIFICATION
+10/2007 Utility lslin.F90 (not used by the gcm)
+changed evaluation of 'start_var' from hard-coded values to a computed value
+04/2015 Added possibility to bin data (instead of interpolating) over
+the time intervals
+
+--------------------------------------------------------------------
+5) hrecast.e
+--------------------------------------------------------------------
+
+This program can interpolate GCM output on any horizontal grid (regular lat - lon) as long as it cover all the
+planet. The grid can be given points by points. The best way is to use the redirected input hrecast.def
+
+hrecast.e < hrecast.def
+
+
+--------------------------------------------------------------------
+6) expandstartfi.e
+--------------------------------------------------------------------
+
+This program takes a physics start file ("startfi.nc") and recasts it
+on the corresponding  lonxlat grid (so it contents may easily be displayed
+using Grads, Ferret, etc.)
+
+Simply run expandstartfi.e as a command line with arguments:
+
+expandstartfi.e  [infile.nc] [outfile.nc]
+
+     (if infile is not specified, "startfi.nc" is used as default)
+     (if outfile is not specified, it is built as "infile_ex.nc")
+
+--------------------------------------------------------------------
+6) extract.e
+--------------------------------------------------------------------
+
+This program extracts (ie: interpolates) pointwise values of an atmospheric 
+variable from a 'zrecast'ed diagfi file (works if altitude is geometrical 
+height or a pressure vertical coordinates)
+user has to specify:
+- name of input file
+- date (in sols) offset wrt the input file (e.g. if the input file "begins"
+  at Ls=0, then the offset is 0; if the input file begins at Ls=30, the
+  offset date corresponding to the first 3 months is 61+66+66=193 sols, etc.)
+- the "extraction mode": 
+     1: extract individual values; user will specify values of
+        lon lat alt Ls LT (all on a same line)
+        on as many lines as there are sought values
+     2: extract a profile: user will specify on a first line the values of
+        lon lat Ls LT (all on a same line)
+        and then only specify values of altitudes (m or Pa depending on the
+        coordinate in the input file), one per line, at which values are
+        sought
+ - output values are sent to (ASCII) output file 'infile_var_.dat', where
+   'infile' is the input file name (without trailing '.nc') and
+   'var' is the sought variable, for extraction mode 1 as
+   lines of "lon lat alt Ls LT value" and for a profile (extraction mode 2)
+   as lines of "alt value"
+
+  NB: If there is no data to do an appropriate interpolation to extract
+      the sought value, then a "missing_value" (taken from the variable's
+      attribute in the input file, most likely -9.99E33) is returned.
+
+See files "extract.points.def" and "extract.profile.def" for examples of
+input format that would simply need to be redirected to extract.e, e.g.:
+
+extract.e < extract.points.def
+
+  
+--------------------------------------------------------------------
+7) extrapol_icefield.e
+--------------------------------------------------------------------
+
+ This program is a tool to accelerate the calculation of ice fieds evolution.
+
+ It uses data files (diagfi.nc) to extrapolate surface 
+ physical fields (ice fields typically) in time.
+
+ 1. We load data file(s) 'diagfi.nc' and get dimensions (longitude,latitude,altitude,time).
+ 2. We get a surface field from the loaded 'diagfi.nc' file.
+ 3. We make the extrapolation.
+ 4. We load a start file 'startfi.nc' and copy it into a new start file 'startfi_extrapolated.nc'.
+ 5. We modify the 'startfi_extrapolated.nc' according to the extrapolation calculations.
+
+ --> 'startfi_extrapolated.nc' is the interpolated new start file that can be used to run new GCM simulations
+
+ Author : M. Turbet (2016) [Adapted from E. Millour previous work]
+

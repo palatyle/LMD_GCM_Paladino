@@ -1,0 +1,6 @@
+TSURF(i,j) = output_tab2d(subs,ind_TSURF)
+TAU_DUST(i,j) = output_tab2d(subs,ind_TAU_DUST)
+SWDOWN(i,j) = output_tab2d(subs,ind_SWDOWN)
+LWDOWN(i,j) = output_tab2d(subs,ind_LWDOWN)
+SWUP(i,j) = output_tab2d(subs,ind_SWUP)
+LWUP(i,j) = output_tab2d(subs,ind_LWUP)

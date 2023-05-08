@@ -1,0 +1,230 @@
+        subroutine optfrac(XN,WLNV,QEXT,QSCA,QABS,CBAR)
+
+c------------------------------------------------------
+c
+c   -->(  ) 
+c       XN      : NOMBRE DE MONOMERES
+c	WLNV	: LONGUEUR D'ONDE 
+c      (  )-->
+c	TEXT(NLEVEL): TAU_EXT (NLAYER)
+c	TSCA(NLEVEL): TAU-SCA (NLEVEL)
+c       TABS(NLEVEL): TAU-ABS (NLEVEL)  
+c       CBAR(NLEVEL): PARAMETRE D'ASYMETRIE (NLEVEL)
+c
+c------------------------------------------------------
+
+       parameter(NNK=64,nmon=15,iint=5)
+
+     
+
+* declaration des variables INPUT/OUTPUT 
+* --------------------------------------
+  
+        real QEXT,QSCA,QABS,CBAR,XN,WLNV
+
+ 
+* declaration des variables internes
+* ----------------------------------
+	
+
+        real sfe(nmon,NNK),sfd(nmon,NNK),gn(nmon,NNK)
+
+        real sfe0(nmon,NNK,iint),sfd0(nmon,NNK,iint)
+     & ,gn0(nmon,NNK,iint),l0(NNK) 
+
+        real xpoub,xvis,xir
+        integer kkk
+        save kkk,xvis,xir
+
+        real ifi(NNK)
+
+        real gi,h,h1 
+ 
+        real ex(0:4) 
+ 
+        integer iprem
+        save iprem
+
+* declaration des blocs communs internes 
+*---------------------------------------
+
+        common/thag_thol/sfe0,sfd0,gn0,l0 
+
+       data iprem/0/
+ 
+
+       pi=3.1415926535
+
+
+
+
+       
+* Longueurs d'ondes et sections efficaces utilisees
+*--------------------------------------------------
+       
+       if(iprem.eq.0) THEN
+           print*,'APPEL OPTIQUE FRACTAL'
+           call agreg_tholin()
+ 
+       endif     
+
+
+* restriction en longueur d'o
+*----------------------------
+ 
+        if(WLNV.lt.l0(1)) stop 'WLNV < l0(1) '
+ 
+      do i=1,NNK-1 
+        if(WLNV.gt.l0(i))  index=i+1 
+      enddo  
+
+        if(WLNV.gt.l0(NNK)) stop 'WLNV > l0(NNK) '
+
+commentaire:          l0(index-1) < WLNV < l0(index) 
+
+
+* limite en nombre de monomeres.
+*------------------------------
+
+        if (XN/.75.lt.1.)       stop 'XN < 1'
+        if (XN/1.5.gt.16384.)   stop 'XN > 16384'
+
+c......tolerance grille #1:   .75  < N <1.5
+c................grille #15:  10922< N < 24576
+c................DONC          .75 < N < 24576
+
+* Calculs preparatoires: intervalles de longueurs d'onde 
+*--------------------------------------------------------
+
+       do j=index-1,index         !longueur d'onde 
+       ifi(j)=5                   !ifi < iint
+       if (l0(j).lt.0.72)  ifi(j)=4
+       if (l0(j).lt.0.5)  ifi(j)=3
+       if (l0(j).lt.0.4)  ifi(j)=2
+       if (l0(j).lt.0.3)  ifi(j)=1
+       enddo
+
+        
+*  l0(index) <--> l0(index-1)
+       if(iprem.eq.0) then
+       print*,'ouverture du fichier initpar'
+       open (unit=1,file='initpar')
+       read(1,*) xpoub,kkk,xvis,xir
+       read(1,*) 
+       read(1,*) xpoub,kkk,xvis,xir
+       close(1)
+       print*,'ouverture du fichier initpar ok'
+       iprem=1
+       print*,'DANS OPTFRAC'
+       print*,'------------'
+       print*,'XVIS=',xvis
+       print*,'XIR=',xir
+       endif
+
+c      stop'Check des valeurs dans optfrac.F'
+
+       k=int(alog(XN/.75)/alog(2.)+1.)
+
+       xcompens=XN/(2.**(k-1))
+      
+
+      do j=index-1,index         !longueur d'onde 
+
+       ifich=ifi(j)
+
+         if (WLNV.gt.1.5) then 
+
+            sfe(k,j)=sfe0(k,j,ifich)*xir
+     &              +sfd0(k,j,ifich)*(1.-xir)
+            sfd(k,j)=sfd0(k,j,ifich)
+            gn(k,j)=gn0(k,j,ifich)
+
+         else 
+
+            sfe(k,j)=sfe0(k,j,ifich)*xvis
+     &              +sfd0(k,j,ifich)*(1.-xvis)
+            sfd(k,j)=sfd0(k,j,ifich)
+            gn(k,j)=gn0(k,j,ifich)
+
+         endif
+
+        enddo 
+
+
+         i=k
+
+         XRAT=(WLNV-l0(index-1))/(l0(index)-l0(index-1)) 
+        CBAR=XRAT*(gn(i,index)-gn(i,index-1))
+     &          +gn(i,index-1)  
+        QEXT=XRAT*(sfe(i,index)-sfe(i,index-1))
+     &          +sfe(i,index-1)  
+        QSCA=XRAT*(sfd(i,index)-sfd(i,index-1))
+     &          +sfd(i,index-1)  
+        QABS=QEXT-QSCA 
+
+        QEXT=QEXT*xcompens
+        QSCA=QSCA*xcompens
+        QABS=QABS*xcompens
+
+ 
+          return  
+ 500    print*,'erreur lecture initfich' 
+          stop
+ 499    print*,'erreur ouverture initfich' 
+          stop
+          end 
+
+
+*-------------------------------------------------------------------
+*
+*        DEBUT DU CALCUL D'INTERPOLATION DES DONNEES AGREGAT
+*
+*---------------------------------------------------------------------
+
+      subroutine agreg_tholin()
+ 
+
+      common/thag_thol/qext0,qsca0,g0,l
+ 
+ 
+      parameter(nz=200,nrad=45,NNK=64,nmon=15,iint=5)
+      real l(NNK)
+      real*8 qsca,qext,qg0
+      real qsca0(nmon,NNK,iint),qext0(nmon,NNK,iint)
+     &    ,g0(nmon,NNK,iint)
+
+       do ifich=1,iint 
+       print*,'ouverture du fichier tetag',ifich
+       if (ifich.eq.1) open (unit=3,file='testag0')
+       if (ifich.eq.2) open (unit=3,file='testag1')
+       if (ifich.eq.3) open (unit=3,file='testag2')
+       if (ifich.eq.4) open (unit=3,file='testag3')
+       if (ifich.eq.5) open (unit=3,file='testag4')
+       print*,'ouverture du fichier ok'
+
+       do k=NNK,1,-1
+         read (3,*) l(k)
+         do nm=1,nmon
+           read (3,*) qsca,qext,qg0
+c          read (3,*) qsca0(nm,k,ifich),qext0(nm,k,ifich)
+c    &               ,g0(nm,k,ifich)
+           qsca0(nm,k,ifich)=sngl(qsca)*1.e-18
+           qext0(nm,k,ifich)=sngl(qext)*1.e-18
+           g0(nm,k,ifich)=sngl(qg0)
+         enddo
+       enddo
+      close (3)
+
+       enddo
+c          print*,'4*>',qsca0(1,1,1),qsca0(64,15,4)
+     
+       return
+       end
+
+
+
+*---------------------------------------------------------------------
+*
+*        FIN DU CALCUL D'INTERPOLATION DES DONNEES AGREGAT
+*
+*---------------------------------------------------------------------

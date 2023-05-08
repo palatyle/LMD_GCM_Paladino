@@ -1,0 +1,11 @@
+#PBS -S  /bin/bash
+#PBS -j  oe
+#PBS -q  infini
+#PBS -N  LMDZ5_PARA16
+#PBS -l "nodes=1:ppn=16"
+##PBS -l "mem=64gb"
+
+####### prep run
+cd $PBS_O_WORKDIR
+ulimit -s unlimited
+mpirun gcm.e > log

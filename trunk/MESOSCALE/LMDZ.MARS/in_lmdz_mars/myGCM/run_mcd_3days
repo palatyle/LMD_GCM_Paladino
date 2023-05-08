@@ -1,0 +1,60 @@
+#! /bin/bash
+
+#
+# - please link or copy start0.nc and startfi.nc (or start_archive.nc)
+# - please set 3 in the first parameter of run.def
+# - please set 0 in the first line of num_run 
+# - please set daylim below (669 for the whole year)
+#
+
+##########
+daylim=669
+##########
+
+rm -rf tmpsave
+mkdir tmpsave
+
+runnum=0
+runnum_obsolete=0
+daynum=0
+
+while [ ${daynum} -lt ${daylim} ]  
+do
+	# run GCM during three days
+	echo run starting at day ${daynum}
+	echo '****'
+	time run0 
+
+	# save generated starting files 
+	echo saving files
+	echo '****'
+	runnum=$(expr ${runnum} + 1)
+        save=$(expr ${daynum} + 2)
+	cp start${runnum}.nc tmpsave/start${save}.nc
+        cp startfi${runnum}.nc tmpsave/startfi${save}.nc
+	mv lrun${runnum} tmpsave/lrun_for_start${save}
+
+	# increment day to day+3 for while loop assessement
+	daynum=$(expr ${daynum} + 3)
+
+        # get rid of what was generated two steps before
+	echo cleaning
+	echo '****'
+	if [ ${runnum} -gt 1 ]	#because we want to keep start0.nc and startfi0.nc
+	then
+	runnum_obsolete=$(expr ${runnum} - 1)
+	rm -rf start${runnum_obsolete}.nc
+	rm -rf startfi${runnum_obsolete}.nc
+	rm -rf diagfi${runnum_obsolete}.nc
+	fi
+done
+
+# clean the last files
+rm -rf start${runnum}.nc
+rm -rf startfi${runnum}.nc
+rm -rf diagfi${runnum}.nc
+
+# end
+echo -- end --
+echo please check results in file tmpsave
+echo if you want to keep the results, rename this folder

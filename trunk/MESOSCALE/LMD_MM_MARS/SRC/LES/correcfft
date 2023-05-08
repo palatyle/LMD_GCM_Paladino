@@ -1,0 +1,12 @@
+#! /bin/bash
+
+#### quick and dirty....
+
+cd external
+mkdir fftpack
+cd fftpack
+ln -sf ../../../../SRC/LES/WRFV2/external/fftpack/* .
+\rm fftpack5
+mkdir fftpack5
+cd fftpack5
+ln -sf ../../../../../SRC/LES/WRFV2/external/fftpack/fftpack5/* .

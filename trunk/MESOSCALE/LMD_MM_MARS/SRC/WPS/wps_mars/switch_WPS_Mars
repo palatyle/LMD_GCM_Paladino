@@ -1,0 +1,37 @@
+#! /bin/bash
+
+###
+### UPDATED to be OK with prepare_ini [previously same stuff was being done twice]
+###
+
+rm -f namelist.wps 2> /dev/null
+#ln -s namelist.wps_Mars namelist.wps 
+
+cd geogrid
+\rm GEOGRID.TBL 2> /dev/null
+  ####----> fait dans prepare_ini
+  ####cp ../wps_mars/geogrid/GEOGRID.TBL.ARW_Mars GEOGRID.TBL.ARW
+cd src
+rm constants_module.f90
+# PB SVN
+##ln -s ../../wps_mars/geogrid/constants_module_Mars.f90 constants_module.f90
+cp ../../wps_mars/geogrid/constants_module_Mars.f90 constants_module.f90
+rm process_tile_module.F90
+##ln -s ../../wps_mars/geogrid/process_tile_module_Mars.F90 process_tile_module.F90 
+cp ../../wps_mars/geogrid/process_tile_module_Mars.F90 process_tile_module.F90
+cd ../..
+
+cd metgrid
+\rm METGRID.TBL 2> /dev/null
+  ####----> fait dans prepare_ini
+  ####cp ../wps_mars/metgrid/METGRID.TBL.ARW_MarsBase_newphys METGRID.TBL.ARW
+cd src
+rm module_date_pack.f90
+##ln -s ../../wps_mars/metgrid/module_date_pack_Mars.f90 module_date_pack.f90
+cp ../../wps_mars/metgrid/module_date_pack_Mars.f90 module_date_pack.f90
+rm process_domain_module.F90
+##ln -s ../../wps_mars/metgrid/process_domain_module_Mars.F90 process_domain_module.F90
+cp ../../wps_mars/metgrid/process_domain_module_Mars.F90 process_domain_module.F90
+cd ../..
+
+echo 'ok'

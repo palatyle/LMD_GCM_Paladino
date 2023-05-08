@@ -1,0 +1,38 @@
+## WHAT NEEDS TO BE DONE / CHECKED
+
+This folder can be downloaded with
+svn export http://svn.lmd.jussieu.fr/Planeto/trunk/MESOSCALE/LMD_MM_MARS/SIMU/MESORUN
+
+-- check all the links are OK, link the code or download it with
+svn co -N http://svn.lmd.jussieu.fr/Planeto/trunk code
+svn update LMDZ.MARS LMDZ.COMMON MESOSCALE
+
+-- check the LMD GCM is compiled
+cd code/LMDZ.COMMON 
+check arch (if needed compile IOIPSL) then
+./makelmdz_fcm -cpp MESOINI -j 8 -s 2 -d 64x48x35 -arch CICLADifort -parallel mpi -p mars gcm
+
+-- compile mesoscale
+cd code/MESOSCALE/LMD_MM_MARS
+makemeso -p
+
+-- compile ini stuff (do it once mesoscale is compiled)
+cd code_compiled
+ln -sf ../SRC/SCRIPTS/prepare_ini
+./prepare_ini
+cd PREP_MARS
+compile_ifort
+cd WPS
+configure
+compile
+
+-- get static data in http://data.spiga.fr/mesoscale_model/STATIC_DATA/
+and extract them in code/MESOSCALE/LMD_MM_MARS/WPS_GEOG
+
+## ADVICE
+
+If a GCM diagfi.nc is already available, 
+- simply put it in the gcm folder and skip the GCM running part
+- cd to prep and execute
+echo 1 | create_readmeteo.exe
+readmeteo.exe < readmeteo.def

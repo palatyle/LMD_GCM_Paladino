@@ -1,0 +1,78 @@
+Par default, la commande makegcm:
+---------------------------------
+
+1. compile une serie de sous programmes se trouvant dans des sous-repertoires
+de $LMDGCM/libf
+2. Ensuite, makegcm compile le programme prog.f se trouvant par default sur
+$LMDGCM/libf/dyn3d et effectue le lien avec l'ensemble des librairies.
+
+La commande makegcm est faite pour permettre de gerer en parallele des
+versions differentes du modele, compilees avec des options de compilation
+et des dimensions differentes sans avoir a chaque fois a recompiler tout le
+modele.
+
+Les librairies FORTRAN sont stoquees sur le directory $LIBOGCM.
+
+
+OPTIONS:
+--------
+
+Les options suivantes peuvent etre definies soit par defaut en editant le
+"script" makegcm, soit en interactif:
+
+-d imxjmxlm  ou im, jm, et lm sont resp. le nombre de longitudes, latitudes
+             et couches verticales. 
+
+-t ntrac   selectionne le nombre de traceur advectes par la dynamique.
+           Dans les versions courantes du modele terrestre on a par exemple
+           ntrac=2 pour l'eau vapeur et liquide
+
+             L'effet des options -d et -t est d'ecraser le fichier 
+             $LMDGCM/libf/grid/dimensions.h
+             qui contient sous forme de 4 PARAMETER FORTRAN les 3 dimensions
+             de la grille horizontale im, jm, lm plus le nombre de traceurs
+             advectes passivement par la dynamique ntrac, par un nouveu fichier
+             $LMDGCM/libf/grid/dimension/dimensions.im.jm.lm.tntrac
+             Si ce fichier n'existe pas encore, il est cree par le script
+             $LMDGCM/libf/grid/dimension/makdim
+
+-p PHYS    pour selectionner le jeu de parametrisations physiques avec
+           lequel on veut compiler le modele.
+           Le modele sera alors compile en prenant les sources des
+           parametrisations physiques dans le repertoire:
+            $LMDGCM/libf/phyPHYS
+
+-g grille  selectionne le type de grille qu'on veut utiliser.
+           L'effet de cette option est d'ecraser le fichier
+           $LMDGCM/libf/grid/fxyprim.h avec le fichier
+           $LMDGCM/libf/grid/fxy_grille.h
+           La grille peut prendre les valeurs:
+           1. reg pour la grille reguliere
+           2. sin pour avoir des points equidistants en sinus de la latitude
+           3. new pour pouvoir zoomer sur une partie du globe
+
+-O "optimisation fortran" ou les optimisations fortran sont les options de la
+            commande f77
+
+-include path
+           Dans le cas ou on a dans des sous programmes des fichiers 
+           #include (cpp) qui se trouve sur des repertoires non references
+           par defaut
+
+-adjnt     Pour compiler la l'adjoint du code dynamique
+
+-filtre  filtre
+           Pour choisir le filtre en longitude dans les regions polaires.
+           "filtre" correspond au nom d'un repertoire se trouvant sur
+           $LMDGCM/libf. Le filtre standard du modele est "filtrez" qui peut
+           etre utilise aussi bien pour une grille reguliere que pour une 
+           grille zoomee en longitude.
+
+-link "-Ldir1 -lfile1 -Ldir2 -lfile2 ..."
+          Pour rajouter un lien avec les librairies FORTRAN
+          libfile1.a, libfile2.a ... se trouvant respectivement sur les
+          repertoires dir1, dir2 ...
+          Si dirn est un repertoire dont le chemin est automatique (comme
+          par exemple /usr/lib ...) il n'est pas besoin de specifier -Ldirn.
+
+Auteur: Frederic Hourdin  (hourdin@lmd.jussieu.fr)

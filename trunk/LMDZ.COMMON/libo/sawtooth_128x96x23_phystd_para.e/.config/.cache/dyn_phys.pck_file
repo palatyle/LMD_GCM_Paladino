@@ -1,0 +1,9 @@
+/home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libf/dynphy_lonlat/gr_dyn_fi.F                FPP::SOURCE
+/home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libf/dynphy_lonlat/gr_fi_dyn_p.F              FPP::SOURCE
+/home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libf/dynphy_lonlat/inigeomphy_mod.F90         FPP::FPP9X::SOURCE::MODULE
+/home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libf/dynphy_lonlat/mod_interface_dyn_phys.F90 FPP::FPP9X::SOURCE::MODULE
+/home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libf/dynphy_lonlat/gr_dyn_fi_p.F              FPP::SOURCE
+/home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libf/dynphy_lonlat/grid_atob_m.F90            FPP::FPP9X::SOURCE::MODULE
+/home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libf/dynphy_lonlat/calfis.F                   FPP::SOURCE
+/home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libf/dynphy_lonlat/calfis_p.F                 FPP::SOURCE
+/home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libf/dynphy_lonlat/gr_fi_dyn.F                FPP::SOURCE

@@ -1,0 +1,17 @@
+%COMPILER            /usr/lib64/openmpi/1.4.3-ifort/bin/mpif90
+%LINK                /usr/lib64/openmpi/1.4.3-ifort/bin/mpif90
+%AR                  ar
+%MAKE                make
+%FPP_FLAGS           -P -traditional
+%FPP_DEF             NC_DOUBLE 
+%BASE_FFLAGS         -real-size 64 -ip -mkl=parallel -fp-model precise -align common -mcmodel=large -shared-intel
+%PROD_FFLAGS         -O2
+%DEV_FFLAGS          -O2
+%DEBUG_FFLAGS        -g -no-ftz -check -traceback -ftrapuv -fp-stack-check
+%C_COMPILER          gcc
+%C_OPTIM             -O3
+%MPI_FFLAGS          -I/usr/lib64/openmpi/1.4.3-ifort/include 
+%OMP_FFLAGS          
+%BASE_LD             -mkl=parallel
+%MPI_LD              -L/usr/lib64/openmpi/1.4.3-ifort/lib -lmpi
+%OMP_LD              

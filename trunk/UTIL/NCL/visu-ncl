@@ -1,0 +1,237 @@
+#!/bin/bash
+
+# Directory where the NCL files are located  ** EDIT **
+
+export NCLDIR=~/LMDZ5/UTIL/NCL
+
+########################################################################
+# Mise en place des valeurs par defaut
+########################################################################
+
+inFile="nofile"
+var="liste"
+labelvar="dummy"
+var2="dummy"
+media="x11"
+outputname="quickview"
+typeplot="coupe"
+ntcutmin=0
+ntcutmax=$ntcutmin
+tavg=-999
+pcutmin=1.e4
+pcutmax=$pcutmin
+pavg=-999
+lcutmin=0
+lcutmax=$lcutmin
+lavg=-999
+Lcutmin=0
+Lcutmax=$Lcutmin
+Lavg=-999
+# (if limits are identical, average need to be made to trim the dimension)
+
+# -888 => default variable chosen by NCL
+valmin=-888
+valmax=-888
+step=-888
+valmin2=-888
+valmax2=-888
+step2=-888
+
+Lcenter=0
+lcenter=40
+grid="True"
+gLspc=30
+glspc=20
+gcol="white"
+
+########################################################################
+# lecture des options
+########################################################################
+
+while (($# > 0))
+  do
+  case $1 in
+      "-h") cat $NCLDIR/help.txt
+	  exit;;
+      "-f")
+	  inFile=$2 ; shift ; shift ;;
+      "-v")
+	  var=${2%%,*}
+          tmp=${2#*,}
+          labelvar=${tmp%%,*}
+          if [ $labelvar != $var ]; then
+            labelvar=${tmp#*,}
+	  fi
+ 	  shift ; shift ;;
+      "-v2")
+	  var2=$2 ; shift ; shift ;;
+      "-med")
+	  media=$2 ; shift ; shift ;;
+      "-oname")
+	  outputname=$2 ; shift ; shift ;;
+      "-type")
+          typeplot=$2
+          if [ $typeplot = "stereo" ]; then
+            lcenter=90
+          fi
+	  shift ; shift ;;
+      "-tc")
+	  ntcutmin=${2%%,*}
+          tmp=${2#*,}
+          ntcutmax=${tmp%%,*}
+          if [ $ntcutmin = $ntcutmax ]; then
+            tavg=-999
+          else
+            tavg=${tmp#*,}
+          fi
+          shift ; shift ;;
+      "-pc")
+	  pcutmin=${2%%,*}
+          tmp=${2#*,}
+          pcutmax=${tmp%%,*}
+          if [ $pcutmin = $pcutmax ]; then
+            pavg=-999
+          else
+            pavg=${tmp#*,}
+          fi
+          shift ; shift ;;
+      "-lc")
+	  lcutmin=${2%%,*}
+          tmp=${2#*,}
+          lcutmax=${tmp%%,*}
+          if [ $lcutmin = $lcutmax ]; then
+            lavg=-999
+          else
+            lavg=${tmp#*,}
+          fi
+          shift ; shift ;;
+      "-Lc")
+	  Lcutmin=${2%%,*}
+          tmp=${2#*,}
+          Lcutmax=${tmp%%,*}
+          if [ $Lcutmin = $Lcutmax ]; then
+            Lavg=-999
+          else
+            Lavg=${tmp#*,}
+          fi
+          shift ; shift ;;
+       "-lim")
+	  valmin=${2%%,*}
+          tmp=${2#*,}
+          valmax=${tmp%%,*}
+          if [ $valmin = $valmax ]; then
+          # si pas les deux, remises au default
+             valmin=-888
+             valmax=-888
+          else
+            step=${tmp#*,}
+          fi
+          if [ $step = $valmax ]; then
+          # si pas de step, il est remis au default
+             step=-888
+          fi
+          shift ; shift ;;
+       "-lim2")
+	  valmin2=${2%%,*}
+          tmp=${2#*,}
+          valmax2=${tmp%%,*}
+          if [ $valmin2 = $valmax2 ]; then
+          # si pas les deux, remises au default
+             valmin2=-888
+             valmax2=-888
+          else
+            step2=${tmp#*,}
+          fi
+          if [ $step2 = $valmax2 ]; then
+          # si pas de step, il est remis au default
+             step2=-888
+          fi
+          shift ; shift ;;
+       "-center")
+	  Lcenter=${2%%,*}
+          tmp=${2#*,}
+          lcenter=${tmp%%,*}
+          shift ; shift ;;
+       "-grid")
+	  if [ $2 = "T" -o $2 = "y" -o $2 = "Y" ]; then
+	    grid="True"
+	  fi
+	  if [ $2 = "F" -o $2 = "n" -o $2 = "N" ]; then
+	    grid="False"
+	  fi
+	  shift ; shift ;;
+      "-gcol")
+	  gcol=$2 ; shift ; shift ;;
+       "-gspc")
+	  gLspc=${2%%,*}
+          tmp=${2#*,}
+          glspc=${tmp%%,*}
+	  shift ; shift ;;
+  esac
+done
+
+###############################################################
+if [ $inFile = "nofile" ]; then
+	echo "You have to specify a file ! ( -f filename )"; exit
+fi 
+
+if [ -f $inFile ]; then
+	echo "File "$inFile" exists"
+else 
+	echo "File "$inFile" does not exists"; exit
+fi 
+
+if [ $typeplot = "ortho" ]; then
+    # lat and lon put to 2d, defaulting to full map in planeto.ncl
+	lcutmin=-90
+        lcutmax=90
+	lavg=0
+        Lcutmin=0
+        Lcutmax=180
+	Lavg=0
+fi 
+
+export SIMUDIR=`pwd`
+inFile=$SIMUDIR/$inFile
+cd $NCLDIR
+ncl inFile=\"$inFile\"  \
+    var=\"$var\" \
+    labelvar=\"$labelvar\" \
+    var2=\"$var2\" \
+    media=\"$media\" \
+    outputname=\"$outputname\" \
+    typeplot=\"$typeplot\" \
+    ntcutmin=$ntcutmin \
+    ntcutmax=$ntcutmax \
+    tavg=$tavg \
+    pcutmin=$pcutmin \
+    pcutmax=$pcutmax \
+    pavg=$pavg \
+    lcutmin=$lcutmin \
+    lcutmax=$lcutmax \
+    lavg=$lavg \
+    Lcutmin=$Lcutmin \
+    Lcutmax=$Lcutmax \
+    Lavg=$Lavg \
+    valmin=$valmin \
+    valmax=$valmax \
+    step=$step \
+    valmin2=$valmin2 \
+    valmax2=$valmax2 \
+    step2=$step2 \
+    Lcenter=$Lcenter \
+    lcenter=$lcenter \
+    grid=$grid \
+    gLspc=$gLspc \
+    glspc=$glspc \
+    gcol=\"$gcol\" \
+    planeto.ncl
+
+if [ -f *pdf ]; then 
+   mv *pdf $SIMUDIR
+fi
+
+if [ -f *ps ]; then 
+   mv *ps $SIMUDIR
+fi
+

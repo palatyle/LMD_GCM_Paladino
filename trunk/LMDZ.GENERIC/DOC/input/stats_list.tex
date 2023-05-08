@@ -1,0 +1,158 @@
+{\footnotesize
+\begin{verbatim}
+netcdf stats {
+dimensions:
+        latitude = 49 ;
+        longitude = 65 ;
+        altitude = 25 ;
+        llmp1 = 26 ;
+        Time = UNLIMITED ; // (12 currently)
+variables:
+        float Time(Time) ;
+                Time:title = "Time" ;
+                Time:units = "days since 0000-00-0 00:00:00" ;
+        float latitude(latitude) ;
+                latitude:title = "latitude" ;
+                latitude:units = "degrees_north" ;
+        float longitude(longitude) ;
+                longitude:title = "East longitude" ;
+                longitude:units = "degrees_east" ;
+        float altitude(altitude) ;
+                altitude:long_name = "altitude" ;
+                altitude:units = "km" ;
+                altitude:positive = "up" ;
+        float aps(altitude) ;
+                aps:title = "hybrid pressure at midlayers" ;
+                aps:units = "" ;
+        float bps(altitude) ;
+                bps:title = "hybrid sigma at midlayers" ;
+                bps:units = "" ;
+        float ps(Time, latitude, longitude) ;
+                ps:title = "Surface pressure" ;
+                ps:units = "Pa" ;
+        float ps_sd(Time, latitude, longitude) ;
+                ps_sd:title = "Surface pressure total standard deviation over th
+e season" ;
+                ps_sd:units = "Pa" ;
+        float tsurf(Time, latitude, longitude) ;
+                tsurf:title = "Surface temperature" ;
+                tsurf:units = "K" ;
+        float tsurf_sd(Time, latitude, longitude) ;
+                tsurf_sd:title = "Surface temperature total standard deviation o
+ver the season" ;
+                tsurf_sd:units = "K" ;
+        float co2ice(Time, latitude, longitude) ;
+                co2ice:title = "CO2 ice cover" ;
+                co2ice:units = "kg.m-2" ;
+        float co2ice_sd(Time, latitude, longitude) ;
+                co2ice_sd:title = "CO2 ice cover total standard deviation over t
+he season" ;
+                co2ice_sd:units = "kg.m-2" ;
+        float fluxsurf_lw(Time, latitude, longitude) ;
+                fluxsurf_lw:title = "Thermal IR radiative flux to surface" ;
+                fluxsurf_lw:units = "W.m-2" ;
+        float fluxsurf_lw_sd(Time, latitude, longitude) ;
+                fluxsurf_lw_sd:title = "Thermal IR radiative flux to surface tot
+al standard deviation over the season" ;
+                fluxsurf_lw_sd:units = "W.m-2" ;
+        float fluxsurf_sw(Time, latitude, longitude) ;
+                fluxsurf_sw:title = "Solar radiative flux to surface" ;
+                fluxsurf_sw:units = "W.m-2" ;
+        float fluxsurf_sw_sd(Time, latitude, longitude) ;
+                fluxsurf_sw_sd:title = "Solar radiative flux to surface total st
+andard deviation over the season" ;
+                fluxsurf_sw_sd:units = "W.m-2" ;
+        float fluxtop_lw(Time, latitude, longitude) ;
+                fluxtop_lw:title = "Thermal IR radiative flux to space" ;
+                fluxtop_lw:units = "W.m-2" ;
+        float fluxtop_lw_sd(Time, latitude, longitude) ;
+                fluxtop_lw_sd:title = "Thermal IR radiative flux to space total 
+standard deviation over the season" ;
+                fluxtop_lw_sd:units = "W.m-2" ;
+        float fluxtop_sw(Time, latitude, longitude) ;
+                fluxtop_sw:title = "Solar radiative flux to space" ;
+                fluxtop_sw:units = "W.m-2" ;
+        float fluxtop_sw_sd(Time, latitude, longitude) ;
+                fluxtop_sw_sd:title = "Solar radiative flux to space total stand
+ard deviation over the season" ;
+                fluxtop_sw_sd:units = "W.m-2" ;
+        float dod(Time, latitude, longitude) ;
+                dod:title = "Dust optical depth" ;
+                dod:units = "" ;
+        float dod_sd(Time, latitude, longitude) ;
+                dod_sd:title = "Dust optical depth total standard deviation over
+ the season" ;
+                dod_sd:units = "" ;
+        float temp(Time, altitude, latitude, longitude) ;
+                temp:title = "Atmospheric temperature" ;
+                temp:units = "K" ;
+        float temp_sd(Time, altitude, latitude, longitude) ;
+                temp_sd:title = "Atmospheric temperature total standard deviatio
+n over the season" ;
+                temp_sd:units = "K" ;
+        float u(Time, altitude, latitude, longitude) ;
+                u:title = "Zonal (East-West) wind" ;
+                u:units = "m.s-1" ;
+        float u_sd(Time, altitude, latitude, longitude) ;
+                u_sd:title = "Zonal (East-West) wind total standard deviation ov
+er the season" ;
+                u_sd:units = "m.s-1" ;
+        float v(Time, altitude, latitude, longitude) ;
+                v:title = "Meridional (North-South) wind" ;
+                v:units = "m.s-1" ;
+        float v_sd(Time, altitude, latitude, longitude) ;
+                v_sd:title = "Meridional (North-South) wind total standard devia
+tion over the season" ;
+                v_sd:units = "m.s-1" ;
+        float w(Time, altitude, latitude, longitude) ;
+                w:title = "Vertical (down-up) wind" ;
+                w:units = "m.s-1" ;
+        float w_sd(Time, altitude, latitude, longitude) ;
+                w_sd:title = "Vertical (down-up) wind total standard deviation o
+ver the season" ;
+                w_sd:units = "m.s-1" ;
+        float rho(Time, altitude, latitude, longitude) ;
+                rho:title = "Atmospheric density" ;
+                rho:units = "none" ;
+        float rho_sd(Time, altitude, latitude, longitude) ;
+                rho_sd:title = "Atmospheric density total standard deviation ove
+r the season" ;
+                rho_sd:units = "none" ;
+        float q2(Time, altitude, latitude, longitude) ;
+                q2:title = "Boundary layer eddy kinetic energy" ;
+                q2:units = "m2.s-2" ;
+        float q2_sd(Time, altitude, latitude, longitude) ;
+                q2_sd:title = "Boundary layer eddy kinetic energy total standard
+ deviation over the season" ;
+                q2_sd:units = "m2.s-2" ;
+        float vmr_h2ovapor(Time, altitude, latitude, longitude) ;
+                vmr_h2ovapor:title = "H2O vapor volume mixing ratio" ;
+                vmr_h2ovapor:units = "mol/mol" ;
+        float vmr_h2ovapor_sd(Time, altitude, latitude, longitude) ;
+                vmr_h2ovapor_sd:title = "H2O vapor volume mixing ratio total sta
+ndard deviation over the season" ;
+                vmr_h2ovapor_sd:units = "mol/mol" ;
+        float vmr_h2oice(Time, altitude, latitude, longitude) ;
+                vmr_h2oice:title = "H2O ice volume mixing ratio" ;
+                vmr_h2oice:units = "mol/mol" ;
+        float vmr_h2oice_sd(Time, altitude, latitude, longitude) ;
+                vmr_h2oice_sd:title = "H2O ice volume mixing ratio total standar
+d deviation over the season" ;
+                vmr_h2oice_sd:units = "mol/mol" ;
+        float mtot(Time, latitude, longitude) ;
+                mtot:title = "total mass of water vapor" ;
+                mtot:units = "kg/m2" ;
+        float mtot_sd(Time, latitude, longitude) ;
+                mtot_sd:title = "total mass of water vapor total standard deviat
+ion over the season" ;
+                mtot_sd:units = "kg/m2" ;
+        float icetot(Time, latitude, longitude) ;
+                icetot:title = "total mass of water ice" ;
+                icetot:units = "kg/m2" ;
+        float icetot_sd(Time, latitude, longitude) ;
+                icetot_sd:title = "total mass of water ice total standard deviat
+ion over the season" ;
+                icetot_sd:units = "kg/m2" ;
+}
+\end{verbatim}
+}

@@ -1,0 +1,70 @@
+\chapter{1D version of the generic model}
+
+\label{sc:rcm1d}
+
+The physical part of the model can be used to run 1D radiative-convective simulations (one atmospheric column / globally averaged climate). In practice, the simulation is controlled from a main program called \verb+ rcm1d.F+ which, after initialization, then calls the master subroutine of the physics \verb+ physiq.F90+ described in the previous chapters.
+
+\section{Compilation}
+{\bf -} For example, to compile the generic model in 1D with 25 layers, type (in compliance with the makegcm function manual described in section \ref{sc:compil1})
+
+\begin{verbatim}
+makegcm -d 25 -t 1 -b 32x36 -p std rcm1d
+\end{verbatim}
+
+You can find executable {\bf rcm1d.e} (the compiled model)
+in the directory from which you ran the makegcm command.
+
+\section{1-D runs and input files}
+
+The 1D model does not use an initial state file (the simulation must be long enough to obtain a balanced state). Thus, to generate a simulation simply type:
+
+\begin{verbatim}
+> rcm1d.e
+\end{verbatim}
+
+The following example files are available in the {\tt deftank} directory
+(copy them into your working directory first):
+
+- {\bf callphys.def}~: controls the options in the physics,
+  just like for the 3D GCM.
+
+- {\bf z2sig.def}~:
+ controls the vertical discretization
+ (no change needed, in general), functions as with the 3D GCM.
+
+- {\bf traceur.def}~:
+ controls the tracer names (this file may not be present, as long
+ as you run without tracers (option {\tt tracer=.false.} in
+ callphys.def)
+
+- {\bf run.def}~: controls the 1D run parameters and initializations
+(this is actually file {\tt run.def.1d} the {\tt deftank} directory,
+which must be renamed {\tt run.def} to be read by the program).\\
+
+The last file is different from the 3D GCM's {\tt run.def} input file,
+as it contains options specific to the 1D model, as shown in the example
+below:
+\input{input/run.def.1d.tex}
+Note that, just as for the 3D GCM {\tt run.def} file, input
+parameters may be given in any order, or even not given at all
+(in which case default values are used by the program).
+
+
+\section{Output data}
+
+During the entire 1D simulation, you can obtain output data for any
+variable from any physical subroutine by using subroutine \verb+ writeg1d+.
+This subroutine creates file \verb+ g1d.nc+ that can be read by GRADS.
+This subroutine is typically called at the end of subroutine
+\verb+ physiq +. \\
+
+Example of a call to subroutine {\tt writeg1d} requesting
+temperature output:
+(\verb+ ngrid+ horizontal point, \verb+ nlayer + layers, variable
+\verb+ pt + called ``T'' in K units):
+
+\begin{verbatim}
+      CALL writeg1d(ngrid,nlayer,pt,'T','K')
+\end{verbatim}
+
+

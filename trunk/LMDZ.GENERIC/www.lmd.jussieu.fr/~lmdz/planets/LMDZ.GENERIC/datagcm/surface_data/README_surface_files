@@ -1,0 +1,13 @@
+surface_venus.nc --> corresponds to the topography of Venus, but reversed (north is south and vice versa) to maintain a positive rotation speed (source: Sébastien Lebonnois and Martin Turbet)
+
+surface_mars_pre_TPW.nc --> corresponds to the topography of Mars, before the true polar wander induced by the formation of Tharsis. (topography used in Bouley et al. 2016, and Turbet et al. papers on Noachian Mars climate). Source: Martin Turbet
+
+surface_mars_late_hesperian_ocean_3.9km.nc --> present-day Mars MOLA topography, including a change of altitude in the northern plain to account the presence of a Late Hesperian ocean. (topograpy used in Turbet & Forget 2019 paper on the paradoxes of the late hesperian ocean). Source: Martin Turbet
+
+surface_mars.nc --> present-day MOLA topography
+
+surface_earth.nc --> present-day Earth topography (source: Benjamin Charnay ?)
+
+surface_earth_paleo/ --> contains various files of the paleo-topography of the Earth at different epochs
+source: https://www.earthbyte.org/paleodem-resource-scotese-and-wright-2018/
+convertion: J-B Madeleine jmadeleine@lmd.jussieu.fr

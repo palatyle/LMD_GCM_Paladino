@@ -1,0 +1,3 @@
+Dans phylmd/regr_lat_time_climoz_m.F90
+Des lignes ont été mises en commentaires (!AS) lors de la révision 52
+pour éviter les pb de compilation avec pgf90 (v7 et inférieures)

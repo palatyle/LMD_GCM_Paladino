@@ -1,0 +1,26 @@
+>>> choses à faire:
+
+- En priorité: faire qu'on puisse compiler un/des cas test (sans physique)
+  pour pouvoir tester les modifs au fur et à mesure. OK, c'est fait, on
+  peut compiler/tourner sans physique
+
+- Uniformiser les mises à jour dyn séq. et // (commencé avec la rev. 8)
+
+- Peut-être revoir l'interface dynamique/physique ?
+
+- Attention à la discrétisation verticale ... ( débuté avec la r109 par Seb
+  puis mes modifs en r124 et finalement r126) donc a priori
+  OK maintenant
+  
+- dernière mise à jour des dynamiques (par rapport au trunk de LMDZ5 
+  "Terrestre" rev. 1760) avec la rev 979.
+  Reste à faire l'exercice de validation des modifs en //...
+  Avec rev 841 et 843 Cp(T) en // OK
+  Reste toutefois à paufiner les choses au niveau de calfis_p et des
+  domaines d'utilisation de tpot2t_p et t2tpot_p (toutes les taches MPI
+  font l'intégralité du travail!). OK.
+
+- Faire qu'on puisse compiler un exécutable qui serait dans la physique
+  avec makelmdz & makelmdz_fcm. OK avec la rev 849.
+  Manque encore la possibilité de compiler des sources en C avec makelmdz_fcm.
+  Fait avec la rev 895.

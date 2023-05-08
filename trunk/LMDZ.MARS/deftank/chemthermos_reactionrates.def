@@ -1,0 +1,184 @@
+! RATES WITH FORMAT  A *(t/300)**B * exp(C/t), with t=temperature
+! ch2: h + o2 + co2 --> ho2 + co2  
+! JPL 2011 (low pressure limit)*2.5
+1.1d-31   -1.3    0.   
+! ch3: o + ho2 --> oh + o2
+! JPL 2011
+3.0d-11   0.      200.
+! ch4: co + oh --> co2 + h
+! JPL 2011 (low pressure limit)
+1.5d-13   0.6     0.
+! ch5: ho2 + ho2 --> h2o2 + o2
+! JPL 2011
+3.0d-13   0.      460.
+! ch7: oh + ho2 --> h2o + o2
+! JPL 2011
+4.8d-11   0.      250.
+! ch9: o(1d) + h2o --> 2oh
+! JPL 2011
+1.63d-10  0.      60.
+! ch10: o + o + co2 --> o2 + co2
+! Tsang and Hampson, 1986
+1.3d-34   0.      900.
+! ch11: o + oh --> o2 + h
+! JPL 2011
+1.8d-11   0.      180.
+! ch13: h + ho2 --> h2 + o2
+! JPL 2011
+6.9d-12   0.      0.
+! ch14: o(1d) + h2 --> h + oh
+! JPL 2011
+1.2d-10   0.      0.
+! ch15: oh + h2 --> h + h2o 
+! JPL 2011
+2.8d-12   0.      -1800.
+! ch18: oh + h2o2 --> h2o + ho2 
+! JPL 2011
+1.8d-12   0.      0.
+! ch19: o(1d) + co2 --> o + co2
+! JPL 2011
+7.5d-11   0.      115.
+! ch20: o(1d) + o2 --> o + o2
+! JPL 2011
+3.3d-11   0.      55.
+! ch21: o + o2 + co2 --> o3 + co2
+! JPL 2011 * 2.5
+1.5d-33   -2.4    0.
+! ch22: o3 + h --> o2 + oh
+! JPL 201
+1.4d-10   0.      -470.
+! ch23: o3 + oh --> ho2 + o2
+! JPL 2011
+1.7d-12   0.      -940.
+! ch24: o3 + ho2 --> oh + 2o2
+! JPL 2011:
+1.0d-14   0.      -490.
+! ch30: n + no --> n2 + o
+! JPL 2011
+2.1d-11   0.      100.
+! ch31: n2 + o(1d) --> n2 + o
+! JPL 2011
+2.15d-11  0.      110.
+! ch32: n + o2 --> no + o
+! JPL 2011
+1.5d-11   0.      -3600.
+! ch33: n + oh --> no + h
+! Atkinson et al. 1989 (IUPAC)
+3.8d-11   0.      85.
+! ch34: n + o3 --> no + o2
+! JPL 2011 (upper limit)
+1.0d-16   0.      0.
+! ch35: n + ho2 --> no + oh
+! Brune et al., J. Phys. Chem. 1983
+2.2d-11   0.      0.
+! ch36: n(2d) + o --> n + o 
+! Herron, J. Phys. Chem. Ref. Data 1999
+3.3d-12   0.      -260.
+! ch37: n(2d) + n2 --> n + n2
+! Herron, J. Phys. Chem. Ref. Data 1999
+1.7d-14   0.      0.
+! ch38: n(2d) + co2 --> no + co
+! Herron, J. Phys. Chem. Ref. Data 1999
+3.6d-13   0.      0.
+! ch39: no + ho2 --> no2+oh
+! JPL 2011
+3.3d-12   0.      270.
+! ch40: o + no + co2 --> no2 + co2
+! 2.5 * JPL 2011 (low pressure limit)
+2.25d-31  -1.5    0.
+! ch41: o + no2 --> no + o2
+! JPL 2011
+5.1d-12   0.      210.
+! ch42: no + o3 --> no2 + o2
+! JPL 2011
+3.0d-12   0.      -1500. 
+! ch43: h + no2 --> no + oh
+! JPL 2011
+4.0d-10   0.      -340.
+! ch45: n + o --> no
+! Du and Dalgarno, JGR 1990
+2.8d-17   -0.5    0.
+! ch46: co2+ +  O2 --> O2+ + CO2
+! Aninich, J. Phys. Chem. Ref. Data 1993
+5.5d-11   -0.82   0.
+! ch47: CO2+ + O -->  O+  +  CO2
+! UMIST database
+9.6d-11   0.      0.
+! ch48: CO2+ + O --> O2+  + CO 
+! UMIST database
+1.64d-10  0.      0.
+! ch49: O2+ + elect --> O + O
+! Alge et al., J. Phys. B, At. Mol. Phys. 1983
+2.0d-7    -0.7    0.
+! ch50: O+  + CO2 --> O2+  + CO
+! UMIST database
+9.4d-10   0.      0.
+! ch55: CO2+ +  e ---->   CO  +   O
+! UMIST database
+3.8d-7    -0.5    0.
+! ch56: O+ + CO2  --->  O2   +   CO+
+! Error in Kim et al., 1989??
+0.        0.      0.
+! ch57: CO+ + CO2  ---> CO2+ + CO
+! UMIST database
+1.0d-9    0.      0.
+! ch58: CO+ + O   --->   O+  + CO
+! UMIST database
+1.4d-10   0.      0.
+! ch59: C+ +  CO2 --->  CO+  + CO
+! UMIST database
+1.1d-9    0.      0.   0.   0.
+! ch62: CO2+  +  NO   -->  NO+  +  CO2
+! UMIST database
+1.2d-10   0.      0.
+! ch63: CO2+  +  N    -->  NO  + CO+
+! Scott et al., J. Chem. Phys. 1998
+3.4d-10   0.      0.
+! ch64: O2+  +  NO    -->  NO+  + O2
+! Middey and Viggiano. J. Chem. Phys. 1999
+4.5d-10   0.      0.
+! ch65: O2+  +  N2    -->  NO+  + NO
+! Ferguson, At. Data Necl. Data Tables, 1973 (Fox and Sung 2001) 
+1.0d-15   0.      0.
+! ch66: O2+  +  N    -->  NO+  + O
+! Scott et al., J. Chem. Phys. 1998 (Fox and Sung 2001)
+1.0d-10   0.      0.
+! ch67: O+  +  N2    -->  NO+  + N 
+! UMIST database
+1.2d-12   -0.45   0.
+! ch68: N2+  +  CO2    -->  CO2+  + N2
+! Dotan et al., J. Chem. Phys. 2000 (Fox and Sung 2001)
+9.d-10    -0.23   0.
+! ch69: N2+  +  O3p    -->  NO+  + N
+! Scott et al., J. Phys. Chem. A 1999 (Fox and Sung 2001)
+1.33d-10  -0.44   0.
+! ch70: N2+  +  CO    -->  N2  + CO+ 
+! UMIST database
+7.4d-11   0.      0.
+! ch71: N2+  +  e-    -->  N  + N 
+! UMIST database
+1.7d-7    -0.3    0.
+! ch72: N2+  +  O3p    -->  O+  + N2
+! Scott et al., J. Phys. Chem. A 1999 (Fox and Sung 2001)
+7.0d-12   -0.23   0.
+! ch73: CO+  +  H    -->  H+  + CO
+! Scott et al., J. Chem. Phys. 1997 (Fox and Sung 2001)
+4.0d-10   0.      0.
+! ch74: O+  +  H    -->  H+  + O
+! UMIST database
+5.66d-10  0.36    8.6
+! ch75: NO+  +  e-  -->  N  +  O
+! UMIST database
+4.3d-7    -0.37   0.
+! ch76: H+  +  O3p  -->  O+  +  H
+! UMIST database
+6.86d-10  0.26    -224.3 
+! ch85: N+  +  CO2    -->  CO2+  + N
+! UMIST database
+7.5d-10   0.      0.
+! ch86: H2 + CO2+  --> H + HCO2+
+! UMIST database
+9.5d-10   0.      0.
+! ch87: HCO2+ + e -> CO2 + H
+! Krasnopolsky, JGR 2002
+3.4d-7    -0.5    0.

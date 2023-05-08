@@ -1,0 +1,5 @@
+NETCDF_LIBDIR="-L$NETCDFDIR -lnetcdf -lnetcdff"
+NETCDF_INCDIR=-I$NETCDFINCLUDE
+IOIPSL_INCDIR="-I/home/jleconte/script/ioipsl/modipsl/lib"
+IOIPSL_LIBDIR="-L/home/jleconte/script/ioipsl/modipsl/lib"
+IOIPSL_LIB="-lioipsl"

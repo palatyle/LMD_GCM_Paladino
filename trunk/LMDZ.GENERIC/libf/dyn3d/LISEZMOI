@@ -1,0 +1,136 @@
+
+Version abbrégé spécial Mars
+
+ ..  Version  du 28/12/1998  , avec  nouveau fxyhyper appele par inigeom ...
+ **************************************************************************
+
+ 1) Le gcm LMDZ.3.2  a des coordonnees  hybrides  verticalement ,c.a.d  des
+          ********
+   coordonnees equivalentes a sigma pres de la surface et a  P plus haut .     
+
+   Les pressions  p(ij,l) aux differents interfaces des  llm  couches verti- 
+   cales sont donnees  par   :
+
+    p( ij,l ) = ap(l) + bp(l) * ps(ij)    ,    1 << l << llm + 1    . 
+
+            
+   La fonction d'Exner  est calculee aux milieux des llm couches vertic.
+
+     pk(ij,l) = cp * ( p(ij,l)/preff ) ** kappa   ,  1 << l <<  llm
+
+   Les pressions  PLS(ij,l)  definies aux milieux des couches sont egales a :
+
+     pls(ij,l) = preff * ( pk(ij,l) /cp ) ** 1./kappa
+
+   
+
+ 2) Une des variables prognostiques de LMDZ.3  est   teta  , temperature 
+     potentielle  :    
+
+                 teta (ij,l) = temperature(ij,l) * cp/ pk(ij,l)
+ 
+    
+ 3) Dans  le programme principal gcm.F , il faut definir , au debut ,les para-
+    metres  IADV ,pour choisir le shema d'advection pour l'eau et les traceurs
+                    IADV = 3    , Van-Leer
+
+ 4) Il y a 2 shemas de dissipation   ( diffusion laterale )  :
+
+ a) La dissipation star ( qui ne fait pas intervenir la geometrie de la     
+    grille et qui est utilisee quand il y a un zoom ) 
+
+    Par expl . la diffusion d'un scalaire  comme  teta est formulee ( en 
+     appelant l'operateur  DIVGRAD2 )   comme :
+
+    d( ro * teta ) = (-1)**(it-1) *cdiv * Lap * ro**1/2 * Lap_gam** (it-2 ) *
+                           ro**1/2 * Lap * teta
+ avec  :
+ Lap     = 1/aire * Filt[ dx ( coefx*dx ) + dy( coefy*dy ) ] Filt
+       
+ Lap_gam = (1./aire)** -gam { dx[ coefx**(-gam) dx] + dy[ coefy**(-gam) dy ] } 
+
+
+  Filt est l'operateur  filtre 
+  ro   est la densite dp  de chaque couche
+  it   = nombre d'iterations de l'operateur de dissipation ( ici divgrad2 )
+  gam  = coefdis /( it -2 ) , coefdis = 0. si it = 2 , sinon = 1. habituellem.
+  dx   = operateur difference finie :
+    dx(A) = A( X +1/2 , Y, z ) - A( X -1/2, Y, z ) , dans le systeme de 
+  travail  (X,Y) , avec l'increment DX = 1.
+
+  Idem pour dy .
+
+  coefx = beta(ij) / alpha(ij)  , coefy = alpha(ij)/beta(ij)
+     avec    u_covariant(ij) = alpha(ij)* u_nat(ij) 
+             v_covariant(ij) = beta(ij) * v_nat(ij) 
+
+ Cette dissipation star est choisie en mettant le parametre lstardis a .TRUE.
+  dans le fichier run.def  lu  par le gcm en entree .
+
+ b) La dissipation ' non star '  fait intervenir les operateurs elementaires
+   diverg,grad,rotat .   Elle est choisie  avec lstardis = .FALSE.
+
+N.B : Dans les 2 shemas de dissipation , le gcm est plus stable  quand on
+     n'itere pas l'operateur ' GRADIV ' ou ' GRADIV2 " .            
+     
+ 5) Les constantes thermodynamiques Cp et kappa = R/Cp   utilisees dans la
+   partie dynamique ont ete mises , ce qui est normal, aux memes valeurs
+   qu'elles ont dans la partie ' physique ' , en changeant INICONST et en 
+   les mettant dans l'entete de controle de start et startphy ,en changeant
+   etat0_lmd , par rapport  a LMDZ.2.2 
+       
+ 6) Pour finir , quelques commentaires sur les parametres qui figurent sur
+    le fichier  run.def qui commandent le gcm .
+
+
+ c) coefdis , coefficient qui intervient dans le calcul de gam  , utilise 
+   dans les routines de dissipation star , vus plus haut .
+
+ d) iphysiq correspond ici a un appel de la physique toutes les 30 minutes.
+
+ e) alphax et alphay correspondent au grossissement pour le zoom dans la
+   direction X et Y .
+   En fait , les facteurs de grossissement sont egaux a  1./ ( 1.- alphax )
+     et 1./( 1.- alphay )  .
+
+ f) fxyhypb  est egal a .TRUE. si on choisit  pour la fonction f(x,y) qui 
+   definit la grille du modele  une fonction a tangente hyperbolique , un peu
+   adaptee pour le zoom , que la fonction sinusoidale , definie par fxy_new.h 
+   dans /..../gcm/libf/grid  et lu par  makegcm  lors de la compilation du 
+   code .
+
+
+N.B: Pour l'instant , cette fonction hyperbolique n'est activee eventuellement
+****            que pour  un zoom  latitudinal . 
+   Pour un zoom longitudinal , la fonction sinusoidale precisee dans fxy_new.h
+       est  choisie automatiquement .
+
+ g) psi0 et delta sont des parametres  pour cette fonction hyberbolique .
+   Ces valeurs de 0.3 et 0.5  ont ete adaptees pour 96x72  .
+  
+
+
+
+ ****************************************************************************
+
+ 
+ AA) Choisir les options du run  , avec   le fichier  run.def   .
+
+     Il y a entre autres choses , le nombre de jours qu'on veut integrer lors 
+       d'un run .
+     Il y a le nombre de pas a faire pour 1 jour , ce qui calcule donc le dt
+       temporel ( en secondes ) pour un pas dynamique .
+     Iperiod  est conseille  d'etre a 5 pas ( mais non obligatoiremnet = 5 ) . 
+     Idissip  peut etre mis a n'importe quelle valeur . Il est maintenant
+
+     Les parametres( la plupart des cles ) pour la physique commencent avec
+      la var. logique         **  physic  **
+
+           entiere( en pas )  ** iphysiq  ** qui est calculee de telle facon a
+                              appeler la physique tous les  30 minutes .
+
+           ( en jours )       ** ecritphy ** qui indique la frequence en jours
+                                du stockage   sur  diagfi
+
+
+

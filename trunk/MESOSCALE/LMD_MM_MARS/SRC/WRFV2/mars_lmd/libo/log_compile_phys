@@ -1,0 +1,54 @@
+coucou
+Linux
+Optimisations par defaut suivant les machines
+/donnees/aslmd/MODELES/WRFV3/mars_lmd
+apres les opts dim 70
+dimension avant sed 70
+calcul de la dimension
+1
+-I$(LIBF)/grid -I$(LIBF)/bibio -I. -I$(LIBF)/aeronomars -I$(LIBF)/dyn3d -I/donnees/aslmd/MODELES/NETCDF/pgf90_64/netcdf-3.6.1/include
+/donnees/aslmd/MODELES/WRFV3/mars_lmd/libf/grid
+/donnees/aslmd/MODELES/WRFV3/mars_lmd/libf/grid/dimension
+rm: ne peut enlever `../dimensions.h': Aucun fichier ou répertoire de ce type
+!-----------------------------------------------------------------------
+!   INCLUDE 'dimensions.h'
+!
+!   dimensions.h contient les dimensions du modele
+!   ndm est tel que iim=2**ndm
+!   nqmx est la dimension de la variable traceur q
+!-----------------------------------------------------------------------
+
+      INTEGER, parameter :: iim= 1
+      INTEGER, parameter :: jjm=1
+      INTEGER, parameter :: llm=70
+      INTEGER, parameter :: ndm=1
+
+      integer, parameter :: nqmx=1
+
+!-----------------------------------------------------------------------
+/donnees/aslmd/MODELES/WRFV3/mars_lmd
+/donnees/aslmd/MODELES/WRFV3/mars_lmd
+dimension 1 dim 70
+pas de dynamique
+/donnees/aslmd/MODELES/WRFV3/mars_lmd
+MACRO FILTRE FILTRE= L_FILTRE=
+1
+/donnees/aslmd/MODELES/WRFV3/mars_lmd
+les fichiers suivants ont ete crees ou detruits
+ou les fichiers suivants sont passes ou ne sont plus en Fortran 90
+32a33
+> libf/grid/d2_dimensions.h
+60d60
+< libf/phymars/dimphys.h
+136a137,140
+> libf/phymars/slope.h
+> libf/phymars/wrf_output_2d.h
+> libf/phymars/wrf_output_3d.h
+> libf/phymars/dimphys.h
+2a3
+> libf/phymars/param_slope_full.F90
+5a7,8
+> libf/phymars/param_slope.F90
+> libf/phymars/fill_save_2d.F90
+On recree le makefile
+ls: *.F90: Aucun fichier ou répertoire de ce type

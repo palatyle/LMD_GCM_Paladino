@@ -1,0 +1,55 @@
+#PBS -S  /bin/bash
+#PBS -j  oe
+#PBS -q  infini
+##PBS -q  std
+##PBS -q  short
+#PBS -N  JUPITER 
+#PBS -l "nodes=1:ppn=8"
+#PBS -l "mem=16gb"
+##PBS -l "nodes=2:ppn=8"
+##PBS -l "nodes=2:ppn=12"
+##PBS -l "nodes=1:ppn=12"
+##PBS -l "nodes=1:ppn=2"
+##PBS -l "nodes=2:ppn=4"
+##PBS -l "nodes=1:ppn=12"
+
+##PBS -l walltime=10:30,mem=320kb
+
+######## openMP threads
+#cat $PBS_NODEFILE | sort | uniq > /tmp/coucou
+#cat /tmp/coucou
+#declare -x OMP_NUM_THREADS=4
+#declare -x MP_STACK_SIZE=64000000
+
+####### prep run
+cd $PBS_O_WORKDIR
+#\rm  *rsl.* 2>  /dev/null
+#\rm  wrfo*  2>  /dev/null
+#\rm  wrfi*  2>  /dev/null
+#./ideal.exe
+#mv rsl.out.0000 ideal_rsl.out.0000
+
+####### run
+#mpirun yeye
+#mpirun wrf.exe
+
+ulimit -s unlimited
+
+##mpirun gcm_80x120x15_phylmd_para.e 
+#mpirun gcm_48x36x19_phynophys_para.e
+##mpirun gcm_160x240x15_phylmd_para.e
+
+mpirun gcm_80x120x15_phynophys_para.e
+
+################
+
+###PBS -l "nodes=2:ppn=8"
+
+#declare -x OMP_NUM_THREADS=4
+#declare -x MP_STACK_SIZE=64000000
+
+#mpirun wrf.exe 
+
+####PBS -m ae
+####PBS -M spiga@lmd.jussieu.fr
+

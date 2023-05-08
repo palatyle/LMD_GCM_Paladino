@@ -1,0 +1,23 @@
+#!/bin/bash
+
+#netcdfPath=/d2/emlmd/netcdf64-4.0.1_gfortran
+netcdfPath=/san/home/indurain/PROG/netcdf/netcdf64-4.0.1_gfortran
+
+export FC=gfortran
+#export FFLAGS="-fdefault-real-8 -O0 -g -fbounds-check -Wall  -ffpe-trap=invalid,zero,overflow,underflow -ftrapv -fimplicit-none -fno-automatic"
+export FFLAGS=""
+
+command="${FC} -c $FFLAGS -I${netcdfPath}/include $1.f90"
+echo $command
+$command
+
+command="${FC} -o $1 $1.o -L${netcdfPath}/lib -lnetcdf"
+echo $command
+$command
+
+
+command="rm -f $1.o"
+echo $command
+$command
+
+

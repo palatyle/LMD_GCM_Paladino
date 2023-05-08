@@ -1,0 +1,4 @@
+# some definitions for the physics, in file 'callphys.def'
+INCLUDEDEF=callphys.def
+
+INCLUDEDEF=localstorm.def

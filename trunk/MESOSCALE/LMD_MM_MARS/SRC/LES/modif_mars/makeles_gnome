@@ -1,0 +1,176 @@
+#! /bin/bash
+
+#------------------------------
+# makeles
+#------------------------------
+#     MMM must be defined
+#------------------------------
+# A. Spiga 01/2009
+#------------------------------
+
+
+echo "Use -n if you don't want to recompile physics"
+echo "Use -p if you want the new LMD physics"
+
+#
+# SPECIAL CICLAD
+#
+
+donotcompilephys=0
+phys=""
+while getopts "np" options; do
+  case $options in
+   n ) donotcompilephys=1;; ## do not recompile physics
+   p ) phys="newphys_";;    ## with new physics
+  esac
+done
+
+#
+# LOCATIONS
+#
+here=$PWD
+whereliblmd=$here
+
+
+##############################################################
+##############################################################
+if [ ${donotcompilephys} -eq 0 ]
+then
+
+#
+# COMPILE PHYSICS
+#
+cd $MMM
+  if [[ "${phys}" == "newphys_" ]]
+  then
+    makemeso -j -p
+  else
+    makemeso -j
+  fi 
+#
+#makemeso -rd < last > /dev/null
+folder=$PWD'/'$(more what_folder)'/WRFV2/'
+libphys_folder=$folder'mars_lmd/libo/'
+phymars_folder=$folder'mars_lmd/libf/phymars/'
+\rm what_folder 2> /dev/null
+
+#
+# GET liblmd GENERATED LIBRARY and INCLUDEs
+#
+echo $libphys_folder
+cp -rf ${libphys_folder}/liblmd.a ${whereliblmd}/
+#cp -rf ${phymars_folder}/dimphys.h ${here}/modif_mars/
+cp -rf ${phymars_folder}/dimphys.h ${here}/mars_lmd/libf/phymars/
+#cp -rf ${folder}/call_meso_inifis.inc ${here}/modif_mars/
+#cp -rf ${folder}/call_meso_physiq.inc ${here}/modif_mars/
+cp -rf ${folder}/call_meso_inifis.inc ${here}/
+cp -rf ${folder}/call_meso_physiq.inc ${here}/
+#cp -rf ${folder}/inc/module_lmd_driver_output*.inc ${here}/modif_mars/
+cp -rf ${folder}/inc/module_lmd_driver_output*.inc ${here}/inc/
+#cp -rf ${phymars_folder}/wrf_output_2d.h ${here}/modif_mars/
+#cp -rf ${phymars_folder}/wrf_output_3d.h ${here}/modif_mars/
+cp -rf ${phymars_folder}/wrf_output_2d.h ${here}/mars_lmd/libf/phymars/
+cp -rf ${phymars_folder}/wrf_output_3d.h ${here}/mars_lmd/libf/phymars/
+fi
+##############################################################
+##############################################################
+
+
+cd $here
+
+###------------------------------
+###------------------------------
+###
+### MPI (dm) 64 bits 
+###
+###TODO: le rendre adapte aux reponses du user a makemeso
+#touch conf
+#echo 3 >> conf 
+###echo 4 >> conf  #openMP n'arrange pas beaucoup de le tps de calcul
+#echo 1 >> conf
+###------------------------------
+###------------------------------
+
+
+
+### SINGLE PROC 32 bits g95
+#touch conf
+#echo 5 >> conf
+#echo 0 >> conf
+
+## SINGLE PROC 64 bits
+#touch conf
+#echo 1 >> conf
+#echo 0 >> conf
+
+### MPI (dm) 64 bits IFORT
+echo IFORT IFORT IFORT IFORT
+touch conf
+echo 7 >> conf
+echo 1 >> conf
+
+
+#
+# CONFIGURE
+#
+echo "configure..."
+#touch configure.wrf
+\rm configure.wrf
+./configure < conf > /dev/null 2> /dev/null
+#./configure 
+#sed s+"-lnetcdf"+"-lnetcdf -L$whereliblmd -llmd"+g configure.wrf | sed s+'mpif90 -f90=$(SFC)'+'/usr/lib64/openmpi/1.2.8-pgf/bin/mpif90'+g | sed s+'mpicc -cc=$(SCC)'+'/usr/lib64/openmpi/1.2.8-gcc/bin/mpicc -DMPI2_SUPPORT'+g > yeah
+## WHERE_MPI must be defined
+sed s+"-lnetcdf"+"-lnetcdf -L$whereliblmd -llmd"+g configure.wrf | sed s+"mpif90"+"$WHERE_MPI/mpif90"+g | sed s+"mpicc"+"$WHERE_MPI/mpicc -DMPI2_SUPPORT"+g > yeah
+#sed s+"# -g"+"-fno-second-underscore # -g"+g configure.wrf | sed s+"-lnetcdf"+"-lnetcdf -L$whereliblmd -llmd"+g > yeah
+#sed s+"-lnetcdf"+"-lnetcdf -L$whereliblmd -llmd"+g configure.wrf | sed s+"#-g"+"-g"+g > yeah
+#sed s+"-lnetcdf"+"-lnetcdf -L$whereliblmd -llmd"+g configure.wrf > yeah
+mv yeah configure.wrf
+
+	####
+	#### provoque des seg faults....
+	####
+	#sed s+"-fastsse"+"-fastsse -mcmodel=medium -Mlarge_arrays"+g configure.wrf > yeah
+	#### TEST TEST
+	#mv yeah configure.wrf
+
+sed s+"-fastsse"+" "+g configure.wrf > yeah
+#sed s+"-fastsse"+"-mcmodel=medium -Mlarge_arrays"+g configure.wrf > yeah ##marche pas
+#
+# sometimes fastsse is problematic
+#
+
+##sed s+"-fastsse"+"-fastsse -mcmodel=medium"+g configure.wrf > yeah
+mv yeah configure.wrf
+
+#sed s+"-Mvect=noaltcode"+"#-Mvect=noaltcode"+g configure.wrf > yeah ; mv yeah configure.wrf
+
+#sed s+"-mp -Minfo=mp"+"-mp -Minfo=mp -mp=nonuma"+g configure.wrf > yeah
+#mv yeah configure.wrf
+
+#### OBLIGATOIRE POUR IFORT, OK AVEC LES AUTRES ??? a priori oui
+sed s+"-llmd"+"-llmd $NETCDF/lib/libnetcdf.a"+g configure.wrf > yeah
+mv yeah configure.wrf
+
+#############################################################
+  if [[ "${phys}" == "newphys_" ]]
+  then
+     sed s+"ARCH_LOCAL      =       "+"ARCH_LOCAL      =       -DNEWPHYS "+g configure.wrf > yeah
+     mv -f yeah configure.wrf
+  fi
+#############################################################
+
+
+\rm conf
+
+#
+# COMPILE LES TEST CASE w/ LMD PHYSICS
+#
+touch modif_mars/module_lmd_driver.F
+\rm log_compile
+\rm log_error
+echo "compile LES WRF with LMD Mars physics... look log_compile and log_error"
+compile em_les > log_compile 2> log_error
+
+echo '***********************************'
+tail -n 20 log_error
+

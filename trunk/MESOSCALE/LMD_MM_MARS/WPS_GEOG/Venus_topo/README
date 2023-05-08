@@ -1,0 +1,5 @@
+TOOL to get Venus topography : 
+- LR : Low resolution
+- HR : High resolution
+
+To use, get file Relief.nc and link to index of the resolution you want to the file index

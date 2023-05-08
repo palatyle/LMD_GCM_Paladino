@@ -1,0 +1,249 @@
+
+#########
+######### THIS IS INTENDED TO WORK BOTH WITH LMDZ.GENERIC + old LMDZ core
+#########                                AND LMDZ.GENERIC + new LMDZ core
+#########
+
+### A INCLURE ?
+## calend=venus  ## calendrier specifique
+## resetvarc=n   ## reinit des variables de controle
+## iflag_trac=0  ## avec ou sans traceurs
+
+################################################################
+#### LMDZ5
+#### IN GCM.DEF
+#### -- those parameters are ignored when using old LMDZ core
+################################################################
+
+## period appel a la dissipation (multiple iperiod, 0 si calcul automatique)
+## (remplace ce qui etait idissip dans l'ancienne dynamique)
+dissip_period = 0
+dissip_period = 2 
+dissip_period = 5
+
+## avec ou sans physique
+## 0: pas de physique (e.g. en mode Shallow Water)
+## 1: avec physique (e.g. physique phylmd)
+## 2: avec rappel newtonien dans la dynamique                                         
+iflag_phys=2
+iflag_phys=1 
+
+## avec ou sans fichiers de demarrage (start.nc, startphy.nc) ?
+## (sans fichiers de demarrage, initialisation des champs par iniacademic
+##  dans la dynamique)
+read_start=n
+read_start=y 
+
+##  Avec ou sans strato // i.e. Couche eponge et second palier pour dissip horizontale
+ok_strato=n
+
+### Dissipation horizontale
+#dissip_fac_mid=2.
+#dissip_fac_up=2.
+## deltaz et hdelta en km
+#dissip_deltaz=10.
+#dissip_hdelta=5.
+## pupstart en Pa
+#dissip_pupstart=1.e3
+
+#  Couche eponge dans les couches de pression plus faible que 100 fois la pression de la derniere couche
+iflag_top_bound=0
+
+########################################
+## LMDZ.COMMON
+##    1: dans les 4 derniers niveaux
+##    2: dans les couches de pression plus faible que 100 fois la pression de la derniere couche
+#iflag_top_bound=1
+## Mode Couche eponge
+##   mode = 0 : pas de sponge
+##   mode = 1 : u et v -> 0
+##   mode = 2 : u et v -> moyenne zonale
+##   mode = 3 : u, v et h -> moyenne zonale
+#mode_top_bound=1
+#######################################
+
+#  Coefficient pour la couche eponge (valeur derniere couche)
+tau_top_bound=1.e-5
+tau_top_bound=5.e-5
+
+################################################################
+#### LMDZ5
+#### IN RUN.DEF
+#### -- those parameters are ignored when using old LMDZ core
+################################################################
+
+## Type de calendrier utilise
+## valeur possible: earth_360d (defaut), earth_365d, earth_366d
+ip_ebil_phy=1
+ip_ebil_dyn=1
+calend=earth_360d
+
+## Jour de l'etat initial ( = 350  si 20 Decembre ,par expl. ,comme ici )
+dayref=10120
+dayref=40
+
+##  Annee de l'etat  initial (   avec  4  chiffres   )
+anneeref=2000
+
+## Remise a zero de la date initiale
+## =1 is necessary for generic physics
+raz_date=1
+
+## flag de sortie dynzon
+ok_dynzon=n
+## activation du calcul d equilibrage de charge
+adjust=n
+## activation du filtre fft
+use_filtre_fft=n
+## niveau d'impression de controle
+prt_level=10
+
+## coordonnees type planeto
+disvert_type = 2
+
+## the generic physics
+planet_type = generic
+
+## sorties instantanees dans la dynamique (fichiers dyn_hist.nc and co.)
+ok_dyn_ins=n
+ok_dyn_ins=y
+## periode d'ecriture des sorties instantanees dans la dynamique
+## (en pas dynamiques)
+iecri=30
+iecri=120
+iecri=480
+iecri=4800
+#iecri=9600
+
+## sorties de valeurs moyennes dans la dynamique (fichiers dyn_hist_ave.nc and co.)
+ok_dyn_ave=n
+## periode de stockage des moyennes dans la dynamique (en jours)
+periodav=1
+
+
+#################################
+#### AND NOW THE OLD run.def ####
+#################################
+## -----> REMOVED
+## was present and conflicting with LMDZ5
+## (although useless in old OLD LMDz DYN CORE
+## - iecri [periode d'ecriture du fichier histoire (en jour)]
+## - periodav [periode de stockage fichier histmoy (en jour) dynzon?]
+#################################
+#################################
+
+#----------------------------------------------------------------------- 
+#Parametres de controle du run:                                          
+#------------------------------                                          
+
+# Nombre de jours d'integration                                         
+     nday = 720
+     nday = 20
+     nday = 100
+     nday = 1800
+
+# nombre de pas par jour (multiple de iperiod) ( ici pour dt = 1 min )      
+ day_step = 240
+ day_step = 480
+# day_step = 960
+
+# periode pour le pas Matsuno (en pas)                                  
+  iperiod=5
+
+# periode de sortie des variables de controle (en pas)                  
+  iconser=120
+
+# periode de la dissipation (en pas)                                    
+# -- this is ignored by LMDZ5 which rely on dissip_period instead
+  idissip=5
+
+# choix de l'operateur de dissipation (star ou  non star )              
+ lstardis=.true. 
+
+# avec ou sans coordonnee hybrides
+ hybrid=.true.
+
+# nombre d'iterations de l'operateur de dissipation   gradiv            
+nitergdiv=1
+
+# nombre d'iterations de l'operateur de dissipation  nxgradrot          
+nitergrot=2
+
+# nombre d'iterations de l'operateur de dissipation  divgrad            
+   niterh=2
+
+# temps de dissipation des plus petites long.d ondes pour u,v (gradiv)  
+ tetagdiv=1000. 2500. 4000.
+
+# temps de dissipation des plus petites long.d ondes pour u,v(nxgradrot)
+ tetagrot=1000. 2500. 4000.
+
+# temps de dissipation des plus petites long.d ondes pour  h ( divgrad) 
+ tetatemp=1000. 2500. 4000.
+
+# coefficient pour gamdissip                                            
+  coefdis=0.
+
+# choix du shema d'integration temporelle (Matsuno ou Matsuno-leapfrog) 
+  purmats=.false. 
+
+# avec ou sans physique                                                 
+   physic=.true.
+
+# periode de la physique (en pas) (en pas dynamiques, n'a de sens que si iflag_phys=1)                                      
+  iphysiq=5
+#  iphysiq=1
+
+# choix d'une grille reguliere                                          
+  grireg=.true.
+
+# frequence (en pas) de l'ecriture du fichier diagfi               
+  ecritphy=480
+#  ecritphy=60
+#  ecritphy=45
+#  ecritphy=50000000
+
+# longitude en degres du centre du zoom                                 
+   clon=0.
+
+# latitude en degres du centre du zoom                                  
+   clat=0.
+
+# facteur de grossissement du zoom,selon longitude                      
+  grossismx=1.
+
+# facteur de grossissement du zoom ,selon latitude                      
+ grossismy=1.
+
+#  Fonction  f(y)  hyperbolique  si = .true.  , sinon  sinusoidale         
+  fxyhypb=.false.
+
+# extension en longitude  de la zone du zoom  ( fraction de la zone totale)
+   dzoomx= 0.
+
+# extension en latitude de la zone  du zoom  ( fraction de la zone totale)
+   dzoomy=0.
+
+#  raideur du zoom en  X
+    taux=2.
+
+#  raideur du zoom en  Y
+    tauy=2.
+
+#  Fonction  f(y) avec y = Sin(latit.) si = .TRUE. ,  Sinon  y = latit.
+  ysinus= .false.
+
+###################### SPONGE LAYER IN OLD DYNAMICS
+###################### -- this is ignored by LMDZ5
+# Avec sponge layer
+  callsponge  = .true.
+# Sponge:  mode0(u=v=0), mode1(u=umoy,v=0), mode2(u=umoy,v=vmoy)
+  mode_sponge= 2
+# Sponge:  hauteur de sponge (km)
+  hsponge= 50
+# Sponge:  tetasponge (secondes)
+  tetasponge = 50000
+###################### 
+
+# some definitions for the physics, in file 'callphys.def'
+INCLUDEDEF=callphys.def

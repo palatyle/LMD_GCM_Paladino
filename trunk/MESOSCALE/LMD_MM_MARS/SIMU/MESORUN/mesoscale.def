@@ -1,0 +1,71 @@
+# some settings specific to MESOSCALE
+# -- should not be modified!
+callstats    = .false.
+calllott     = .false.
+TESicealbedo = .false.
+##########################
+# your settings below
+# -- a few examples provided
+# -- change namelist.input accordingly
+callcond = .false.
+
+##########################
+### prescribed CO2 cover
+##########################
+#tituscap = .true.
+##########################
+
+
+##########################
+### no water cycle
+##########################
+#caps = .false.
+#scavenging = .false.
+#activice   = .false.
+#water = .false.
+#microphys = .false.
+#naerkind = 1
+##########################
+
+
+##########################
+### dust storm simulation
+### cf Spiga JGR 2013
+##########################
+## compile w/ -s DUSTSTORM
+## set in namelist mars=3
+## no water (cf above)
+##########################
+##########################
+## 1) pre-existing storm
+## (section 3.3 4.1 4.2.2)
+##########################
+#freedust = .true.
+#localstorm = .true.
+### "ref opacity of local dust storm"
+#taulocref         = 4.25
+### "target altitude of local storm (km)"
+#ztoploc           = 10.0
+### "radius of dust storm (degree)"
+#radloc            = 0.5
+### "center longitude of storm (deg)"
+#lonloc            = 25.0
+### "center latitude of storm (deg)"
+#latloc            = -2.5
+### "reff storm (mic) 0. for background"
+#reffstorm         = 0.0
+### "beta coefficient for sedimentation"
+#betaset           = 0.5
+##########################
+##########################
+## 2) dust lifting active
+## (section 4.2.3)
+##########################
+## add stress.def with
+## - threshold ustar
+## - alpha
+##########################
+#freedust = .true.
+#lifting = .true. 
+#localstorm = .false.
+##########################

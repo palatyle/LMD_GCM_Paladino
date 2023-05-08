@@ -1,0 +1,93 @@
+ &time_control
+ run_seconds         = 80000 !! Duration of simulation                       [LES: !=0]  
+ history_interval_s  = 80    !! Frequency of outputs in seconds              [LES: !=0]
+ frames_per_outfile  = 200     !! Size of time dimension in files
+ start_year          = 9999    !! Idealized simulation                         [LES: 9999]
+ end_year            = 9999    !! Idealized simulation                         [LES: 9999]
+ !start_month         = 01,      !! (p1) Start Martian Month
+ !start_day           = 02,      !! (p1) Start Martian Day
+ !start_hour          = 02,      !! (p1) Start Martian Hour (at longitude 0)
+ !start_minute        = 40, 
+ restart             = .false. !! (*) restart run ?
+ restart_interval    = 200    !! (*) Frequency of output restart files ?
+ io_form_history     = 2       !! (*) Choice of NETCDF for ouputs
+ io_form_restart     = 2       !! (*) Choice of NETCDF for ouputs
+ io_form_input       = 2       !! (*) Choice of NETCDF for ouputs
+ io_form_boundary    = 2       !! (*) Choice of NETCDF for ouputs
+ debug_level         = 0       !! (*) Verbose level
+ /
+
+ &domains
+ ztop                = 30000.  !! Altitude above ground of model top           [LES: !=0]
+ time_step           = 8       !! Dynamical timestep
+ time_step_fract_num = 0       !! Additional fraction to time_step: numerator
+ time_step_fract_den = 10       !! Additional fraction to time_step: denominator
+ dx                  = 1000     !! (p2) Horizontal resolution
+ dy                  = 1000     !! (p2) Horizontal resolution (should be equal to dx)
+ e_we                = 32     !! (r)(p2) Number of longitude grid points
+ e_sn                = 32     !! (r)(p2) Number of latitude grid points
+ e_vert              = 62     !! (r)(p2) Number of vertical levels
+ force_sfc_in_vinterp = 2
+ /
+
+ &physics
+ planet              = "generic" !! Selection of the planet (mars, venus or prescribed)
+ mars = 1
+ isfflx              = 1       !! 0 : UST/HFX from tke_... namelist values
+                               !! 1 : UST/HFX from LMD physics
+                               !! 2 : UST from LMD / HFX from namelist.input
+ !!
+ !! OPTIONAL
+ !!
+ radt=2
+ init_TI = 12000.
+ init_AL = 0.07,               !! Define constant albedo value
+ init_MU             = 0.0    !! (p3) Multiply ini & bdy zonal wind by init_U
+ init_MV             = 0.0    !! (p3) Multiply ini & bdy meridional wind by init_V
+ init_U              = 0.
+ num_soil_layers     = 18
+ /
+
+ &dynamics
+! rk_ord              = 6
+ diff_opt            = 2       !! (*d) Diffusion option                        [LES: 2]
+ km_opt              = 2       !! (*d) Eddy coefficient option                 [LES: 2]
+ diff_6th_opt        = 0       !! (*d) Knievel numerical diffusion             [LES: 0]
+ mix_full_fields     = T       !! (*d) Set true if mixing ref + pert profiles  [LES: T]
+ damp_opt = 2,        ! upper level damping flag
+                      !              0 = without damping
+                      !              1 = with diffusive damping, maybe used for real-data cases
+                      !                          (dampcoef nondimensional ~0.01-0.1)
+                      !              2 = with Rayleigh  damping (dampcoef inverse time scale [1/s] e.g. .003;
+                      !                        not for real-data cases)
+ dampcoef  = 0.05,   ! damping coefficient (see above) 0.01  0.1trop fort?parfoisdespicots
+ zdamp     = 2000.,  ! damping depth (m) from model top                            !!      (possible instabilities if relax_zone < 4)
+ !!
+ !! OPTIONAL
+ !!
+! c_k                   = 0.15     !! Mixing coefficient constant for km_opt=2 [default: 0.15]
+! c_s                   = 0.18     !! Mixing coefficient constant for km_opt=3 [default: 0.25]
+! pd_tke                = T        !! Positive definite advection of tke
+ pd_scalar             = T
+ tke_heat_flux         = 0.0000001 !! Constant surface thermal flux (H/(rho*cp), K m/s)
+ tke_drag_coefficient  = 0.0025,   !! Constant surface drag coefficient (Cd, dimensionless)
+! mix_upper_bound       = 100.     !! Non-dimensional upper limit for diffusion coeffs
+! mix_isotropic         = 1        !! 0=anistropic vertical/horizontal diffusion coeffs, 1=isotropic
+! pert_coriolis         = T        !! Coriolis only acts on wind perturbation (idealized)
+ /
+
+ &bdy_control
+ periodic_x          = T       !! (p3) Periodic boundary conditions over x     [LES: T]
+ periodic_y          = T       !! (p3) Periodic boundary conditions over y     [LES: T]
+ /
+
+ &grib2
+ /
+
+ &fdda
+ /
+
+ &namelist_quilt              !! (*)
+ nio_tasks_per_group = 0,     !! (*)
+ nio_groups = 1,              !! (*)
+ /                            !! (*)

@@ -1,0 +1,92 @@
+#! /bin/bash
+
+## changer eventuellement le callphys.def egalement
+
+##################
+tracers=2
+nx=64
+ny=48
+nz=32
+##################
+tracers=1
+nx=64
+ny=48
+nz=25
+##################
+tracers=1
+nx=64
+ny=48
+nz=18
+##################
+#tracers=1
+#nx=64
+#ny=48
+#nz=32
+##################
+tracers=5
+nx=64
+ny=48
+nz=25
+##################
+tracers=2
+nx=64
+ny=48
+nz=25
+scatterers=1
+##################
+tracers=5
+nx=64
+ny=48
+nz=25
+scatterers=2
+##################
+tracers=7
+nx=64
+ny=48
+nz=25
+scatterers=2
+##################
+## 64_48_29_t7_s2
+#tracers=7
+#nx=64
+#ny=48
+nz=29
+#scatterers=2
+
+
+
+# GCM environment variables
+#--------------------------
+export LMDGCM=$PWD
+export LIBOGCM=$PWD/libo
+
+echo $LMDGCM
+echo $LIBOGCM
+echo $NCDFLIB
+echo $NCDFINC 
+
+#rm -rf libo
+mkdir libo
+touch libo/log_compile_newstart
+touch libo/log_compile_gcm
+
+echo bricolo
+\rm libf/grid/dimensions.h 2> /dev/null
+
+#echo compile start2archive
+#echo check in $PWD/libo/log_compile_start2archive
+#makegcm -t ${tracers} -p mars -d ${nx}x${ny}x${nz} -s ${scatterers} start2archive | tee libo/log_compile_start2archive | grep 'warnings' >> libo/log_compile_start2archive
+
+echo compile newstart
+echo check in $PWD/libo/log_compile_newstart
+makegcm -O "-DMESOINI" -p mars -d ${nx}x${ny}x${nz} newstart | tee libo/log_compile_newstart | grep 'warnings' >> libo/log_compile_newstart
+
+echo compile gcm
+echo check in $PWD/libo/log_compile_gcm
+#makegcm -O "-DMESOINI" -t ${tracers} -p mars -d ${nx}x${ny}x${nz} -s ${scatterers} gcm | tee libo/log_compile_gcm | grep 'warnings' >> libo/log_compile_gcm
+makegcm -O "-DMESOINI" -p mars -d ${nx}x${ny}x${nz} gcm | tee libo/log_compile_gcm | grep 'warnings' >> libo/log_compile_gcm
+
+
+echo well, OK.
+
+

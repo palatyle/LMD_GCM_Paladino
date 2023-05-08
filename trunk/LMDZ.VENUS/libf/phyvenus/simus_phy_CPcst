@@ -1,0 +1,8 @@
+cp -f clmain.classic clmain.F
+cp -f radlwsw.multimat radlwsw.F
+cp -f cpdet.h.terre cpdet.h
+cp -f cpdet.terre cpdet.F
+sed -e 's/      RCPD=1.0e3/!     RCPD=1.0e3/' \
+    -e 's/!     RCPD=9.0e2/      RCPD=9.0e2/' suphec.F > tmp
+mv -f tmp suphec.F
+

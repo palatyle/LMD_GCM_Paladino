@@ -1,0 +1,73 @@
+{\footnotesize
+\begin{verbatim}
+netcdf start {
+dimensions:
+        index = 100 ;
+        rlonu = 33 ;
+        latitude = 25 ;
+        longitude = 33 ;
+        rlatv = 24 ;
+        altitude = 18 ;
+        interlayer = 19 ;
+        Time = UNLIMITED ; // (1 currently)
+variables:
+        float controle(index) ;
+                controle:title = "Parametres de controle" ;
+        float rlonu(rlonu) ;
+                rlonu:title = "Longitudes des points U" ;
+        float rlatu(latitude) ;
+                rlatu:title = "Latitudes des points U" ;
+        float rlonv(longitude) ;
+                rlonv:title = "Longitudes des points V" ;
+        float rlatv(rlatv) ;
+                rlatv:title = "Latitudes des points V" ;
+        float ap(interlayer) ;
+                ap:title = "Coef A: hybrid pressure levels" ;
+        float bp(interlayer) ;
+                bp:title = "Coef B: hybrid sigma levels" ;
+        float aps(altitude) ;
+                aps:title = "Coef AS: hybrid pressure at midlayers" ;
+        float bps(altitude) ;
+                bps:title = "Coef BS: hybrid sigma at midlayers" ;
+        float presnivs(altitude) ;
+        float latitude(latitude) ;
+                latitude:units = "degrees_north" ;
+                latitude:long_name = "North latitude" ;
+        float longitude(longitude) ;
+                longitude:long_name = "East longitude" ;
+                longitude:units = "degrees_east" ;
+        float altitude(altitude) ;
+                altitude:long_name = "pseudo-alt" ;
+                altitude:units = "km" ;
+                altitude:positive = "up" ;
+        float cu(latitude, rlonu) ;
+                cu:title = "Coefficient de passage pour U" ;
+        float cv(rlatv, longitude) ;
+                cv:title = "Coefficient de passage pour V" ;
+        float aire(latitude, longitude) ;
+                aire:title = "Aires de chaque maille" ;
+        float phisinit(latitude, longitude) ;
+                phisinit:title = "Geopotentiel au sol" ;
+        float Time(Time) ;
+                Time:title = "Temps de simulation" ;
+                Time:units = "days since    1-01-01 00:00:00" ;
+        float ucov(Time, altitude, latitude, rlonu) ;
+                ucov:title = "Vitesse U" ;
+        float vcov(Time, altitude, rlatv, longitude) ;
+                vcov:title = "Vitesse V" ;
+        float teta(Time, altitude, latitude, longitude) ;
+                teta:title = "Temperature" ;
+        float h2o_ice(Time, altitude, latitude, longitude) ;
+                h2o_ice:title = "Traceur h2o_ice" ;
+        float h2o_vap(Time, altitude, latitude, longitude) ;
+                h2o_vap:title = "Traceur h2o_vap" ;
+        float masse(Time, altitude, latitude, longitude) ;
+                masse:title = "C est quoi ?" ;
+        float ps(Time, latitude, longitude) ;
+                ps:title = "Pression au sol" ;
+
+// global attributes:
+                :title = "Dynamic start file" ;
+}
+\end{verbatim}
+}

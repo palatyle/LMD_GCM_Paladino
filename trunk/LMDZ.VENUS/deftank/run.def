@@ -1,0 +1,68 @@
+## $Header$
+#
+INCLUDEDEF=physiq.def
+INCLUDEDEF=gcm.def
+## Calendar
+#calend=venus
+## reference day of initial state
+dayref=1
+##  year of the initial state (   4 figures number   )
+anneeref=1111
+## Flag to reset initial date (0: no / 1: yes)
+raz_date=0
+## Reinitialize control variables (in dynamics)
+resetvarc=n
+#
+## Length of the simulation run
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## Number of days of time integration
+nday=2
+## If one wants to run less than 1 full day:
+less1day=n
+## if less1day is y, fraction of day to run :
+fractday=0.1
+## si less1day is y and if successive runs are made,
+## then indicate here the fraction of the initial day for the previous run
+## !! and also set raz_date=1 !!
+## Default=0.
+starttime=0. 
+#
+#
+## Control output information in the dynamics every iconser dynamical steps
+## Only used in LMDZ, in serial run (not in parallel)... 
+iconser=500
+#
+## Outputs in the dynamical core (only LMDZ, and not used usually)
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## time series outputs in the dynamics (files dyn_hist.nc and co.)
+ok_dyn_ins=n
+## frequency of time series outputs in the dynamics (in dynamical steps)
+iecri=500 
+## time averaged outputs in the dynamics (files dyn_hist_ave.nc and co.)
+ok_dyn_ave=n
+## rate of storage of averages in the dynamics and in dynzon (in days)
+periodav=0.1
+## flag to trigger dynzon outputs
+ok_dynzon=n
+#
+## Parameters that can be used for newstart, when modifying initial state
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# modify topography (e.g. when changing resolution), needs a RELIEF.nc file
+# topoflag=y
+# Remove topography
+# notopo=y
+# Initialize winds to zero
+# razvitu=y
+# razvitv=y
+# Initialize zonal wind to superrotation (uini)
+# uini=y
+# Initialize temperature to smooth VIRA profile
+# raztemp=y
+# Initialize surface temperature to 735K
+# razTS=y
+# Reinitialize the albedo value (we may consider a map later)
+# albedoflag=y
+# if yes, value used for albedo (default: 0.1)
+# albedo=0.1
+
+

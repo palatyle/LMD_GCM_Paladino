@@ -1,0 +1,32 @@
+netcdf input_water {
+dimensions:
+	Time = UNLIMITED ; // (240 currently)
+	latitude = 49 ;
+	longitude = 65 ;
+	altitude = 22 ;
+variables:
+	float Time(Time) ;
+		Time:long_name = "Time" ;
+		Time:units = "days since 0000-00-0 00:00:00" ;
+	float latitude(latitude) ;
+		latitude:units = "degrees_north" ;
+		latitude:long_name = "North latitude" ;
+	float longitude(longitude) ;
+		longitude:long_name = "East longitude" ;
+		longitude:units = "degrees_east" ;
+	float altitude(altitude) ;
+		altitude:long_name = "pseudo-alt" ;
+		altitude:units = "km" ;
+		altitude:positive = "up" ;
+	float q01(Time, altitude, latitude, longitude) ;
+		q01:title = "ice" ;
+		q01:units = "kg/kg" ;
+	float q02(Time, altitude, latitude, longitude) ;
+		q02:title = "h2o" ;
+		q02:units = "kg/kg" ;
+
+// global attributes:
+		:history = "Wed Feb 27 09:57:42 2008: ncrcat -d Time,2,719,3 input_water17.nc input_water17_cut.nc\n",
+			"Wed Feb 27 09:43:06 2008: ncrcat -v q01,q02 run_cap/diagfi17.nc input_water17.nc" ;
+		:nco_openmp_thread_number = 1 ;
+}

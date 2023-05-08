@@ -1,0 +1,27 @@
+#----------------------------------------------------------------------- 
+# Parameters for the 1D radiative snapshot model
+#-----------------------------------------------------------------------                                         
+
+global1d=.true.
+
+# Surface pressure (Pa)
+psurf=100000.
+# Gravity (ms^-2)
+g=9.81
+# orbital distance at perihelion (AU)
+periastr=1.0
+# orbital distance at aphelion (AU)
+apoastr=1.0
+# Solar zenith angle (degrees)
+szangle=60.0
+# Albedo of bare ground
+albedo=0.22
+# Emissivity of bare ground
+emis=1.0
+# Ceiling pressure (Pa) 
+pceil=100.0  
+# Reference surface temperature tref (K)
+tref=280.0
+
+# some definitions for the physics, in file 'callphys.def'
+INCLUDEDEF=callphys.def

@@ -1,0 +1,17 @@
+\chapter{Thermosphere}
+
+\label{sc:thermosphere}
+
+Some advice and comments about running the GCM with the thermosphere (roughly speaking, above 125~km):
+\begin{itemize}
+\item When running with the thermosphere, one must ensure that the model extends high enough. In practice runing with 49 levels (as defined in the default {\tt z2sig.def} file is necessary.
+\item Example of definition files appropriate for simulating the thermosphere are provided in the
+{\tt LMDZ.MARS/deftank} directory: {\tt callphys.def.MCD5}, {\tt run.def.64x48x49.MCD5} and {\tt traceur.def.MCD5} 
+\item Chemistry in the thermosphere requires that file {\tt chemthermos\_reactionrates.def} (available in the
+{\tt deftank} directory) be present in the directory where the GCM is run.
+\item The main forcing in the thermosphere is the Extreme UV (EUV) input received from the Sun. Two settings are possible, depending on the value of flag {\tt solvarmod} (in {\tt callphys.def}):
+ \begin{itemize}
+ \item If {\tt solvarmod=0}, then the solar forcing is fixed throughout the simulation, using the E10.7 value set by the {\tt fixed\_euv\_value} flag.
+ \item if {\tt solvarmod=1}, the the solar forcing evolves daily, following observed values of E10.7. For this case, one must also set the Mars Year (MY 23 to 33 are currently available) using the {\tt solvaryear} flag.
+\end{itemize}
+\end{itemize} 

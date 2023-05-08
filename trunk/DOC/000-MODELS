@@ -1,0 +1,104 @@
+Welcome. 
+
+-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------
+
+---------> Choice A: You want to download all models at once.
+--------->           This is easy, but requires disk space.
+--------->           Plus, not sure you'll be using all models...
+
+svn co http://svn.lmd.jussieu.fr/Planeto/trunk the_name_of_my_folder
+
+-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------
+
+---------> Choice B: You want to download a limited number of models.
+--------->           This is quite wise indeed.
+--------->           Whatever model you want, type the following commands
+
+svn co http://svn.lmd.jussieu.fr/Planeto/trunk -N the_name_of_my_folder
+cd the_name_of_my_folder
+svn update DOC
+
+---------> OK, great. Now choose the model(s) you'd like to get.
+
+---------> LMD Mars GCM
+svn update LMDZ.MARS
+
+---------> LMD Mars Mesoscale and LES Models
+svn update LMDZ.MARS MESOSCALE
+
+---------> LMD Mars Mesoscale and LES Models with old physics only
+svn update MESOSCALE
+
+---------> LMD Titan GCM
+svn update LMDZ.COMMON LMDZ.TITAN
+
+---------> LMD Venus GCM
+svn update LMDZ.COMMON LMDZ.VENUS
+
+---------> LMD Earth GCM
+svn update LMDZ.COMMON LMDZ.EARTH
+
+---------> LMD Giant-Planets GCM
+svn update LMDZ.COMMON LMDZ.GIANT
+
+---------> LMD Generic GCM
+svn update LMDZ.GENERIC
+
+---------> PLOT utilities
+svn update UTIL
+
+---------> NOTE THAT SUBSEQUENT USE OF 'svn update' or 'svn log' or 'svn commit' ... WILL ONLY ACT ON FOLDERS YOU GOT.
+
+-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------
+
+---------> Choice C: You are a developer. You want to download only one folder,
+--------->           then make your modifications, commit and erase the working copy.
+
+svn co http://svn.lmd.jussieu.fr/Planeto/trunk/[the_folder_you_d_like_to_download]
+
+-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------
+
+************************* LIST of all folders contained in the SVN LMD PLANETO trunk *******************************
+DOC           documentation and readme files about SVN
+LMDZ.COMMON   common dynamical core 
+LMDZ.EARTH    terrestrial physics 		 + links to the common dynamical core [LMDZ.COMMON needed]
+LMDZ.GENERIC  universal physics 		 + dynamical core
+LMDZ.GIANT    giant-planet physics 		 + links to the common dynamical core [LMDZ.COMMON needed]
+LMDZ.MARS     martian physics 			 + dynamical core
+LMDZ.TITAN    titan physics 			 + links to the common dynamical core [LMDZ.COMMON needed]
+LMDZ.VENUS    venus physics 			 + links to the common dynamical core [LMDZ.COMMON needed]
+MESOSCALE     martian mesoscale modeling system  + (for new martian physics) links to martian physics [LMDZ.MARS needed]
+MESOSCALE_DEV martian mesoscale modeling system [directory for developers only]
+UTIL          common utilities for plotting purposes
+
+**********************************************
+**********************************************
+FIRST STEPS TOWARD COMPILATION
+******************************
+
+- install netcdf with the same compiler you plan to use for the GCM and keep in mind where the lib and include directories are located.
+
+- if needed, install ioipsl:
+   # ADVICE: copy the [GCMdir]/LMDZ.COMMON/ioipsl directory 
+   # to [GCMdir]/ioipsl to get it out of svn
+   # then go to [GCMdir]/ioipsl
+   # Edit the compile_ioipsl.bash script to get the right paths for NCDF_INC and NCDF_LIB, then run it.
+
+- choose your compilation options and paths in arch files tuned for your machine:
+   LMDZ.COMMON/arch/arch-<youroptions>.[fcm/path]
+
+- use makelmdz to compile the GCM (when you are using the common dynamical core):
+   makelmdz -arch <youroptions> -d <nlon>x<nlat>x<nlev> -p <dirphy> gcm
+
+----------------------------------------------------
+AS -- 25/05/2011 - 08/06/2011
+SL -- 24/06/2011
+AS -- 07/11/2011

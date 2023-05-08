@@ -1,0 +1,13 @@
+NETCDF_INCDIR="-I/usr/local/install/netcdf-4.3.2p/include"
+NETCDF_LIBDIR="-L/usr/local/install/netcdf-4.3.2p/lib -L/usr/local/install/hdf5-1.8.9p/lib"
+NETCDF_LIB="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lhdf5 -lz -lcurl -lstdc++"
+
+HDF5_INCDIR=""
+HDF5_LIBDIR=""
+HDF5_LIB=""
+
+MPI_INCDIR=""
+MPI_LIBDIR=""
+MPI_LIB=""
+
+

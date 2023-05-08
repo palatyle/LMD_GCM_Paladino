@@ -1,0 +1,15 @@
+%COMPILER            /usr/lib64/openmpi/1.4.3-pgf/bin/mpif90
+%LINK                /usr/lib64/openmpi/1.4.3-pgf/bin/mpif90
+%AR                  ar
+%MAKE                gmake
+%FPP_FLAGS           -P -traditional
+%FPP_DEF             NC_DOUBLE LAPACK BLAS SGEMV=DGEMV SGEMM=DGEMM 
+%BASE_FFLAGS         -i4 -r8
+%PROD_FFLAGS         -O2 -Munroll -Mnoframe -Mautoinline -Mcache_align
+%DEV_FFLAGS          -Mbounds
+%DEBUG_FFLAGS        -g -traceback -Mbounds -Mchkfpstk -Mchkstk -Ktrap=denorm,divz,ovf,unf
+%MPI_FFLAGS
+%OMP_FFLAGS          -mp
+%BASE_LD             -lblas
+%MPI_LD              -L/usr/lib64/openmpi/1.4.3-pgf/lib
+%OMP_LD              -mp

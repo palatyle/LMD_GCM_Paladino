@@ -1,0 +1,69 @@
+\chapter{Introduction}
+
+\selectlanguage{english}
+This document is a user manual for the General Circulation Model
+of the Martian atmosphere developed by the Laboratoire de M\'et\'eorologie
+Dynamique of the CNRS in Paris in collaboration with the Atmospheric and
+Oceanic Planetary Physics sub-department in Oxford.
+It corresponds to the version of the model available since November 2002,
+that includes the new dynamic code lmdz3.3 
+and the input and output data in NetCDF format.
+The physical part has been available since June 2001,
+including the NLTE radiative transfer code valid at up to 120~km,
+tracer transport, the water cycle with water vapour and ice,
+the "double mode" dust transport model, and with optional photochemistry
+and extension in the thermosphere up to 250km. 
+
+A more general, scientific description of the model without
+tracers can be found in {\it Forget et al.} [1999].\\
+
+
+Chapter~\ref{sc:apercu} of this document, to be read before any of the others,
+describes the main features of the model.
+The model is divided into two relatively independent parts:
+(1) The hydrodynamic code, that is shared by all atmospheres (Earth,
+Mars, etc.) that integrates the fluid mechanics equations in time
+and on the globe, and (2) a set of Martian physical parameterizations,
+including, for example, the radiative transfer calculation in the atmosphere
+and the turbulence mix in the upper layer.
+
+It is followed by a list of references for anyone requiring a detailed 
+description of the physics and the numerical formulation of the 
+parameterizations of the Martian physical part (Chapter~\ref{sc:phymars}).
+
+For your {\bf first contact with the model}, chapter
+\ref{loc:contact1} guides the user through a practice simulation
+(choosing the initial states and parameters and  visualizing the output files).
+
+The document then describes the programming code for the model,
+including a user computer manual for compiling and running the model
+(Chapter~\ref{sc:info}).
+
+Chapter~\ref{sc:io} describes the input/output data of the model.
+The input files are the files needed to initialize the model
+(state of the atmosphere at the initial time $t0$ as well as a dataset of
+boundary conditions)
+and the output files are "time series",i.e.
+records of the atmospheric flow evolution as simulated by the model,
+the ``diagfi files", the ``stats files'',
+the daily averages etc.
+Some means to edit or visualize these files
+(editor ``ncdump" and the graphics software ``grads") are also described. \\ 
+
+
+Chapter~\ref{sc:water} explains how to run a simulation including the
+water cycle.
+Chapter~\ref{sc:photochem} illustrates how to run the model
+with the photochemical module.
+%Chapter~\ref{sc:photochem} and chapter~\ref{sc:thermosphere} detail
+%respectively the optional photochemical module and the extension model
+%to the thermosphere.
+
+Finally, chapter~\ref{sc:testphys1d} will help you to use a 
+1-dimensional version of the model,
+which may be a simplier tool for some analysis work.
+
+
+
+
+

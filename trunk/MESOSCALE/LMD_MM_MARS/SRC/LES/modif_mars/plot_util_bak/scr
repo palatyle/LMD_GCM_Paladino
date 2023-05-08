@@ -1,0 +1,32 @@
+#! /bin/bash
+
+## use: scr U V W
+## les fichiers deja crees ne sont pas recrees
+
+## IDL remplit la memoire et devient plus lent...
+
+mean='1'
+mean='[1,2]'
+
+count='[1,1,0,0]'
+offset='[20,20,0,0]'
+
+count='0'
+offset='0'
+
+\rm log 2> /dev/null
+touch log
+
+for fich in $(ls wrfout*) ; do
+ for param in "$@" ; do
+
+  echo $param $fich
+  unset limits 
+#  echo "ye = getget('"${fich}"', '"${param}"',coordmean="$mean") & DELVAR, ye & exit" | /distrib/local/rsi/idl_6.1/bin/idl >> log 2>> log
+  echo "ye = getget('"${fich}"', '"${param}"',count="$count",offset="$offset") & DELVAR, ye & exit" | /distrib/local/rsi/idl_6.1/bin/idl >> log 2>> log
+
+ done 
+done
+
+
+

@@ -1,0 +1,6 @@
+# Saturn:
+#make_icosa_lmdz -p std -p_opt "-b 23x25 -s 1" -debug -parallel mpi_omp -arch X64_ADA -arch_path ../ARCH -job 8
+
+# Venus:
+make_icosa_lmdz -p venus -debug -parallel mpi -arch X64_ADA -arch_path ../ARCH -job 8
+

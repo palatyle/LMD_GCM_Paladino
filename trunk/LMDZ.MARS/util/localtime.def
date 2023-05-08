@@ -1,0 +1,23 @@
+diagfi.nc
+tsurf
+ps
+
+2    ! number of local time to be used
+2      ! list of local times
+14
+
+
+-----------------------------------------------------------------------
+ABOVE is the list of inputs to be fed to "localtime.e" if you don t want
+to reply directly to the program:
+
+1) complete name of file to be read
+2) List of X variables to be kept (X lines) or 'all'
+3) blank line at the end
+5) number of local time to be used ?
+6) list of selected local time (0<t<24)
+
+USE :
+localtime.e < localtime.def
+
+

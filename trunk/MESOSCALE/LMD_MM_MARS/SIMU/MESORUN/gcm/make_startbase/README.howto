@@ -1,0 +1,22 @@
+
+to run a startbase with a given dust scenario
+
+SETTINGS
+- change callphys.def
+
+CREATE START FILES
+- go to gcm/newstart
+- modify mini_startbase.sh
+- run mini_startbase.sh
+- go to gcm/make_startbase
+- link gcm/newstart/startbase_clim_mini/start0.nc and startfi0.nc
+
+RUN GCM
+- check that 0 is in num_run
+- check that nday is 3 in run.def
+- launch run !!! 
+        --> command: qsub launch.ciclad.startbase
+- ... wait about 72h ...
+- startbase is stored in gcm/make_startbase/tmpsave
+	--> rename it and store it somewhere
+

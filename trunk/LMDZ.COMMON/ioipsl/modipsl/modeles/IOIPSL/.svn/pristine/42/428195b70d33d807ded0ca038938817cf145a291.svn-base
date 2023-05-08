@@ -1,0 +1,12 @@
+NETCDF_INCDIR=$(nf-config --fflags)
+NETCDF_LIBDIR=$(nf-config --flibs)
+NETCDF_LIB=""
+
+MPI_INCDIR=""
+MPI_LIBDIR=""
+MPI_LIB=""
+
+HDF5_INCDIR=""
+HDF5_LIBDIR=""
+HDF5_LIB=""
+

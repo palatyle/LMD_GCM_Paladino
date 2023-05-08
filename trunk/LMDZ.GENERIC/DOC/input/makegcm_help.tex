@@ -1,0 +1,91 @@
+{\footnotesize
+\begin{verbatim}
+makegcm [Options] prog
+
+
+The makegcm script:
+-------------------
+
+1. compiles a series of subroutines located in the $LMDGCM/libf
+ sub-directories.
+ The objects are then stored in the libraries in $LIBOGCM.
+
+2. then, makegcm compiles program prog.f located by default in
+$LMDGCM/libf/dyn3d and makes the link with the libraries.
+
+Environment Variables '$LMDGCM' and '$LIBOGCM'
+ must be set as environment variables or directly
+ in the makegcm file.
+
+The makegcm command is used to control the different versions of the model
+ in parallel, compiled using the compilation options 
+ and the various dimensions, without having to recompile the whole model.
+
+The FORTRAN libraries are stored in directory $LIBOGCM.
+
+
+OPTIONS:
+--------
+
+The following options can either be defined by default by editing the
+makegcm "script", or in interactive mode:
+
+-d imxjmxlm  where im, jm, and lm are the number of longitudes,
+             latitudes and vertical layers respectively.
+
+-t ntrac   Selects the number of tracers present in the model
+
+             Options -d and -t overwrite file 
+             $LMDGCM/libf/grid/dimensions.h
+             which contains the 3 dimensions of the
+             horizontal grid 
+             im, jm, lm plus the number of tracers passively advected
+             by the dynamics ntrac,
+             in 4 PARAMETER FORTRAN format 
+             with a new file:
+             $LMDGCM/libf/grid/dimension/dimensions.im.jm.lm.tntrac
+             If the file does not exist already
+             it is created by the script
+             $LMDGCM/libf/grid/dimension/makdim
+
+-p PHYS    Selects the set of physical parameterizations
+           you want to compile the model with.
+           The model is then compiled using the physical
+           parameterization sources in directory:
+            $LMDGCM/libf/phyPHYS
+
+-g grille  Selects the grid type.
+           This option overwrites file
+           $LMDGCM/libf/grid/fxyprim.h
+           with file
+           $LMDGCM/libf/grid/fxy_grille.h
+           the grid can take the following values:
+           1. reg - the regular grid
+           2. sin - to obtain equidistant points in terms of sin(latitude)
+           3. new - to zoom into a part of the globe
+
+-O "compilation options" set of fortran compilation options to use
+
+-include path
+           Used if the subroutines contain #include files (ccp) that 
+           are located in directories that are not referenced by default.
+
+-adjnt     Compiles the adjoint model to the dynamical code.
+
+-filtre  filter
+           To select the longitudinal filter in the polar regions.
+           "filter" corresponds to the name of a directory located in
+           $LMDGCM/libf. The standard filter for the model is "filtrez"
+           which can be used for a regular grid and for a  
+           grid with longitudinal zoom.
+
+-link "-Ldir1 -lfile1 -Ldir2 -lfile2 ..."
+           Adds a link to FORTRAN libraries
+           libfile1.a, libfile2.a ... 
+           located in directories dir1, dir2 ...respectively
+           If dirn is a directory with an automatic path 
+           (/usr/lib ... for example) 
+           there is no need to specify  -Ldirn.
+
+\end{verbatim}
+}

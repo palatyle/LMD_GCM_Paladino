@@ -1,0 +1,115 @@
+## $Header: /home/cvsroot/LMDZ4/physiq.def,v 1.2 2004/06/22 11:45:18 lmdzadmin Exp $
+#
+# PARAMETRES ANCIENNEMENT DANS gcm.def
+##  Cycle diurne  ou non                 
+cycle_diurne=y
+##  Soil Model  ou non               
+soil_model=y
+##  Orodr  ou  non   pour l orographie              
+ok_orodr=n
+##  Orolf  ou  non   pour l orographie              
+ok_orolf=n
+##  Gravity Waves non-orographiques
+ok_gw_nonoro=n
+## Nombre  d'appels des routines de rayonnements ( par jour)                 
+nbapp_rad=20
+## Nombre  d'appels des routines de chimie ( par jour)                 
+nbapp_chim=1
+##  Flag  pour la convection : 1 pour LMD, 2 pour Tiedtke, 3 KE(nvlle version JYG), 30 KE(version IPCC AR4), 4 KE vect
+iflag_con=0
+#
+#
+# Parametres fichiers de sortie
+#
+### OK_mensuel= y sortir fichier mensuel histmth.nc, =n pas de fichier histmth.nc
+OK_mensuel=y
+### OK_journe= y sortir fichier journalier histday.nc, =n pas de fichier histday.nc
+OK_journe=y
+### OK_instan=y, ecrire sorties "instantanees" (chaque pas de temps de la  physique)
+OK_instan=n
+# frequence ecriture du fichier histins en jours
+ecritphy=0.01
+#
+# Parametres niveau de sorties differents fichiers 
+#
+#niveau de sortie "mth" lev_histmth
+# - lev_histmth=1 => basiques, 2D
+# - lev_histmth=2 => basiques, 3D (defaut)
+# - lev_histmth=3 => transfert radiatif
+# - lev_histmth=4 => champs tendances 3d
+# - lev_histmth=5 => traceurs, autres
+lev_histmth=4
+#
+#niveau de sortie "day" ET "ins" lev_histday
+# - lev_histday=1 => basiques, 2D
+# - lev_histday=2 => basiques, 3D (defaut)
+# - lev_histday=3 => transfert radiatif
+# - lev_histday=4 => champs tendances 3d
+# - lev_histday=5 => traceurs, autres
+lev_histday=2
+#
+# parametres climatiques
+#
+# TITAN ##
+year_day = 673.
+peri_day = 536.
+periheli = 1354.5
+aphelie  = 1506.0
+obliquit = 26.7
+# solaire: effective, rapportee a 1 UA   A REVOIR
+solaire = 2620.
+#
+# parametres boundary layer
+#
+iflag_pbl = 8
+z0 = 0.005
+lmixmin = 35.
+ksta = 1.e-7
+ok_kzmin=n
+#
+inertie=2000.
+emis=0.95
+#
+# parametres convection seche
+#
+iflag_ajs = 1
+#
+# parametres chimie
+#
+# si chimi=y, il faut moyzon_ch=y
+chimi = n
+moyzon_ch=n
+# version chimie -> 1=complete / 2=pseudo (rappel)
+vchim = 1
+# production des aerosols par la chimie
+aerprod=0
+# recombinaison heterogene H->H2
+htoh2 = 0
+# T=utilise Lell dans radtitan, F= utilise la compo incluse
+ylellouch=y
+# (si ylell=F) prise en compte de HCN dans le transfert radiatif
+hcnrad = n
+#
+# parametres microphysique
+#
+# si microfi=1, il faut moyzon_mu=y
+# si microfi=2, il faut moyzon_mu=n
+microfi=1
+moyzon_mu=y
+# facteur pour les aerosols
+tx = 3.
+# facteur de correction
+tcorrect=1.
+# Facteur d ajustement des proprietes vis des aerosols
+xvis=1.
+# Facteur d ajustement des proprietes IR des aerosols
+xir=1.
+# pressure level for aerosol production (in Pa)
+p_prodaer=1.
+# 0: pas de cutoff ; 1 pour albedo ok ; 2 pour T tropopause ok
+cutoff=2 
+# activation nuages (si 1, mettre cutoff=0)
+clouds=0
+# fraction nuageuse
+xnuf=0.5
+

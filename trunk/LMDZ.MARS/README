@@ -1,0 +1,2957 @@
+== 17/09/08 ==
+>>> Build a version with new soil but old radiative transfer,
+    but keeping possibility of switching back to new radiative transfer),
+    which incorporates changes & improvements currently included in the
+    'reference version' GCM (see /u/emlmd/LMDZ.MARS.mixdyn)
+
+>>> start by modifying makegcm as in /u/emlmd/LMDZ.MARS.mixdyn, so that it runs
+    without environment variables and set LIBOGCM to /tmp15/emlmd/libo
+
+>>> directory contents of 'aeronomars', 'grid' and 'filtrez' are simillar
+    to those in /u/emlmd/LMDZ.MARS.mixdyn
+
+>>> in bibio , only file mxva.F needed be upgraded
+
+>>> get phymars and dyn3d contents from /u/emlmd/LMDZ.MARS.mixdyn
+    (and remove all *old files)
+
+>>> check differences between dyn3d and /u/emlmd/LMDZ.MARS.170908/libf/dyn3d
+    and upgrade when necessary:
+    - removed 'netcdf.inc' file (has nothing to do there!)
+    - comgeom.h and comgeom.h : made fortran90 compliant
+    - control.h : made fortran90 compliant
+    - dynredem.F : more read/write controls + comments in english
+    - ini_archive.F : new soil/thermal inertia changes
+    - integrd.F : added additional information to output when crashing
+    - lect_start_archive.F : new soil/thermal inertia changes
+    - newstart.F : new soil/thermal inertia changes + comments in english
+    - start2archive.F : new soil/thermal inertia changes
+    - vanleer.F : removed inapropriate 'external' statement
+    - write_archive.F : enable writting a subterranean field
+
+>>> check differences between phymars and /u/emlmd/LMDZ.MARS.170908/libf/phymars
+    and upgrade when necessary:
+    New soil stuff:
+    - added comsoil.h
+    - iniwrite.F : new soil changes
+    - added iniwritesoil.F90 and writediagsoil.F90 for subterranean fields
+    - added interp_line.F (for subterranean grid interpolation)
+    - adapted phyetat0.F for subterranean temperature & inertia
+    - adapted physdem1.F to include new soil stuff
+    - physiq.F : added calls to writediagsoil 
+    - soil.F : new routine (fixed vertical grid + variable thermal inertia)
+    - added soil_settings.F (to read/initialize/interpolate soil properties)
+    - updated surfdat.h (since thermal inertia is now in comsoil.h)
+    - updated tabfi.F : include new soil properties
+    - updated testphys1d.F
+    - updated dimphys.h (set nsoil=18 as default)
+
+== 18/09/08 ==
+>>> add the possibility of easily switching to Tran radiative transfert
+    - updated aerdust.h.ocke97 (changed some variables name) so it can
+      replace aerdust.h (which is currently the same as aerdust.h.clan91).
+    - imported Tran's 'gfluxv.F' routine
+    - imported Trans' version of 'swr.F' routine, saved it as 'swr.F.toon'
+
+>>> Backup of 'old' Morcrette swr.F is 'swr.F.morc'
+    NB: to switch from one radiative transfer to the other, just copy
+    swr.F.morc or swr.F.toon to swr.F (and eventually 'touch swr.F' so that
+    makegcm recompiles swr.F)
+    No other dependencies (swr.F.toon uses 'gfluxv.F' and swr.F.morc uses
+    'dedd.F').
+
+>>> Changed the latter, so that users can switch from one to the other
+    - modified swr.F.toon to become swr_toon.F (and to include gfluxv.F)
+    - modified swr.F.morc to become swr_fouquart.F (and to include dedd.F)
+    - added a flag in callkeys.h, swrtype (parameter to be set/changed by
+      the user 1=Fouquart and 2=Toon)
+    - update readtesassim so that the coefficient by which opacity
+      is multiplied is set according to the 'swrtype' parameter
+
+== 25/09/08 ==
+>>> Implement the use of tracer-by-name in physics
+    - in phymars/tracer.h set 'noms' length to 20 (instead of 10)
+    - in phymars/callsedim2q.F and phymars/callsedim.F, use tracers by name
+    - in phymars/dustopacity.F, use tracers by name
+    - in phymars/vdifc.F, use tracers by name
+
+== 26/09/08 ==
+>>> Change implementation strategy (for now); don't move surface tracer around
+    i.e.: surface ice remains equivalent to qsurf(nqmx)=qsurf(i_h2o_vap)
+          and likewise for surface tendencies ...
+    - modified vdifc.F and callsedim.F back
+    - modified initracer.F (so that water names are h2o_vap & h2o_ice)
+    
+== 29/09/08 ==
+    - modified aeronomars/init_chimie_B (cosmetics)
+    - corrected aeronomars/moldiff.F internal routine tridag; changed
+      "pause" error messages to 'stop' messages
+    - modified phymars/watercloud.F to use tracers by name
+    - corrected aeronomars/molvis.F (undefined 'fac' and 'Akk' written to 
+       output at first call)
+    
+== 30/09/08 ==
+    - modified aeronomars/calchim.F to use tracers by name
+    - adapted aeronomars/photochemist_B.F to use tracers by name
+    - adapted aeronomars/chemtermos.F to use tracers by name
+    - adapted aeronomars/concentrations.F to use tracers by name
+    - corrected aeronomars/conduction.F (undefined 'Akk' written to output
+      at first call)
+    - adapted aeronomars/euvheat.F to use tracers by name
+    - adapted aeronomars/moldiff.F and moldiffcoeff.F to use tracers by name
+
+== 01/10/08 ==
+    - For more compatibility with LMDZ4; mimic reading a 'traceur.def' file
+      in the dynamics via a call to a routine 'iniadvtrac.F' and saving
+      tracers names in 'advtrac.h'
+     -> created 'iniadvtrac.F', 'advtrac.h' and modified gcm.F
+    - modified 'dynetat0.F' so that tracers are loaded from 'start.nc' by name
+    - modified 'dynredem.F' so that tracers are written to 'restart.nc'
+      by name
+    - modified 'initracer.F' tu use tracers by name
+
+== 02/10/08 ==
+    - removed use of 'nqchem_min' everywhere:
+      adapted 'euvheat.F','inifis.F','physiq.F'
+      (leave 'inichim.F' for later)
+    - updated 'phyetat0' and 'physdem1.F' to read/write surface tracers by name
+    - modify things so that surface water ice index is the same as
+      atmospheric water ice (except when running without water ice; then
+      simply set i_h2o_ice=i_h2o_vap).
+      NB: the easiest is to have global storage of tracer names/indexes in
+      tracer.h
+      => changed initracer.F & tracer.h to have global igcm_something indexes
+
+== 03/10/08 ==
+    - adaptations for surface ice index, modified files:
+      phyetat0.F : if there is a dynamical tracer 'h2o_vap' then load
+                   surface tracer called 'h2o_ice' instead
+      initracer.F : in 'old' tracer name case: move qsurf(nqmx)->qsurf(nqmx-1)
+                    and set i_h2o_ice=i_h2o_vap if iceparty=.false.
+      physdem1.F : if old tracer names: move qsurf(nqmx-1)->qsurf(nqmx)
+                   if iceparty=.false., write surface tracer 'h2o_ice'
+                   (and not 'h2o_vap') to file.
+      adapted vdifc.F, callsedim.F & watercloud.F & physiq.F so that surface
+      ice is now identified as qsurf(i_h2o_ice)
+    - updated aeronomars/perosat.F (cosmetics)
+
+== 06/10/08 ==
+    - modify newstart.F and lect_start_archive.F to use tracers by name
+== 07/10/08 ==
+    - adapted inichim_newstart.F (added qsurf to arguments)
+      and inichim_readcallphys.F
+== 08/10/08 ==
+    - implement reading traceur.def in dyn3d/iniadvtrac.F
+
+== 16/10/08==
+    -small change in inifis.F (only warn if too many tracers, compared
+     to the expected number, not stop).
+     - corrected bug in initracer.F
+== 21/10/08 ==
+    - modified newstart.F to load B.Diez subsurface ice maps.
+    - corrected small bug (uninitialized variable) in interp_horiz.F
+== 22/10/08 ==
+    - updated iniwritediagsoil.F so that thermal inertia is written to
+      diagsoil.nc
+== 31/10/08 ==
+    - changed xvik.F program so it works even if we don't have atmospheric
+     temperature at hand (then it uses a 10km reference scale height) and so
+     that it does surface pressure interpolation log-wise.
+== 03/11/08 ==
+    - modified physiq to compute (and output) co2 column.
+    - added improvement by Francois in newcondens.F about computing CO2
+      partial pressure. This behavior is turned on by setting internal logical
+      flag 'improved_ztcond' to '.true.' (and running with a co2 tracer)
+    - updated 'start2archive' to work with 'new' gcm output (soil, tracers ...)
+== 04/11/08 ==
+    - upgraded xvik program to look for temperature in 7th layer variable if
+     there is no global atmospheric temperature field at hand.
+== 05/11/08 ==
+    - more modifs to newcondens.F: added another internal flag 'bound_qco2' to
+     enforce (if set to .true.) that co2 mass mixing ratio remains bounded.
+== 07/11/08 ==
+    - corrected 'writediagfi' & 'writediagsoil' so that an error message is 
+      issued if called with a variable name which is too long.
+== 18/12/08 ==
+    - corrected bug in dyn3d 'addfi.F', (dimensions of local array p())
+== 23/02/09 ==
+    - modified "aeronomars/param_read.F" to do strictly fortran data
+     initialization (otherwise xlf compiler complains)
+    - changed a few '1.e-30' to '1.d-30' in aeronomars/photochemist_B.F
+     so that max functions has 2 doubles as arguments (otherwise xlf
+     compiler complains)
+
+==07/04/09 ==
+    -cosmetic changes/minor improvements in the handling of tracers in:
+     aeronomars/photochemist_B.F
+     aeronomars/perosat.F
+     aeronomoars/euvheat.F
+     aeronomars/moldiffcoeff.F
+     aeronomars/moldiff.F
+     aeronomars/cocentrations.F
+     aeronomars/chemtermos.F
+     aeronomars/calchim.F
+
+--> NB: still there are differences in outputs when order of tracers is changed
+
+== 09/04/09 ==
+>>> fixed problem in 'vdifc.F' which lead to different results when moving
+    tracers around.
+
+== 10/04/09 ==
+>>> corrected small bug in diagnostic outputs of 'watercloud.F' (tendencies were
+    not added to tracer values).
+
+== 21/04/09 ==
+>>> corrected small bug in "physdem1.F" about writing water ice surface tracer
+    to file
+
+== 07/05/09 ==
+>>> very minor correction (firstcall not set to true after first call
+    if no tracers) in convadj.F
+
+== 30/06/09 ==
+>>> Implement reading *def files with IOIPSL ersatz 'getin' function
+   - import "ioipsl_errioipsl.F90","ioipsl_getincom.F90","ioipsl_stringop.F90"
+     in bibio
+   - adapted 'dyn3d/defrun_new.F' to use "getin" function
+   - adapted 'phymars/inifis.F' to use "getin" function
+
+== 01/07/09 ==
+>>> Adapted 'create_make_gcm' so that the "use" in *.F files is identified and
+    corresponding dependencies included in the makefile rules.
+
+>>> Added the 3D scattering from aerosols by JB Madeleine:
+    - minor changes in aerave.F
+    - added the calls to aeropacity.F, and aeroptproperties.F in callradite.F
+    - changed the calls to lwu.F and swr.F in lwmain.F and swmain.F, respectively
+    - added 3D scattering properties in lwu.F and swr.F
+    - added the new aeroptproperties.F, aeropacity.F and suaer.F90 routines
+        (removed dustopacity.F)
+    - updated aeropacity.F with new tracer names
+    - changed the call to callradite.F in physiq.F, added the initialization 
+        of reffrad and nueffrad (aerosol effective radius and variance)
+    - removed all the lines relative to the old "activice" option, including
+        temperature variation due to latent heat release (now in comments)
+    - renamed nsize into naersize in watercloud.F, watersat.F and newsedim.F,
+        to avoid conflicts with another "nsize" variable in the radiative transfer
+    - added the statement of nuice in watercloud.F, which is the effective variance
+        of the log-normal distribution for ice
+    - updated yomaer.h and removed aerice.h (and corresponding "includes")
+
+== 02/07/09 ==
+>>> Adapted 'aeronomars/inichim_readcallphys.F' (called by newstart)
+     to use "getin" routine.
+    + minor correction in 'inifis.F' (close 'iradia.def' file)
+>>> Minor correction in 'dyn3d/dynetat0.F' and 'phymars/phyetat0.F'; do not
+    attempt to reindex tracers if none were found.
+
+>>> in 'deftank' added examples of 'traceur.def' files (traceur.def.co2 : 1
+    co2 tracer; traceur.def.watercycle : 2 traceurs, water vapour and water ice
+    tracer.def.chemistry : all 15 species)
+
+== 06/07/09 ==
+>>> Modified 'makegcm' and makegcm_g95' so that modules files are put 
+    with libraries (and not in current directory)
+    
+== 21/07/09 ==
+>>> Added in "testphys1d.F" a check that the (required) 'run.def' file is
+    around (that file should contain the "INCLUDEDEF=callphys.def" instruction
+    otherwise getin() calls won't work.
+    Also added reding of 'traceur.def' (or initialisation of tracer names
+    to dummy values q01,q02, ...) in testphys1d.F
+
+== 22-24/07/09 == JBM
+>>> Removed "iceparty" everywhere (calchim.F, inichim_readcallphys.F,
+	chimie_data.h, inichim_newstart.F, photochemist_B.F, callkeys.h,
+	callradite.F, callsedim.F, aeropacity.F, inifis.F, initracer.F, physdem1.F,
+	physiq.F, watercloud.F). Water = .true. now implies the use of two
+	tracers, i.e. water vapor and water ice.
+
+>>> Removed fisice.h and stated the corresponding variables in the right
+	places (physiq.F, callsedim.F, watercloud.F, newcondens.F, calchim.F);
+	also removed unused cltop and clsurf variables in physiq.F.
+
+>>> Removed the variable's splitting, which is now obsolete, in callradite.F
+	(and its subroutines lwi.F, lwxb.F, lwxn.F, lwflux.F, lwmain.F, lwxd.F).
+	Also removed the variable's splitting in calldrag_noro.F. Finally removed
+	ndomain from dimradmars.h.
+
+>>> Removed useless tests in aeropacity.F.
+
+== 27-30/07/09 == JBM
+>>> Cleaned the WRITEDIAGFI section in physiq.F, and moved the "mtot",
+	"icetot" and "tauTES" variables from watercloud.F to physiq.F. Also
+	cleaned the albedo change due to water ice deposition.
+
+>>> Renamed rdust into rnuclei in callsedim.F, physiq.F and watercloud.F.
+
+>>> Added a logical test for (water.and..not.tracer) in inifis.F.
+
+>>> Removed "qsurf","zls" and "icount" from the list of inputs in
+	watercloud.F (these variables were not used by the subroutine).
+
+>>> Added a call to watercloud.F at firstcall, using typical dust optical
+	depth (taufirstcall), in order to correctly initialize the ice particle
+	size distribution for the radiative transfer scheme. Also created a new
+	subroutine to load the effective radius and variance of the aerosols used
+	by the radiative transfer scheme. Its name is updatereffrad.F, and it is
+	called before aeroptproperties.F in callradite.F.
+
+== 05/08/09 == JBM
+>>> TES water-ice opacity is now fully computed using the radiatively active
+	aerosol scheme. Absorption coefficient is calculated using Qext and
+	omega at the IR reference wavelength. Omega was not computed before; it
+	was only computed in the GCM channels, not at the reference wavelength.
+	Thus it has been added in suaer.F90, aerave.F, yomaer.h, callradite.F,
+	aeropacity.F and aeroptproperties.F. If "activice" is false, the
+	TES opacity is computed using the old method (fit of the Qabs as a
+	function of reff curve).
+
+== 07/08/09 == EM
+>>> Removed "iceparty" option from callphys.def
+
+>>> modified physiq.F and initracer.F so that building of array niqchem() which
+    contains the indexes of all chemistry tracers + water vapour and water
+    ice is done in initracer.F (array niqchem(:) is now a common
+    in tracer.h ).
+    Also had to adapt inichim_newstart.F to behave similarly.
+
+== 24/08/09 == EM included corrections by JBM
+>>> Added declaration of nqchem(nqmx) local array in
+    aeronomars/inichim_newstart.F
+
+>>> Encapsulated calls to writediagfi & wstats in if (ngrid.ne.1) clause
+    in phymars/aeropacity.F (otherwise it crashes in 1D).
+
+== 26/08/09 == EM
+>>> modified tracer.h, initracer.F, inichim_newstart.F and physiq.F to not use
+    an niqchem() array (added in 07/08/09 changes)
+
+>>> modified phymars/readtesassim.F90 and phymars/aeropacity.F so that
+    assimilated dust for MY24 or MY25 or MY26 may be used (with iaervar=
+    24,25 or 26); we keep iaervar=4 to also read MY24 dust for compatibility
+    with older versions of code.
+    Modified deftank/callphys.def : added comments about new iaervar values
+
+== 25/09/09 == EM
+>>> modified phymars/testphys1D.F : added incrementation of tracer values
+    after call to physiq().
+
+== 27/11/09 == EM
+>>> updated comments in makegcm (translated help to english)
+
+>> shifted to reading file traceur.def
+   (dyn3d/iniadvtrac.F) in an Earth-LMDZ4 like way:
+   first line == number of tracers
+   and then tracer name (1 per line; later we'll add advection scheme type)
+>> also updated example 'traceur.def' files in deftank accordingly
+
+== 02/12/09 == EM
+>>> upgraded testphys1d.F and profile.F to load run parameters with getin()
+    function (from run.def ; no need for a "testphys1d.def" any more)
+    added an example 'run.def.1d' file to 'deftank'
+
+==10/12/09 == EM
+>>> minor correction in testphys1d.F (was still checking if there is a
+    testphys1d.def file around ; which is not used anymore)
+
+==15/01/10 == JBM
+>>> aeropacity.F: implemented a weighting of the dust opacity profile
+  by using the dust size vertical profile defined in updatereffrad.F.
+>>> aeroptproperties.F: changed the integration scheme (Gauss-Legendre)
+  of the scattering parameters.
+>>> suaer.F90: removed the use of an ad-hoc "solsir" factor. It is now
+  directly computed from the scattering properties read in the ASCII
+  files. Consequently, the IR extinction coefficient has been divided
+  by solsir=2 in the ASCII file (called optprop_dustir_x0.5.dat instead
+  of optprop_dustir.dat to allow compatibility with the older version
+  and avoid chaos).
+>>> updatereffrad.F: changed the dust size vertical profile.
+>>> yomaer.h: the particle radius variable is now in simple precision,
+  because the new scattering property integration scheme has changed.
+>>> aeronomars/inichim_readcallphys.F (small) bug correction load value of
+    'water' before testing its value...
+
+== 18/01/10 == EM
+>> added possibility to read (in inifis.F and aeropacity.F) the value of
+   dust opacity tauvis from callphys.def file
+
+== 01/02/10 == EM
+>> added JBM updates of "callradite.F" (coments) "aeroptproperties.F" (bug fix
+   of bad array bounds) and "aeropacity.F" (encapsulate wstats calls in
+   if (callstats) )
+>> added implementation of TES Cap albedos: "albedocaps.F90" and adapted
+   "newcondens.F"  (and physiq.F, because added 'zls' argument to newcondens)
+   and surfdat.h
+>> changed default settings for dust : set a 1.3 factor in readtesassim.F90
+   when using Toon radiative transfer, use M.Wolff-T-Matrix files in suaer.F90
+ 
+== 03/02/10 == EM
+>> Updated newstart.F in dyn3d, so that sub-surface thermal inertia values may
+   be different in North and South hemispheres.
+
+>> Updated "makegcm" and "makegcm_g95" scripts (cosmetic + default compilation
+   option changes)
+   
+>> Minor changes in aeronomars/init_chimie_B.F (do not use lnblnk(); F90
+   trim() intrinsic is much safer and better), and in initracer.F (better
+   control over a possible array bound underflow).
+   Also, in dyn3d/iniadvtrac.F, close input file properly,
+   and in infis.F, more verbose message to output.
+
+== 26/02/10 == EM
+>> Updated makegcm and makegcm_g95 : default usage is now to set everything
+   ("environment variables") in the script. Changed some default compilation
+   options.
+>>> removed 'float()' instructions in tabfi.F and iniwrite.F
+    use "real()" to be compliant with standards.
+>> Corrected small bug in testphys1d.F (look for file traceur.def)
+   also added initialisation of tracers
+>> Cleaned up inifis.F and initracer.F (some sanity checks were obsolete
+   and/or wrong)
+>> Improved writediagfi.F so that 1D (individual column in the GCM, or
+   fields in testphys1d) data can be written in the diagfi.nc file
+>> Minor changes/improvements in calls to writediagfi from physiq.F for dust
+
+== 08/03/10 == EM
+>> Minor update of "makegcm" and "makegcm_g95": use instruction "./makdim"
+   (instead of "makdim"; in case "." is not in user's path)
+>> put "real()" instructions instead of "float()" in dyn3d routines:
+   disvert.F , dynredem.F , fluxstoke.F , fxhyp.F , fxy.F ,
+   fxysinus.F , fyhyp.F , gcm.F , grid_atob.F , grid_noro.F , grid_noro1.F ,
+   ini_archive.F , inigeom.F , newstart.F , ran1.F , sortvarc.F ,
+   sortvarc0.F
+>> Minor update of aeropacity.F (added if (callstats) around call to wstats)
+
+== 28/04/10 == EM
+>> Put the splitting in radiative transfer back in the model (JB):
+   updated calldrag_noro.F  callradite.F  dimradmars.h  lwflux.F 
+   lwi.F lwmain.F lwxb.F lwxd.F lwxn.F swmain.F
+>> Fix bug (AS) in callradite.F (wrong loop boundaries line 332)
+>> Fix bug (AS+JB) in "swr_toon.F" to enable running with more than
+   100 levels...
+>> Fix bug (JBM) in callsedim2q.F about setting pdqs_sed(:niq(iq)) to zero
+
+== 25/08/10 == EM
+>> Add a 'makegcm_gfortran' for compiling with gfortran
+   and a 'makegcm_ifort' for compiling with ifort (on Gnome)
+   
+== 03/09/10 == EM
+>> Modifications to enable running in double precision (using starts in r4
+   or r8); just add options '-r8 -DNC_DOUBLE' to compile GCM in double precision
+   -> adapted dyn3d/dynetat0.F, physmars/physdem1.F, phymars/soil_settings.F,
+      phymars/readtesassim.F90, phymars/writediagfi.F, phymars/def_var.F90,
+      phymars/writediagsoil.F90, phymars/wstats.F90, phymars/inistats.F
+>> Added dyn3d/writediagdyn.F90 routine (to output scalar dynamical fields),
+   adapted 'comconst.h' and 'comvert.h' to be Fortran77/Fortran 90 compatible.
+
+== 14/12/10 == EM
+>> Add -f option to #!/bin/csh in makegcm* scripts (to make sure that it is
+   the bash environment compiler that is used as a default)
+>> Update convadj.F with RW's version (fixes bug of non conservation of tracers
+   in cases where convection stops at one level and starts at the next).
+
+== 13/12/10 == EM
+>> Update testphys1d.F so that initial tracer profiles may be loaded at
+   initialization 
+
+== 24/01/11 == JBM(+ some cleanup by EM)
+>> Reactivated the "doubleq" method (two-moment scheme for dust
+   transport) and connected it with the radiative transfer code. The
+   opacity is set constant below a level indicated by the variable
+   cstdustlevel in aeropacity.F to remove the thick layer of
+   dust near the surface created by the constant lifting rate.
+   The "density scaled opacity" used by the MCS team is computed
+   and saved in dsodust.
+   Updated routines: callradite.F, aeropacity.F, updatereffrad.F,
+   callsedim.F, newsedim.F, initracer.F, vdifc.F, suaer.F90.
+>> Added the use of named scatterers (same method as tracer-by-name)
+   in the radiative transfer code. Scatterers are declared at
+   firstcall in callradite.F (which is the equivalent of traceur.def)
+   and the corresponding indices are saved in the common called
+   aerkind.h (the equivalent of tracer.h).
+   Updated routines: callradite.F, updatereffrad.F, aeropacity.F,
+   suaer.F90, aerkind.h.
+   EM: aerdust.h, aerdata.h and aerice.h are not used any more 
+>> Merged callsedim2q.F and callsedim.F in one single routine
+   callsedim.F to allow doubleq to be used with other tracers.
+>> Added an input parameter called beta to newsedim.F, that allows
+   to account for the shape of the particles in the computation of
+   the sedimentation velocity.
+>> Added the ability to transport a radiatively active population of
+   submicron dust particles (flag "submicron" in callphys.def).
+   Updated routines: callradite.F, updatereffrad.F, aeropacity.F,
+   initracer.F, vdifc.F, suaer.F90, inifis.F, callkeys.h.
+>> Connected the predicted size and amount of dust to the water
+   cycle. The size of the particles is now given by rdust in
+   updatereffrad.F, and the amount of cloud condensation nuclei
+   (CCN) is given by ccn in aeropacity.F. The calculation of ccn is
+   done in aeropacity.F because it's deduced from the opacity when
+   doubleq is not used. rnuclei and dustcores are removed from
+   watercloud.F and replaced by rdust and ccn.
+   Updated routines: physiq.F, callradite.F, updatereffrad.F,
+   aeropacity.F, watercloud.F.
+>> Removed the "fake" call to watercloud.F in physiq.F which was used
+   to give the size of the ice particles to the radiative transfer
+   code at firstcall. Instead, rice is computed in updatereffrad.F
+   using a simple equation and a typical amount of dust nuclei (ccn0).
+>> Increased the number of Gauss integration points in
+   aeroptproperties.F.
+>> Added the ability to write the 3D scattering parameters of a
+   given aerosol in the outputs using the out_qwg flag in
+   aeroptproperties.
+>> Changed "DO iir=1,4" into "DO iir=1,nir-1" in suaer.F90 (in case
+   the number of infrared channels is changed).
+>> Added nuice_ref in tracer.h and initracer.F, which is the
+   effective variance of the log-normal distribution used for water-ice
+   particles in the radiative transfer code.
+>> Updated the computation of rice, reffice and rsedice in
+   updatereffrad.F and callsedim.F.
+>> Added nuice_sed in callsedim.F, which is the effective variance
+   of the lognormal distribution used for the sedimentation of
+   water-ice particles.
+>> Added ccn_factor in watercloud.F, which is the ratio of the total
+   number of dust particles over the number of condensation nuclei.
+>> The variable beta is not saved anymore in newsedim.F.
+>> Corrected the BIG bug in lwu.F that was responsible for unstabilities
+   when clouds were radiatively active (FF+EM+JBM!)
+>> Turned ilwd, ilwn and ilwb to 1 in inifis.F.
+>> Added dust and ice visible opacities in the outputs.
+   Modified routine: aeropacity.F.
+>> Named water cycle tuneable parameters (nuice_sed, nuice_ref,
+   alb_surfice, ccn_factor) which are mentioned at firstcall by the GCM
+   (flag "water_param"). Modified routines: callsedim.F, physiq.F,
+   watercloud.F.
+
+== 25/01/2011 == EM
+>> updated testphys1d.F: removed #include "aerdust.h"
+>> cleanup in suaer.F90: no more calls to zerophys; added test to check
+   there is no overflow of isize index (in visible domain averaged properties
+   case)
+>> minor cleanup in newsedim.F (make it more F90 oriented)
+>> added flag 'TESicealbedo' (set to .true. to impose polar surface
+   albedos as observed by TES) in callphys.def 
+   
+== 28/01/2011 == EM
+>> added additional tests (to check correct reading of input files) in suaer.F90
+>> updated inifis.F  so that the directory where external data files are to
+   be found (e.g. TES opacities, dust properties, etc.) can be specified in
+   run.def (or callphys.def) as " datadir = /path/to/the/directory "
+
+== 29/01/2011 == AS
+>> added updated mesoscale-related routines in phymars:
+   ----------------------------------------------------------------------------
+   NAME                       CHANGES compared to GCM counterpart 
+   ----------------------------------------------------------------------------
+   meso_callkeys.h        --> one variable is added [consider merging w/ GCM?] 
+   meso_dustlift.F        --> stress + alpha default, or read in a file 
+                               stress.def if here [consider merging w/ GCM?]
+   meso_newcondens.F      --> correction on U V T tendencies is switched 
+                               off (unstable in mesoscale) 
+   meso_physiq.F          --> major modifications mainly related to I/O
+   meso_slope.h           --> additional common for slope scheme
+   meso_dimphys.h_ref     --> reference common serving as a basis for a 
+                               compilation script (makemeso)
+   meso_inifis.F          --> major modifications mainly related to I/O
+   meso_param_slope.F90   --> slope scheme by Spiga and Forget GRL 2008 
+                               [consider adding to GCM?]
+   meso_readtesassim.F90  --> an old version because the new F90-compliant 
+                               version needs the new makegcm scripts [TBD]
+   meso_testphys1d.F      --> similar to GCM except for routine names
+   ----------------------------------------------------------------------------
+    NB: in meso_dustlift.F and meso_readtesassim.F90, the subroutines 
+         have the same name as in the GCM.
+         this is because those files are supposed to be copied 
+         in specific temporary folders for compilation
+>> any future change in the following GCM routines in phymars:
+      - callkeys.h
+      - dustlift.F
+      - newcondens.F
+      - physiq.F
+      - inifis.F
+      - readtesassim.F90
+      - testphys1d.F
+   will be in need to be impacted to the corresponding meso_ routines 
+   [hence it is important to document this README file]
+>> any change in any other GCM routines than the ones listed will
+   have an effect in mesoscale simulations as well:
+     -- the two models are being kept updated at the same time :)
+     -- the two models would be possibly broken at the same time :(
+
+== 15/02/2011 == EM
+>> updated dissipation coefficients in indissip.F
+
+== 25/02/2011 == EM
+>> corrected bug in 'inifis.F' and 'datafile.h' to really be able to
+   specify (in callphys.def; using datadir=/whatever/path/to/use ) the path
+   to external datafiles (topography, surface properties, etc.)
+
+== 28/02/2011 == JBM + AS
+>> used settings reached by JBM to obtain his PhD results
+      alb_surfice = 0.45  ---  in physiq.F and meso_physiq.F
+      ccn_factor = 4.5    ---  in watercloud.F
+      nuice_sed = 0.45    ---  in callsedim.F
+>> NB: this is supposed to be further refined in the future
+
+== 01/03/2011 == AS + JBM
+>> nasty bug in the water cycle when iradia != 1  [no problem when iradia = 1]
+   --> mesoscale runs w/ water cycle had strange 5-hour fluctuations in RICE, from 80mic to 5mic
+>> PB: calculation of ccn [condensation nuclei] is done in callradite.F
+      * ccn must be saved 
+        --> corrected in physiq.F and meso_physiq.F
+      * ccn must not be modified elsewhere [e.g. in watercloud, when divided by ccn_factor] 
+        --> all calculations on ccn are now moved in callradite
+
+== 03/03/2011 == AS
+>> Added a pre-compilation flag MESOSCALE so that the LMDZ.MARS GCM
+will compile without stating errors because of mesoscale routines.
+[meso_physiq.F, meso_inifis.F]
+>> Now, this MESOSCALE precompilation flag can be used to lower
+the number of meso_* routines when adaptations for mesoscale
+applications are not very extended.
+   --> meso_testphys1d.F, meso_testphys1d.F, meso_dustlift.F
+       routines were deleted and changes are now moved under 
+       the MESOSCALE flag in the original GCM routines
+   --> Completely transparent for GCM compilation 
+       since it is devoid of the -DMESOSCALE option
+   --> Very good for syncing because changes in dustlift, newcondens
+       will be directly available in the mesoscale model
+
+== 04/03/2011 == AS + JBM
+>> new version version for aeroptproperties.F in phymars to limit uncertainties and be able to play with ngau
+>> this was coded by JBM in his personal reference version but not transmitted to the team reference version
+
+== 10/05/2011 == AS + JF
+>> in newsedim.F used for mesoscale computations, spurious values close to the surface
+   --> this was related to 1 - exp(-x) calculated as zero in w(ig,l) if x is very small
+   --> fix: when this happens, replace exp(-x) by 1 - x since x ~ 0
+>> in newsedim.F, "if (dztop.gt.epaisseur(ig,l)) then" was closed too soon by an "endif"
+   --> hence basically the simple method was never used 
+       and useless calculations with the complex method were carried out
+   --> fix by moving the closing "endif" [in addition to corrections mentioned in the previous point]
+
+== 17/05/2011 == EM
+>> set internal computations using double precision in growthrate.F and
+   watercloud.F (otherwise we sometimes end up with Nans).
+>> add extra checks in newcondens.F to avoid possibility of out of bounds
+   evaluation of array masse()
+  
+== 25/05/2011 == AS
+>> found that the 10/05/2011 bug fix in newsedim.F is also useful for GCM runs.
+>> no more need to modify callradite.F prior to compilation [but still dimradmars.h must be modified] 
+   --> in callradite.F we now have
+       -- DEFAULT name_iaer(1) is "dust_conrath"
+       -- IF (doubleq.AND.active) name_iaer(1) = "dust_doubleq"
+       -- IF (water.AND.activice) name_iaer(2) = "h2o_ice"  
+
+== 27/05/2011 == EM
+>> minor bug correction in writeg1d (JYC)
+>> add "-check" to debug option in makegcm_ifort
+
+== 08/06/2011 == EM
+>> minor bug fix in lect_start_archive.F (using wrong surface temp. array).
+   + swiched output messages to english and added that tracers not found
+   in file must be initialized by user.
+>> minor bug fix in datareadnc.F : 'datafile' path must be initialized.
+
+== 08/06/2011 == EM
+>> Significant update on how the number of scatterers is managed:
+   Instead of having to manualy change 'nearkind' in dimradmars.h, the
+   number of scatterers must now be set when compiling, using makegcm
+   "makegcm -s 1" for one scatterer (dust) or "makegcm -s 2" (e.g. dust
+   and water ice), default behaviour (ie not specifying -s #) is -s 1
+   Modified phymars/dimradmars.h , added directory phymars/scatterers
+   with script make_scatterers , and adapted makegcm* scripts.
+
+== 17/06/2011 == AC
+================================================
+======== IMPLEMENTATION OF THERMALS ============
+================================================
+The main goal of this revision is to start including the thermals into the model
+for development purposes. Users should not use the thermals yet, as
+several major configuration changes still need to be done.
+
+This version includes :
+- updraft and downdraft parametrizations
+- velocity in the thermal, including drag
+- plume height analysis
+- closure equation
+- updraft transport of heat, tracers and momentum
+- downdraft transport of heat
+
+This model should not be used without upcoming developments, namely :
+- downdraft transport of tracers and momentum
+- updraft & downdraft transport of q2 (tke)
+- revision of vdif_kc to compute q2 for non-stratified cases
+
+Thermals could also include in a later revision :
+- momentum loss during transport (horizontal drag)
+
+Compilation of the thermals has been successfully tested on ifort, gfortran and pgf90
+
+================================================
+================================================
+
+M      libf/phymars/callkeys.h
+M      libf/phymars/inifis.F
+
+Added new control flags to call the thermals :
+- calltherm (false by default) <- to call thermals
+- outptherm (false by default) <- to output thermal-related diagnostics (for dev purposes)
+================================================
+M      libf/phymars/vdifc.F
+^------> added a temporary output for thermal-related diagnostics
+M      libf/phymars/testphys1d.F
+^------> added treatment for a initialization from a profile of neutral gas (ar)
+      -> will be transformed in a decaying tracer for thermal diagnostics
+M      libf/phymars/physiq.F
+^------> added a section to call the thermals
+      -> changed the call to convadj
+      -> added thermal-related outputs for diagnostics
+M      libf/phymars/convadj.F
+^------> takes now into account the height of thermals to execute convective adjustment
+      => note : convective adjustment needs to be activated when using thermals, in case of a 
+         second instable layer above the thermals
+================================================
+A      libf/phymars/calltherm_interface.F90
+^------> Interface between physiq.F and the thermals
+A      libf/phymars/calltherm_mars.F90
+^------> Routine running the sub-timestep of the thermals
+A      libf/phymars/thermcell_main_mars.F90
+^------> Main thermals routine specific to Martian physics
+A      libf/phymars/thermcell_dqupdown.F90
+^------> Thermals subroutine computing transport of quantities by updrafts and downdrafts
+A      libf/phymars/thermcell.F90
+^------> Module including parameters from the Earth to Mars importation. Will disappear in future dev
+================================================
+================================================
+
+== 17/06/2011 == EM
+>>> Updates and corrections (to enable compiling/running in debug mode with
+    ifort)
+- removed option "-free-form" from makegcm_ifort and set mod_loc_dir="."
+  so that module files (produced in local directory by ifort)
+  are moved to LIBO
+- updated initracer.F, physdem1.F, physiq.F, inichim_newstart.F
+  to avoid referencing out-of-bound array indexes (even if unused)
+- cosmetic updates on inwrite.F, datareadnc.F
+- updated newstart.F to initialize and use 'datadir' when looking for files
+- corrected bug on interpolation of sub-surface temperatures in
+  lect_start_archive.F
+
+== 17/06/2011 == AC
+>>> Important updates to thermals parameters
+- Tuned aspect ratio of thermals to suit Buoyancy estimations from LES in CLOSURE relation
+- Renormalization of alim_star after plume
+- Removed alimentation mixing of estimated Teta in plume
+>>> Minor change in makegcm_ifort
+
+== 22/06/2011 == EM
+- added modifications (from JYC & FGG) to tracer.h & initracer.F for ions
+- minor improvement to newstart.F (q=x option, check that tracer index 
+  provided by user is valid).
+- minor correction to callradite.F (to enable compilation in debug mode
+  with ifort when there is only one tracer).
+
+== 17/06/2011 == AC
+- Added maximum vertical velocity and heat flux output from thermals
+- Added buoyancy diagnostics
+- Minor modifications in thermals routines 
+
+== 23/06/2011 == EM
+- correct bug (introduced previously) in lect_start_archive.F on loop
+  boundaries for soil temperature.
+
+== 01/07/2011 == AC
+- Added new settings for the Martian thermals from new LES observations
+- Revamped thermcell's module variables to allow it's removal
+- Minor changes in physiq and meso_physiq for the call to thermals
+- Switched from dynamic to static memory allocation for all thermals variable 
+to gain computation speed
+
+== 04/07/2011 == AC
+- Minor setting modification to thermals
+- Added new flux optimization in thermcell_main_mars.F90, to run properly in 3D
+
+== 14/07/2011 == JBM
+- Tidying up dust properties in DATAFILE for better consistency (cf. suaer.F90)
+- Cosmetic changes in aeropacity.F (changed comment and put a print inside a water flag)
+
+== 15/07/2011 == EM
+>> Implemented using 'z0' roughness length map (important: 'z0' reference
+   field is in datafile surface.nc, which has also been updated).
+- made z0 a z0(ngridmx) array and moved 'z0' from 'planete.h' to 'surfdat.h';
+  added a 'z0_default' (common in surfdat.h) corresponding to the 'control'
+  array value (contole(19) in startfi.nc).
+- adapted 'tabfi.F' to use 'z0_default'.
+- adapted 'phyetat0.F' to look for a 'z0' field in startfi.nc. If 'z0' is not
+  found in the startfi.nc file, then the uniform default value (z0_default)
+  is used.
+- modified 'physdem1.F' to write 'z0' field to restart.nc
+- adapted use of z0() in 'physiq.F' (diagnostic computation of surface stress),
+  'vdifc.F' and 'vdif_cd.F'.
+- adapted 'dustdevil.F' to use 'z0_default'.
+- 'testphys1d.F' now uses 'z0_default', and the value to use can be set
+  in run.def (with "z0=TheValueYouWant").
+- modified 'datareadnc.F' to load reference map of 'z0' from surface.nc, and
+  added a 'z0' option in 'newstart.F' to force a uniform value of z0. Note
+  that the use of the z0 map is automatic when using newstart, but only when
+  it loads a start_archive.nc file.
+
+== 15/07/2011 == AS
+- Modified the mesoscale part so that the previous change by EM does not
+  imply an error in the mesoscale case. More development is needed though
+  to get the "varying z0" capability in the mesoscale model.
+- Worked on versions of meso_physiq and meso_inifis as close as possible
+  to physiq and inifis for more continuity in the process of impacting changes 
+  (and even possibly to reach a common version of physiq and inifis).
+  >>> The main point is to make the mesoscale significant specific parts 
+  coded into include files in meso_inc so that meso_physiq and meso_inifis
+  looks very close to physiq and inifis.
+  >>> This is completely transparent for GCM users who does not need the
+  contents of meso_inc.
+- Slight cosmetic changes to physiq.f and inifis.F
+  --- some of them e.g. to prepare convergence between meso_physiq and physiq
+- Dropped the meso_ prefix from the slope routines
+  (currently those are only used in the mesoscale model,
+   but one could imagine using those in hi-res GCM runs)
+- Added a MESOSCALE flag to writediagfi so that mesoscale simulations
+  are not bothered with calls put in routines by GCM people
+
+== 19/07/2011 == AS
+- Finished converging meso_physiq.F and meso_inifis.F towards physiq.F and inifis.F
+  --> see previous point 15/07/2011
+  --> meso_ routines no longer exist (everything is in meso_inc and transparent to GCM users)
+  --> GCM routines include mesoscale parts within MESOSCALE precompiler commands
+  --> MESOSCALE parts are as hidden as possible not to mess up with GCM users/developers
+- Cleaned inelegant or useless #ifdef [or] #ifndef MESOSCALE in physiq and inifis so that
+  a minimum amount of such precompiler commands is now reached [mainly related to I/O]
+- Added the SF08 slope insolation model in the general physics parameterizations.
+  Added a callslope keyword in inifis.F and callkeys.h
+  --> This keyword is False by default / True if you use -DMESOSCALE
+- Removed the obsolete call to Viking Lander 1 diagnostic
+  Replaced it with a diagnostic for opacity at the domain center [valid for GCM and mesoscale]
+
+== 01/08/2011 == EM
+- Fixed bug in readtesassim (timeflag was not always set before being used)
+
+== 03/08/2011 == AC
+- Modified physiq.F to interface new SL parametrization
+- New SL parametrization based on a bulk Richardson Monin-Obukhov theory formulation
+   Stability functions are taken from D.E. England et al. (95)
+   Similarity functions coefficients based on Dyer and Hicks (70).
+   Includes thermal roughness length computation, heat and momentum drag coefficient computation
+   Can be used to output hydrodynamic-related SL quantities (bulk Richardson, turbulent Prandtl number estimation, Reynolds number)
+- Minor modification in thermcell_dqupdown.F to suit picky compilers
+- vdifc.F Now takes into account sub-grid gustiness, evaluated from thermals activity (it's proxy being the maximum vertical velocity)
+- Minor modification in meso_inc_les.F: u* is now taken from the new vdifc and not recomputed from a simple law
+== 08/08/2011 == AC
+- Formula correction for the Reynolds in vdif_cd : will affect the thermal roughness length. Results obtained with the precedent formula (previous commit) probably underestimate by about 1K the temperature in the mixing layer.
+- Added a new subroutine to libf/phymars called surflayer_interpol.F. This routine can be called as a diagnostic for interpolation of horizontal velocity norm and temperature in the surface layer, in 1D or 3D. The output height is controlled by a parameter z_out, to be set in physiq.F. This might be later added to a .def file. z_out is set to 0. by default, resulting in no call to this subroutine.
+
+== 16/08/2011 == AC
+- Minor modification in physiq.F to pass Ch from vdifc to meso_inc_les
+- Major modification to the formulation of integrals in surflayer_interpol.F
+  Now stable for most cases. Some cases with highly negative Monin Obukhov length
+  remain to be explored.
+- Added gustiness to the Richardson computation in vdif_cd.F. Gustiness factor is for now of beta=1., after
+  several comparisons with LES aerodynamic conductances. May be subject to a minor change (+/- 0.1)
+  in the near future. (almost transparent for the user)
+- Minor modifications relative to variables in vdifc.F.
+- Esthetic change to calltherm_mars.F
+- Changed the definition for HFX computation in the LES in meso_inc/meso_inc_les.F. New definition yields
+  very similar results to old one and follows a strict definition of what HFX should be.
+
+== 24/08/11 == TN
+Attempts to tune the water cycle by adding outliers 
+       + A few structural changes !!
+* watercap.h is now obsolete and removed -- all is in surfdat.h
+* watercaptag initialized in surfini.F (up to 7 areas defined) instead of initracer.F
+  - settings proposed by AS commented
+  - experiments by TN decommented. use with caution.
+* water ice albedo and thermal inertia in callphys.def and inifis.F
+* water ice albedo in surfini.F
+* water ice albedo computation in albedocaps.F90
+* alb_surfice is now obsolete in physiq.F, albedo_h2o_ice is used instead
+* frost_albedo_threshold defined in surfdat.h
+* water ice thermal inertia in soil.F
+TODO: * calibrate thermal inertia and ice albedo
+      * have a look at subgrid-scale ice with dryness ?
+
+== 07/09/2011 == AC
+
+- Added new flag for the Richardson-based surface layer :
+
+callrichsl, can be changed in callphys.def
+
+One should always use the thermals model when using this surface layer model.
+Somes cases (weakly unstable with low winds), when not using thermals, won't be well represented by the
+Richardson surface layer. This stands for Mesoscale and Gcm but not for LES model.
+
+Correct configs :
+
+callrichsl = .true.
+calltherm = .true.
+
+callrichsl = .false.
+calltherm = .false.
+
+callrichsl = .false.
+calltherm = .true.
+
+Previously unstable config :
+
+callrichsl = .true.
+calltherm = .false.
+
+- To be able to run without thermals and with the new surface layer, a modification has been made to
+physiq.F to account for gustiness in GCM and MESOSCALE for negative Richardson, so that :
+
+callrichsl = .true.
+calltherm = .false.
+
+can now be used without problems, but is not recommended.
+
+- Consequently, callrichsl = .false. is now the default configuration for thermals.
+
+We recall the available options in callphys.def for thermals :
+
+outptherm = BOOLEAN (.false. by default) : outputs thermals related quantities (lots of diagfi)
+nsplit_thermals = INTEGER (50 by default in gcm, 2 in mesoscale) : subtimestep for thermals model.
+         It is recommended to use at least 40 in the gcm, and at least 2 in the mesoscale.
+         The user can lower these values but should check it's log for anomalies or errors regarding
+         tracer transport in the thermals, or "granulosity" in the outputs for wmax, lmax and hfmax.
+
+== 08/09/11 == AS
+LMDZ.MARS + MESOSCALE. 
+---> Setting up a more realistic water ice source at the poles (notably outliers)
+
+[[ surfini.F ]]
+Main changes and bug fixes
+* reference to comcstfi.h was wrong. big problem because e.g. pi was not known.
+* commented about a problem to be fixed, due to surfini being called before initracer.
+* MESOSCALE: put the mesoscale north cap definition into a precompiling flag #MESOSCALE
+             for the moment: if [alb_mean_TES > 0.26 and lat > 70] then outliers
+             (previously done in meso_inc_caps.F)
+   
+[[ inifis.F ]]
+Just changed a comment with wrong formatting
+
+--> below, only MESOSCALE
+
+[[ soil.F ]]
+if somewhere IT > IT_outliers, then makes it = IT_outliers
+
+[[ physiq.F ]]
+[[ meso_inc/meso_inc_caps.F ]]
+[[ meso_inc/meso_inc_ini.F ]]
+meso_inc_caps no longer called. keep for reference for the moment.
+
+[[ meso_inc/meso_inc_var.F ]]
+deleted lines with *_lim variables, now useless
+
+== 08/09/11 == EM
+-Fixed problem about undefined tracer names in 'surfini.F' by calling
+ 'initracer' before 'surfini' in physiq.F
+
+== 09/09/11 == AS
+--> Fixed a problem with .eq. used with booleans in physiq.F
+[some good picky compilers complain about this]
+--> Added a warning in inifis about using
+callrichsl = .false.
+calltherm = .true.
+which is not recommended. The new surface layer has been built to go
+with the new mixing layer scheme (thermals). And anyway it is a much
+better scheme than the previous one.
+
+== 09/09/11 == AC
+
+ This is a major update for thermals and richardson layer parametrization. This update stabilizes thermals (further
+ studies might show that we can reduce the value of nsplit in gcm. To be tested.), and prevent downdrafts from descending into
+ the surface layer, which was acting as a cold feedback on the thermals. The Richardson surface layer now features
+ different gustiness coefficients for Richardson, heat and momentum so that u* and t* are correctly represented.
+ 
+ Upcoming updates will change surflayer_interpol.F90 to implement those changes in the interpolation scheme as well.
+ 
+ ***************************
+ IMPORTANT : several parts of the vdifc code might want to use these new definitions for gustiness, u* and t*. exemple : dust devil routines
+ that recompute u* ? lifting routines ? TODO !
+ **************************
+ 
+ 
+ M             289   libf/phymars/thermcell_main_mars.F90
+ ^-----------------> Added iterations to the velocity / buoyancy / entrainment / detrainment
+                     computation to ensure correct convergence. Iteration number is for now set to
+                     4, which is probably too much. This will be changed once several cases are tested.
+                     The minimum is probably 2 iterations.
+ 
+ M             289   libf/phymars/vdifc.F
+ ^-----------------> Subgrid gustiness parametrization now uses different gustiness beta coefficients
+                     for heat and momentum. Comparisons with LES at Exomars landing site, matching u*
+                     and teta* suggests values of beta=0.7 for momentum and beta=1.2 for heat, where
+                     the formula for large scale horizontal winds in the first layer is :
+                          U0^2 = pu^2 + pv^2 + (beta*wmax_th)^2
+ 
+ M             289   libf/phymars/vdif_cd.F
+ ^-----------------> LES data suggests that Richardson number distribution during daytime has a very large
+                     standart deviation due to highly negative Richardsons on several gridpoints. As a consequence,
+                     the mean Richardson in daytime in the LES is much more negative than in LES. In the gcm,
+                     parametrized subgrid turbulence prevents such cases, which can be dangerous in nearly unstable conditions.
+                     Hence, we use beta=0.5 instead of one, so that we keep the anti-crazy-hfx function of beta and we increase the
+                     norm of negative Richardsons in general for daytime conditions. This is set in conjonction with
+                     beta settings for heat and momentum in vdifc.
+ 
+ M             289   libf/phymars/meso_inc/meso_inc_les.F
+ ^-----------------> HFX and USTM computations now uses the different betas for heat and momentum.
+
+== 21/09/11 == AS
+--> Added MESOINI precompiler flag so that all fields needed to initialize the mesoscale model
+     are being output in the diagfi.nc file. Previously it was made through a separate physiq.F
+     which needed to be updated every time...
+--> This is completely transparent to the casual GCM users and only appears in the WRITEDIAGFI section of physiq.F
+
+== 21/09/11 == AC
+
+Revision on several settings for the thermals model. This version relies on fits done for an article to be published, and is more precise.
+
+ M             299   libf/phymars/thermcell_main_mars.F90
+ ^-----------------> Changed downdraft to updraft mass flux ratio from -1.8 to -1.9
+		     Changed first level for downdraft mixing from k=3 to k=2. Only level 1 is non-mixed now.
+		     Changed coefficients for downdraft to updraft thermal buoyancy ratios.
+
+ M             299   libf/phymars/calltherm_mars.F90
+ ^-----------------> Changed r_aspect_thermals from 2. to 1.5 for the GCM version to better match buoyancy profiles.
+
+== 29/09/11 == AS
+--> To easily explore sensitivity to lifting thresholds: in dustlift.F, ustar_seuil=sqrt(stress/rho) 
+    and alpha_lift[dust_mass] can be prescribed through an external stress.def parameter file.
+    --- alpha_lift[dust_number] is computed from alpha_lift[dust_mass] as in initracer.F
+    --- ustar_seuil is more user-friendly than stress because direct comparison with ustar from model 
+--> For the moment this is MESOSCALE only, but potentially useful to everyone
+
+== 30/09/11 == TN
+>> Bug correction in lect_start_archive.F ; in some cases layer(:) was not
+   initialized.
+
+
+== 10/10/2011 == AC
+
+***********
+This commit aims at increasing the thermals speed. Using these corrections, gcm performances in 64x48x32 using 1 tracer goes from 27.9% elapsed time in thermals to 18.76%.
+
+***********
+Additional work needs to be done in tracer advection to gain speed in high tracer number configuration. (tracer advection (but not momentum nor temperature) could be decoupled from sub-timestep, as they do not act on the thermals scheme (water vapor is neglected as we use theta and not theta_v, and radiative effect of dust is not computed in the thermals.))
+
+***********
+=> TOP 5 of routine contributions to gcm runtime :
+
+Each sample counts as 0.01 seconds.
+  %   cumulative   self              self     total
+ time   seconds   seconds    calls   s/call   s/call  name
+ 18.76      6.33     6.33      960     0.01     0.01  thermcell_main_mars_
+ 17.19     12.13     5.80                             __svml_powf4.A
+ 13.72     16.76     4.63    10369     0.00     0.00  filtreg_
+  3.94     18.09     1.33                             __intel_new_memset
+  3.73     19.35     1.26     2880     0.00     0.00  thermcell_dqupdown_
+
+note: thermcell_main_mars_ does call quite a lot power computations (see __svml_powf4.A), but this number will not increase with tracer numbers.
+
+***********
+=> LOG:
+
+M             312   libf/phymars/thermcell_main_mars.F90
+^------------------- removed (commented) computations on buoyancy which is purely diagnostic
+                     tuned internal convergence loop and added convergence criterion
+
+M             312   libf/phymars/thermcell_dqupdown.F90
+^------------------- removed (commented) downdraft-related if-loops (as we do not advect tracers and momentum in downdrafts for now)
+
+M             312   libf/phymars/calltherm_mars.F90
+^------------------- removed (commented) diagnostic-related computations
+                     changed default thermals spliting and aspect ratio
+                     corrected a bug where maximum height was not correctly computed and could result in convective adjustment used in place of thermals
+                     when using certains sets of nsplit and r_aspect (was not happening with the baseline version, so that this correction is transparent to
+                     users)
+********************
+
+== 14/10/2011 == AS + AC
+- Monin-Obukhov length is now output from surflay_interpol and written in diagfi if z_out not 0.
+- in calltherm_interface, defaut settings for qtransport_thermals and dtke_thermals
+
+== 20/10/2011 == EM
+- added FF's upgrade of writediagfi. Now, if at runtime there is a diagfi.def
+  file, it should contain the list of variables (1 per line) than will be put
+  in the diagfi.nc file. If there is no diagfi.def file, then all variables
+  are put in the diagfi.nc file (as was the case before).
+ 
+== 21/10/2011 == EM
+- Corrected small bug in newstart: initracer was not always used and thus
+  some tracer indexes (igm_co2, igcm_h2o_vap,...) were not set. This
+  however means that we now also call inifis from newstart and that we read
+  in flags set in 'callphys.def' (required for sanity checks in initracer).
+  Also adapted 'inichim_readcallphys': removed some obsolescent tests on
+  number of tracers for given combinations of options.
+
+== 21/10/2011 == AS
+- Added possibility for CH4 tracer in tracer.h and initracer.F
+
+== 27/10/11 == AS
+--> Added geticecover.F90 which computes seasonal ice cover given ls, lati(ngrid), long(ngrid)
+    as proposed by T. Titus from TES observations [fitting functions for crocus line] 
+    ... output is icecover(ngrid) which value is 0 [no ice cover] or 1 [ice cover]
+    ... no calculations are done for latitudes between -40 and +40 [ice cover is directly set to 0]
+--> In physiq.F, co2ice is set to a dummy high value to simulate a CO2 cap 
+    wherever icecover(ngrid) is 1. This is done at each timestep before newcondens is called.
+--> For the moment this is MESOSCALE only, but potentially useful to everyone.
+
+== 28/10/11 == FL + AS
+ADDED THE NEW FRAMEWORK FOR PHOTOCHEMISTRY
+This is not the last version. A new rewritten version of calchim.F [using LAPACK] is yet to be committed.
+--> A new version for photochemistry routines : *_B.F no longer exists, new routines in aeronomars
+D              333   libf/aeronomars/photochemist_B.F
+D              333   libf/aeronomars/init_chimie_B.F
+A                0   libf/aeronomars/read_phototable.F
+M              333   libf/aeronomars/calchim.F
+A                0   libf/aeronomars/photochemistry.F
+M              333   libf/aeronomars/chimiedata.h
+--> Changed calls to calchim and watercloud [surfdust and surfice needed] in physiq.F
+--> Left commented code for outputs in physiq.F [search for FL]
+--> Added settings which works for 35 levels in inidissip.F according to FL. Commented for the moment.
+--> Checked compilation and run, looks fine. Note that 'jmars.20101220' is needed.
+
+== 02/11/2011 == AC
+
+***********
+This commit aims at increasing the thermals speed, especially for large tracer number configurations. The idea behind this commit is to advect non-active conserved variables outside of the sub-timestep of the thermals. Because these variables are not used in thermals computation, we can decouple them:
+
+momentum: can be decoupled because we assume a constant ratio between horizontal velocity in alimentation layer and maximum vertical velocity in the thermal
+s.
+
+tracer: can be decoupled because we do not take condensation of any tracer into account and hence do not liberate latent heat nor form clouds in the thermal
+s.
+
+temperature: cannot be decoupled (of course)
+***********
+
+D             336   libf/phymars/thermcell_dqupdown.F90
+^----------------   Deleted and replaced by a simpler version. Notes about downdraft advection are still available from revision 336 of SVN in thermcell_dqu
+pdown.
+
+A               0   libf/phymars/thermcell_dqup.F90
+^----------------   New upward advection for tracers and momentum in thermals. Several changes are done compared to the old approach:
+                          - Updraft quantities are not longer computed by making hypothesis on the amount of advected air.
+                          - In general, the formalism for updraft computation is much simpler and clearer.
+                          - Tracer tendancies are no longer computed using the conservation equation. Instead, we use the divergence
+                          of an approximated turbulent flux of the concerned quantity, where downdraft are also neglected.
+
+M             336   libf/phymars/thermcell_main_mars.F90
+^----------------   The Main does not call anymore thermcell_dqupdown, which it was doing 2+tracer_number times per subtimestep (140 times per physical step for a 2 tracer config)
+
+M             336   libf/phymars/calltherm_mars.F90
+^----------------   Entrainment, detrainment and mass-fluxes are recomputed in  the sub-timestep loop. Their final value after iterations is used by the new
+ advection routine to compute tracer and momentum fluxes.
+
+*********** Results
+
+- Conservation of tracers has been assessed over 1 yr in 1D and found to be comparable to that obtained with the simple convective adjustment. (it actually
+seems to be better by a factor of 10%!)
+- GCM speed-up is of about 20% compared to the old thermal configuration, for a 2 tracer case.
+- Advection of sharp tracer profiles has been successfully observed, similar to the old method.
+
+== 07/11/11 == JBM
+>>> Changed watercloud.F to call two separate routines,
+simpleclouds.F or improvedclouds.F, which are a simplified and
+full microphysical scheme for cloud formation, respectively.
+Removed the tag called "improved" in watercloud.F, and added
+another tag called "microphys" which is defined in callphys.F
+instead. Changed routines: callkeys, inifis, physiq, watercloud.
+
+>>> Reimplemented the use of typical profiles of dust particle sizes
+and CCNs in simpleclouds.F. Corrected the previously used
+analytical CCN profile. Moved ccn_factor to simpleclouds.F,
+which won't be used in the new microphysical scheme. Changed
+routines: aeropacity, physiq, simpleclouds, watercloud.
+
+>>> Computed rdust at the end of callsedim instead of updatereffrad,
+except at firstcall. Renamed rfall into rsedcloud and moved it
+in simpleclouds. Moved nuice_sed to initracer.F and added it to
+tracer.h. Changed routines: callsedim, physiq, tracer.h,
+watercloud, initracer, simpleclouds, updatereffrad.
+
+>>> Added two tracers for the CCNs. Added the different tests in
+initracer.F to make sure that, for example, microphys is not
+used without doubleq, etc. Corrected an inconsistency in
+callsedim.F, and changed the way r0 is updated. Changes
+routines: callsedim, inifis, initracer, physiq, testphys1d,
+tracer.h.
+
+>>> Added the ability to have a spatially variable density in
+newsedim (same method as that used for the radius of
+sedimentation). Required the addition of one input to newsedim,
+which is the size of the density variable "rho". Changed
+routines: callsedim, newsedim.
+
+>>> Added an output to aeropacity called "tauscaling", which is a
+factor to convert dust_mass and dust_number to true quantities,
+based on tauvis. Removed ccn and qdust from aeropacity, which
+are obsolete now.
+
+>>> Wrote improvedcloud.F which includes all the microphysical
+scheme, and connected it to the sedimentation scheme. Added and
+changed routines: callsedim, physiq, growthrate, nuclea,
+improvedclouds, initracer, watercloud, microphys.h.
+
+== 07/11/11 == TN
+
+>> Added CCN & dust tracers updates in physiq.F
+Corrected a bug that can give negative CCN numbers, due to the 
+use of single precision values (only 6 decimals) whereas up to 10E+10 
+CCN can be formed or disappears...
+
+>> Corrected physical bug that causes h2o_vap or h2o_ice 
+to be negative in improvedclouds.F.
+
+>> Corrected physical bug that causes CCN & dust tracers
+to be negative in improvedclouds.F when all ice sublimates and 
+releases dust
+
+>> Added parameter contact mteta in callphys.def
+Default value is still 0.95, see inifis.F
+
+>> Changed tendancy computation for dust_number in improvedclouds.F
+that was not the right one. Indeed, the scavenged dust_number tracer 
+is computed from the dust_mass one, and its tendancy before scavenging 
+must be taken into account to compute its scavenging's tendancy.
+
+== 09/11/11 == AS
+
+Added a more recent version of concentrations.F by FL
+
+== 22/11/11 == EM
+>> Added FL corrections to aeronomars/photochemistry.F :
+- Bug correction on the chemistry time step (now set to 1/3rd of the
+  physics time step)
+- Updated kinetics coefficients (according to JPL 2011)
+
+== 22/11/11 == TN
+
+>>Changed scavenging in improvedclouds.F : CCNs are now virtual like dust
+to avoid tauscaling divergence.
+
+>>Water ice radius is now updated after sedimentation in callsedim.F.
+Added tau, tauscaling and zzlay as arguments
+
+>>Commented aggressive outputs at first call in suaer.F90, aeropacity.F
+
+== 23/11/11 == FGG + MALV
+
+>> New parameterization of the NLTE 15 micron cooling. The old parameterization is kept as an option, including or not variable atomic oxygen concentration. A new flag is introduced in callphys.def, nltemodel, to select which parameterization wants to be used (new one, old one with variable [O], or old one with fixed [O], see below). Includes many new subroutines and commons in phymars. Some existing routines are also modified:
+
+-physiq.F. Call to the new subroutine NLTE_leedat in first call. Call to nltecool modified to allow for variable atomic oxygen. Depending on the value of nltemodel, the new subroutine NLTEdlvr09_TCOOL is called instead of nltecool.
+
+-inifis.F. Reading of nltemodel is added.
+
+-callkeys.h Declaration of nltemodel is added.
+
+The following lines should be added to callphys.def (ideally after setting callnlte):
+
+# NLTE 15um scheme to use.
+# 0->  Old scheme, static oxygen
+# 1->  Old scheme, dynamic oxygen
+# 2->  New scheme
+nltemodel = 2
+
+A new directory, NLTEDAT, has to be included in datagcm.
+
+>> Improvements into NLTE NIR heating parameterization to take into account variability with O/CO2 ratio and SZA. A new subroutine, NIR_leedat.F, and a new common, NIRdata.h, are included. A new flag, nircorr, is added in callphys.def, to include or not these corrections. The following files are modified:
+
+-nirco2abs.F: nq and pq are added in the arguments. The corrections factors are interpolated to the GCM grid and included in the clculation. A new subroutine, interpnir, is added at the end of the file.
+
+-physiq.F: Call to NIR_leedat added at first call. Modified call to nirco2abs
+
+-inifis: Reading new flag nircorr.
+
+-callkeys.h: Declaration of nircorr.
+
+The following lines have to be added to callphys.def (ideally after callnirco2):
+
+# NIR NLTE correction for variable SZA and O/CO2? 
+# matters only if callnirco2=T
+# 0-> no correction
+# 1-> include correction
+nircorr=1
+
+A new data file, NIRcorrection_feb2011.dat, has to be included in datagcm.
+
+>> Small changes to the molecular diffusion scheme to fix the number of species considered, to avoid problems when compiling with more than 15 tracers (for example, when CH4 is included). Modified subroutines: aeronomars/moldiff.F and aeronomars/moldiffcoeff.F
+
+== 24/11/11 == TN
+
+>> corrected minor bug in updatereffrad.F : reffdust was not saved
+
+>> ccn_factor as not correctly used in sedimentation.
+It is now initialized in inifis.F, declared in tracer.h and
+used in both simpleclouds.F & callsedim.F to update ice radius.
+
+>> Commented diagfi outputs in aeropacity.F & improvedclouds.F for 
+non scavenging users.
+
+
+== 06/12/11 == TN
+
+>> tiny change : nuice_sed initialisation is now done in inifis. Also changed initracer and improvedclouds.
+
+
+== 08/12/2011 == EM
+>> Include changes and updates for photochemistry by FL:
+- aeronomars/calchim.F : change in units of surface density.
+- aeronomars/surfacearea.F : new routine to compute ice and dust surface area
+                             (m2/m3) available for heterogeneous reactions.
+- phymars/initracer.F : bug correction: initialize igcm_ch4 and change loop
+                        bounds (when guessing tracer names/properties with
+                        old input files).
+- phymars/watercloud.F : cleanup.
+- phymars/physiq.F : add call to surfacearea; photochemistry is now called
+                     after sedimentation to take into acount updated rdust
+                     and rice.
+ 
+== 08/12/2011 == EM
+>> more updates for photochemistry:
+-aeronomars/inichim_newstart.F : add methane + bug correction in "oldnames" case
+-aeronomars/read_phototable.F : adapt routine so that photolysis table file
+                                name may be set in the def file with
+                                phototable = filename
+                                (default is "jmars.20111014")
+
+
+== 09/12/2011 == EM
+>> more updates for photochemistry from FL: improved aeronomars/surfacearea.F ,
+  with a change in arguments.
+
+== 14/12/2011 == EM
+>> fixed bug in callsedim.F: recomputation of rdust and rice should only be done
+   if the appropriate tracers and flags are set.
+>> commented out call to uertst in ch.F (uertst crashes with gfortran and is
+   moreover puerly diagnostic messages).
+>> In nltecool.F: Enforced using igcm_* indexes to identify tracers and not
+   hard coded fixed numbers (which would lead to a disaster in cases where the
+   order of tracers was changed).
+
+== 14/12/2011 == AC
+>> Improved computation of mixing in vdifc for temperatures less than the saturation
+   temperature.
+   The scheme works by computing mixing of T and then liberating latent heat when T<Ts.
+   Taking into account the mass of co2 ice condensated, a new mixing profile for T is computed.
+   When the computation has converged, the tendancy for mixing of T is taken with respect to
+   the initial T profile for which co2 ice has been condensated.
+>> This scheme is based on initial work done by Melanie Vangvichith and has been adapted/tested/bug-fixed
+   and improved to Mars.
+
+== 15/12/2011 == EM
+>> minor correction in aeronomars/calchim.F and aeronomars/surfacearea.F : 
+   calls to wstats should always be embeded in if (callstats) condition.
+   
+== 19/12/2011 == TN
+>> new option in newstart: 'ini_h2osurf', water ice surface initialisation to keep seasonal frost 
+   but get rid of polar cap positive or negative values.
+
+== 20/12/2011 == AS
+>> new option possible in callphys.def: tituscap [logical]
+.true. will call functions geticecover to yield a nice evolving CO2 cap as measured by Titus (mostly useful for mesoscale)
+.false. is the default option, so this change is transparent to the casual user
+
+== 11/01/2012 == AC
+>> Corrections to the thermals scheme following latest revisions of the related paper. Replaced the surface layer interpolator by a more
+complete routine, that will ultimately become a post-processing utility (and disappear from libf) and a subroutine in the MCD.
+
+== 23/11/11 == FGG
+>> Cleanup of the NLTE routines which have been packed together to limit the 
+   number of files. Also enforced that file names are non-capitalized (needed
+   by the create_make_gcm scripts to better evaluate dependencies when
+   building the makefile).
+   
+== 07/02/12 == JYC
+>> Adding the new molecular diffusion routines (old "moldiff" and "moldiffcoeff"
+   are kept for now and if further tests are needed):
+   moldiffcoeff_red.F, moldiff_red.F90, diffusion.h
+   Also updated "phymars/comdiurn.h", "aeronomars/conc.h" and 
+   "aeronomars/chimiedata.h" to be fixed/free form compatible.
+
+== 09/02/12 == EM
+>> Updated the makegcm(s) so that default behaviour is to set LMDGCM env variable
+   to be the directory in which the makegcm script is. Updated the makegcm_*
+   to use "SOURCE" to identify main program to compile
+>> Adapted "create_make_gcm" script so that it can compile a main program that
+   is either something.F or something.F90. Also added that object files are
+   removed from archive before compiling a new version.
+
+== 10/02/12 == TN
+>> Major update on watercycle: a smaller integration timestep is now used
+   in watercloud.F, sedimentation of clouds is done in watercloud instead of 
+   callsedim.F
+>> Temperature-dependant contact parameter in nuclea.F
+>> No dust lifting if CO2 ice in vdif.c
+>> Ice integrated column opacity is written in diagfi from physiq.F, instead
+   of aeropacity.F. Mandatory if iradia is not 1.
+>> New definition of permanent ice in surfini.F and possibility to have an ice 
+   cap in it in 1d.
+>> Update in deftank: callphys.def.outliers,run.def.1d; added traceur.def.scavenging
+
+== 15/02/12 == AS
+>> Optimization of watercycle new capabilities, e.g.:
+   ... in nuclea, removed 'if' from function fshape, modified **, decrease number of overall variables
+   ... in growthrate and newsedim, modified ** 
+   ... in improvedclouds, modified **, improved recursive calls to erf (now loop w/ 2 erf + 1 log instead of 4 erf + 4 log)
+>> Checked consistency with previous formulations
+>> Code 35% faster with a Valles Marineris mesoscale run in springtime (set imicro=25)
+   ... probably even better at cloudier seasons
+
+== 23/02/12 == AS
+>> In improvedclouds and waterclouds, added optimizations
+   ... moved calculations to firstcall
+   ... moved 'if' statement so that only useful calculations are performed
+>> Code about 10% faster [tests carried out with mesoscale summer Tharsis run]
+>> Check with a GCM run that results similar
+
+== 27/02/12 == AC
+>> Continuation of thermals setting, comparisons with mesoscale results on Case C
+>> Added possibility to call gcm (or 1d) with constant prescribed sensible heat flux, in the spirit of direct comparisons with LES
+   ... This is directly comparable to the variable tke_heat_flux in namelist.input
+   ... Requires the use of yamada4.F from terrestrial GCM (mixes more, seem more numerically stable)
+   ... Usually requires high timesteps (>1000) to avoids crashes. Best approach is to compare
+   height of first model level z1 and teta_1 between LES and 1D, and increase the timesteps until results 
+   between the two models are comparable (might require a slitghly different tke_heat_flux between the two models
+   due to difference in vertical diffusion schemes and subgrid effects)
+   ... Syntax for use is to add "tke_heat_flux = ..." in callphys.def
+>> Corrected some stuff with tke transport in thermals (which is anyway deactivated but one day maybe...)
+
+== 02/03/12 == EM
+>> bug fix in "aeronomars/moldiff_red.F90" (wrong mmol array size in included
+   subroutine) + adapted extreme limit test for H to altitudes of ~4000km
+   (compatble with 50 layer model).
+>> bug fix in "nirco2abs.F" index of "co2" and "o" tracers were hard coded as
+   1 and 3!
+>> updates from FGG of euvheat.F, callkeys.h and inifis.F to have the
+   "euveff" parameter read from callphys.def
+>> added missing call to surfacearea before call to calchim in physiq (mea
+   culpa) and also moved photochemistry so it occurs after sedimentation.
+
+== 06/03/12 == EM
+>> Added option "q=profile" in newstart to initialize a given tracer with
+   a profile specified in an ASCII file.
+>> Minor fix on lect_start_archive : when tracers were not found, a default
+   value was asked to user, but twice! Once is enough.
+
+== 07/03/12 == AC
+********************************************************
+>> UPDATE ON PARAMETERS TO SET TO USE THE THERMALS MODEL 
+********************************************************
+
+>> IN CALLPHYS.DEF <<
+---------------------
+
+- calltherm = .true.       > activates the thermals
+- callrichsl = .true.      > activate the Richardson Monin Obukhov surface layer
+with subgrid gustiness, and the yamada4 diffusion model from earth (corrected version of vdif_kc)
+- leave calladj = .true.   > so that the convective adjustment may work ABOVE the PBL.
+
+>> IN RUN.DEF <<
+----------------
+
+- 96 physicial timesteps per day (the internal sub-timestep of thermals will adapt
+so that it costs only 10% more CPU time to go from "48pdt+thermals" to "96pdt+thermals".)
+> this has to be respected because of a coupling between the radiative transfer and thermals
+> if you really wish to run with 48 pdt/day, you may want to deactive the thermals...
+
+>> USEFULL DIAGNOSTICS <<
+-------------------------
+
+- activating the thermals will automatically add 3 2D-outputs to diagfi.nc files:
+> zmax_th : interpolated boundary layer height (m)
+> hfmax_th : maximum vertical eddy heat flux reached in thermals (K.m/s)
+> wstar : free convection velocity reached in thermals (m/s)
+
+A rule of thumb for determining the mean velocities in subgrid-scale structures is:
+
+Mean updraft velocity : ~ wstar
+Maximum updraft velocity : ~ 2 or 3.*wstar
+Mean downdraft velocity : ~ 0.66*wstar
+Maximum absolute value of downdraft velocity : ~ 2.*wstar
+
+>> AT COMPILATION TIME <<
+-------------------------
+
+- +1 vertical level during the compilation, and then using the updated z2sig.def
+
+>> UPDATED Z2SIG.DEF <<
+-----------------------
+
+- one level has been added in the PBL, so that to reach 150km you have to compile with
+33 vertical levels instead of 32.
+
+10.00000     H: atmospheric scale height (km) (used as a reference only)
+0.0020736
+0.015735
+0.0600151
+0.163344
+0.36358
+0.708007
+1.25334 
+2.06571
+3.22069
+4.80327
+6.90787
+9.63834
+13.108
+18.9666
+25.0626
+31.5527
+38.4369
+45.4369
+52.4369
+59.4369
+66.4369
+73.4369
+80.4369
+87.4369
+94.4369
+101.4369
+108.437
+115.437
+122.437
+129.437
+136.437
+143.437
+150.437
+157.437
+164.437
+171.437
+178.437
+185.437
+192.437
+199.437
+206.437
+213.437
+220.437
+227.437
+234.437
+241.437
+248.437
+255.437
+262.437
+269.437
+276.437
+283.437
+290.437
+297.437
+304.437
+311.437
+318.437
+325.437
+332.437
+339.437
+346.437
+353.437
+360.437
+367.437
+374.437
+381.437
+388.437
+395.437
+
+********************************************************
+>> END OF UPDATE ON PARAMETERS FOR THE THERMALS MODEL
+********************************************************
+
+== 12/03/12 == EM
+>> correction in nirco2abs: io and ico2 should be declared as integers
+>> Update sponge: remove posibility of specifying 'hsponge', all modes
+   apply to the last upper "nsponge" layers (default nsponge=3) and
+   sponge time scale doubles with every level, starting from top.
+
+== 12/03/12 == FL + EM
+>> update a coefficient in photochemistry.F and some cleanup in watercloud.F
+  and physiq.F.
+
+== 29/03/12 == JYC + EM
+>> Update vertical grid resolution for diffusion.
+ 
+== 30/03/12 == EM
+>> Updated model so that 1) reference pressure for opacity is now 610 Pa (and
+   not 700 Pa anymore) and 2) the new MY24-MY30 dust scenarios (input files
+   dust_MY24.nc, dust_MY25.nc, ..., dust_MY30.nc) can be used
+   (when setting iaervar=24,25,...,30 in callphys.def): changed
+   "readtesassim.F90" into "read_dust_scenario.F90" and apadpted aeropacity.F.
+   one can still use the "old" MY24-MY25-MY26 (input files dust_tes_MY24.nc,
+   dust_tes_MY25.nc and dust_tes_MY26.nc) scenarios by setting
+   iaervar=124, 125 or 126 in callphys.def.
+
+== 31/03/12 == AS & FF
+>> Deleted obsolete lines in solarlong   
+
+== 13/04/12 == FL
+>> Update of the chemistry package: 
+- calchim.F90 :
+  - upgraded from calchim.F
+  - can run with or without CH4
+  - fixed the mass conservation scheme
+- photochemistry.F :
+  -chemistry timestep is now independant from physics timestep
+  -can run with or without a CH4 tracer
+  - removed initial tests on species, since these are already done in calchim
+- removed inichim_readcallphys.F (not used any more)
+- concentrations.F: adaptated to better handle indexes and molar masses of
+                    tracers. "ncomp" (in chimiedata.h) no longer needed.
+- inichim_newstart.F90 : rewritten and cleaned (won't be compatible with
+                         old start files where tracer names are q01,...).
+                         Now handles hybrid levels and automaticaly adapts
+                         depending on which tracers are available.
+- newstart.F : adapted to followup changes in inchim_newstart.F90 and some
+               cleanup around the initialization of tracer names and surface
+               values.
+
+== 18/04/12 == TN
+>> New scheme in improvedclouds.F based on an analytical solution of the crystal radius growth equation
+>> Sedimentation of clouds done in callsedim.F, as it was done before version 520
+>> Latent heat release of sublimating ground ice in vdifc.F
+>> Bug corrected in lwu.F, that was a source of NaN for very thick water ice clouds
+>> Bug corrected in updatereffrad.F, ice and dust radius are now updated each timestep before radiative transfer
+
+== 20/04/12 == EM
+>> Some cleanup on messages and comments in code about the reference pressure
+   for dust opacity which is now 610 Pa.
+
+== 25/04/12 == TN
+>> The new scheme does not work for now. Instead, use of a subtimestep for nucleation and growth.
+
+== 26/04/12 == FGG+FL
+>> Update of the chemistry package, including:
+- 93 reactions are accounted for (instead of 22); tracking 28 species (instead
+  of 11)
+- computation of photoabsorption using raytracing
+- improved time stepping in the photochemistry
+- updated parameters (cross-sections); with this new version input files
+   are in 'EUV/param_v5' of "datafile" directory.
+- transition between lower and upper atmosphere chemistry set to 0.1 Pa
+  (calchim.F90)
+- Lots of code clean-up: removed obsolete files column.F, param_v3.h,
+  flujo.F, phdisrate.F, ch.F, interpfast.F, paramfoto.F, getch.F
+  Converted chemtermos.F -> chemthermos.F90 and euvheat.F -> euvheat.F90.
+  Added paramfoto_compact.F , param_v4.h and iono.h
+- Upadted surfacearea.F
+- Cleaned initracer.F and callkeys.h (removed use of obsolete "nqchem"
+  and "oldnames" case when initializing tracers).
+- Minor correction in "callsedim": compute "rdust" and/or "rice" only when
+  it makes sense.
+
+== 03/05/12 == JYC+EM
+- Update of molecular diffusion routines (diffusion.h, moldiff_red.F90
+  and moldiffcoeff_red.F): optimized to run faster and diffuse only
+  specific tracers (if they are present).
+- bugs fixed in simpleclouds.F (extra arguments) and watercloud.F (wrong
+  arguments in call to simpleclouds and rdust() should only be recomputed
+  if dust_mass & dust_number tracers are available).
+
+== 04/05/12 == JYC+EM
+- some syntax corrections in thermcall_main_mars, vdif_cd, pbl_parameters
+  which cause problems when compiling with some strict compilers (g95, gfortran)
+- added an initialisation of 'varian' in initracer for cases when using
+  conrath dust; because that value can be is used elsewhere (e.g. surfacearea)
+
+== 11/05/12 == FGG+FL
+- aeronomars/inichim_newstart.F : initialization of chemistry now handles
+  nitrogen species and ions
+- aeronomars/conc.h : cleanup of obsolete variables
+- aeronomars/chimiedata.h : cleanup of obsolete variables
+
+== 12/05/12 == FGG+JYC+EM
+- updated high atmosphere photochemistry (jthermcalc.F, param_v4.h, iono.h,
+  paramfoto_compact.F, param_read.F , thermosphere.F).
+- minor change in calchim.F90 (to not use maxloc(zycol, dim = 2) function
+  which seems to be a problem for g95) .
+- minor bug fix in perosat.F; set tendency on pdqscloud for h2o2 to zero if
+  none is computed.
+- in "moldiff.F", changed "tridag" to "tridag_sp", "LUBKSB" to "LUBKSB_SP"
+  and "LUDCMP" to "LUDCMP_SP" to avoid possible conflicts with same routines
+  defined in "moldiff_red.F". Added use of automatic-sized array in "tridag"
+  and "tridag_sp" local array "gam" (to avoid using an a priori oversized
+  local array).
+
+== 21/05/12 == JYC+FL
+- corrected bug in computation of HCO2+ in paramfoto_compact.F
+- avoid infinite H2O saturation ratio at very low temperatures in improvedclouds.F
+
+== 29/05/12 == EM
+- Added the possibility to use the "cold" (iaervar=6) or "warm" (iaervar=7)
+  dust scenarios (derived from the 7 MY24 to MY30 scenarios) in
+  aeropacity.F and read_dust_scenario.F
+
+== 04/06/12 == AC
+- Code re-organization in diverse parts of the GCM code. These are NOT cosmetic
+changes, but are needed for compilation of the Mesoscale model in NESTED configuration
+using the new physics.
+
+== 05/06/12 == AS
+- Change few function names in nlte_aux.F so that nesting is possible. This is 
+completely transparent to GCM users.
+
+== 06/06/12 == EM
+- Minor cleanup in surfini.F
+- Corrected the polar mesh surface area which was wrong in the physics (changes
+  in phyetat0.F, calfis.F and newstart.F)
+
+== 14/06/12 == EM
+- update z2sig.def file in deftank with improved vertical discretization for
+  better thermals (this update should should have been done a while back...)
+
+== 14/06/12 == FGG
+- Added possibility to run with a varying EUV cycle following real one.
+  The flag solvarmod=1 triggers this behaviour, with companion flag
+  solvaryear=## , where ## is the Mars Year (from 23 to 30).
+  Setting solvarmod=0 reverts to 'old' behaviour, where there is a constant
+  EUV forcing throughout the run, set by the "solarcondate" flag.
+- Needs corresponding input data files ("param_v6" subdirectory of "EUV"
+  subdirectory in "datadir").
+- Added files jthermcalc_e107.F and param_read_e107.F in "aeronomars",
+  modified files euvheat.F90, hrtherm.F, chemthermos.F90, param_v4.h and
+  param_read.F in "aeronomars" and files inifis.F, physiq.F and callkeys.h
+  in "phymars".
+
+== 15/06/12 == EM
+- Minor fix in "nuclea.F", max() and min() functions must have arguments
+  of identical types.
+- Bug correction in "physiq.F": only water (and possibly dust and cnn if
+  using microphysics) tracer tendencies should be updated after call
+  to watercloud.
+
+== 22/06/12 == EM
+- Enforce that imposed TES ice albedo can never be greater than 0.9
+
+== 28/06/12 == JYC+EM
+- Decreased time step for molecular diffusion (diffusion.h) for better stability
+- Added test in moldiff_red.F90 to enforce that the system can't be stuck in an 
+  infinite loop.
+- The creation and output of coefficients in file 'coeffs.dat' in moldiff_red.F
+  is now controled by an internal flag (by default set to false).
+
+== 12/07/12 == TN
+- Use of stats.def to write variables in stats.nc, same as diagfi.def
+- some outputs in physiq.F
+
+== 25/07/12 == TN
+- Added module updaterad.F90, that computes ice and dust radius: 
+  ---> for ice particles: typical profile (even if doubleq is used) or microphysics
+  ---> for dust particles: geometric mean radius (sedimentation,radiative transfer) 
+                           or mass mean radius (for heterogenous nucleation of microphysics)
+- Possibility to use microphys without scavenging: 
+     dust population will not be affected by nucleation and CCN release
+- New ice definition in surfini, based on latest CO2 cycle parameters
+
+== 07/08/12 == FGG + MALV
+- Improvement of the NLTE 15um scheme (for running with nltemodel = 2); now
+  MUCH faster than previously (by a factor 5 or so):
+- Improvements included to the parameterization:
+  - Cool-to-space calculation included above P(atm)=1e-10, with a soft
+    merging to the full result (without the CTS approximation) below that
+    level
+  - exhaustive cleaning of the code, including FTNCHK and reordering of
+    loops, subroutines and internal calls
+  - simplification of the precomputed tables of CO2 bands' atmospheric
+    transmittances
+  - the two internal grids (the one used in the CTS region and the one
+    below) have been , in order to reduce the CPU time consumption
+  - reading of the spectroscopic histograms is made only once, at the
+    beginning of the GCM, to avoid repetitive readings of ASCII files
+  - F90 matrix operations (matmul,...) included.
+- Changes in routines:
+  - removed nlte_leedat.F
+  - updated nlte_calc.F, nlte_tcool.F, nlte_aux.F
+  - updated nlte_commons.h, nlte_paramdef.h
+  - added nlte_setup.F
+- Important: The input files (in the NLTEDAT directory) read as input by
+  these routines have changed. the NLTEDAT directory should now on contain
+  only the following files:
+   deltanu26.dat  enelow27.dat  hid26-3.dat  parametp_Tstar_IAA1204.dat
+   deltanu27.dat  enelow28.dat  hid26-4.dat  parametp_VC_IAA1204.dat
+   deltanu28.dat  enelow36.dat  hid27-1.dat
+   deltanu36.dat  hid26-1.dat   hid28-1.dat
+   enelow26.dat   hid26-2.dat   hid36-1.dat
+
+== 08/08/12 == EM
+>> Some minor changes and adaptations for the MCDv5 runs:
+- removed the 'nice' instruction from run0 script
+- update dissipation factors in inidissip.F (fac_mid=3,fac_up=30,startalt=70)
+- add some outputs in physiq.F
+- put example def files used for MCDv5 simulations in deftank:
+  callphys.def.MCD5 run.def.64x48x49.MCD5 traceur.def.MCD5
+
+== 08/08/12 == FGG
+>> commented out some messages in nlte_tcool.F (which were informations
+   useful and meaningful during code development only)
+
+== 27/08/12 == FGG
+>> bug correction in the varying EUV case; now correctly account for things
+   as the year cycles.
+
+== 20/09/2012 == EM
+>> update of zrecast utility: add possibility to have automatic "MCD/GCM"
+   altitude above surface levels as well as the possibility to specify min,
+   max and number of levels.
+
+== 21/09/2012 == EM
+>> Adapted code so that it can run fractions of days: e.g. if "nday=1.5" in
+  run.def, then run a sol and a half, "nday=0.75" to run three quarters of
+  a sol... Of course the fraction should correspond to a number of complete
+  dynamics/physics cycles. The fraction of the sol that a (re)start.nc
+  file corresponds to is (read)written as 'Time' in the file.
+
+== 25/09/2012 == EM
+>> Minor improvement for running fractions of sols; enforce some rounding of
+   'Time' (ie: fraction of day) read from the start.nc file in order to limit
+
+== 05/11/2012 == TN
+>> Added new option : ndynstep in run.def, that allows to run for a specific number a dynamical timesteps.
+   If ndynstep is not specified or is negative, nday is used. Otherwise nday value is discarded.
+   The problem with nday alone is that one can only run the GCM for a decimal fraction of one sol.
+
+== 06/11/2012 == EM
+>> update of zrecast utility: now the planetary constants (radius, gravity,
+   reduced gas constant) are read from the "controle" array in the file and
+   not hard coded. That way zrecast can also be used for the generic model.
+   Note that the "distance to center of Mars" and "MCD" options still contain
+   some hard coded Mars constants.
+
+== 15/02/2013 == TN
+>> Various bugs
+- watercloud.F : latent heat release was not correctly added
+- updaterad.F90 : minimal rdust is changed from 0.1 to 0.01 microns
+- vdifc.F : The scheme with potential temperature mixing that takes into acount CO2 condensation
+            could not work without CO2 condensation (callcond=false) -- see commit r473
+            This caused a quick GCM crash. Now there is no condensation at all with callcond=false
+- physiq.F : pressure levels are now correctly used with surface pressure changes due to CO2
+             condensation. Only zplev and zplay variables should be used in physiq.
+             Bug corrected in case of scavenging=false that led to instabilities. CCN tracers were not checked.
+- makegcm : use of phy$physique instead of phymars for scatterrers
+ 
+== 25/02/2013 == EM
+- added "-fp-model precise" option when compiling with ifort (fixes unexplained
+  mass loss of tracer in the dynamics)
+  
+== 27/02/2013 == EM
+- minor bug correction in newcondens.F and some code tidying (in co2snow.F also).
+
+== 12/03/2013 == EM
+- added possibility to set slope parameters in testphys1d
+
+== 12/03/2013 == TN
+- added possibility to use the radiative slope scheme in the 3D-GCM
+
+== 10/05/2013 == FGG
+- bug correction in "extract" utility
+
+== 02/07/2013 == TN
+>> Added the possibility to store multiple initial states in one start/startfi
+>> New option 'ecrithist' in run.def to write data in start/startfi every ecrithist
+   dynamical timestep (default is to write it at the end of the GCM run).
+>> New option 'timestart' in run.def to initialize the GCM with the time timestart
+   stored in start (default is last time).
+>> This new feature is (supposedly) totally RETROCOMPATIBLE. Changes are:
+  - Time axis added in startfi
+  - Time axis can be longer than one in start/startfi
+  - Possibility to initialize the GCM with old start/startfi
+  - Compatibility with start2diagfi, newstart, testphys1d, expandstartfi
+  - Absolute date is stored in diagfi for less-than-a-day runs
+>> Quick documentation about dates :
+  - Day at the beginning of the start (integer) is stored in controle(4) 
+    for start and diagfi and controle(3) for startfi.
+  - Fraction of the day at the beginning of the start (real between 0 included and 1 excluded) 
+    is stored in controle(29) for start, controle(27) for diagfi and controle(4) for startfi.
+  - The "Time" variable stores all the dates from the beginning of the start (positive real) 
+    for start, startfi and diagfi
+  - Time is stored in start_archive in the "Time" variable.
+  - Time-related data in the controle field of start_archive are useless.
+For instance the i-th date of diagfi is controle(4)+controle(27)+Time(i)
+
+== 04/07/2013 == EM
+- Removed options "-static" and "-xSSE4.2" from ifort default options from
+  makegcm_ifort (-static not usable on Gnome computer, and not much benefit
+  anyways, and -xSSE4.2 causes unexplained crashes with thermosphere on
+  Gnome)
+
+== 18/07/2013 == EM
+- Bug fix: when running with photochemistry, ccns did not sediment! Fixed
+  initracer.F. Also added that callsedim/newsedim use updated temperatures.
+- Converted run0 and run_mcd scripts to bash.
+
+== 26/07/2013 == FGG +JYC
+- Upgrade on the thermospheric photochemical reaction rates. These are now
+  read in from a file "chemthermos_reactionrates.def".
+
+== 06/09/2013 == AC + EM + AS
+- Cleaned and commented version of thermal plume model with automatic arrays
+- Checked: exact same results than before modifications
+
+== 11/09/2013 == EM
+- Bug fix in vdifc.F: in some cases, some elements of pdqsdif() were not given
+  any value. In all cases, it is safer to start with clean initialization of
+  output tendencies to zero.
+- Bug fix in concentration.F: error in cpi() and aki() indexes led to
+  wrong computation of atmospheric conductivity and specific heat.
+
+== 11/09/2013 == EM
+- IMPORTANT CHANGE: Implemented dynamic tracers. It is no longer necessary to
+  compile the model with the '-t #' option, number of tracers is simply read
+  from tracer.def file (as before).
+  Adapted makegcm_* scripts (and co.) accordingly.
+  Technical aspects of the switch to dynamic tracers are:
+  - advtrac.h (in dyn3d) removed and replaced by module infotrac.F
+  - tracer.h (in phymars) removed and replaced by module tracer_mod.F90 (which
+    contains nqmx, the number of tracers, etc. and can be used anywhere in the
+    physics).
+- Included some side cleanups: removed unused files (in dyn3d) anldoppler2.F,
+  anl_mcdstats.F and anl_stats-diag.F, and all the unecessary dimensions.*
+  files in grid/dimension.
+- Checked that changes are clean and that GCM yields identical results (in
+  debug mode) to previous svn version.
+
+== 13/09/2013 == AS
+- Performed the necessary modifications for dynamic tracers 
+  to work with the mesoscale model
+- Added precompiling flag MESOSCALE around pressure modifications
+  done in revision 883. This makes the mesoscale model become crazy.
+
+== 21/09/2013 == EM
+- Bug fix in yamada4.F: values for near-surface diffusion coefficients were
+  used but not set.
+- NB: FH recommends updating to latest yamada4 from Earth GCM and using
+  their iflag_pbl=11 scheme.
+
+== 23/09/2013 == EM
+- IMPORTANT CHANGE: Removed all reference/use of ngridmx (dimphys.h) in
+  routines (necessary prerequisite to using parallel dynamics); in most 
+  cases this just means adding 'ngrid' as routine argument, and making
+  local saved variables allocatable (and allocated at first call).
+  In the process, had to convert many *.h files to equivalent
+  modules: yomaer.h => yomaer_h.F90 , surfdat.h => surfdat_h.F90 ,
+  comsaison.h => comsaison_h.F90 , yomlw.h => yomlw_h.F90 ,
+  comdiurn.h => comdiurn_h.F90 , dimradmars.h => dimradmars_mod.F90 ,
+  comgeomfi.h => comgeomfi_h.F90, comsoil.h => comsoil_h.F90 ,
+  slope.h => slope_mod.F90
+- Also updated EOF routines, everything is now in eofdump_mod.F90
+- Removed unused routine lectfux.F (in dyn3d)
+
+== 31/10/2013 == TN
+- Added a freedust mode, to be used with doubleq :
+  Dust is not lifted, not rescaled, dust opacity is predicted instead of being forced.
+  A corresponding freedust option is added in newstart to rescale dust to acceptable values
+  before such a GCM run, although 'q=profile' could be used too.
+
+== 13/11/2013 == AS
+--> Added precompiling flag MESOSCALE around pressure modifications
+    done in revision 883. This makes the mesoscale model become crazy.
+
+== 20/11/2013 == EM
+- Correction: in physiq.F, move newcondens (CO2 condensation routine) so that
+  it is the last atmospheric physical process to be computed.
+- Also corrected the setting of the South Pole surface temperature to
+  CO2 condensation temperature (when obliquity < 27) to account for varying
+  CO2 mixing ratio. This operation is now done in newcondens.
+
+== 28/11/2013 == FGG
+- Bug fix: Sun-Mars distance was not correctly taken into account in the
+  solvarmod==1 (daily varying realistic EUV input) case.
+
+== 10/12/2013 == FGG
+- Improved 15um cooling routines, with also better handling of errors.
+
+== 18/12/2013 == EM
+- Bug fix in thermcall_main_mars, layer thickness "zdz" must be recomputed
+  in every do ig=1,ngrid loop.
+
+== 20/12/2013 == EM
+Series of changes to enable running in parallel (using LMDZ.COMMON dynamics);
+Current LMDZ.MARS can still notheless be compiled and run in serial mode
+"as previously".
+Summary of main changes:
+- Main programs (newstart, start2archive, xvik) that used to be in dyn3d have
+  been moved to phymars.
+- dyn3d/control.h is now module control_mod.F90
+- rearanged input/outputs routines everywhere to handle serial/MPI cases.
+  physdem.F => phyredem.F90 , phyetat0.F => phyetat0.F90 ; all read/write
+  routines for startfi files are gathered in module iostart.F90
+- added parallelism related routines init_phys_lmdz.F90, comgeomphy.F90,
+  dimphy.F90, iniphysiq.F90, mod_grid_phy_lmdz.F90, mod_phys_lmdz_mpi_data.F90,
+  mod_phys_lmdz_mpi_transfert.F90, mod_phys_lmdz_omp_data.F90,
+  mod_phys_lmdz_omp_transfert.F90, mod_phys_lmdz_para.F90,
+  mod_phys_lmdz_transfert_para.F90 in phymars
+  and mod_const_mpi.F90 in dyn3d (for compliance with parallel case)
+- created generic routines 'planetwide_maxval' and 'planetwide_minval', in
+  module "planetwide_mod", that enable obtaining the min and max of a field
+  over the whole planet.
+
+== 08/01/2014 == EM
+- Update of the read_dust_scenario routine: when input dust scenarios file
+  contain variable "dustop", it is assumed to be visible extinction opacity,
+  and if it is "cdod" (recent change, for the MCDv5.1 dust scenarios), then
+  it is IR absorption opacity (and is multiplied by 2.6 to be converted to
+  visible extinction opacity).
+
+== 12/03/2014 == EM
+- Bug fix in surfini.F, nb_ice array should be the size of the full grid.
+  Only was an issue when runiing in MPI and mode icelocationmode = 1
+  Note that it would make more sense for the initialization of watercaptag and co.
+  to be done in newstart, and that these values be stored in startfi.nc
+
+== 12/03/2014 == TN
+- Added tauscaling (the conversion factor from virtual to real dust) in startfi.nc file.
+  It is needed for 3 cases:
+  1. Compute ice particles size when using microphysics on the first physics step 
+     before the call to the radiative transfer (updatereffrad)
+  2. The conversion to real dust values with newstart, to be used for the freedust mode.
+  3. It brings the necessary information for the calculation of the dust 3D opacity 
+     from start & startfi files only when using virtual dust.
+  If tauscaling is not present, the default value is 10^-3 everywhere when needed.
+  If the freedust mode is used, tauscaling is equal to 1 everywhere. 
+  Modified accordingly startfi and start_archive writing and reading routines.
+
+== 24/03/2014 == AS
+--> fixed a potential bug in thermal plume model because zlmax was computed both in thermcell_main_mars and calltherm_interface... so made it an OUT argument
+ of calltherm_interface. also: changed the name to limz. and added precompiling flags to avoid the use of planetwide in MESOSCALE. in MESOSCALE we just go hi
+gh enough (nlayer-5) and do not care about computational cost (although we certainly gain from not using MAXVAL).
+--> moved allocations upward in inifis. does not change anything for GCM, but make MESOSCALE modifications simpler, and overall make inifis better organized:
+ first allocations, then reading callphys.def file.
+--> added precompiling flags around lines that are both useless for MESOSCALE (notably I/O) and recently adapted to parallel computations in the GCM
+--> tidied up what is MESOSCALE vs. GCM in surfini
+
+== 15/04/2014 == AS
+1. No more SAVE,ALLOCATABLE arrays outside modules.
+     This is important to solve the nesting conundrum in MESOSCALE.
+     And overall this is good for the harmony of the universe.
+     (Joke apart, this is good for any interfacing task. And compliant with a F90 spirit).
+     Note that bit-to-bit compatibility of results in debug mode was checked.
+2. inifis is split in two : phys_state_var_init + conf_phys
+     This makes interfacing with MESOSCALE more transparent.
+     This is also clearer for LMDZ.MARS. 
+     Before, inifis has two very different tasks to do.
+3. a bit of cleaning as far as modules and saves are concerned
+
+== 15/04/2014 == AS
+Replaced comcstfi and planete includes by modules
+
+== 18/04/2014 == EM
+Some minor fixes and cleanup.
+- use surfdat_h, ... qsurf was missing in start2archive
+- 'tauscaling' was missing from argument list when calling physdem1
+  in testphys1d
+
+== 19/04/2014 == FF+EM
+Add "composition" option in newstart to enable global modification of
+CO2,N2,Ar,O2 and CO mixing ratios. Plus some cleanup on physics variables
+(saved arrays) which have been moved to modules.
+
+== 01/05/2014 == AS
+- Filling geom arrays is now out of phys_var_state_init. Done
+  through a merged function ini_fillgeom within the comgeomfi_h module.
+- Cosmetic changes
+- New interface with the mesoscale model: lesser amount of dirty MESOSCALE includes
+
+== 04/05/2014 == AS
+- Further reduction of the amount of MESOSCALE precompiling steps and code bits
+- Changed the I/O interface with the mesoscale model
+  --> I are not longer arguments but are passed through modules
+  --> O are no longer generated as additional includes
+      but passed through the module comm_wrf.F90
+      !! this new module is harmless 
+      !!   in GCM applications 
+      !!   (arrays are not allocated)
+- Note: the easiest for interfacing is to put all fields 
+        to be output in a module with allocatable arrays.
+        see for instance in turb_mod for ustar.
+        but this could conflict with GCM developers' habits
+        so we use the comm_wrf.F90 strategy instead for
+        several arrays (radiative transfer, clouds, etc...)
+
+== 07/05/2014 == EM+FF
+Some fixes and updates:
+- addfi (dyn3d): Add correction on theta when surface pressure changes
+- vdif_cd (phymars): Correction for coefficients in stable nighttime case
+- jthermcalc (aeronomars): Fix for some pathological cases (further investigations
+  on the origin of these is needed)
+
+== 09/05/2014 == AS
+- Added a flag callyamada4 in callphys.def to activate or not the latest version
+for subgrid-scale mixing. It is T by default.
+- Warnings in conf_phys modified accordingly.
+
+== 10/05/2014 == AS
+- Further reduction (or 'factorisation') of mesoscale includes
+- ustar and tstar are calculated in vdifc. so no need to recalculate
+  those elsewhere. use turb_mod module to store it. 
+
+== 11/05/2014 == AS
+- Number of scatterers no longer prescribed at compiling time
+- Number of scatterers must now be set in callphys.def (keyword: naerkind)
+- Added in dimradmars_mod a subroutine ini_scatterers to initialize arrays once naerkind is known
+  -- NB: ini_scatterers is not called in phys_var_init
+  --     but rather in conf_phys once naerkind is read in callphys.def
+- Checks + names of scatterers moved from callradite to conf_phys
+- Put what was in scatterers.h in dimradmars_mod
+- Put what was in aerkind.h in dimradmars_mod
+- Put what was in yomaer_h in dimradmars_mod
+- Moved conc_mod in phymars rather than aeronomars. 
+  Otherwise pb of cyclic dependencies (plus compiling without aeronomars is impossible).
+
+== 14/05/2014 == FGG
+- Bug fix in jthermcalc.F: rounding issues in computation of the solar zenith
+  angle when SZA slightly greater than 90
+- Corrected misleading warning in nlte_tcool.F
+
+== 20/05/2014 == AS
+IMPORTANT CHANGE
+- Remove all reference/use of nlayermx and dimphys.h
+- Made use of automatic arrays whenever arrays are needed with dimension nlayer
+- Remove lots of obsolete reference to dimensions.h
+- Converted iono.h and param_v4.h into corresponding modules
+   (with embedded subroutine to allocate arrays)
+   (no arrays allocated if thermosphere not used)
+- Deleted param.h and put contents into module param_v4_h
+- Adapted testphys1d, newstart, etc...
+- Made DATA arrays in param_read to be initialized by subroutine 
+   fill_data_thermos in module param_v4_h
+- Optimized computations in paramfoto_compact (twice less dlog10 calculations)
+- Checked consistency before/after modification in debug mode
+- Checked performance is not impacted (same as before)
+
+== 21/05/2014 == EM
+- Bug fix in thermosphere.F, always initialize all tendencies to zero. (only
+  really matters in cases when only some of the included parametrizations
+  are used).
+
+== 02/06/2014 == EM
+- Add possibility to use clim or MY31 dust scenarios (and realistic EUV for MY31).
+
+== 11/07/2014 == EM
+- Changed the variable passed from LMDZ.MARS dynamics to physics: it is now
+a mass flux (kg/s) which is then converted to a vertical velocity (m/s) in
+the physics. This is to be consistent with what is done in LMDZ.COMMON.
+
+== 26/08/2014 == FGG
+- Bug fix: Enforce recomputation of reaction rates at every call of
+  routine prodsandlosses (in paramfoto_compact.F)
+
+== 06/10/2014 == TN
+- New option dustiropacity in callphys.def to change the reference IR opacity
+  of dust. Default is 'tes' (like before), the new one is 'mcs'. A new output,
+  dsodust, is the density scaled opacity of dust, to be compared with MCS
+  measurements, along with dustiropacity='mcs'. Future evolutions of this option
+  could include other instruments, or be used for water ice.
+
+== 20/10/2014 == JYC
+- Update and bug correction on the escape fluxes of H and H2.
+
+== 13/02/2015 == EM
+- Update pbl_parameter with corrected version by Anne-Flore Moreau.
+
+== 26/02/2015 == EM
+- Update default location for "datadir" files, now at
+  http://www.lmd.jussieu.fr/~lmdz/planets/mars/datadir
+  or /u/lmdz/WWW/planets/mars/datadir for local users.
+
+== 04/03/2015 == FF+EM
+- Some cleanup in iniorbit.F
+
+== 12/03/2015 == EM
+- Some cleanup in the dynamics/physics interface.
+
+== 23/03/2015 == EM
+- Follow-up to cleanup in dynamics/physics interface. Add iniprint.h to be
+  in line with what is done in LMDZ.COMMON dynamics.
+
+== 31/03/2015 == EM
+- Reorganizing the physics/dynamics interface, for better compatibility
+  between models and with the parallel LMDZ.COMMON dyn core. Main structural
+  changes are:
+* misc: (replaces what was the "bibio" directory)
+- Should only contain extremely generic (and non physics or
+  dynamics-specific) routines
+* dynlonlat_phylonlat: (new interface directory)
+- This directory contains routines relevent to physics/dynamics grid
+  interactions, e.g. routines gr_dyn_fi or gr_fi_dyn and calfis
+- Moreover the dynlonlat_phylonlat contains directory "phymars".
+  This subdirectories should only contain specific interfaces (e.g. 
+  iniphysiq) or main programs (e.g. newstart or xvik).
+* phymars/dyn1d: this subdirectory contains the 1D model.
+
+== 24/06/2015 == EM
+- Missing "use logic_mod" added in testphys1d
+- Changed the "use comconst_mod" inistats to use information from physics
+  (comconstfi_h module) rather than dynamics.
+- Moved "iniprint.h" back to dyn3d (and added link to it in dyn1d), as it
+  is preferable to not share modules/commons between physics and dynamics.
+
+== 04/08/2015 == TN
+- New option supersat to allow for the supersaturation of water vapor.
+  Default value is True. The goal is to disable supersaturation even 
+  with microphysics for comparison purposes.
+
+== 19/11/2015 == EM
+- Added option "-cpp" so that users can add the definition of specific
+  precompiling flags in makegcm_* scripts (and added default BLAS and
+  LAPACK flags for ifort on Gnome and Ada).
+- Put calls to dgesv (Lapack) routine in photochemistry_asis.F90 under the
+  LAPACK preprocessing flag. Moved secondary routines in photochemistry.F and 
+  photochemistry_asis.F90 into the main (via contains instruction) to avoid
+  multiple definitions of routines with identical names.
+
+== 19/11/2015 == EM
+- set things in param_read_e107.F and read_dust_scenario.F90 to read MY32
+  EUV and dust forcings.
+
+== 13/01/2016 == EM
+- Improvement on planetwide_min/max/sum for the 3D fields which assumed the vertical dimension to be klev.
+  Now works for any (klon,...) field.
+
+== 25/03/2016 == EM
+- Code reorganization (to mach comming evolutions on all planetary models),
+  created a "phy_common" directory to contain routines common (wrt structural
+  nature of underlying code/grid) to all LMDZ-related physics packages.
+- Adapted "create_make_gcm" and "makegcm*" scripts accordingly
+  (deleted obsolete makegcm_g95)
+
+== 28/03/2016 == EM
+- Added module "regular_lonlat_mod.F90" (to store information on global
+  lon-lat grid) in phy_common.
+- Turned iniphysiq (in dynlonlat_phylonlat/phymars)into module
+  "iniphysiq_mod.F90".
+
+== 29/03/2016 == EM
+- Added "time_phylmdz_mod.F90" module to store information on time and
+  calendar in the physics, should be used instead of accessing "temps_mod"
+  from the dynamics. And moved daysec and dtphys from module "comcstfi_h"
+  to module "time_phylmdz_mod".
+- Made "phys_state_var_init" a module
+
+== 30/03/2016 == EM
+- Got rid of references to "control_mod" from the physics. Added a couple
+  of relevent variables for outputs in time_phylmdz_mod.
+
+== 02/04/2016 == EM
+- Got rid of references to "dimensions.h" from physics packages:
+  use nbp_lon (=iim), nbp_lat (==jjp1) and nbp_lev 
+  from module mod_grid_phy_lmdz (in phy_common) instead.
+- Added "ioipsl_getin_p_mod.F90" (getin_p routine) in phy_common to
+  correctly read in parameters from *.def files in a parallel environment.
+
+== 07/04/2016 == EM
+- Some fixes for buggy outputs in 1D introduced by previous code modifications.
+- made statto.h a module.
+- ecritphy in dyn3d/control_mod.F90 should be an integer, not a real.
+
+== 08/04/2016 == EM
+- Fix for the 1D model initializations.
+
+== 13/04/2016 == EM
+- Some code reorganization: "dynlonlat_phylonlat" directory becomes
+  "dynphy_lonlat".
+- "iniprint.h" moved from "dyn3d" to "misc".
+
+== 17/04/2016 == EM
+- fix for 1D in writediagfi to enable writing at 
+  "ecritphy" rate.
+- removed iniprint.h from phymars/dyn1d since it is in "misc"
+- Some code cleanup in anticipation of future updates:
+ - changed variable names in comgeomphy.F90: give them more
+   explicit names: rlond => longitude , 
+   rlatd => latitude, airephy => cell_area,
+   cuphy => dx , cvphy => dy
+ - removed long(), lati() and area() from comgeomfi_h.F90,
+   use longitude(), latitude() and cell_are() from
+   comgeomphy.F90 instead
+
+== 22/04/2016 == EM
+- Updates and cleanup wrt dynamics/physics separation:
+  Removed init_phys_lmdz.F90 and comgeomphy.F90 from phymars;
+  comgeomphy is replaced by geometry_mod (located in phy_common).
+  Added physics_distribution_mod.F90 in phy_common and
+  mod_interface_dyn_phys.F90 in dynphy_lonlat.
+  Added nrtype.F90 (contains math const. like PI, etc.) in "misc"
+
+== 25/04/2016 == LS
+- Bug fix in read_dust_scenario.F90 to handle the limit case
+  of identical realday and time() values at the end of the year.
+
+== 02/05/2016 == JL+EM
+- bug fix in calfis: wrong array (pw) sent to physics: the transfered
+  mass flux should be on the physics grid, not the dynamics grid.
+  Moreover values at the poles needed to be correctly recomputed.
+
+== 06/05/2016 == EM
+- turn physiq.F into module physiq_mod.F
+
+== 07/05/2016 == EM
+- Bug fix in testphys1d, enforce iphysiq=1 after conf_phys (where its 
+  value might be modified).
+
+== 12/05/2016 == EM
+- Fix in wstats: use "def_var_stats" and not "def_var" (intended for
+  writediagfi) or else outputs are always single precision.
+
+== 20/05/2016 == AS+EM
+- cleanup around iniphysiq: separate things between planet-independent
+  initializations (now done by inigeomphy in dynphy_lonlat) and
+  mosre physics-package specific things (remain in iniphysiq).
+
+== 27/05/2016 == EM
+- missing libf/dynphy_lonlat/phymars/inigeomphy_mod.F90 in previous commit
+
+== 12/07/2016 == EM
+- move initialization of dimphy from inigeomphy to iniphysiq (initializations
+related to routines in phy_common or dynphy_lonlat can be done in 
+inigeomphy, but any initialization for modules/routines in a physics
+package (directory phymars) must be done in the related phymars/iniphysiq
+routine.
+
+== 27/07/2016 == EM
+- further cleanup in the dynamics/physics interface: stop sending information
+  about tracer advection (tracerdyn) back from physics to dynamics as this
+  input parameter can be read and set in the dynamics.
+
+== 09/09/2016 == EM
+- Some code cleanup (and harmonization with LMDZ.COMMON): remove "ecritphy"
+  from the dynamics (since it is read/used in the physics) and remove
+  "grireg" (unused) and "physic" (use iflag_phys instead) parameters from
+  the dynamics.
+- turn sponge.F into sponge_mod.F90 (and remove sponge.h)
+
+== 13/09/2016 == EM
+- Further cleanup to harmonize with LMDZ.COMMON turn "idissip" into
+  "dissip_period".
+
+== 10/10/16 == J. Audouard
+- Added CO2 clouds : if co2clouds is set to .true., physiq_mod will call co2cloud.F which contains a co2 clouds microphysics scheme (improvedCO2clouds.F). 3 tracers are needed: co2_ice, ccnco2_mass and ccnco2_number. 
+- Routines added:
+ co2cloud.F (called by physiq_mod.F, contains the microtimestep)
+ co2sat.F 
+ improvedCO2clouds.F (called inside the microtimestep, contains the microphysics)
+ massflowrateCO2.F (CO2 ice growth rate)
+ nucleaCO2.F (CO2 ice nucleation)
+ 
+- The following routines/files have been modified to take co2 clouds into account : 
+ callkeys.h (added logicals co2clouds and microphysco2)
+ callsedim.F (CO2 clouds tracers are ignored : their sedimentation is done in the microtimestep inside co2cloud.F)
+ conf_phys.F (added CO2 clouds logicals and some variables needed by the CO2 microphysics)
+ initracer.F (added CO2 clouds tracers)
+ microphys.H (added some values needed by the CO2 microphysic scheme)
+ physiq_mod.F (now calls co2cloud.F if co2cloud is set to .true.)
+ tracer_mod.F90 (added some variables needed by CO2 microphysics)
+ updaterad.F90 (added a routine for CO2 clouds)
+ 
+== 25/10/2016 == EM
+Updates for full physics/dynamics separation:
+- introduced module vertical_layers_mod.F90 in phy_common to store information
+  about the vertical grid to be used in the physics. Routines in the physics
+  should "use vertical_layers_mod" and not "use comvert_mod".
+- created an "ini_tracer_mod" routine in module "tracer_mod" for a cleaner
+  initialization of the later. Module tracer_mod should be used in the
+  physics, not infotrac (belongs to the dynamics).
+- removed some purely dynamics-related outputs (etot0, zoom parameters, etc.)
+  from diagfi.nc and stats.nc outputs as these informations are not available
+  in the physics.
+- added scalheight (atmospheric scale height) in comvert_mod
+
+== 16/11/2016 == EM
+Bug fix in 1D in physiq, missing "if (co2clouds)" around some operations to
+be done only when that option is set.
+
+== 22/11/2016 == JA
+-  Bug fix concerning the "riceco2" variable which was declared as a double or as areal in different routines. riceco2 is now correctly declared as a double evrywhere (updaterad.F and co2cloud.F)
+-  Moved CO2 clouds outuputs from physiq_mod.F to co2cloud.F
+-  Removed some CO2 clouds properties computation in physiq_mod.F (now done in post-treatment)
+
+== 24/01/2017 == JA
+-Modification of CO2 clouds routines : removal of some screen ouputs, modification for 3D of the writediagfi outputs in co2cloud.F, improvedCO2clouds.F and physiq_mod.F
+-callphys.def.co2clouds was added in deftank. It contains the necessary flags and constant for including co2clouds
+-traceur.def.co2clouds was added in deftank. It supplies the necessary tracers for running the co2 clouds scheme
+
+== 30/01/2017 == JA
+-Modification of CO2 clouds microtimestep : now is set by imicro in callphys.def together with the water ice clouds microtimestep
+-Addition of a meteoritic flux of dust is now possible:
+	  meteoriticflux_mod.F90 was added, it contains 3 variables that are provided in callphys.def (default values = no flux): meteo_flux_mass, meteo_flux_number and meteo_alt (in km)
+	  meteo_flux_mass and meteo_flux_number are added to the dust tracers at the z-level corresponding to meteo_alt at every timestep inside co2cloud.F
+	  conf_phys.F was modified to perform the initialization of the meteoritic flux with the callphys.def values (default values = no flux)
+	  callphys.def.co2clouds in deftank has been accordingly modified
+	  
+== 08/02/2017 == JYC+EM
+- Added possibility to run with an Helium "he" tracer (to be initialized
+  at constant value of 3.6e-7 kg/kg_air, i.e. the 4ppm of Krasnopolsky 1996
+  EUVE satellite, using newstart).
+- corrected case for CH4 in aeronomars/photochemistry.F (was using undefined
+  indexes when there is no CH4).
+- updated aki/cpi coefficients for Argon used to compute mean atmospheric
+  Cp and thermal conductivity in aeronomars/concentrations.F
+
+== 30/03/2017 == EM
+Keep up with updates in LMDZ.COMMON:
+In dynphy_lonlat : 
+- inigeomphy_mod.F90 : add ind_cell_glo computation and  transfer
+                       to init_geometry
+- mod_interface_dyn_phys.F90 : use is_north_pole_dyn and is_south_pole_dyn
+                               (instead of is_north_pole, is_south_pole)
+In phy_common:
+- abort_physic.F90 : to properly abort from physics (to be used instead
+                     of abort_gcm which is for within the dynamics)
+- geometry_mod.F90 : add ind_cell_glo module variable to store global
+                     column index
+- mod_phys_lmdz_mpi_data.F90 : use print_control_mod (rather than iniprint.h)
+                               and define is_north_pole_dyn, is_south_pole_dyn
+                               (instead of is_north_pole, is_south_pole)
+- mod_phys_lmdz_mpi_transfert.F90 : use is_north_pole_dyn, is_south_pole_dyn
+                                    (instead of is_north_pole, is_south_pole)
+- mod_phys_lmdz_omp_data.F90 : add is_omp_master (alias of is_omp_root) module
+                               variable and use print_control_mod (rather than
+                               iniprint.h), and introduce is_north_pole_phy
+                               and is_south_pole_phy
+- mod_phys_lmdz_para.F90 : use print_control_mod (rather than iniprint.h)
+- physics_distribution_mod.F90 : add call to init_dimphy in
+                                 init_physics_distribution
+- init_print_control_mod.F90 : added to initialize print_control_mod module
+                               variables
+- print_control_mod.F90 : make initialization occur via init_print_control_mod
+                          to avoid circular module dependencies
+
+== 31/03/2017 == EM + FGG
+Add possibility to fix EUV input as E10.7 value and remove previous system
+(which used parameter solarcondate). The E10.7 value is now set via
+callphys.def by parameter "fixed_euv_value" which is only used if 
+solvarmod==0. 
+Guidelines for min/ave/max EUV input:  fixed_euv_value=80/140/320.
+
+
+== 03/04/2017 == JA
+further work on the CO2 clouds scheme:
+-water ice clouds can now serve as condensation nucleii for CO2 clouds. Memory of CO2 CCN origin is kept, but a study of the water cycle is needed to know ig further work is necessary.
+-co2cloud.F, improvedCO2clouds.F, nucleaCO2.F, massflowrateCO2.F and physiq_mod.F have been modified accordingly.
+-co2 cloud scheme tuning has been improved for more stability. 
+-a new contact parameter for CO2 ice on silicate is used (mtetaco2=0.78) in microphys.h. Reference in microphysic.h
+-CO2 ice temperature is computed as a function of temperature in CO2cloud.F and improvedCO2cloud.F. Reference is in initracer.F
+
+== 07/04/2017 == EM
+Fixing a big bug (dating from revision 1528) in wstats.
+
+== 19/05/2017 == MV
+- implementation of a sub-grid water cloud fraction scheme (by A. Pottier): If CLFvarying is set to true in callphys.def,
+  then the sub-grid cloud fraction routine is applied in watercloud.F and aeropacity.F.
+- accordingly modified files are: watercloud.F, aeropacity.F, callradite.F, conf_phys.F, phyetat0.F, phyredem.F90, physiq_mod.F, 
+  testphys1d.F, callkeys.h, newtsart.F, start2archive.F, lect_start_archive.F
+- added file: tcondwater.F90, used by watercloud.F to calculate the condensation temperature of water
+- watercloud.F, aeropacity.F, callradite.F are converted to module files as watercloud_mod.F, aeropacity_mod.F, callradite_mod.F
+
+== 24/05/2017 == EM
+- remove writing a "nebuldata.out" file in physiq introduced by previous update.
+  It is not necessary and causes issues when in parallel.
+
+== 27/06/2017 == FGG
+- add possibility to read in MY33 EUV forcing.
+
+== 06/07/2017 == JA
+- Update for CO2 clouds scheme.
+- Several bugs have been corrected. 
+- Two .dat files are necessary (1 containing the CO2 ice Extinction coefficients is mandatory). 
+ They are in /data/jaudouard/datadir on ciclad if you need.
+- Several logical can now be set in callphys.def. Explained in co2clouds.F:
+ if co2useh2o=.true., water ice particles can serve as CCN for CO2 microphysics
+ if meteo_flux=.true., meteoritic particles are supplied to the CO2 nucleation, according to John Plane values.
+ if CLFvaryingCO2=.true, a sub-grid temperature distribution is applied for the CO2 
+microphysics (just like water clouds). The amplitude is spantCO2, also read from callphys.def
+- The previous logical microphysco2 has been removed.
+- Cloud opacity at 1µm is now computed in the co2cloud.F routine
+- Most of the co2 ice clouds scheme writediagfi are now in co2clouds.F
+- Some cleaning of the CO2 ice clouds routine has been done. Not perfect yet!
+ 
+== 02/11/2017 == JA
+- Update for CO2 clouds scheme.
+- Several bugs have been corrected, further cleaning performed.
+- The main routine of co2 clouds is co2cloud.F. Please read its comments if interested.
+
+== 03/11/2017 == JA
+- Further cleaning of the CO2 ice clouds code
+- We can now have different micro-timesteps bewteen the water ice clouds and the co2 ice clouds
+- callphys.def needs imicroco2 = integer (typically 50) (water microtimestep is imicro=integer)
+- A filter based on Spiga et al 2012 Saturation index has been implemented. It is supposed to represent
+  if a gravity wave propagates to the mesosphere or not (wheter the wave saturates on its way or not). 
+  The sub-grid temperature distribution is cancelled if the saturation index value of the column (between 12 and 80 km) is > 0.1, and is applied (+/- 3K) otherwise. if the keyword satindexco2=.true. in callphys.def (only applies if CLFvaryingCO2=.true. anyway). If set to .false., deactivate this filter and the sub grid T distribution applies everywhere and everytime. See comments in co2clouds.F
+- All that you need to launch a GCM run with co2 clouds is described in co2clouds.F comments. Ehouarn Millour and Anni Määttänen have the files. 
+ 
+== 15/11/2017 == EM
+- Bug fix in co2cloud.F (in the computation of the saturation index) along
+  with some code tidying.
+
+== 18/12/2017 == EM
+- Add possibility to load a dust MY33 scenario.
+
+== 22/12/2017 == MV
+-In the sub-grid scale cloud scheme zt is replaced is by ztclf and zq by zqclf ('clf' for 'cloud fraction') in order to avoid any confusion for the further schemes, which need initialization.
+-zteff and pqeff are initialized in the first part of the CLFvarying scheme, section 0 of the code, instead of been initialized in section 1 (tendencies) with the sub-timesteps.
+-The cloud fraction cannot be lower than the settled value mincloud.
+
+== 05/01/2018 == CL+EM
+- updated massflowrateCO2 routine which now uses an analytical formula rather
+  than an iterative solver
+- some code tidying in improvedCO2clouds.F
+
+== 05/01/2018 == EM
+- fix in co2cloud.F: use "co2cloudfrac" instead of "cloudfrac" to avoid
+  output naming collisions with the water cycle.
+
+== 09/01/2018 == FGG
+Updated the calculation of the dissociation and ionization
+branching ratios, using the values in the Schunk and Nagy book.
+New datafiles *branchingratio_schunkandnagy2000_param.dat must be loaded
+for the "EUVDAT" subdirectory of the standard "datadir" directory.
+Main changes are:
+- param_v4_h.F90  -> New definition for the O2 ionization branching ratio
+- param_read_e107.F -> Read the new files containing the S&N branching ratios
+- paramfoto_compact.F -> Mainly cleaning of the code and the comments.
+Also correction of a bug affecting the calculation of CO losses
+- chemthermos.F90 -> Small modification to add the possibility of including
+NO and O2 nightglow rates to the outputs
+- calchim.F90 and calchim_asis.F90 -> account for change in arguments in
+calls to chemthermos
+
+== 09/03/2018 == MV
+"Cosmetics" changes in watercloud_mod and improvedclouds to better understand the roles of variables : 
+- in watercloud_mod : change of variables subpdq and subpdt to sum_subpdq and sum_subpdt to make clear we are making the sum of the tendencies in the microphysics loop.
+- in improvedclouds : change of the names of input and output variables according to their names in watercloud_mod in order to not confuse them (in improvedclouds "ptimestep" corresponds actually to "microtimestep").
+- in watercloud_mod, CLFvarying block : change of the name zteff in pteff to be logical with the other variables names, and writediagfi lines have been moved to the CLFvarying block.
+
+== 09/03/2018 == MV
+"cosmetics" changes in co2cloud and improvedCO2clouds to better understand the role of the variables:
+- in co2cloud : - change of variables subpdq and subpdt in sum_subpdq and sum_subpdt to make clear we are making the sum of the tendencies in the microphysics loop.
+                - change of variables pdqsed in subpdqsed as these are tendencies inside the microphysics loop
+                - flag "sedimentation" has been added for the sedimentation block
+                - variables names in the sedimentation block have been changed (tempo_traceurs becomes zqsed, sav_trac becomes zqsed0)
+                - variable sum_subpdqs_sedco2 was added in the microphysics loop to make clear we make the sum of the surface sedimentation flux, output variable is still pdqs_sedco2
+                - variable sum_subpdqs_sedco2 has been initialized to zero
+                - zteff has been changed to pteff to be logical with the other variables names
+- in improvedCO2clouds : change of the names of input and output variables according to their names in co2cloud in order to not confuse them (in improvedCO2clouds "ptimestep" corresponds actually to "microtimestep").
+
+== 03/04/2018 == EM
+Tidying the gravity wave routines by turning them into modules:
+orodrag.F -> orodrag_mod.F : note that the declared size of pvar(), which is
+used in call to gwstress was wrong.
+calldrag_noro.F -> calldrag_noro_mod.F
+drag_noro.F -> drag_noro_mod.F
+gwstress.F -> gwstress_mod.F
+
+== 04/04/2018 == EM
+- Forgotten in previous commit:  gwprofil.F -> gwprofil_mod.F (here also the
+size of an argument, rho, was incorrect in caller orodrag).
+- Turned newsedim.F into a module newsedim_mod.F
+- Adapted co2cloud.F and improvedCO2clouds.F to not use "newunit" to open file
+(it is perfectly legitimate F2008 Fortran, but older compiler such as gfortran
+on local LMD machines are not there yet).
+
+== 10/04/2018 == EM
+Code cleanup: get rid of routine "zerophys".
+
+== 12/04/2018 == EM
+Code cleanup:
+- remove "comorbit.h" since it is no longer used.
+- turn "datafile.h" into module datafile_mod.F90 (and rename variable
+  "datafile" as "datadir" since it stores the path to the datafile directory).
+
+== 17/04/2018 == MV
+1D code cleanup:
+- in testphys1d.F variable totcloudfrac is directly called from dimradmars_mod (which notably prevents from errors when tracer=F)
+
+== 17/04/2018 == MV
+1D code cleanup:
+- in testphys1d.F variable cell_area is intialized to 1 before being called
+
+== 17/04/2018 == DB
+CO2 code update:
+- nucleaCO2.F: code cleanup and use co2useh2o flag to handle cases where
+               h2o ccns have to be tracked and accounted for.
+- co2cloud.F & improvedco2clouds.F: code cleanup and use co2useh2o flag to
+               control updates on water variables if necessary.
+- physiq.F : cleanup on outputs & compute mtotco2 and icetotco2
+
+== 19/04/2018 == DB
+CO2 code updates:
+- make co2cloud a module and save mem_* variables (initialized via phys_state_var_init)
+- make improvedCO2cloud a module
+- read/write mem_* variables in phyetat0.F and phyredem.F
+
+== 05/06/2018 == EM
+A first step towards 1+1=2 (for now only works without tracers):
+- store and load "albedo" (surface albedo) and wstar (thermals' max vertical
+  velocity) in physics (re)start file.
+- turn phyetat0 into a module in the process.
+
+== 21/06/2018 == EM
+- Make a "doc" subdirectory to store the documentation source files with the code
+
+== 27/06/2018 == EM
+- Fix problematic writediagfi call in physiq (should not write a "Time" variable
+  as "Time" is already defined as a dimension) and added some extra tests in
+  writediagfi to better detect similar issues.
+
+== 05/07/2018 == MV
+- callsedim.F changed to module callsedim_mod.F
+
+== 05/07/2018 == MV
+- improvedclouds.F changed to module improvedclouds_mod.F
+
+== 11/07/2018 == EM
+Some cosmetic changes:
+- make watercloud less verbose
+- turn vdifc.F into a module
+- turn updatereffrad.F into a module
+
+== 17/07/2018 == MV
+Cosmetic changes:
+- variables suffixes for sub-grid scale cloud scheme changed from --1 to --clf
+
+== 18/07/2018 == EM+MV
+Integration of the detached dust layer parametrizations (rocket dust storm, slope wind lifting, CW, and dust injection scheme, DB).
+Still experimental, default behaviour (rdstorm=.false., dustinjection=0) identical to previous revision.
+NB: Updated newstart requires an updated "surface.nc" containing the "hmons" field.
+
+== 19/07/2018 == MV
+Cosmetic/practical changes:
+- Addition of the intent in/out characteristics of variables in watercloud_mod and improvedclouds_mod subroutines
+
+== 27/07/2018 == EM
+Update xvik.F main program to work with current diagfi outputs.
+
+== 01/08/2018 == MV
+Cosmetic/practical changes:
+- swmain and lwmain become modules swmain_mod, lwmain_mod
+- Addition of the intent in/out characteristics of variables in swmain_mod and lwmain_mod subroutines
+Correction:
+- in callsedim_mod, declaration of variable tau(ngrid,nlay) corrected to tau(ngrid,naerkind)
+
+== 09/08/2018 == MV
+Correction of the dust storm scheme:
+- in rocketduststorm_mod.F90 the case of not daytime and no storm was not taken into account (it was actually in comment), which lead to NaNs in the calculation of pdqrds (scheme=0, division by alpha=0.)
+Useful:
+- in compute_dtau_mod.F90, the writediagfi of tauref_scenario has been added
+
+== 13/09/2018 == DB + EM
+- Turn watersat into a module.
+CO2 cloud updates:
+- compute co2 condensation tendencies in the co2 cloud scheme and pass them
+  on to vdifc (for tests; they might not be needed) and adapt newcondens.
+
+== 19/09/2018 == EM
+- Bug fix in newstart. lon/lat and cell_area were not correctly sent to
+  the restartfi.nc file.
+
+== 18/10/2018 == FL
+- Remove old (Euler Backward) photochemistry code
+
+== 18/10/2018 == EM
+- cleanup "newcondens" (remove obsolete options), change its name
+  to co2condens and turn it into a module.
+
+== 24/10/2018 == EM
+- Fix writediagsoil so that it also works in parallel.
+
+== 15/11/2018 == FGG
+Modifications to use the parametrized photoabsorbtion coefficients;
+a first step towards implementing ionospheric chemistry in the new
+chemical solver:
+- change in species indexes in chemthermos.F90, paramfoto_compact.F,
+  hrtherm.F and euvheat.F90
+- calchim.F90: added a variable in call to photochemistry
+- photochemistry.F90: added calls to jthermcalc_e107 and phdisrate,
+  with an additionlal flag, jparam (.false. by default). The
+  computed photodissociation coefficents are sent to v_phot, which
+  is used in the chemistry. Thus concentrations computed in
+  chimtogcm are now done over all atmospheric layers.
+
+et jthermcalc.F
+
+== 22/01/2019 == MV
+- Fix a typo in the Van Leer routine vlz_fi.F in the case of w < 0 (negative vertical velocity).
+
+== 22/01/2019 == MV
+- Update of rocketduststorm_mod.F90 : 
+We want to separate both parametrizations related to the formation of the detached dust layers. Therefore, rocketduststorm_mod.F90 now only comprises the rocket dust storm scheme, whereas it contained also before the calculation of the vertical velocity induced by the presence of the sub-grid scale topography. This latter part is under development and will be integrated as a fully independant parametrization: the aim is to simulate the entrainment of dust by slope winds, from the boundary layer up to the top of the sub-grid scale topography.
+- Addition of initial surface parameters "summit" and "base" to prepare the previously described slope wind parametrization
+
+== 22/01/2019 == MV
+- typo in vdifc.F (visible in debug mode) in the case of rdstorm=false, condition for defining pdqsdif(stormdust_mass/number)
+- typo in physiq_mod.F (visible in debug mode): wrong indices for tracers in aerosol(:,:,:)
+
+== 23/01/2019 == MV
+- follow-up of the last change in physiq_mod.F: put iaer indices (defined in dimradmars_mod.F) for aerosol(:,:,:) in writediagfi calls.
+
+== 23/01/2019 == MV
+- follow-up of the last change in datareadnc.F
+
+== 24/01/2019 == MV
+- follow-up and correction of the last change in rocketduststorm_mod.F90: coefdetrain has to be a vector
+
+== 05/02/2019 == MV
+- follow-up of the last change in rocketduststorm_mod.F90
+
+== 06/02/2019 == MV
+- follow-up of the last change in rocketduststorm_mod.F90: corrections in vector definitions
+
+== 14/02/2019 == MV
+- handling of a particular case in Van Leer advection in rocketduststorm_mod.F90: when the vertical velocity is very large at a particular layer and null below or above, mass fluxes must not entrain more tracers than available in the layer
+
+== 06/03/2019 == MV
+- correction of the Van Leer scheme in vlz_fi.F, used by the sedimentation routine (particular case evoked previously)
+
+== 02/04/2019 == MV
+- correction of the Van Leer scheme in vlz_fi.F, used by the sedimentation routine, and rocketduststorm_mod.F90 (particular case evoked previously --> update)
+
+== 24/04/09 == EM+FF
+- Updated co2condens to correctly conserve tracer mass
+
+== 10/05/2019 == EM
+- updates in code to be able to read in the MY34 dust scenario and the MY34
+  solar EUV input
+ 
+== 14/06/2019 == EM
+- minor updates: enable output of Ls in diagfi files and make an error
+  message more verbose.
+
+== 19/07/2019 == GG+EM
+- Add F.Lott's non-orographic GW parametrization. Disabled by default for now,
+  activated by setting calllott_nonoro=.true. in callphys.def
+
+== 05/09/2019 == AS
+- Changed dlog/dexp in log/exp
+- Added a double() instance to improvedCO2clouds so that the model works in simple precision [e.g. mesoscale]
+
+== 10/09/2019 == JYC
+- Use Wilke's formulation for molecular diffusion
+
+== 11/09/2019 == FGG
+- Updated chemical core to include ionospheric chemistry
+
+== 12/09/2019 == MV
+- Update of compute_dtau_mod.F90: dtau is calculated in function of the dust opacity given by the dust scenario the day after
+
+== 23/09/2019 == MV
+Set adpatable parameters for the rocket dust storm scheme (parameters included in callkeys.h, and adaptable according to the callphys.def with the function "call getin" in conf_phys.F):
+- ti_injection, tf_injection (by default: ti_injection=10. and tf_injection=12., impacted files: compute_dtau_mod.F90, vdifc_mod.F)
+- coeff_detrainment (by default: coeff_detrainment=0., impacted files: rocketduststorm_mod.F90)
+
+== 24/09/2019 == EM
+- Reactivate output of density scaled opacity
+
+== 24/09/2019 == AB+EM
+Some code cleanup (and preparing next steps): 
+- Turn calchim into a module and make tendencies module variables
+  in calchim_mod and watercloud_mod
+- Externalize in "physiq" the computation of solar zenithal angle
+  (it should be computed at every physics timestep, regardless of iradia)
+
+== 25/09/2019 == AB+EM
+Add the possibility to super-cycle chemistry computations. Chemistry will
+be computed every "ichemistry" physics step (but chemistry tendencies are
+added every physics step). Default is ichemistry=1.
+
+== 04/10/2019 == AB+EM
+Handle case when injecting without dust scenario (iaervar=1) in compute_dtau_mod
+
+== 09/10/2019 == EM
+Big cleanup: remove obsolete compilation scripts (makgcm_*) and dynamical core
+(since the one in LMDZ.COMMON should be used instead).
+
+== 11/10/2019 == EM
+Add new version of z2sig.def to "deftank" (and keep a copy of the old one
+as z2sig.def.MCD5)
+
+== 22/10/2019 == MV
+Add z2sig.def.hr to "deftank" corresponding to the high vertical resolution with 177 levels from the surface to the exobase.  
+
+== 05/11/2019 == EM
+Update non orographic GW routine so that key parameter RUWMAX is read in
+from callphys.def
+
+
+== 07/11/2019 == JN 
+File "newstart.F", option "composition". Added the possibility to change atmospheric
+composition when non-co2 gases (ar, n2, co, o2) are implicit. When this case is met,
+we assume the molar mass of non-co2 atmosphere to be the one measured by MSL at Ls~184.
+Atmospheric composition is changed at a selected grid point, and horizontal and vertical
+gradients are preserved.
+
+== 14/11/2019 == MV
+Add the sublimation/condensation latent heat release from the surface water ice in vdifc_mod.F. It can be activated or deactivated with the new flag "latentheat" (for now latentheat=false by default).
+
+== 24/11/2019 == EM
+Fix in surfini for the 1D model when imposing watercaptag.
+Protect output of CO2 saturation in physiq to when there is a CO2 tracer.
+
+== 04/12/2019 == AB
+Add the instantaneous scavenging by CO2 of dust, ccn and water ice in co2condens_mod. It can be activated or deactivated with the new flag "scavco2cond" (=false by default). Expected to be replaced by the CO2 clouds microphysics in the future.
+
+== 12/12/2019 == EM
+Bug fix in the scavenging routine (missing initialisation of tendencies of
+surface tracers) in co2condens.
+
+== 13/12/2019 == MV
+Implementation of a new parametrization of the dust entrainment by slope winds above the sub-grid scale topography. The parametrization is activated with the flag slpwind=.true. (set to "false" by default) in callphys.def. The new parametrization involves the new tracers topdust_mass and topdust_number.
+
+== 18/12/2019 == MV
+Update of the rocketduststorm parametrization: clean-up of the code + back to the sub-timesteps method for the Van Leer transport, homogeneous with the one used in topmons_mod.F.
+
+== 20/12/2019 == AB
+Add the observer simulator program simu_MCS_temp.F90 to the LMDZ.MARS/util/ directory, as well as a simu_MCS_temp.def. This program reads a MCS file (binned by Luca Montabone), extracts the daytime and nighttime temperatures from a GCM simulation file, and outputs a netcdf file in the same format as the MCS file.
+More details in simu_MCS_temp.def and in the preface of simu_MCS_temp.F90.
+
+== 07/01/2020 == AD
+Correction of Mars GCM utility by EM (r2204):
+(Bug fix for when input file of the localtime utility is the ouput of zrecast and has aps()/bps() arrays which may not be of the same size as number of vertical layers.)
+Variables declaration changed in order to be compiled with ifort
+Manual User Update: Old stuff removed from part4: Running the model
+
+== 08/01/2020 == EM
+Bug fix in calchim (only had an impact when computations include the
+ionosphere), parameters should not be reset at every call.
+
+== 10/01/2020 == EM
+Fix a minor bug in the 1D model when initializing the time of day at the
+begining of the run.
+
+== 14/01/2020 == EM
+Bug fix in newstart "composition" option; added option "q=factor" in
+newstart to multiply a tracer mixing ratio by a constant factor.
+
+== 16/01/2020 == EM
+Change "latentheat" flag to a more descriptive "latentheat_surfwater" and
+set its default value to .true.
+
+== 22/01/2020 == DB (the return!)
+Update the nonorographic gravity waves drag parametrization (from the r3599 of Earth s model LMDZ6): 1) add east_ and west_gwdstress variables, 2) delete aleas function: random waves are producted by the MOD function, 3) reproductibility concerning the number of procs is now validated, 4) changing name of some variables like RUW, RVW, ZOP, ZOM,..., 5) tendency of winds due to GW drag are now module variables and written in restart files. 
+
+== 23/01/2020 == EM
+First implementation of XIOS in the physics
+
+== 24/01/2020 == BR+JN+AB
+Bug fix in physiq_mod for 1D runs, where the routine getslopes reinitialized the slope inclination and orientation to 0, while they were assigned in the input files.
+
+== 24/01/2020 == EM
+Further cleanup of nonorographic gravity waves drag parametrization east_gwstress
+and west_gwstress need be initialized and are better as module variables.
+
+== 24/01/2020 == EM
+Bug fix in rocketduststorm & topmons routines; "tauscaling" sould not be a local
+(moreover uninitialized) variable. Added it to the arguments of the routines.
+
+== 27/01/2020 == AB+EM
+Bug fixes in localtime.F90 : 1) Following of the correction by EM (r2215), separation of the "valid_range" and "missing_value" indicators, which prevented localtime to write the missing_value attribute in the output file and was making r2215 useless ; 2) Altitude attributes written in the output file are no more specified by default but are read in input file (important for zrecasted files).
+
+== 28/01/2020 == JN
+Adding a new flag 'paleomars' (default false) in 1d GCM in order to use
+eccentricity and solar longitude of perihelion as input parameters.
+Added variables : halfaxe, excentric, Lsperi. New routine call_dayperi.F from FF to
+compute perhelion date from prescribed eccentricity & Lsperi.
+
+== 04/02/2020 == AB
+Small improvements in simu_MCS_temp.F90 : 1) The binning method is now more consistent with the MCS file ; 2) stats files are more rigorously recognized.
+
+== 10/02/2020 == CM
+Initialization of mu0_int and ztim1 in 'nirco2abs.F' to prevent crash during debug mode simulations.
+
+== 27/02/2020 == AB
+Resolved ticket #32 : 1) dsodust is now calculated only once in the InfraRed by aeropacity_mod (used to be wrongly calculated twice, such as dsodust=IR_part+Visible_part) ; 2) dsords is now calculated in the IR by aeropacity_mod (used to be calculated in the Visible) ; 3) dsotop is added and calculated in the IR in aeropacity_mod
++ some cleaning and commenting of the code
+
+== 04/03/2020 == AB
+Resolved ticket #14 : when calling writediagfi for all kinds of dust Density-Scaled Opacity (dsodust,dsords,dsotop,dso), an information about the IR wavelength used by the GCM is added in the "title" attribute of the netcdf variable ("tes" = 9.3micron ; "mcs" = 21.6micron).
+NB : these dust DSO calculated by the GCM are extinction opacities, hence not always corresponding to the actual opacity/optical depth measured by the instruments (ex: TES = 9.3micron absorption optical depth).
+
+== 04/03/2020 == AB
+Bug fixes in the slope winds parametrization and its interactions with rocketduststorm : now, it is considered that the sub-grid dust storm is decorrelated from the dust entrainment above the sub-grid scale topography, so that : 1) the background dust available for slope winds is updated after the rocketduststorm parametrization ; 2) the extra-heating on top of the mountains is calculated regarding topdust and background dust tracers' optical depths only (and not stormdust optical depth).
+
+== 06/03/2020 == AB
+Bug fix following r2248 in aeropacity_mod and topmons_mod : since dsodust, dsords and dsotop are diagnostic physiq_mod variables, we don't want them to be reinitialized at each call of aeropacity_mod and topmons_mod, but we initialize them once and for all at the beginning of physiq_mod instead.
+
+== 10/03/2020 == AB
+Bug fix in topmons_mod : the array rhobarz(ig,l) (density at interlayer levels) had only nlayer allocated instead of nlayer+1 (caused issues in calculating the topdust detrainment at the top of the model)
+
+== 12/03/2020 == EM
+Transparent adaptations to be able to compile using the PGI compiler:
+- look for NaN using logical test a/=a instead of isnan() which is not standard
+- use erf() function as it handles single/double precision (derf is obsolete)
+
+== 12/03/2020 == FL+EM
+Update newstart option "composition" with Trainer et al 2019. (and ACS)
+values.
+ 
+== 13/03/2020 == JN
+Adding a new 2D variable "watercap", perennial ground water ice.
+qsurf(ig,igcm_h2o_ice) can no longer be negative. 
+When watercaptag=true, ie when there is an infinite amount of water avalaible for sublimation,
+and there is no more h2o frost, sublimation digs into watercap reservoir.
+For now watercap can't grow, even on watercaptag, and has same albedo than qsurf(h2o_ice).
+When using old start file, watercap is automatically initiated as 0. 
+Added watercap in newstart.F aswell.
+
+== 19/03/2020 == JN
+Adding watercap in start2archive. When absent in the start files, it is initialized at 0,
+and qsurf(igcm_h2o_ice) can no longer be negative. The negative fraction of qsurf(h2o_ice),
+if it exists, is set in watercap.
+
+== 20/03/2020 == EM
+Cleanup of phyetatO and only apply conversion of negative water ice surface
+to the watercap variable if there was is initial "watercap" field in the
+start file.
+
+== 20/03/2020 == EM
+Save "dtau", the opacity difference between model and target dust scenario
+in the restartfi.nc file so that we have 1+1=2 when running with dust
+injection schemes.
+
+== 28/03/2020 == AD
+Minor update to be able to compile Mars physics with Dynamico
+Abort_physics (abort routine in LMDZ.MARS) instead of abort_gcm (in LMDZ.COMMON) in jthermcalc.F
+
+== 02/04/2020 == FGG
+A first step towards water ion chemistry. Add a new reaction and modify reaction
+rates for HCO2+
+
+== 02/04/2020 == EM
+Some code cleanup:
+- move profile.F to dyn1d since it is only used by the 1D model
+- remove scatter.F, which is not used (and moreover a synonym of the scatter
+  routine from the "mod_phys_lmdz_para" module)
+- remove obsolete "multipl.F" routine, replace the calls to it in vdifc_mod
+  by modern Fortran syntax.
+
+== 07/04/2020 == AB
+Add the program terminator.F90 to the LMDZ.MARS/util/ directory, as well as a terminator.def
+This program can be used to interpolate GCM files at one terminator (morning or evening) all around the globe.
++ a fix of localtime.F90 which didn't work for stats files.
+
+== 08/04/2020 == AD
+Martian physics is now able to start without startfi.nc
+Major update for phyetat0_mod and physiq_mod based on what have been done for the Generic physics
+
+== 09/04/2020 == AB
+Resolved Ticket #41 : the density-scaled opacities are now multiplied by tauscaling before being
+written in the output files (have an effect only when working with freedust=false)
+
+== 13/04/2020 == FGG
+- Adding HCO+ ion chemistry.
+
+== 14/04/2020 == AD
+Minor update of revision 2281 in order to run martian physics with callsoil option when no startfi.nc
+
+== 16/04/2020 == EM
+Update reference run.def.64x48x49.MCD5 to keep up with recent (r2181) changes
+dissip_fac_mid and dissip_fac_up are now read in from the run.def file.
+
+== 16/04/2020 == AB
+Add the program solzenangle.F90 to the LMDZ.MARS/util/ directory, as well as a solzenangle.def
+This program actually replaces the former program terminator.F90, and can be used to interpolate GCM
+files at one given solar zenith angle (on the morning-side or the evening-side) all around the globe
+(the terminator corresponding to sza = 90deg)

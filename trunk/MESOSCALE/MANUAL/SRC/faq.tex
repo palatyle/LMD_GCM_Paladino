@@ -1,0 +1,219 @@
+\chapter{Frequently Asked Questions, Tips and Troubleshooting}\label{faq}
+
+\vk
+Browse this chapter if you encounter problems or issues while using the LMD Martian Mesoscale Model. Before reading what follows, please ensure that:
+\begin{citemize}
+\item you made no errors in using the model;
+\item your problem is not addressed in the previous chapters;
+\item your operating system and machine are in good health.
+\end{citemize}
+You might also read this chapter out of curiosity: it might be useful for your experience as an user.
+
+\mk
+\section{General questions}
+
+\sk
+\noindent \textbf{I don't know anything about mesoscale meteorology. Does that prevent me from becoming an user of your model?}
+\begin{finger}
+\item Not really. It is the purpose of this user manual to help you with running simulations with the LMD Martian Mesoscale Model. Now, you will probably not be able to interpret simulation results that easily, but we will then be happy to help you with our expertise on atmospheric science and to advise good books so that you learn more about this topic.
+\end{finger}
+
+\sk
+\noindent \textbf{I don't have time, or feeling overwhelmed by learning how to use the model.}
+\begin{finger}
+\item There are particular cases in which our team might be able to run the simulation for your study. Or help someone you would hire to do the work with learning about how to use the model and answer to questions. We are open to discussion.
+\end{finger}
+
+\mk
+\section{Compilation}
+
+\sk
+\noindent \textbf{The model compiled yesterday. Now, with no apparent changes, it does not compile.}
+\begin{finger}
+\item This is one of the most frustating situation. Remember though that there is $99\%$ chance that the reason for the problem is either stupid or none of your responsability. Please check that:
+\begin{citemize}
+\item Disk quota is not exceeded;
+\item You are working on the same machine as the day before;
+\item No source file has been accidentally modified; no links broken;
+\item No updates has been performed on your system during the night;
+\item Recompiling with \ttt{makemeso -f} does not solve the problem.
+\end{citemize}
+\end{finger}
+
+\sk
+\noindent \textbf{The model is no longer compiling, after I abruptly stopped the \ttt{makemeso} script because I realized that I made a mistake (e.g. I was compiling on the wrong machine).}
+\begin{finger}
+\item Recompile the model from scratch by adding the option \ttt{-f} to \ttt{makemeso}.
+\end{finger}
+
+\sk
+\noindent \textbf{I am asking for compiling the model on a huge grid (e.g. over $200 \times 200 \times 100$ for a single-processor run). The compilation fails with ``relocated fits" errors.}
+\begin{finger}
+\item Try to lower the number of grid points (either horizontal or vertical) or consider using parallel computations where computations over the model grid will be split over several processors.
+\end{finger}
+
+\sk
+\noindent \textbf{I am afraid I explored a given compilation directory in \ttt{\$MMM} (say \ttt{g95\_32\_single}) and broke something, e.g. deleted or break some links. The model does not compile anymore.}
+\begin{finger}
+\item Delete the corresponding compilation directory. Since it is mostly filled with symbolic links, you will only lose the previously compiled executables and the (possibly modified) \ttt{Registry.EM} file. Save those files prior to deletion of the compilation directory if you would like to keep those. Then run again \ttt{makemeso} for the same combination of compiler/system and a new clean version of the compilation directory will reappear, while the model executables are recompiled from scratch.
+\end{finger}
+
+\sk
+\noindent \textbf{I update the model's sources through \ttt{svn update} and the compilation failed with the new version}
+\begin{finger}
+\item It could happen (but this is not usual) that we move, create or delete some files in \ttt{\$MMM/SRC} while developing new capabilities or bug fixes for the model -- and commit the changes to the reference version of the model. Please apply the solution proposed in the previous point and the model can be compiled again (because our rule is to commit only versions of the model which could be compiled). Possible problems can be anticipated by having a look to commit log through the command \ttt{svn log}. The vast majority of our commits, and subsequent reference model changes, is perfectly transparent for the user.
+\end{finger}
+
+\sk
+\noindent \textbf{I would like to learn more about the interface between the WRF dynamical core and the LMD Martian physical parameterizations.}
+\begin{finger}
+\item The program source that is responsible for the interface between the dynamical core and the physical parameterizations is \ttt{module\_lmd\_driver.F} in \ttt{\$MMM/SRC/WRFV2/phys/}.
+\end{finger}
+
+\sk
+\noindent \textbf{WPS does not compile with my favorite compiler (the one I have to use for model integrations) but seems to work with another one}
+\begin{finger}
+\item Go to the folder corresponding to your favorite compiler. Remove the \ttt{WPS} folder and link here the \ttt{WPS} folder obtained with the alternate compiler. The \ttt{runmeso} workflow will then work just fine if you select your favorite compiler.
+\end{finger}
+
+\sk
+\noindent \textbf{I think I found a bug in the model.}
+\begin{finger}
+\item This is not impossible! Please double check then contact us.
+\end{finger}
+
+\mk
+\section{Preprocessing steps}
+
+\sk
+\noindent \textbf{I would like to have smoother surface properties.}
+\begin{finger}
+\item Increase the smoothing parameter \ttt{smooth\_passes} in the file \ttt{WPS/geogrid/GEOGRID.TBL} for each field you would like to get smoother, then restart at step 2 (execution of \ttt{geogrid.exe}).
+\end{finger}
+
+\sk
+\noindent \textbf{I would like to know more about customizing the calculations made by \ttt{geogrid.exe} and \ttt{metgrid.exe}.}
+\begin{finger}
+\item You probably want to know more about various settings in \ttt{WPS/geogrid/GEOGRID.TBL} and \ttt{WPS/geogrid/METGRID.TBL}. A detailed description can be found here \url{http://www.mmm.ucar.edu/wrf/users/docs/user_guide/users_guide_chap3.html} (some parameters are not relevant for Mars).
+\end{finger}
+
+\sk
+\noindent \textbf{To speed up initializations, I would like to define GCM constraints at the domain boundaries each 6 Martian hours, instead of each one or two hours as it is usually done (cf. \ttt{interval\_seconds = 3700}).}
+\begin{finger}
+\item It is not a good idea. Near-surface atmospheric fields undergo a strong daily cycle on Mars which you will not be able to capture if \ttt{interval\_seconds} is higher than 7400 seconds (i.e. two Martian hours).
+\end{finger}
+
+\sk
+\noindent \textbf{\ttt{real.exe} is sometimes crashing with certain (low) values of \ttt{p\_top\_requested}.}
+\begin{finger}
+\item The program \ttt{real.exe} attempts to come up with nice equally-spaced-in-altitude vertical levels above the boundary layer up to the model top. This is done by an iterating algorithm integrating the hydrostatic equation, which sometimes does not converge if the model top is too high (typically for values of \ttt{p\_top\_requested} below~$5$~Pa). Try to lower \ttt{force\_sfc\_in\_vinterp}, increase \ttt{max\_dz}, or modify \ttt{tiso} to help the algorithm to converge. An alternate solution to set values for \ttt{p\_top\_requested} below~$5$~Pa is to prescribe your own vertical levels (see next point).
+\end{finger}
+
+\sk
+\noindent \textbf{I would like to define my own vertical levels.}
+\begin{finger}
+\item Create a file \ttt{levels} with all your mass-based model levels (see chapter~\ref{whatis}) in it then add the optional setting in \ttt{\&domains} in \ttt{namelist.input}
+\begin{verbatim}
+eta_levels =     1.000000,
+                 0.000000
+\end{verbatim}
+You might also want to use \ttt{eta\_levels} to prescribe directly in \ttt{namelist.input} the list of your custom model levels. Please ensure that the lowermost model level is $1$, the uppermost is $0$ and vertical resolution is refined in the boundary layer ($\sim 8$ vertical levels above surface).
+\end{finger}
+
+\mk
+\section{Runtime}
+
+\sk
+\noindent \textbf{I would like to know how long my simulation will last.}
+\begin{finger}
+\item Check the log information while \ttt{wrf.exe} is running. The effective time to realize each integrating or writing step is indicated. Hence you can extrapolate and predict the total simulation time. If you use parallel computations, have a look in \ttt{rsl.error.0000} to get this information.
+\end{finger}
+
+\sk
+\noindent \textbf{With default settings, I have one \ttt{wrfout*} file per simulated day, each one of those containing fields hour by hour. I want to change this.}
+\begin{finger}
+\item If you want to have an output frequency higher [lower] than one per hour, decrease [increase] the parameter \ttt{history\_interval} in \ttt{namelist.input} (remember that each unit of \ttt{history\_interval} is $100$~seconds). If you want to have more [less] data in each individual file, increase [decrease] the parameter \ttt{frames\_per\_outfile} in \ttt{namelist.input}.
+\end{finger}
+
+\sk
+\noindent \textbf{Looks like in the model (cf. \ttt{namelist.input}), a Martian hour is~$3700$ seconds. The reality is closer to~$3699$ seconds.}
+\begin{finger}
+\item This is true, though obviously the~$3700$ figure is much more convenient and choosing this instead of~$3699$ has no impact whatsoever on simulations which last typically less than one month, and most often only a few days. 
+\end{finger}
+
+\sk
+\noindent \textbf{I want to know the local time for a given model output.}
+\begin{finger}
+\item Time management in the model, which includes the way output files are named, relates to UTC time, i.e. local time at longitude~$0^{\circ}$. The time given in the name of each \ttt{wrfout*} file refers to the first frame written in the file -- using \ttt{history\_interval} allows you to infer universal time for all frames in the file. Another method is to look at the variable \ttt{Times} in \ttt{wrfout*}. Once you know about universal time, you can check the domain longitudes in \ttt{XLONG} to calculate local time at any location.
+\end{finger}
+
+\sk
+\noindent \textbf{The executable \ttt{wrf.exe} crashes a few seconds after launching and I don't know why.}
+\begin{finger}
+\item Please check all outputs from \ttt{wrf.exe}: \ttt{wrfout*} files and information log (note that the model can be made more verbose by setting \ttt{debug\_level = 200} in \ttt{namelist.input}). It is usually possible to find hints about the problem(s) which make the model become unstable or crash. Sometimes it is just one file that is missing. If \ttt{cfl} warnings are reported in information log, it is probably a good idea to lower the timestep, but this will not fix the problem all the time especially if there are wrong settings and subsequent physical inconsistencies. If everything looks fine in the information log, try to lower \ttt{history\_interval} to $1$ in \ttt{namelist.input} so that much frequent outputs can be obtained in the \ttt{wrfout*} files and the problem can be further diagnosed through analyzing simulated meteorological fields.
+\end{finger}
+
+\sk
+\noindent \textbf{I don't know which timestep should I choose to prevent the model from crashing.}
+\begin{finger}
+\item The answer depends on the horizontal resolution according to the CFL condition -- and whether the dynamical core is used in hydrostatic or non-hydrostatic mode, plus other factors (e.g. slopes, temperature gradients, etc\ldots). Please refer to the table in \textit{Spiga and Forget} [2009] for guidelines about timestep; or check examples in \ttt{\$MMM/SIMU/DEF}. A rule-of-thumb to start with is to set \ttt{time\_step} to the value of \ttt{dx} in kilometers; this value can be sometimes raised to get faster integrations. If the \ttt{time\_step} parameter is too large for the horizontal resolution~\ttt{dx} and violates the CFL criterion, \ttt{wrf.exe} usually issues warnings about CFL violation in the first integration steps. 
+\end{finger}
+
+\sk
+\noindent \textbf{Looks like \ttt{wrf.exe} is crashing because there are dynamical instabilities on the lateral boundaries apparently close to a topographical obstacle.}
+\begin{finger}
+\item Check that no steep slope (mountain, crater) is located at the domain boundaries. Otherwise, change the domain's center so that no major topographical gradient is located close to the domain boundaries (in the relaxation zone). This is also true for nested simulations at the boundary between parent and nested domains.
+\end{finger}
+
+\sk
+\noindent \textbf{I compiled the model with \ttt{ifort}. At runtime it stops after a few integration steps because a segmentation fault appeared.}
+\begin{finger}
+\item The model uses a lot of memory, especially when large domains or nests are requested. Try the command \ttt{ulimit -s unlimited}. If this does not solve the problem, try other solutions listed in this chapter.
+\end{finger}
+
+\sk
+\noindent \textbf{The model seems not being able to produce outputs although the log files indicate writing files has been done. This is the case especially when I increased the number of grid points.}
+\begin{finger}
+\item Set the environment variable \ttt{WRFIO\_NCD\_LARGE\_FILE\_SUPPORT} to 1
+\begin{verbatim}
+declare -x WRFIO_NCD_LARGE_FILE_SUPPORT=1
+\end{verbatim}
+and recompile the model from scratch. Your model will be able then to produce very large files (especially restart files).
+\end{finger}
+
+\mk
+\section{Specific simulations}
+
+\sk
+\noindent \textbf{It seems difficult to me to find a number of horizontal grid points for parallel nested simulations that is compliant with all constraints mentioned in section~\ref{nests}.}
+\begin{finger}
+\item Here is a tip that allows to easily choose the number of horizontal grid points for parallel nested simulations. Let \ttt{e\_we} minus 1 be~$nn$. The three following conditions must be verified
+\begin{enumerate}
+\item the number of processors (usually 4) must divide~$nn$ for the mother domain
+\item same condition for~$nn+4$ in the nested domains
+\item \ttt{grid\_ratio} (usually 3) must divide~$nn+4$ for the nested domains
+\end{enumerate}
+With a standard number of 4 processors for nested runs, the second condition is verified if the first one is. The first and third conditions are verified if we make~$nn+4$ be a multiple of 12. Hence a very simple way to set the number of horizontal grid points \ttt{e\_we} and \ttt{e\_sn} in a nested simulation is to set the number of horizontal grid points in the nested domains as a multiple of 12 plus 1. The mother domain would then have this number of horizontal grid points minus 4. Examples: 117,121,121; 177,181,181; 57,61,61 \ldots
+\end{finger}
+
+%%% DIFFUSION FOR TRACERS
+%%% GRAVITY WAVE ABSORBING LAYER
+%%% ILM files with PGF90 ?
+%%% WPS PREP_MARS peuvent être liés entre e.g. pgf et mpi, ou ifort et mpifort
+
+%%% RESTART: see SVN
+
+%%% LMD with old physics does not compile with ifort
+
+%%%         rel_path=               32ppd:thermal_TES/
+%%%  -- il faudrait mettre ca dans GEOGRID.TBL
+
+%%il y a une chose qu'il faut que tu fasses
+%%cd $MMM/newphys_mpifort_64/WRFV2/Registry
+%%cp $MMM/SRC/WRFV2/Registry/Registry.EM .
+%%et ensuite tu retournes dans ton dossier de simu et tu fais "runmeso -f"
+%%tu me diras si ça marche
+%%la maladresse c'est que le fichier Registry.EM n'est pas un lien. donc s'il change entre les versions il n'est pas mis à jour dans le dossier particulier newphys_mpifort_64 (ou autre). il faudrait peut être que je change ça mais faire un lien avait ses désavantages aussi, on aura l'occasion de le voir ensemble 
+
+
+\clearemptydoublepage

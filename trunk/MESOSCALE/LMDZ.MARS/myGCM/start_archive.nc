@@ -1,0 +1,1 @@
+/u/forget/WWW/datagcm/Starts/start_archive_64x48x25_t2.nc

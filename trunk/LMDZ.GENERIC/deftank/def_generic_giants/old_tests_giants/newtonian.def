@@ -1,0 +1,67 @@
+#          ok_geost=.TRUE.
+ok_geost=.FALSE.
+#          ! Constants for Newtonian relaxation and friction
+#          k_f=1.                !friction 
+#          k_f=1./(daysec*k_f)
+#k_f=48.
+#k_f=480. >>> low jets
+#k_f=20.
+k_f=48.
+#          k_c_s=4.  !cooling surface
+#          k_c_s=1./(daysec*k_c_s)
+#k_c_s=920.
+#k_c_s=4. pas trop petit....
+#k_c_s=4.
+#k_c_s=300.          
+#k_c_s=4.
+k_c_s=920.
+#          k_c_a=40. !cooling free atm
+#          k_c_a=1./(daysec*k_c_a)
+#k_c_a=92.
+#k_c_a=4. pas trop petit....
+#k_c_a=300.
+#k_c_a=40.
+k_c_a=92.
+#          ! Constants for Teta equilibrium profile
+#          teta0=315.     ! mean Teta (S.H. 315K)
+#teta0=200.
+teta0=160.
+
+#          ttp=200.       ! Tropopause temperature (S.H. 200K)
+#ttp=100. theta ~ 400.
+#ttp=150.
+ttp=100.
+## voir fouchet
+### sinon 200. est OK avec dowling
+
+#          eps=0.         ! Deviation to N-S symmetry(~0-20K)
+#          delt_y=60.     ! Merid Temp. Gradient (S.H. 60K)
+#delt_y=10.
+### grosso modo en regardant schneider
+#delt_y=0.
+#delt_y=50.
+delt_y=60.
+eps=4.
+eps=8.
+
+#          delt_z=10.     ! Vertical Gradient (S.H. 10K)
+#delt_z=20.
+###2. trop faible ?? non car couche melangee
+delt_z=2.
+
+
+
+
+
+
+
+
+
+#          ! Polar vortex
+#          ok_pv=.false.
+#          phi_pv=-50.            ! Latitude of edge of vortex
+#          phi_pv=phi_pv*pi/180.
+#          dphi_pv=5.             ! Width of the edge
+#          dphi_pv=dphi_pv*pi/180.
+#          gam_pv=4.              ! -dT/dz vortex (in K/km)
+

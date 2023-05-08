@@ -1,0 +1,63 @@
+ &time_control
+ start_year       = 2024,
+ start_month      = 01, 
+ start_day        = 05,
+ start_hour       = 21,
+ end_year         = 2024,
+ end_month        = 01,
+ end_day          = 06, 
+ end_hour         = 06, 
+ history_interval    = 1,   ! *100s : 74 is each 2 MH, 37 is each MH  
+ frames_per_outfile  = 37, 
+ restart          = .false.
+ restart_interval = 8880,
+ io_form_history  = 2
+ io_form_restart  = 2
+ io_form_input    = 2
+ io_form_boundary = 2
+ debug_level      = 0
+ /
+
+ &domains
+ time_step   = 0
+ time_step_fract_num                 = 1,
+ time_step_fract_den                 = 2,
+ dx = 100,
+ dy = 100,
+ e_we   = 150,               ! IF YOU CHANGE THIS YOU MUST RECOMPILE THE PHYSICS
+ e_sn   = 150,               ! IF YOU CHANGE THIS YOU MUST RECOMPILE THE PHYSICS
+ e_vert = 71,                ! IF YOU CHANGE THIS YOU MUST RECOMPILE THE PHYSICS
+ p_top_requested = 250
+ force_sfc_in_vinterp = 5,
+ /
+
+ &physics
+ radt = 60,	! call each half hour with radt = 1850/dt
+ mars = 0,      ! IF YOU CHANGE THIS YOU MUST RECOMPILE THE PHYSICS
+ init_MU=0.01	! ... quasi no-wind
+ init_MV=0.01	! ... quasi no-wind
+ init_LES=T	! LES MODE
+ /
+
+ &fdda
+ /
+
+ &dynamics
+ pd_scalar = F   !! no water cycle (mars = 0)
+ /
+
+ &grib2
+ /
+
+ &bdy_control
+ specified = F
+ periodic_x = T 
+ periodic_y = T
+ /
+
+!! DO NOT MODIFY
+ &namelist_quilt
+ nio_tasks_per_group = 0,
+ nio_groups = 1,
+ /
+!! DO NOT MODIFY

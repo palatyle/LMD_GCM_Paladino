@@ -1,0 +1,11 @@
+Reference runs for the Icarus paper:
+Surface pressure at 3 bars (z2sig.def, profile.in and start files modified accordingly)
+Cp fixed to 11500 (callphys.def)
+
+Start.nc and startfi.nc given for a resolution of 8x128x64
+Equilibrated by a run about 2 Saturn years long
+--> associated start_archive file is given as well
+not-equilibrated start files are kept here for reference and testing
+
+compile command on gnome cluster
+makelmdz_fcm -cpp NODYN -s 1 -d 8x128x64 -b 20x30 -arch GNOMEp -parallel mpi -p generic gcm

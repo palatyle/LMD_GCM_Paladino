@@ -1,0 +1,83 @@
+ &time_control
+ start_month      = 01,      !! (p1) Start Martian Month
+ start_day        = 01,      !! (p1) Start Martian Day
+ start_hour       = 00,      !! (p1) Start Martian Hour (at longitude 0)
+ start_minute     = 00,      !! two digit minute of starting time
+ start_second     = 00,      !! two digit second of starting time
+ run_seconds         = 37000   !! Duration of simulation                       [LES: !=0]  
+ history_interval_s  = 1       !! Frequency of outputs in seconds              [LES: !=0]
+ frames_per_outfile  = 3700    !! Size of time dimension in files
+ start_year          = 9999    !! Idealized simulation                         [LES: 9999]
+ end_year            = 9999    !! Idealized simulation                         [LES: 9999]
+ restart             = .false. !! (*) restart run ?
+ restart_interval    = 8880    !! (*) Frequency of output restart files ?
+ io_form_history     = 2       !! (*) Choice of NETCDF for ouputs
+ io_form_restart     = 2       !! (*) Choice of NETCDF for ouputs
+ io_form_input       = 2       !! (*) Choice of NETCDF for ouputs
+ io_form_boundary    = 2       !! (*) Choice of NETCDF for ouputs
+ debug_level         = 0       !! (*) Verbose level
+ /
+
+ &domains
+ ztop                = 6000.   !! Altitude above ground of model top           [LES: !=0]       
+ time_step           = 0       !! Dynamical timestep
+ time_step_fract_num = 1       !! Additional fraction to time_step: numerator
+ time_step_fract_den = 10      !! Additional fraction to time_step: denominator
+ dx                  = 10      !! (p2) Horizontal resolution
+ dy                  = 10      !! (p2) Horizontal resolution (should be equal to dx)
+ e_we                = 417     !! (r)(p2) Number of longitude grid points
+ e_sn                = 417     !! (r)(p2) Number of latitude grid points
+ e_vert              = 301     !! (r)(p2) Number of vertical levels
+ /
+
+ &physics
+ isfflx              = 1       !! 0 : UST/HFX from tke_... namelist values
+                               !! 1 : UST/HFX from LMD physics
+                               !! 2 : UST from LMD / HFX from namelist.input
+ init_TI             = 260.    !! Define constant thermal inertia value        [LES: !=0]
+ init_AL             = 0.26    !! Define constant albedo value                 [LES: !=0]
+ num_soil_layers     = 18      !!! NOUVELLE PHYSIQUE
+ !!
+ !! OPTIONAL
+ !!
+ radt                = 64      !! Ratio between physical and dynamical time step
+ mars                = 0       !! (r)(p2) Configuration of tracers:
+                               !!         0: no tracers, 1: water vapor + ice, 2: dust
+ init_MU             = 0.01    !! (p3) Multiply ini & bdy zonal wind by init_U
+ init_MV             = 0.01    !! (p3) Multiply ini & bdy meridional wind by init_V
+ init_U              = 10.
+ /
+
+ &dynamics
+ diff_opt            = 2       !! (*d) Diffusion option                        [LES: 2]
+ km_opt              = 2       !! (*d) Eddy coefficient option                 [LES: 2]
+ diff_6th_opt        = 0       !! (*d) Knievel numerical diffusion             [LES: 0]
+ mix_full_fields     = T       !! (*d) Set true if mixing ref + pert profiles  [LES: T]
+ !!
+ !! OPTIONAL
+ !!
+! c_k                   = 0.15     !! Mixing coefficient constant for km_opt=2 [default: 0.15]
+! c_s                   = 0.18     !! Mixing coefficient constant for km_opt=3 [default: 0.25]
+! pd_tke                = T        !! Positive definite advection of tke
+! tke_heat_flux         = 1.       !! Constant surface thermal flux (H/(rho*cp), K m/s)
+! tke_drag_coefficient  = 0.0025,  !! Constant surface drag coefficient (Cd, dimensionless)
+! mix_upper_bound       = 100.     !! Non-dimensional upper limit for diffusion coeffs
+! mix_isotropic         = 1        !! 0=anistropic vertical/horizontal diffusion coeffs, 1=isotropic
+! pert_coriolis         = T        !! Coriolis only acts on wind perturbation (idealized)
+ /
+
+ &bdy_control
+ periodic_x          = T       !! (p3) Periodic boundary conditions over x     [LES: T]
+ periodic_y          = T       !! (p3) Periodic boundary conditions over y     [LES: T]
+ /
+
+ &grib2
+ /
+
+ &fdda
+ /
+
+ &namelist_quilt              !! (*)
+ nio_tasks_per_group = 0,     !! (*)
+ nio_groups = 1,              !! (*)
+ /                            !! (*)

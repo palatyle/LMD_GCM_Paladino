@@ -1,0 +1,38 @@
+{\footnotesize
+\begin{verbatim}
+0      ! Initial day (martian sol; = 0 at Ls=0) 
+0      ! initial local time  (between 0 and 24) 
+48     ! number of time-step per day.
+1      ! Run duration (sols) 
+700.   ! psurf: Surface pressure (Pa) 
+0.2    ! tauref: reference dust opacity at 700 Pa (true tau~tauref*psurf/700)
+30.    ! latitude  (degrees) 
+0.2    ! ground albedo  (under the ice)
+400    ! ground thermal inertia  (SI)
+10.    ! composante vers l'est du vent geostrophique (u) 
+0.     ! composante vers le nord du vent geostrophique (v)
+0.     ! initial CO2 ice mass (kg.m-2)
+T      ! Hybrid vertical coordinate ? T=Hybrid , F=sigma
+
+Initial temperature profile
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+5       ! ichoice :  Kind of initial profile (see below)
+200     ! tref : reference temperature (K) (used if ichoice=1)
+0       ! isin (if isin=1, add a perturbation to profile)
+26.5220 ! pic  pic perturbation gauss pour ichoice = 6 ou 7
+10      ! largeur de la perturbation gauss pour ichoice = 6 ou 7
+30.     ! hauteur de la perturbation gauss pour ichoice = 6 ou 7 
+
+c=======================================================================
+c   differents profils d'atmospheres. T=f(z)
+c         ichoice=1   Temperature constante T=tref
+c         ichoice=2   profil Savidjari (comme Seiff mais avec dT/dz=cte)
+c         ichoice=3   Lindner (profil polaire)
+c         ichoice=4   inversion
+c         ichoice=5   Seiff  (profile standard base sur les entrees Viking)
+c         ichoice=6    T constante + perturbation gauss (level)
+c         ichoice=7    T constante + perturbation gauss (km)
+c         ichoice=8   Read in an ascii file "profile" 
+
+\end{verbatim}
+}

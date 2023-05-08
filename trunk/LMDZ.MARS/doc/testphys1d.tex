@@ -1,0 +1,89 @@
+\chapter{1D version of the Mars model}
+
+\label{sc:testphys1d}
+
+The physical part of the model can be used to generate realistic 
+1-D simulations (one atmosphere column). 
+In practice, the simulation is controlled from a main program called
+\verb+ testphys1d.F+ which, after initialization, then calls the master
+subroutine of the physics \verb+ physiq.F+ described in the preceeding
+chapters.
+
+\section{Compilation} 
+To compile the Martian model in 1-D with
+29 layers, simply type
+(in compliance with the makelmdz\_fcm function manual described in section
+\ref{sc:compil1})
+
+\begin{verbatim}
+makelmdz_fcm -arch local -d 29 -p mars testphys1d
+\end{verbatim}
+
+You will find executable {\bf testphys1d\_29\_phymars\_seq.e}
+(the compiled model)
+in the {\tt bin} subdirectory from which you ran the makelmdz\_fcm command.
+
+\section{1-D runs and input files}
+
+The 1-D model does not use an initial state file (the simulation must be long
+enough to obtain a balanced state). Thus, to generate a simulation simply
+type:
+
+\begin{verbatim}
+./testphys1d.e
+\end{verbatim}
+
+The following example files are available in the {\tt deftank} directory
+(copy them into your working directory first):
+
+- {\bf callphys.def}~: controls the options in the physics,
+  just like for the 3D GCM.
+
+- {\bf z2sig.def}~:
+ controls the vertical discretization
+ (no change needed, in general), functions as with the 3D GCM. 
+
+- {\bf traceur.def}~:
+ controls the tracer names (this file may not be present, as long
+ as you run without tracers (option {\tt tracer=.false.} in
+ callphys.def)
+
+- {\bf run.def}~: controls the 1-D run parameters and initializations
+(this is actally file {\tt run.def.1d} the {\tt deftank} directory,
+which must be renamed {\tt run.def} to be read by the program).\\
+
+The last file is different from the 3D GCM's {\tt run.def} input file,
+as it contains options specific to the 1-D model, as shown in the example
+below:
+{\footnotesize
+\input{input/run.def.1d.tex}
+}
+Note that, just as for the 3-D GCM {\tt run.def} file, input
+parameters may be given in any order, or even not given at all
+(in which case default values are used by the program).
+
+Initial conditions for tracers can be provided as ASCII text files; when
+{\bf testphys1d.e} runs, it looks for a {\tt profile\_*} file, where {\tt *}
+stands for a tracer name (as given in the traceur.def file) to initialize
+the tracer profile. The data in the file should be given as one value per
+line, first line for the surface value (in kg/m2), followed by values for each
+atmospheric layer (going from bottom to top of the atmosphere).
+If no {\tt profile\_*} file is found, then the tracer values are initialized
+to zero (except for the 'co2' tracer, which will be set to 0.95).
+
+\section{Output data}
+
+During the entire 1D simulation, you can obtain output data for any
+variable from any physical subroutine by using subroutine \verb+ writediagfi+
+(as when runing 3D simulations, but specifying the correct dimensions for the field) \\
+
+Example of a call to subroutine {\tt writediagfi} requesting
+temperature output:
+(\verb+ ngrid+ horizontal point, \verb+ nlayer + layers, variable
+\verb+ zt + called ``temp'' in K units):
+
+\begin{verbatim}
+      CALL WRITEDIAGFI(ngrid,'temp','Temperature','K',1,zt)
+\end{verbatim}
+
+

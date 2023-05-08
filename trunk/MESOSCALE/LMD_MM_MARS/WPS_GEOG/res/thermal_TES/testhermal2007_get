@@ -1,0 +1,5 @@
+#! /bin/bash
+
+echo get TES thermal inertia
+wget http://lasp.colorado.edu/inertia/2007/NBmap2007.bin . > /dev/null 2>&1
+wget http://lasp.colorado.edu/inertia/2007/NBmap2007s.jpg . > /dev/null 2>&1

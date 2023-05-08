@@ -1,0 +1,83 @@
+#!/bin/bash
+
+./duplicate3  ## est-ce le bon ordre ??? 
+
+echo 'duplicate sources for domain 4'
+
+\rm aeronomars/d4_*
+\rm bibio/d4_*
+\rm phymars/d4_*
+\rm phymars/meso_inc/d4_*
+\rm grid/d4_*
+\rm dyn3d/d4_*
+
+
+cd aeronomars
+cp ../generate4 .
+find * -exec generate4 {} \;
+\rm *generate4
+cd ..
+
+cd bibio
+cp ../generate4 .
+find * -exec generate4 {} \;
+\rm *generate4
+cd ..
+
+cd phymars
+cp ../generate4 .
+find *.F -exec generate4 {} \;
+find *.h -exec generate4 {} \;
+find *.F90 -exec generate4 {} \;
+find *.inc -exec generate4 {} \;
+\rm *generate4
+cd ..
+
+cd phymars/meso_inc/
+cp ../../generate4 .
+find * -exec generate4 {} \;
+\rm *generate4
+cd ../../.
+
+cd grid
+cp ../generate4 .
+find * -exec generate4 {} \;
+\rm *generate4
+\rm d3_dimension
+cd ..
+
+cd dyn3d
+cp ../generate4 .
+find * -exec generate4 {} \;
+\rm *generate4
+cd ..
+
+\rm aeronomars/d4_d3*
+\rm bibio/d4_d3*
+\rm phymars/d4_d3*
+\rm phymars/meso_inc/d4_d3*
+\rm grid/d4_d3*
+\rm dyn3d/d4_d3*
+
+\rm aeronomars/d3_d4*
+\rm bibio/d3_d4*
+\rm phymars/d3_d4*
+\rm phymars/meso_inc/d3_d4*
+\rm grid/d3_d4*
+\rm dyn3d/d3_d4*
+
+\rm aeronomars/d4_d2*
+\rm bibio/d4_d2*
+\rm phymars/d4_d2*
+\rm phymars/meso_inc/d4_d2*
+\rm grid/d4_d2*
+\rm dyn3d/d4_d2*
+
+\rm aeronomars/d2_d4*
+\rm bibio/d2_d4*
+\rm phymars/d2_d4*
+\rm phymars/meso_inc/d2_d4*
+\rm grid/d2_d4*
+\rm dyn3d/d2_d4*
+
+

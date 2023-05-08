@@ -1,0 +1,176 @@
+\documentclass[a4paper,10pt]{article}
+%\usepackage{graphicx}
+\usepackage{natbib}  % si appel à bibtex
+%\usepackage[francais]{babel}
+%\usepackage[latin1]{inputenc}  % accents directs (é...), avec babel
+%\usepackage{rotating}
+
+\setlength{\hoffset}{-1.in}
+\setlength{\oddsidemargin}{3.cm}
+\setlength{\textwidth}{15.cm}
+\setlength{\marginparsep}{0.mm}
+\setlength{\marginparwidth}{0.mm}
+
+\setlength{\voffset}{-1.in}
+\setlength{\topmargin}{0.mm}
+\setlength{\headheight}{0.mm}
+\setlength{\headsep}{30.mm}
+\setlength{\textheight}{24.cm}
+\setlength{\footskip}{1.cm}
+
+\setlength{\parindent}{0.mm}
+\setlength{\parskip}{0 ex}
+\newcommand{\ten}[1]{$\times 10^{#1}$~} 
+\renewcommand{\baselinestretch}{1.}
+
+\begin{document}
+\pagestyle{plain}
+
+\begin{center}
+{\bf \LARGE 
+Documentation for LMDZ, Planets version
+
+\vspace{1cm}
+\Large
+The Cp(T) dependency
+}
+
+\vspace{1cm}
+S\'ebastien Lebonnois
+
+\vspace{1cm}
+Latest version: \today
+\end{center}
+
+\section{Theoretical aspects}
+
+Taken from \cite{lebonnois10}.
+
+The standard version of the LMDZ dynamical core uses a single value for the 
+specific heat $C_p$, but $C_p$ varies in the atmosphere of Venus from 
+738~J/kg/K at 100~km altitude to 1181~J/kg/K near the surface 
+\cite[values taken from the Venus International Reference Atmosphere,][]{seiff85}. 
+This variation of $C_p$ with temperature needs to be taken into account, 
+in order to get realistic adiabatic lapse rates in the whole atmosphere. 
+We use an analytic approximation for this temperature dependence, 
+that yields values very close to the VIRA profile for $C_p$ 
+(within 4\% for temperatures below 200~K, below 1\% everywhere else):
+
+\begin{equation} 
+C_p(T) = C_{p_0} \times \left(\frac{T}{T_0}\right)^{\nu}, 
+\label{eq:cpdet}
+\end{equation} 
+with $C_{p_0} = 1000$~J/kg/K, $T_0 = 460$~K, and $\nu = 0.35$.
+
+In the LMDZ model, the potential temperature is one of the fundamental 
+pronostic variable in the equations of energy conservation. 
+The potential temperature $\theta$ is the temperature an air parcel initially at
+temperature $T$ and pressure $p$ would reach when brought to a reference
+pressure $p_{\rm ref}$ (typically, the surface pressure) adiabatically:
+
+\begin{equation}
+\int_\theta^T{C_p \frac{dT}{T}} = \int_{p_{\rm ref}}^p{R \frac{dp}{p}}
+\label{eq:tpot}
+\end{equation}
+($R$ is the atmospheric gas constant). Equation~\ref{eq:tpot} is
+obtained from the first principle of thermodynamics when a parcel of air at
+pressure $p$ and temperature $T$ is brought adiabatically to the reference
+pressure $p_{\rm ref}$. 
+
+When $C_p$ is taken as constant with temperature, Eq.~\ref{eq:tpot} yields 
+the classical expression of potential temperature 
+$\theta = T \times (p_{\rm ref}/p)^\kappa$, with $\kappa = R/C_p$. 
+However, when $C_p$ depends on temperature, this expression is no longer valid.
+ 
+To keep modifications of the dynamical core to the minimum, we have kept 
+potential temperature as a key variable in the dynamics. Thus, we have 
+calculated the new expression of potential temperature under these conditions.
+Introducing the expression of $C_p(T)$ (Eq.~\ref{eq:cpdet}) in Eq.~\ref{eq:tpot} yields
+
+\begin{equation}
+\int_\theta^T{\frac{T^{\nu-1}}{T_0^\nu}dT}
+ = \frac{R}{C_{p_0}} \ln \frac{p}{p_{\rm ref}},
+\end{equation}
+then (for $\nu \neq 0$)
+
+\begin{equation}
+\frac{1}{\nu T_0^\nu} \left( T^\nu - \theta^\nu \right) 
+ = \ln \left( \frac{p}{p_{\rm ref}} \right)^{\kappa_0},
+\end{equation}
+where $\kappa_0 = \frac{R}{C_{p_0}}$. This yields the new expression for the
+potential temperature:
+
+\begin{equation}
+\theta^\nu = T^\nu + \nu T_0^\nu \ln \left( \frac{p_{\rm ref}}{p} \right)^{\kappa_0}.
+\label{eq:newtpot}
+\end{equation}
+
+The adjustments done in the dynamical core enable us to run the GCM with any
+formulation of $C_p$ and the corresponding potential temperature based on 
+Eq.~\ref{eq:tpot}.
+
+\section{Pratical aspects in the code}
+
+A specific file has been added to the dynamical core, \textsf{cpdet.F}, which includes 
+all the needed routines to take the $C_p(T)$ possibility into account.
+These routines take advantage of the keyword \textsf{planet\_type} to 
+implement different expressions of $C_p(T)$. These routines are:
+\begin{itemize}
+\item \textsf{ini\_cpdet}: initializes the parameters $\nu$ (\textsf{nu\_venus})
+and $T_0$ (\textsf{t0\_venus}) to either the Venus values, or zero. 
+It is called just once at the begining of the main routine.
+These parameters are declared in \textsf{comconst.h}.
+\item \textsf{cpdet}: function, that computes $C_p$ for a given $T$. 
+For other planets than Venus, it is just \textsf{cpdet(T)=cpp}.
+\item \textsf{t2tpot}: converts a temperature vector to a potential temperature
+vector.
+\item \textsf{tpot2t}: converts a potential temperature vector to a temperature
+vector.
+\end{itemize}
+
+In the routines, instead of using the constants \textsf{cpp} (dynamical core) 
+or \textsf{RCPD} (physical module), we need to use the 
+function \textsf{cpdet(T)} where T is the temperature at a given point.
+
+Since the potential temperature is the variable used in the dynamical core,
+the temperature is scarcely used. But in some places, it was computed directly 
+from the potential temperature and the Exner function 
+${\rm pk} = {\rm cpp}\times(\frac{\rm play}{\rm pref})^{\rm kappa}$.
+The routine \textsf{tpot2t} is now used to compute the temperature when needed,
+and the variable \textsf{tsurpk}, which is the temperature over the Exner 
+function can be used as an argument instead of the former potential 
+temperature (for \textsf{sortvarc0.F}, \textsf{sortvarc.F}, \textsf{dudv2.F}
+and \textsf{geopot.F}).
+This affects the routines (in \textsf{dyn3d}):
+\begin{itemize}
+\item \textsf{caldyn0.F}
+\item \textsf{caldyn.F}
+\item \textsf{calfis.F}
+\item \textsf{diagedyn.F}
+\item \textsf{leapfrog.F}
+\item \textsf{vlspltqs.F}
+\end{itemize}
+
+\begin{thebibliography}{2}
+\providecommand{\natexlab}[1]{#1}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi:\discretionary{}{}{}#1}\else
+  \providecommand{\doi}{doi:\discretionary{}{}{}\begingroup
+  \urlstyle{rm}\Url}\fi
+
+\bibitem[{\textit{Lebonnois et~al.}(2010)\textit{Lebonnois, Hourdin, Eymet,
+  Crespin, Fournier, and Forget}}]{lebonnois10}
+Lebonnois, S., F.~Hourdin, V.~Eymet, A.~Crespin, R.~Fournier, and F.~Forget
+  (2010), {Superrotation of Venus' atmosphere analysed with a full General
+  Circulation Model}, \textit{J. Geophys. Res.}, \textit{115}, E06006,
+  \doi{10.1029/2009JE003458}.
+
+\bibitem[{\textit{Seiff et~al.}(1985)\textit{Seiff, Schofield, Kliore
+  et~al.}}]{seiff85}
+Seiff, A., J.~T. Schofield, A.~J. Kliore, et~al. (1985), {Model of the
+  structure of the atmosphere of Venus from surface to 100 km altitude},
+  \textit{Adv. Space Res.}, \textit{5}(11), 3--58.
+
+\end{thebibliography}
+
+\end{document}

@@ -1,0 +1,73 @@
+
+****************************************************
+****************************************************
+****************************************************
+****************************************************
+
+
+1. easy part
+diff3 --easy-only --merge oldmeso/meso_physiq.F oldgcm/physiq.F newgcm/physiq.F > meso_physiq.F
+
+2. check quand mm
+vimdiff meso_physiq.F oldmeso/meso_physiq.F
+
+3. reperer conflits
+diff3 --overlap-only meso_physiq.F oldgcm/physiq.F newgcm/physiq.F | more
+--> les lignes sont celles de meso_physiq.F [nouveau fichier]
+[ou] diff3 --show-overlap meso_physiq.F oldgcm/physiq.F newgcm/physiq.F
+
+3bis. reperer conflits
+diff3 --overlap-only --merge meso_physiq.F oldgcm/physiq.F newgcm/physiq.F > dummy
+vimdiff meso_physiq.F dummy
+-- si dummy est OK, alors mv dummy meso_physiq.F
+-- si dummy pas bon, alors n'incorporer que les changements pertinents dans meso_physiq.F
+[ou alors si vous soupconnez l'inverse]
+vimdiff dummy meso_inifis.F
+
+
+4. verifier que les changements sont que mesoscale
+vimdiff meso_physiq.F newgcm/physiq.F
+
+
+
+****************************************************
+****************************************************
+****************************************************
+****************************************************
+****************************************************
+
+
+diff3 --easy-only --merge oldmeso_inifis.F oldgcm_inifis.F newgcm_inifis.F > yeyeye
+diff3 --overlap-only yeyeye oldgcm_inifis.F newgcm_inifis.F
+diff3 --overlap-only --merge yeyeye oldgcm_inifis.F newgcm_inifis.F > yeyeye2
+mv yeyeye2 newmeso_inifis.F
+vimdiff newmeso_inifis.F newgcm_inifis.F [verifier que les changements sont que mesoechelle]
+
+
+
+
+
+
+
+
+
+
+ON VEUT METTRE A JOUR LA PHYSIQUE DU MESO-ECHELLE
+
+1. ancienne version meso
+cp /donnees/aslmd/SVN/trunk/mesoscale/LMD_MM_MARS/SRC/WRFV2/mars_lmd_new/libf/phymars/meso_inifis.F .
+
+2. nouvelle version GCM
+cp /u/emlmd/LMDZ.MARS.BETA/libf/phymars/inifis.F .
+
+3. evaluer differences
+\diff -u meso_inifis.F inifis.F > inifis.patch
+
+4. nettoyer inifis.patch en enlevant les changements meso-echelle
+
+5. mettre a jour meso_inifis.F
+patch meso_inifis.F inifis.patch
+
+6. menage 
+\rm inifis.patch inifis.F
+

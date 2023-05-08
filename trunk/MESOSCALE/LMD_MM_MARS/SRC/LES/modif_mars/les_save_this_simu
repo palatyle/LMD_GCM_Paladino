@@ -1,0 +1,63 @@
+#! /bin/bash
+
+\rm simtime 2> /dev/null
+
+mkdir results
+
+if [[ -f extract_turb ]]
+then
+
+  #./extract_turb
+  mv *.nc results/
+
+fi
+
+if [[ -d plot ]]
+then
+
+  mv plot results/
+  mv getcdf.pro results/
+  mv turbulence.pro results/
+  \rm turbulence.dat 2> /dev/null   
+
+fi
+
+if [[ -f rsl.error.0000 ]]
+then
+
+  timesec=$(more rsl.error.0000 | grep elapsed | grep 'Timing for main' | awk '{s+=$9} END{print s}')
+  touch simtime
+  echo ${timesec} seconds
+  echo ${timesec} seconds >> simtime
+
+  head -10000 rsl.out.0000 > red_rsl.out.0000
+  head -4000 rsl.error.0000 > red_rsl.error.0000
+  mv red_rsl.* results/
+  mv ideal_rsl.out.0000 results/
+  mv simtime results/
+
+else
+
+  timesec=$(more log_wrf | grep elapsed | grep 'Timing for main' | awk '{s+=$9} END{print s}')
+  touch simtime
+  echo ${timesec} seconds
+  echo ${timesec} seconds >> simtime
+
+  head -10000 log_wrf > red_log_wrf
+  mv red_log_wrf results/
+  mv simtime results/  
+  mv met_em/log_real results/
+
+fi
+
+tar czvf def.tar.gz namelist.input *.def input_* launch 
+cp def.tar.gz results/ 
+
+mv wrfout* results/
+mv namelist.output results/
+ls -lh results
+du -bh results
+echo '*****************************************************'
+echo '*** BEWARE ! *** output files were moved in the folder named results !!!'
+echo 'what you may keep: results folder and def.tar.gz file'
+echo '*****************************************************'

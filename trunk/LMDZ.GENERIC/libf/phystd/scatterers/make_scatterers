@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# sanity check: do we have the required argument ?
+if (( $# != 1 ))
+then
+ echo "Wrong number of parameters in $0 !!!"
+ echo " Usage:"
+ echo "  $0 num"
+ echo " where num is the number of scatterers"
+ exit
+fi
+
+filename=scatterers.$1
+
+if [ ! -f $filename ] ; then
+# if the file doesn't exist, we create it
+cat << EOF > $filename
+!-----------------------------------------------------------------------
+!   INCLUDE 'scatterers.h'
+!
+! Number of radiatively active species 
+! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+!
+!-----------------------------------------------------------------------
+
+      integer, parameter :: naerkind=$1
+
+!-----------------------------------------------------------------------
+EOF
+
+else
+ echo "$filename already exists!"
+fi
+
+# remove 'old' scatterers.h file and replace it with new one
+\rm -f ../scatterers.h
+tar cf - $filename | ( cd .. ; tar xf - ; mv $filename scatterers.h )
+# line above is a trick to preserve time of creation of scatterers.# files

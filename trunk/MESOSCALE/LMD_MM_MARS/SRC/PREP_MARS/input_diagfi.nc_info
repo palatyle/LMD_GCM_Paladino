@@ -1,0 +1,89 @@
+netcdf input_diagfi {
+dimensions:
+	Time = UNLIMITED ; // (240 currently)
+	index = 100 ;
+	rlonu = 65 ;
+	latitude = 49 ;
+	longitude = 65 ;
+	rlatv = 48 ;
+	interlayer = 23 ;
+	altitude = 22 ;
+variables:
+	float Time(Time) ;
+		Time:long_name = "Time" ;
+		Time:units = "days since 0000-00-0 00:00:00" ;
+	float controle(index) ;
+		controle:title = "Parametres de controle" ;
+	float rlonu(rlonu) ;
+		rlonu:title = "Longitudes aux points u" ;
+	float latitude(latitude) ;
+		latitude:units = "degrees_north" ;
+		latitude:long_name = "North latitude" ;
+	float longitude(longitude) ;
+		longitude:long_name = "East longitude" ;
+		longitude:units = "degrees_east" ;
+	float altitude(altitude) ;
+		altitude:long_name = "pseudo-alt" ;
+		altitude:units = "km" ;
+		altitude:positive = "up" ;
+	float rlatv(rlatv) ;
+		rlatv:title = "Latitudes aux points v" ;
+	float aps(altitude) ;
+		aps:title = "hybrid pressure at midlayers" ;
+		aps:units = "" ;
+	float bps(altitude) ;
+		bps:title = "hybrid sigma at midlayers" ;
+		bps:units = "" ;
+	float ap(interlayer) ;
+		ap:title = "hybrid pressure at interlayers" ;
+		ap:units = "" ;
+	float bp(interlayer) ;
+		bp:title = "hybrid sigma at interlayers" ;
+		bp:units = "" ;
+	float cu(latitude, rlonu) ;
+		cu:title = "Coefficients de passage cov <--> nature" ;
+	float cv(rlatv, longitude) ;
+		cv:title = "Coefficients de passage cov <--> nature" ;
+	float aire(latitude, longitude) ;
+		aire:title = "Aires des mailles" ;
+	float phisinit(latitude, longitude) ;
+		phisinit:title = "Geopotentiel au sol init" ;
+	float mtot(Time, latitude, longitude) ;
+		mtot:title = "total mass of water vapor" ;
+		mtot:units = "kg/m2" ;
+	float icetot(Time, latitude, longitude) ;
+		icetot:title = "total mass of water ice" ;
+		icetot:units = "kg/m2" ;
+	float tsurf(Time, latitude, longitude) ;
+		tsurf:title = "Surface temperature" ;
+		tsurf:units = "K" ;
+	float ps(Time, latitude, longitude) ;
+		ps:title = "surface pressure" ;
+		ps:units = "K" ;
+	float co2ice(Time, latitude, longitude) ;
+		co2ice:title = "co2 ice thickness" ;
+		co2ice:units = "kg.m-2" ;
+	float temp(Time, altitude, latitude, longitude) ;
+		temp:title = "temperature" ;
+		temp:units = "K" ;
+	float tau(Time, latitude, longitude) ;
+		tau:title = "tau" ;
+		tau:units = "" ;
+	float u(Time, altitude, latitude, longitude) ;
+		u:title = "Zonal wind" ;
+		u:units = "m.s-1" ;
+	float v(Time, altitude, latitude, longitude) ;
+		v:title = "Meridional wind" ;
+		v:units = "m.s-1" ;
+	float w(Time, altitude, latitude, longitude) ;
+		w:title = "Vertical wind" ;
+		w:units = "m.s-1" ;
+	float rho(Time, altitude, latitude, longitude) ;
+		rho:title = "density" ;
+		rho:units = "none" ;
+
+// global attributes:
+		:history = "Wed Feb 27 10:42:03 2008: ncrcat -d interlayer,0,22,1 input_diagfi.nc input_diagfi2.nc\n",
+			"Wed Feb 27 10:35:52 2008: ncrcat -d altitude,0,21,1 favoris/run_mcd_newsolave/diagfi17.nc input_diagfi.nc" ;
+		:nco_openmp_thread_number = 1 ;
+}

@@ -1,0 +1,16 @@
+/home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libf/dynphy_lonlat/phystd/start2archive.F      FPP::SOURCE::PROGRAM
+/home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libf/dynphy_lonlat/phystd/defrun_new.F         FPP::SOURCE
+/home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libf/dynphy_lonlat/phystd/exner_hyb.F          FPP::SOURCE
+/home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libf/dynphy_lonlat/phystd/grid_noro1.F         FPP::SOURCE
+/home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libf/dynphy_lonlat/phystd/interp_vert.F        FPP::SOURCE
+/home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libf/dynphy_lonlat/phystd/callphysiq_mod.F90   FPP::FPP9X::SOURCE::MODULE
+/home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libf/dynphy_lonlat/phystd/newstart.F           FPP::SOURCE::PROGRAM
+/home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libf/dynphy_lonlat/phystd/ini_archive.F        FPP::SOURCE
+/home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libf/dynphy_lonlat/phystd/wind_scal.F          FPP::SOURCE
+/home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libf/dynphy_lonlat/phystd/write_archive.F      FPP::SOURCE
+/home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libf/dynphy_lonlat/phystd/lect_start_archive.F FPP::SOURCE
+/home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libf/dynphy_lonlat/phystd/datareadnc.F         FPP::SOURCE
+/home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libf/dynphy_lonlat/phystd/caldyn0.F            FPP::SOURCE
+/home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libf/dynphy_lonlat/phystd/scal_wind.F          FPP::SOURCE
+/home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libf/dynphy_lonlat/phystd/iniphysiq_mod.F90    FPP::FPP9X::SOURCE::MODULE
+/home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libf/dynphy_lonlat/phystd/inichim_newstart.F90 FPP::FPP9X::SOURCE

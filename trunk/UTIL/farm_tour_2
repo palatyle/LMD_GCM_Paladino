@@ -1,0 +1,51 @@
+#! /bin/bash
+# A. Spiga 
+
+echo "*********************************************************"
+echo "BIENVENUE. FERME COMMUNAUTAIRE BIO DE L'EQUIPE PLANETO. "
+echo "Patienter 20 secondes -- Verification de l'etat."
+echo "*********************************************************"
+
+### clean
+for machine in 'levan' 'penn' 'viccaro'
+do
+\rm ~/bilan$machine > /dev/null 2> /dev/null
+done
+
+### loop on test instances
+for ind in 1 2 3 4 5 6 7
+do
+
+### subloop on machines
+for machine in 'levan' 'penn' 'viccaro'
+do
+\rm ~/log$machine > /dev/null 2> /dev/null
+ssh $machine -t "ps --sort=-pcpu -e -o '%C %u %c %x %p' -G lmdjus r >> ~/log$machine" > /dev/null 2> /dev/null
+cat ~/log$machine | grep -v ps | grep -v root | grep -v grep | grep -v bash | grep -v CPU | wc -l >> ~/bilan$machine
+sleep 0.5 #1.0
+done
+
+case $ind in
+1) echo "--> merci de repartir les jobs sur les differentes machines (pas plus de 8 par machine)" ;;
+3) echo "--> utiliser les disques /d*, /san*, ou /tmp* pour ecrire les donnees" ;;
+5) echo "--> s'il n'y a pas de proc libre, negocie avec tes ami(e)s de l'equipe" ;;
+esac
+
+### end loop on test instances
+done
+
+### print result to user
+echo "*********************************************************"
+for machine in 'levan' 'penn' 'viccaro'
+do
+nproc=`sort -n ~/bilan$machine | tail -n 1`
+case $nproc in
+[1-7])  echo $machine -- ETAT OK. -- $nproc jobs pour 8 procs.;;
+8)      echo $machine -- COMPLET. NE PAS LANCER DE RUN. -- $nproc jobs pour 8 procs.;;
+9)      echo $machine -- SUR-REGIME. NE PAS LANCER DE RUN. -- $nproc jobs pour 8 procs.;;
+[1-9]*) echo $machine -- CHARGE ABUSIVE ANORMALE. NE PAS ENTRER. -- $nproc jobs pour 8 procs.;;
+esac
+\rm ~/log$machine > /dev/null 2> /dev/null
+\rm ~/bilan$machine > /dev/null 2> /dev/null
+done
+echo "*********************************************************"

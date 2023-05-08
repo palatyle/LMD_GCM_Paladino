@@ -1,0 +1,129 @@
+{\footnotesize
+\begin{verbatim}
+
+## Orbit / general options
+## ~~~~~~~~~~~~~~~~~~~~~~~
+# Run with or without tracer transport ?
+tracer    = .true.
+# Diurnal cycle ?  if diurnal=false, diurnally averaged solar heating
+diurnal   = .true.
+# Seasonal cycle ? if season=false, Ls stays constant, to value set in "start"
+season    = .true.
+# Tidally resonant orbit ? must have diurnal=false, correct rotation rate in newstart
+tlocked   = .false.
+# Tidal resonance ratio ? ratio T_orbit to T_rotation
+nres      = 10
+# Write some more output on the screen ?
+lwrite    = .false.
+# Save statistics in file "stats.nc" ?
+callstats = .true.
+# Test energy conservation of model physics ?
+enertest  = .true.
+
+## Radiative transfer options
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~
+# call radiative transfer?
+callrad    = .true.
+# the rad. transfer is computed every "iradia" physical timestep
+iradia     = 4
+# call multilayer correlated-k radiative transfer ?
+corrk      = .true.
+# folder in which correlated-k data is stored ?
+corrkdir   = CO2_H2Ovar
+# call visible gaseous absorption in radiative transfer ?
+callgasvis = .true.
+# Include Rayleigh scattering in the visible ?
+rayleigh   = .true.
+# Characteristic planetary equilibrium (black body) temperature
+# This is used only in the aerosol radiative transfer setup. (see aerave.F)
+tplanet    = 215.
+# Output spectral OLR in 1D/3D?
+specOLR    = .false.
+# Output global radiative balance in file 'rad_bal.out' - slow for 1D!!
+meanOLR    = .true.
+# Variable gas species: Radiatively active ?
+varactive  = .true.
+# Variable gas species: Fixed vertical distribution ?
+varfixed   = .false.
+# Variable gas species: Saturation percentage value at ground ?
+satval     = 0.0
+
+## Star type
+## ~~~~~~~~~
+startype = 1
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# The choices are:
+#
+#	startype = 1		Sol        (G2V-class main sequence)
+#	startype = 2		Ad Leo     (M-class, synthetic)
+#   startype = 3        GJ644
+#   startype = 4        HD128167
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Stellar flux at 1 AU. Examples:
+# 1366.0 W m-2		Sol today
+# 1024.5 W m-2		Sol today x 0.75 = weak early Sun
+# 18.462 W m-2		The feeble Gl581
+# 19.960 W m-2		Gl581 with e=0.38 orbital average
+Fat1AU = 1024.5
+
+## Tracer and aerosol options
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Gravitational sedimentation of tracers (KEEP FALSE FOR NOW) ?
+sedimentation = .false.
+
+## Other physics options
+## ~~~~~~~~~~~~~~~~~~~~~
+# call turbulent vertical diffusion ?
+calldifv = .true.
+# call convective adjustment ?
+calladj  = .true.
+# call thermal conduction in the soil ?
+callsoil = .true.
+
+#########################################
+## extra specific options for Early Mars
+#########################################
+
+## Tracer and aerosol options
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Fixed aerosol distributions?
+aerofixed     = .false.
+# Varying H2O cloud fraction?
+CLFvarying    = .false.
+# H2O cloud fraction?
+CLFfixval     = 0.5
+# number mixing ratio of CO2 ice particles
+Nmix_co2      = 100000.
+# number mixing ratio of water ice particles
+Nmix_h2o      = 100000.
+
+## Water options
+## ~~~~~~~~~~~~~
+# Model water cycle
+water         = .true.
+# Model water cloud formation
+watercond     = .true.
+# Model water precipitation (including coagulation etc.)
+waterrain     = .true.
+# WATER: Precipitation threshold (simple scheme only) ?
+rainthreshold = 0.0011
+# Include hydrology ?
+hydrology     = .true.
+# H2O snow (and ice) albedo ?
+albedosnow    = 0.5
+# Maximum sea ice thickness ?
+maxicethick   = 0.05
+# Freezing point of seawater (degrees C) ?
+Tsaldiff      = 0.0
+
+## CO2 options
+## ~~~~~~~~~~~
+# gas is non-ideal CO2 ?
+nonideal      = .false.
+# call CO2 condensation ?
+co2cond       = .true.
+# Set initial temperature profile to 1 K above CO2 condensation everywhere?
+nearco2cond   = .false.
+
+\end{verbatim}
+}

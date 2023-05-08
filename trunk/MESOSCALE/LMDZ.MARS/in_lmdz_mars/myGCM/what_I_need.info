@@ -1,0 +1,9 @@
+total 24K
+-rw-r--r--  1 aslmd lmdjus 3.4K Mar 11 11:50 callphys.def
+-rw-r--r--  1 aslmd lmdjus 3.4K Mar 11 11:45 callphys.def~
+lrwxrwxrwx  1 aslmd lmdjus   18 Mar 11 11:43 gcm.e -> ../LMDZ.MARS/gcm.e
+lrwxrwxrwx  1 aslmd lmdjus   23 Mar 11 11:43 newstart.e -> ../LMDZ.MARS/newstart.e
+-rw-r--r--  1 aslmd lmdjus 3.2K Mar 11 11:49 run.def
+lrwxrwxrwx  1 aslmd lmdjus   57 Mar 11 11:44 start_archive.nc -> /u/forget/WWW/datagcm/Starts/start_archive_64x48x25_t2.nc
+-rw-r--r--  1 aslmd lmdjus    0 Mar 11 11:53 what_I_need
+lrwxrwxrwx  1 aslmd lmdjus   30 Mar 11 11:52 z2sig.def -> ../LMDZ.MARS/deftank/z2sig.def

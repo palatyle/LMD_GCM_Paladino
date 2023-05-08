@@ -1,0 +1,78 @@
+#!/bin/csh
+##############################################################################
+# Script to run successive monthly (a month spans 30 deg. in Ls)
+# simulations of the LMD Mars GCM.
+# This script uses the following files:
+# - "run0": script to compute a given month
+# - "num_run": single line file containing a value, which is the value of
+#   the 'initializing' month
+# - "run.def.ref": a "run.def" file, exept that variable "nday" is set to 9999
+# - all files usually neaded to run the GCM. Note that initialization
+#   datafiles "start.nc" and "startfi.nc" must be
+#   "start${num_run}.nc" and "startfi${num_run}.nc"
+##############################################################################
+# DON'T FORGET TO:
+# 1) Set the "number of simulation" to 1 in "run0"
+# 2) Copy "run.def" to "run.def.ref" and SET nday to 9999 in run.def.ref
+# 3) uncomment the various lines below (those which begin with "sed ...")
+# 4) If restarting in the middle of a year: 
+#       -Below, Comment all the month already computed
+#       -Write  "N" in file "num_run" if starting from startN.nc !
+##############################################################################
+
+
+# Remove old "error" file (if any) and create a brand new (blank) one
+\rm -f  error; touch error
+
+# 12 martian months (=30°deg Ls) of unequal length (excentric orbit)
+  sed s/9999/61/ run.def.ref >! run.def ; run0 >>& error     #1
+  sed s/9999/66/ run.def.ref >! run.def ; run0 >>& error     #2
+  sed s/9999/66/ run.def.ref >! run.def ; run0 >>& error     #3
+  sed s/9999/65/ run.def.ref >! run.def ; run0 >>& error     #4
+  sed s/9999/60/ run.def.ref >! run.def ; run0 >>& error     #5
+  sed s/9999/54/ run.def.ref >! run.def ; run0 >>& error     #6
+  sed s/9999/50/ run.def.ref >! run.def ; run0 >>& error     #7
+  sed s/9999/46/ run.def.ref >! run.def ; run0 >>& error     #8
+  sed s/9999/47/ run.def.ref >! run.def ; run0 >>& error     #9
+  sed s/9999/47/ run.def.ref >! run.def ; run0 >>& error     #10
+  sed s/9999/51/ run.def.ref >! run.def ; run0 >>& error     #11 
+  sed s/9999/56/ run.def.ref >! run.def ; run0 >>& error     #12
+#
+# 12 martian months (=30°deg Ls) of unequal length (excentric orbit)
+# sed s/9999/61/ run.def.ref >! run.def ; run0 >>& error     #13
+# sed s/9999/66/ run.def.ref >! run.def ; run0 >>& error     #14
+# sed s/9999/66/ run.def.ref >! run.def ; run0 >>& error     #15
+# sed s/9999/65/ run.def.ref >! run.def ; run0 >>& error     #16
+# sed s/9999/60/ run.def.ref >! run.def ; run0 >>& error     #17
+# sed s/9999/54/ run.def.ref >! run.def ; run0 >>& error     #18
+# sed s/9999/50/ run.def.ref >! run.def ; run0 >>& error     #19
+# sed s/9999/46/ run.def.ref >! run.def ; run0 >>& error     #20
+# sed s/9999/47/ run.def.ref >! run.def ; run0 >>& error     #21
+# sed s/9999/47/ run.def.ref >! run.def ; run0 >>& error     #22
+# sed s/9999/51/ run.def.ref >! run.def ; run0 >>& error     #23
+# sed s/9999/56/ run.def.ref >! run.def ; run0 >>& error     #24
+#
+# 12 martian months (=30°deg Ls) of unequal length (excentric orbit)
+# sed s/9999/61/ run.def.ref >! run.def ; run0 >>& error     #25
+# sed s/9999/66/ run.def.ref >! run.def ; run0 >>& error     #26
+# sed s/9999/66/ run.def.ref >! run.def ; run0 >>& error     #27
+# sed s/9999/65/ run.def.ref >! run.def ; run0 >>& error     #28
+# sed s/9999/60/ run.def.ref >! run.def ; run0 >>& error     #29
+# sed s/9999/54/ run.def.ref >! run.def ; run0 >>& error     #30
+# sed s/9999/50/ run.def.ref >! run.def ; run0 >>& error     #31
+# sed s/9999/46/ run.def.ref >! run.def ; run0 >>& error     #32
+# sed s/9999/47/ run.def.ref >! run.def ; run0 >>& error     #33
+# sed s/9999/47/ run.def.ref >! run.def ; run0 >>& error     #34
+# sed s/9999/51/ run.def.ref >! run.def ; run0 >>& error     #35
+# sed s/9999/56/ run.def.ref >! run.def ; run0 >>& error     #36
+
+# These last lines allow to reconstruct the last num_run after a model crash 
+# (because after crash, num_run was set to 9999 so that no further simulation
+# Could be performed
+   set number=`cat num_run`
+   if ( $number == 99999) then
+      set numold=`cat num_run.crash`
+      echo '-----' >>& error
+      echo 'Seasonal simulation aborted after starting from start'$numold >>& error
+      \mv -f num_run.crash num_run  
+   endif

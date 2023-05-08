@@ -1,0 +1,65 @@
+ &time_control
+ run_seconds         = 14800   !! Duration of simulation                       [LES: !=0]  
+ history_interval_s  = 600     !! Frequency of outputs in seconds              [LES: !=0]
+ frames_per_outfile  = 6       !! Size of time dimension in files
+ start_year          = 9999    !! Idealized simulation                         [LES: 9999]
+ end_year            = 9999    !! Idealized simulation                         [LES: 9999]
+ restart             = .false. !! (*) Output restart files ?
+ restart_interval    = 8880    !! (*) Frequency of output restart files ?
+ io_form_history     = 2       !! (*) Choice of NETCDF for ouputs
+ io_form_restart     = 2       !! (*) Choice of NETCDF for ouputs
+ io_form_input       = 2       !! (*) Choice of NETCDF for ouputs
+ io_form_boundary    = 2       !! (*) Choice of NETCDF for ouputs
+ debug_level         = 0       !! (*) Verbose level
+ input_from_file     = F,      !! (n)(p2) Initialize a given domain with an input file
+ /
+
+ &domains
+ ztop                = 25000.  !! Altitude above ground of model top           [LES: !=0]       
+ time_step           = 10      !! Dynamical timestep
+ time_step_fract_num = 0       !! Additional fraction to time_step: numerator
+ time_step_fract_den = 1       !! Additional fraction to time_step: denominator
+ dx                  = 10000   !! (p2) Horizontal resolution
+ dy                  = 10000   !! (p2) Horizontal resolution (should be equal to dx)
+ e_we                = 61      !! (r)(p2) Number of longitude grid points
+ e_sn                = 61      !! (r)(p2) Number of latitude grid points
+ e_vert              = 61      !! (r)(p2) Number of vertical levels
+ /
+
+ &physics
+ init_TI             = 250.    !! Define constant thermal inertia value        [LES: !=0]
+ init_AL             = 0.25    !! Define constant albedo value                 [LES: !=0]
+ !!
+ !! OPTIONAL
+ !!
+ radt                = 1       !! Ratio between physical and dynamical time step
+ mars                = 0       !! (r)(p2) Configuration of tracers:
+                               !!         0: no tracers, 1: water vapor + ice, 2: dust
+ init_MU             = 0.001   !! (p3) Multiply ini & bdy zonal wind by init_U
+ init_MV             = 0.001   !! (p3) Multiply ini & bdy meridional wind by init_V
+ init_U = 15.
+ init_V = 0.
+ /
+
+ &dynamics
+ pert_coriolis         = T        !! Coriolis only acts on wind perturbation (idealized)
+ /
+
+ &bdy_control
+ specified = F,              !! (n)(p3) Boundary conditions specified by GCM
+ open_xs = T,                !! (p3) Open boundary conditions @ western boundary
+ open_xe = T,                !! (p3) Open boundary conditions @ eastern boundary
+ open_ys = T,                !! (p3) Open boundary conditions @ southern boundary
+ open_ye = T,                !! (p3) Open boundary conditions @ northern boundary
+ /
+
+ &grib2
+ /
+
+ &fdda
+ /
+
+ &namelist_quilt              !! (*)
+ nio_tasks_per_group = 0,     !! (*)
+ nio_groups = 1,              !! (*)
+ /                            !! (*)

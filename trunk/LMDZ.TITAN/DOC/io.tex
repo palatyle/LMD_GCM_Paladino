@@ -1,0 +1,486 @@
+\chapter{Input/Output}
+\label{sc:io}
+
+\section{NetCDF format}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+GCM input/output data are written in {\bf NetCDF} format
+(Network Common Data Form). NetCDF is an interface used to store and access
+geophysical data, and a library that provides an implementation of this
+interface. The NetCDF library also defines a machine-independent format for
+representing scientific data.
+Together, the interface, library and format support the creation, access and
+sharing of scientific data. NetCDF was developed at the Unidata Program Center
+in Boulder, Colorado. The freely available source can be obtained from
+{the Unidata website}{http://www.unidata.ucar.edu/software/netcdf}.
+
+A data set in NetCDF format is a single file, as it is self-descriptive.
+
+\subsection{NetCDF file editor: ncdump}
+
+The editor is included in the NetCDF library.
+By default it generates an ASCII representation as standard output
+from the NetCDF file specified at the input.
+
+\paragraph{Main commands for  ncdump}
+
+\begin{center}
+{\it ncdump diagfi.nc}
+\end{center}
+
+\noindent
+dump contents of NetCDF file {\tt diagfi.nc} to standard output
+(i.e. the screen).
+
+\begin{center}
+{\it ncdump -c diagfi.nc}
+\end{center}
+
+\noindent
+Displays the {\bf coordinate} variable values (variables which are also
+dimensions), as well as the declarations, variables and attribute values.
+The values of the non-coordinate variable data are not displayed at
+the output.
+
+\begin{center}
+{\it ncdump -h diagfi.nc}
+\end{center}
+
+\noindent
+Shows only the informative header of the file, which is the declaration
+of the dimensions, variables and attributes, but not the values of these
+variables. The output is identical to that in option {\bf -c} except for
+the fact that the coordinated variable values are not included.
+
+\begin{center}
+{\it ncdump -v var1,...,varn diagfi.nc}
+\end{center}
+
+\noindent
+The output includes the specific variable values,
+as well as all the dimensions, variables and attributes.
+More that one variable can be specified in the list following this option.
+The list must be a simple argument for the command, and must not contain any
+spaces. If no variable is specified, the command displays all the values of
+the variables in the file by default.
+
+
+\subsection{Graphic visualization of the NetCDF files using GrAds}
+
+GrAdS (The Grid Analysis and Display System) is a graphic software developed
+by Brian Doty at the "Center for Ocean-Land-Atmosphere (COLA)".
+
+One of its functions is to enable data stored in NetCDF format to be
+visualized directly. In figure~\ref{fg:grads} for example, we can see the
+GrADS visualization of the temperature data at a given moment.
+%
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth,angle=270]{Fig/grads.eps}
+\caption{Example of temperature data (in this case for present-day Mars) at a given time using
+GrADS visualization\label{fg:grads}}
+\end{figure}
+%
+However, unlike NetCDF, GrADS only recognizes files where all the variables are stored on the same horizontal grid.
+These variables can be in 1, 2, 3 or 4 dimensions (X,Y,Z and t).\\
+
+GrADS can also be obtained on the {WWW}{http://grads.iges.org/grads/}.
+
+\section{Input and parameter files}
+
+%{\bf \it Examples of initialization files can be found in directory
+%\begin{verbatim}$PATH1/LMDZ.MARS/deftank \end{verbatim}}
+\label{loc:entrees}
+
+The (3D version of the) GCM requires
+the input of two initialization files (in NetCDF format):\\
+-{\bf start.nc}
+contains the initial states of the dynamical variables.\\
+-{\bf startfi.nc}
+contains the initial states of the physical variables.\\
+Note that collections of initial states can be retreived at:\\
+\verb+http://www.lmd.jussieu.fr/~forget/datagcm/Starts+ \\
+Extracting {\tt start.nc} and {\tt startfi.nc} from these archived
+requires using program {\tt newstart}, as described in
+section~\ref{sc:newstart}.\\
+
+\noindent
+To run, the GCM also requires the  four following
+parameter files (ascii text files):\\
+-{\bf run.def} the parameters of the dynamical part of the program,
+and the temporal integration of the model.\\
+-{\bf callphys.def} the parameters for calling the physical part.\\
+-{\bf traceur.def} the names of the tracer to use.\\
+-{\bf z2sig.def}
+ the vertical distribution of the atmospheric layers.\\
+Examples of these parameter files can be found in the
+\verb+LMDZ.MARS/deftank+ directory.
+
+\subsection{run.def}
+\label{vb:run.def}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% run.def: les param sont lus dans dyn3d/defrun.F
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+A typical {\tt run.def} file is given as an example below.
+The choice of variables to be set is simple (e.g.
+ {\tt nday} number of modeled days to run),
+while the others do not need to be changed for normal use.\\
+The format of the {\tt run.def} file is quite straightforward
+(and flexible): values given to parameters must be given as:
+\begin{verbatim}
+  parameter = value
+\end{verbatim}
+Any blank line or line beginning with symbol {\bf \#} is
+a comment, and instruction lines may be written in any order.
+Moreover, not specifying a parameter/value set (e.g. deleting it
+or commenting it out) means you want the GCM to use a default built-in value.
+Additionally, one may use a specific keyword {\bf INCLUDEDEF} to specify
+another (text) file in which to also read values of parameters; e.g.:
+\begin{verbatim}
+INCLUDEDEF=callphys.def
+\end{verbatim}
+
+
+\noindent Here are some details about some of the parameters which may be
+set in {\tt run.def}:
+\begin{itemize}
+\item {\bf day\_step}, the number of dynamical steps per day to use for
+the time integration. This needs to be large enough for the model
+to remain stable (this is related to the CFL stability criterion
+which essentially depends on the horizontal resolution of the model).
+On Mars, in theory, the GCM can run with
+{\tt day\_step}=480 using the 64$\times$48 grid, but model stability
+improves when this number is higher: {\tt day\_step}=960 is recommended
+ when using the 64$\times$48 grid. According to the CFL criterion,
+{\tt day\_step} should vary in proportion with the resolution: for example
+{\tt day\_step}=480 using the 32$\times$24 horizontal resolution.
+Note that {\tt day\_step} must also be divisible by {\tt iperiod}. For other planets... [FINISH]
+
+\item {\bf tetagdiv, tetagrot, tetatemp} control the dissipation intensity.
+It is better to limit the dissipation intensity
+(tetagdiv, tetagrot, tetatemp should not be too low).
+However the model diverges if tetagdiv, tetagrot, tetatemp are too high,
+especially if there is a lot of dust in the atmosphere. \\
+Example used with nitergdiv=1 and  nitergrot=niterh=2 : \\
+- using the 32$\times$24 grid tetagdiv=6000~s ; tetagrot=tetatemp=30000~s \\
+- using the 64$\times$48 grid: tetagdiv=3000~s ; tetagrot=tetatemp=9000~s
+
+\item {\bf idissip} is the time step used for the dissipation:
+dissipation is computed and added every {\tt idissip} dynamical
+time step. If {\tt idissip} is
+too short, the model waste time in these calculations. But if idissip is too
+long, the  dissipation will not be parametrized correctly and the  model will
+be more likely to diverge.
+A check must be made, so that:
+{\tt idissip}~$<$~{\tt tetagdiv}$\times${\tt daystep}/86400
+(same rule for {\tt tetagrot} and {\tt tetatemp}).
+This is tested automatically during the run.
+
+\item {\bf iphysiq} is the time step used for the physics:
+physical tendencies are computed every {\tt iphysiq} dynamical time step.
+In practice, we
+usually set the physical time step to be of the order of half an hour.
+We thus generally set {\tt iphysiq}= {\tt day\_step}/48
+
+\end{itemize}
+
+\noindent
+{\it Example of run.def file: }
+\input{input/run.tex}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\subsection{callphys.def}
+\label{sc:callphys.def}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% callphys.def: les param sont lus dans phymars/inifis.F
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The {\tt callphys.def} file (along the same format
+as the {\tt run.def} file) contains parameter/value sets
+for the physics.\\
+
+
+\noindent
+{\it Example of callphys.def file: }
+\input{input/callphys.tex}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{traceur.def}
+\label{sc:traceur.def}
+Tracers in input ({\tt start.nc} and {\tt startfi.nc}) and output
+files ({\tt restart.nc} and {\tt restartfi.nc}) are stored using
+individual tracer names (e.g. {\tt co2} for CO2 gas, {\tt h2o\_vap}
+for water vapour, {\tt h2o\_ice} for water ice, ...).\\
+The first line of the {\tt traceur.def} file (an ASCII file) must
+contain the number of tracers to load and use (this number should
+be the same as given to the {\tt -t} option of the {\tt makegcm}
+script when the GCM was compiled), followed by the tracer names
+(one per line). Note that if the corresponding tracers are not
+found in input files {\tt start.nc} and {\tt startfi.nc}, then the
+tracer is initialized to zero.\\
+
+
+\noindent {\it Example of a traceur.def file:
+(with water vapour and ice tracers)}
+{\footnotesize
+\begin{verbatim}
+2
+h2o_ice
+h2o_vap
+\end{verbatim}
+}
+
+\subsection{z2sig.def}
+The {\tt z2sig.def} file contains the pseudo-altitudes
+(in km) at which the user wants to set the vertical levels.\\
+Note that levels should be unevenly spread, with a higher resolution
+near the surface in order to capture the rapid variations of variables
+there. It is recommended to use the altitude levels as set in the
+{\tt z2sig.def} file provided in the {\tt deftank} directory.\\
+
+\noindent
+{\it Example of  z2sig.def file}
+\input{input/z2sig.tex}
+
+\subsection{Initialization files: start and startfi}
+
+%
+\begin{figure}[h]
+\centering
+\framebox[0.8\textwidth][c]{\includegraphics[width=0.7\textwidth]{Fig/netcdf.eps}}
+\caption{Organization of NetCDF files \label{fg:netcdf}}
+\end{figure}
+%
+Files {\tt start.nc} and {\tt startfi.nc}, like all the NetCDF files of
+the GCM,
+are constructed on the same model (see NetCDF file composition,
+figure~\ref{fg:netcdf}). They contain:\\
+- a header with a ``control'' variable followed by a series of variables
+defining the (physical and dynamical) grids \\
+- a series of non temporal variables that give information about surface
+conditions on the planet.\\
+- a ``time'' variable giving the values of the different instants at which
+the temporal variables are stored
+(a single time value (t=0) for start,
+as it describes the dynamical initial states,
+and no time values for startfi, as it describes only a physical state).\\
+
+To visualize the contents of a {\tt start.nc} file using the
+{\tt ncdump} command:\\
+
+\noindent
+{\it ncdump -h start.nc}\\
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% List START
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{input/dyn_list.tex}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\noindent
+List of contents of a {\tt startfi.nc} file:\\
+
+\noindent
+{\it ncdump -h startfi.nc}\\
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% List startfi
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{input/fi_list.tex}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%    Description des start et startfi
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\paragraph{Physical and dynamical headers}
+
+There are two types of headers: one for the physical headers,
+and one for the dynamical headers.
+The headers always begin with a ``control' variable
+(described below), that is allocated differently in the physical and
+dynamical parts.
+The other variables in the header concern the (physical and dynamical) grids.
+They are the following:\\
+
+\noindent
+the horizontal coordinates\\
+- {\bf rlonu}, {\bf rlatu}, {\bf rlonv}, {\bf rlatv} for the dynamical part,\\
+- {\bf lati}, {\bf long} for the physical part,\\
+
+\noindent
+the coefficients for passing from the physical grid to the dynamical grid\\
+- {\bf cu},{\bf cv} only in the dynamical header\\
+
+\noindent
+and finally, the grid box areas\\
+- {\bf aire} for the dynamical part,\\
+- {\bf area} for the physical part.\\
+
+\paragraph{Surface conditions}
+
+The surface conditions are mostly given in the physical NetCDF files by
+variables:\\
+- {\bf phisfi} for the initial state of surface geopotential,\\
+- {\bf albedodat} for the bare ground albedo,\\
+- {\bf inertiedat} for the surface thermal inertia,\\
+- {\bf zmea}, {\bf zstd}, {\bf zsig}, {\bf zgam} and {\bf zthe} for
+  the subgrid scale topography.\\
+
+\noindent
+For the dynamics:\\
+- {\bf physinit} for the initial state of surface geopotential\\
+
+\noindent
+Remark: variables {\bf phisfi} and {\bf physinit} contain the same information
+(surface geopotential), but {\bf phisfi} gives the geopotential values on the
+physical grid, while {\bf physinit} give the values on the dynamical grid.\\
+
+\paragraph{Physical and dynamical state variables}
+To save disk space, the initialization files store the variables used by
+the model, rather than the ``natural'' variables.\\
+
+\noindent
+For the dynamics:
+\begin{description}
+\item - {\bf ucov} and {\bf vcov} the covariant winds\\
+These variables are linked to the ``natural'' winds by\\
+\verb+ucov = cu * u+ and \verb+vcov = cv * v+
+\item - {\bf teta} the potential temperature,\\
+  or more precisely, the potential enthalpy linked to temperature {\bf T} by
+  $\theta = T\dep{\frac{P}{Pref}}^{-K}$
+\item - the tracers,
+\item - {\bf ps} surface pressure.
+\item - {\bf masse} the atmosphere mass in each grid box.
+\end{description}
+
+\noindent
+``Vectorial'' variables {\bf ucov} and {\bf vcov} are stored on
+``staggered'' grids u and v respectively (in the dynamics)
+(see section \ref{fg:grid}).\\
+Scalar variables {\bf h}, {\bf q} (tracers), {\bf ps}, {\bf masse} are stored
+on the ``scalar'' grid of the dynamical part.\\
+
+\noindent
+For the physics:
+\begin{description}
+\item - {\bf co2ice} surface dry ice,
+\item - {\bf tsurf} surface temperature,
+\item - {\bf tsoil} temperatures at different layers under the surface,
+\item - {\bf emis} surface emissivity,
+\item - {\bf q2} wind variance,\\
+or more precisely, the square root of the turbulent kinetic energy.
+\item - the surface ``tracer'' budget
+ (kg.m$^{-2}$),\\
+\end{description}
+
+\noindent
+All these variables are stored on the ``physical'' grid
+(see section \ref{fg:grid}).\\
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\paragraph{The ``control'' array}
+
+\indent
+Both physical and dynamical headers of the GCM NetCDF files start with
+a {\bf controle} variable. This variable is an array of 100 reals (the vector
+called {\tt tab\_cntrl} in the program), which contains the program control
+parameters.
+Parameters differ between the physical and dynamical sections, and examples
+of both are listed below. The contents of table {\tt tab\_cntrl} can also
+be checked with the command {\tt ncdump -ff -v controle}.\\
+
+\noindent
+{\bf The "control" array in the header of a dynamical NetCDF file:
+start}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% tab_cntrl (dynamique) dans dyn3d/inimomo.F
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{input/dyn_cntl.tex}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\noindent
+{\bf The "controle" array in the header of a physical NetCDF file:
+startfi.nc}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% tab_cntrl (physique) dans phymars/iniwritefi.F
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{input/fi_cntl.tex}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newpage
+\section{Output files}
+
+\subsection{NetCDF restart files - restart.nc and restartfi.nc}
+These files are of the exact same format as {\tt start.nc} and
+{\tt startfi.nc}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Description des fichiers de Sortie
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{ NetCDF file - diagfi.nc}
+NetCDF file {\tt diagfi.nc} stores the instantaneous physical variables
+throughout the simulation at regular intervals
+(set by the value of parameter {\tt ecritphy} in
+parameter file {\tt run.def}; note that {\tt ecritphy} should be a
+multiple of {\tt iphysiq} as well as a divisor of {\tt day\_step}).
+
+\noindent
+{\bf Any variable from any sub-routine of the physics can be stored
+by calling subroutine}
+\verb+ writediagfi+
+
+
+\noindent
+Illustrative example of the contents of a {\tt diagfi.nc}
+file (using ncdump):\\
+\noindent
+{\it ncdump -h diagfi.nc}\\
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% List DIAGFI
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% temporaire!!!
+\input{input/diag_list.tex}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\noindent
+The structure of the file is thus as follows:
+\begin{description}
+\item- the dimensions
+\item- variable ``time'' containing the time of the timestep stored in the
+ file (in Martian days since the beginning of the run)
+\item- variable ``control'' containing many parameters, as described above.
+\item- from `` rhonu'' to 'phisinit'': a list of data describing the
+ geometrical coordinates of the data file, plus the surface topography
+\item- finally, all the 2D or 3D data stored in the run.
+\end{description}
+
+
+\subsection{Stats files}
+
+As an option ({\tt stats} must be set to {\tt .true.} in {\tt callphys.def}),
+the model can accumulate any
+variable from any subroutine of the physics by calling
+subroutine \verb+ wstat+
+\\ \\
+\noindent
+This save is performed at regular intervals 12 times a day.
+An average of the daily evolutions over the whole run is calculated
+(for example, for a 10 day run, the averages of the variable values at
+0hTU, 2hTU, 4hTU,...24hTU are calculated), along with RMS standard
+deviations of the variables. This ouput is given in
+file {\tt stats.nc}.\\
+
+
+\noindent
+Illustrative example of the contents of a {\tt stats.nc} file (using ncdump):\\
+\noindent
+{\it ncdump -h stats.nc}\\
+\input{input/stats_list.tex}
+
+\noindent
+The structure of the file is simillar to the {\tt diagfi.nc} file,
+except that, as stated before, the average of variables are given for
+12 times of the day and that RMS standard deviation are also provided.
+

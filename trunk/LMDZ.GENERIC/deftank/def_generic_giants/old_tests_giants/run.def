@@ -1,0 +1,35 @@
+#
+# Minimal run.def (for Newtonian cas)
+#
+## planet type (default is "earth")
+#planet_type = earth
+planet_type = giant
+#
+INCLUDEDEF=planet.def
+INCLUDEDEF=gcm.def
+INCLUDEDEF=newtonian.def
+#
+## Jour de l'etat initial ( = 350  si 20 Decembre ,par expl. ,comme ici )
+dayref=1
+##  Annee de l'etat  initial (   avec  4  chiffres   )
+anneeref=1979
+## Nombre de jours d'integration
+#nday=10000
+nday=2000
+## Remise a zero de la date initiale
+raz_date=0
+## periode de sortie des variables de controle (en pas)
+iconser=10
+
+## sorties instantanees dans la dynamique (fichiers dyn_hist.nc and co.)
+ok_dyn_ins=y
+## periode d'ecriture des sorties instantanees dans la dynamique
+## (en pas dynamiques) 238
+#iecri=714
+iecri=1428
+## sorties de valeurs moyennes dans la dynamique (fichiers dyn_hist_ave.nc and co.)
+ok_dyn_ave=n
+## periode de stockage des moyennes dans la dynamique
+periodav=1
+## flag de sortie dynzon
+ok_dynzon=n

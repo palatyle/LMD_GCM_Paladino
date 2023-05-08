@@ -1,0 +1,1 @@
+ncrcat -d time,1,180,1 input_diagfi.nc input_diagfi1.nc

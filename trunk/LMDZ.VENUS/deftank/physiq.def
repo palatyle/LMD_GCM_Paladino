@@ -1,0 +1,136 @@
+## $Header$
+#
+##  Include diurnal cycle or not
+cycle_diurne=y
+##  Include soil model or not
+soil_model=y
+## Use orodr or not for orography
+ok_orodr=n
+## Use orolf or not for orography
+ok_orolf=n
+## Use non-orographic Gravity Waves of not
+ok_gw_nonoro=n
+## Number of calls to the radiative transfer (per day)
+nbapp_rad=24000
+## Number of calls to the chemistry routines (per day)
+nbapp_chim=1
+##  Flag for convection : 1 pour LMD, 2 pour Tiedtke, 3 KE(new version JYG), 30 KE(version IPCC AR4), 4 KE vect
+iflag_con=0
+#
+# orbital parameters
+##~~~~~~~~~~~~~~~~~~
+#
+# VENUS ##
+# R_ecc = 0.006787
+R_ecc = 0.
+R_peri = 0.
+# R_incl = 177.4
+R_incl = 0.
+# solar: effective flux, given at 1 UA
+solaire = 328.
+#
+# parameters for the tracers
+##~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+# 0: nothing (passive tracers)
+# 1: pseudo-chemistry relaxation (phytrac_relax)
+# 2: surface emission (phytrac_emiss)
+# 3: full chemistry (phytrac_chem)
+tr_scheme = 0
+#
+# Reinitialization of tracer abundances 
+reinit_trac=n
+#
+# parameters for chemistry and microphysics
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+# use chemistry ?
+ok_chem=n
+# use clouds ? (needed for chemistry)
+ok_cloud=n
+# if yes, which scheme:
+#  1 => simple scheme (Aurelien Stolzenbach)
+#  2 => full microphysical scheme (Sabrina Guilbon)
+cl_scheme=1
+# use sedimentation (goes with clouds)
+ok_sedim=n
+nb_mode=3
+#
+# parameters for the boundary layer
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+iflag_pbl=8
+z0 = 0.01
+lmixmin = 35.
+ksta = 1.e-7
+ok_kzmin=n
+#
+# Surface thermal inertia
+inertie=2000
+#
+# dry convection parameters
+##~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+iflag_ajs = 1
+#
+# Thermosphere and nlte parameters
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+## Compute non-LTE or not
+callnlte=n
+## choice of species profile to use
+nltemodel=2
+## Compute CO2 IR absorption or not
+callnirco2=n
+##CO2 IR Absorption model
+nircorr=0
+##include thermosphere or not
+callthermos=n
+
+## Thermospheric options 
+##~~~~~~~~~~~~~~~~~~~~~~
+#Method to include solar variability?
+#0-> Old method   1-> Variability with E10.7 as observed
+solvarmod=0
+
+## (Solar min=1996.4 ave=1993.4 max=1990.6) ; Only used if solvarmod=0
+solarcondate = 1993.4
+
+# value for the UV heating efficiency
+##(experimental values between 0.19 and 0.23, lower values may
+## be used to compensate for low 15 um cooling)
+euveff = 0.21       
+#
+#
+#
+#
+# Parameters for IOIPSL output files
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## OLD. Now we use XIOS => see context_lmdz_physics.xml to taylor the output files
+#
+### OK_journe= y for daily output file histday.nc, =n no histday.nc output
+### Meaningless for Venus
+OK_journe=n
+### OK_mensuel= y for monthly output file histmth.nc, =n no histmth.nc
+### For Venus, only these averaged outputs
+OK_mensuel=n
+## rate (in days) at which the Venus histmth file is to be written               
+# sets the output rate in histmth and/or histins 
+ecritphy=0.1
+### OK_instan=y, make some "instantaneous" outputs (same rate as histmth)
+OK_instan=n
+# 
+# Output levels for the various output files
+#
+# output level for  "day" lev_histday
+# - lev_hist*=1 => baseline 2D fields
+# - lev_hist*=2 => baseline 3D fields (default)
+# - lev_hist*=3 => radiative transfert
+# - lev_hist*=4 => 3D tendencies
+# - lev_hist*=5 => tracers and others
+lev_histday=2
+#output level for "mth" lev_histmth 
+lev_histmth=2
+#output level for "ins" lev_histins 
+lev_histins=2
+

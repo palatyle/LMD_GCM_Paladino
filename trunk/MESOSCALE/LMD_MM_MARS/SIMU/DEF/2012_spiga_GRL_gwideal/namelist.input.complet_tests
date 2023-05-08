@@ -1,0 +1,149 @@
+ &time_control
+ run_seconds      = 14800    !! IDEALIZED !!             
+ start_year       = 9999,    !! IDEALIZED !!
+ end_year         = 9999,    !! IDEALIZED !!
+! history_interval    = 37,   !! Frequency of outputs (37 --> 3700s = 1 Martian hour)  
+ history_interval_s  = 925
+ frames_per_outfile  = 24,   !! Size of time dimension in files 
+ restart          = .false.  !! (*) Output restart files ?
+ restart_interval = 8880     !! (*) Frequency of output restart files ?
+ io_form_history  = 2        !! (*) Choice of NETCDF for ouputs
+ io_form_restart  = 2        !! (*) Choice of NETCDF for ouputs     
+ io_form_input    = 2        !! (*) Choice of NETCDF for ouputs
+ io_form_boundary = 2        !! (*) Choice of NETCDF for ouputs
+ debug_level      = 0        !! (*) Verbose level
+ !!
+ !! OPTIONAL
+ !!
+ input_from_file = F,        !! (n)(p2) Initialize a given domain with an input file
+ /
+
+ &domains
+ time_step   = 5 !10            !! Dynamical timestep
+ !time_step   = 20
+ dx = 5000,                  !! (p2) Horizontal resolution
+ dy = 5000,                  !! (p2) Horizontal resolution (should be equal to dx)
+ !dx = 1000,
+ !dy = 1000,
+ !time_step   = 1
+ e_we   = 61,                !! (r)(p2) Number of longitude grid points
+! e_sn   = 61,                !! (r)(p2) Number of latitude grid points
+e_sn = 3,
+! e_vert = 201,               !! (r)(p2) Number of vertical levels
+ e_vert = 151,
+ e_vert = 181,
+ !!
+ !! OPTIONAL
+ !!
+ ztop = 220000.              !! (p3) Altitude of model top: Specific to idealized cases
+ ztop = 150000.
+ ztop = 180000.
+ !ztop = 60000.
+ !ztop = 100000.
+ !ztop = 130000.
+ /
+
+ &physics
+ !!
+ !! OPTIONAL
+ !!
+ radt = 1 !200,              !! Ratio between physical and dynamical time step
+ init_TI = 250.,             !! Define constant thermal inertia value
+ init_AL = 0.25,             !! Define constant albedo value
+ init_MU = 0.00001,
+ init_MV = 0.00001,
+ init_U = 15. !!20.
+ init_V = 0.
+ !!init_U = 20.
+ /
+
+ &dynamics
+ damp_opt = 1,        ! upper level damping flag
+                      !              0 = without damping
+                      !              1 = with diffusive damping, maybe used for real-data cases
+                      !                          (dampcoef nondimensional ~0.01-0.1)
+                      !              2 = with Rayleigh  damping (dampcoef inverse time scale [1/s] e.g. .003;
+                      !                        not for real-data cases)
+ dampcoef  = 0.05,    ! damping coefficient (see above) 0.01  0.1trop fort?parfoisdespicots
+ zdamp     = 20000.,  ! damping depth (m) from model top 5000. 15000
+ !zdamp     = 50000.
+ dampcoef  = 0.01 ! trop faible .01 pb, trop fort .1 pb
+ zdamp     = 15000.
+ tiso = 130.
+ !tiso = 100.
+ !tiso = 50.
+     !!!!damp_opt     = 1,           !! absorbing (1) Rayleigh (2)
+     !!!!dampcoef     = 0.08         !! 1+0.1 bad!  2+0.3 bad!  1 semble plus puissant que 2
+     !!!!zdamp        = 15000.,  
+ !!
+ !! OPTIONAL
+ !!
+ !time_step_sound = 2 !15 !6,  !4       !! Ratio of time step dynamic/acoustic integration
+ !                            !!   NB: an increase could help solve instabilities
+ !non_hydrostatic = T,        !! Integrate in non-hydrostatic/hydrostatic mode
+ !!
+ !diff_opt = 1                !! (*d) Diffusion option [set to 0 if LES or GCM]
+ !km_opt = 4                  !! (*d) Eddy coefficient option
+ !diff_6th_opt = 0,           !! (*d) Knievel numerical diffusion [set to 0 if LES]
+ !diff_6th_opt = 2,           !! (*d) Knievel numerical diffusion [set to 0 if LES]
+ !!diff_6th_factor = 0.2,      !! (*d) Knievel numerical coeff. [set to 0.5 if GCM]
+ !diff_6th_factor = 0.5
+ !smdiv = 0.1,                !! (*d) Divergence damping
+ !emdiv = 0.01,               !! (*d) External-mode filter for mass coord. model
+ epssm = 1.0 ! 0.5 avec 40.  !0.1,                !! (*d) Time off-centering for vertical sound waves
+ epssm = 2.0 !! necessaire pour 180km
+ epssm = 5.0
+ !h_mom_adv_order = 5,        !! (*d) Horizontal momentum advection order
+ !v_mom_adv_order = 3,        !! (*d) Vertical momentum advection order
+ !h_sca_adv_order = 5,        !! (*d) Horizontal scalar advection order
+ !v_sca_adv_order = 3,        !! (*d) Vertical scalar advection order
+! diff_opt                            = 2,
+! km_opt                              = 1,
+ damp_opt                            = 2,
+ zdamp                               = 40000.,
+ dampcoef                            = 0.1   !plante avec 150km altitude?
+ !dampcoef                            = .003,
+ !dampcoef                            = .03  !plante avec 150km altitude !plante avec 201 levels
+ !dampcoef                            = .09
+ !dampcoef                            = 0.3, !!plante
+! damp_opt = 1     !!! non toujour instable
+! dampcoef = 0.3 !!0.1 !!0.01
+! zdamp = 70000.
+ zdamp = 50000.
+! zdamp = 60000.
+! dampcoef = 0.2
+! zdamp = 30000.  !! ok avec epssm = 1. mais il y a tout de meme des fluctuations. pas mieux avec plus...
+!
+! zdamp = 40000. !!NON 180km
+! dampcoef = 0.15 !!NON
+!!!
+!!!pareil avec ou sans.... juste un peu plus smooth avec
+!!!...et ne regle pas les pb...
+ khdif                               = 3000, 
+ kvdif                               = 3,
+! khdif                               = 9000,
+! kvdif                               = 9,
+ /
+
+ &bdy_control
+ !!
+ !! OPTIONAL
+ !!
+ specified = F,              !! (n)(p3) Boundary conditions specified by GCM
+ open_xs = T,                !! (p3) Open boundary conditions @ western boundary
+ open_xe = T,                !! (p3) Open boundary conditions @ eastern boundary
+! open_ys = T,                !! (p3) Open boundary conditions @ southern boundary
+! open_ye = T,                !! (p3) Open boundary conditions @ northern boundary
+ periodic_y = T,
+ /
+
+ &grib2
+ /
+
+ &fdda
+ /
+
+ &namelist_quilt              !! (*)
+ nio_tasks_per_group = 0,     !! (*)
+ nio_groups = 1,              !! (*)
+ /                            !! (*)

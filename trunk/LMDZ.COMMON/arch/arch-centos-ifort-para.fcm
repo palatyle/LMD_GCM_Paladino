@@ -1,0 +1,19 @@
+%COMPILER            mpif90
+%LINK                mpif90
+%AR                  ar
+%MAKE                gmake
+%FPP_FLAGS           -P -traditional
+%CPP_FLAGS           -P
+%FPP_DEF             NC_DOUBLE LAPACK BLAS SGEMV=DGEMV SGEMM=DGEMM FFT_MKL
+%CPP_DEF             LAPACK
+%BASE_FFLAGS         -i4 -r8 -auto -align all -fp-model strict
+%PROD_FFLAGS         -O2 -ip -xCORE-AVX2
+%DEV_FFLAGS          -p -g -O1 -fpe0 -traceback
+%DEBUG_FFLAGS        -p -g -O0 -fpe-all=0 -ftz -ftrapuv -fp-stack-check -check bounds,format,output_conversion,pointers,uninit -debug -traceback
+%C_COMPILER          mpicc
+%C_OPTIM             -O2 -ip -xCORE-AVX2
+%MPI_FFLAGS
+%OMP_FFLAGS          -openmp -openmp-threadprivate compat
+%BASE_LD             -i4 -r8 -auto -shared-intel -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lm
+%MPI_LD
+%OMP_LD              -openmp

@@ -1,0 +1,7 @@
+#script
+# execute: find * -exec generate2 {} \;
+# change number sed -e s/d5/d3/g generate2 > generate3
+
+sed -e s/'[cC][aA][lL][lL] '/'call d5_'/g ${1} | sed -e s/'call d5_[aA][bB][oO][rR][tT]'/'call ABORT'/g | sed -e s/'call d5_[eE][xX][iI][tT]'/'call EXIT'/g | sed -e s/'firstcall d5_'/'firstcall '/g | sed -e s/'lastcall d5_'/'lastcall '/g | sed -e s/'[sS][uU][bB][rR][oO][uU][tT][iI][nN][eE] '/'subroutine d5_'/g | sed -e s/'callphys.def'/'callphysd5_.def '/g | sed -e s/'diagfi.nc'/'diagfid5_.nc'/g | sed -e s/'[iI][nN][cC][lL][uU][dD][eE] "'/'include "d5_'/g | sed -e s/"[iI][nN][cC][lL][uU][dD][eE] '"/"include 'd5_"/g | sed -e s+"[cC][oO][mM][mM][oO][nN]/"+"common/d5_"+g | sed -e s+"[cC][oO][mM][mM][oO][nN] /"+"common /d5_"+g | sed -e s+"d5_netcdf.inc"+"netcdf.inc"+g | sed -e s+"isitice"+"d5_isitice"+g | sed -e s+"nplatcrocus"+"d5_nplatcrocus"+g | sed -e s+"splatcrocus"+"d5_splatcrocus"+g > d5_${1} 
+
+

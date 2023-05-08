@@ -1,0 +1,5 @@
+      FUNCTION FI8(X)
+      IMPLICIT REAL (A-H,O-Z)
+      FI8=.3737/X+3.718903-.1908*X+.1617*X*X-3.633E-3*X**3
+      RETURN
+      END

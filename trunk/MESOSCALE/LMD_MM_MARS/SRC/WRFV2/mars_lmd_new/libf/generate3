@@ -1,0 +1,39 @@
+# script
+# execute: find * -exec generate2 {} \;
+# change number sed -e s/d2/d3/g generate2 > generate3
+
+sed -e s/'[cC][aA][lL][lL] '/'call d3_'/g ${1} | sed -e s/'call d3_[aA][bB][oO][rR][tT]'/'call ABORT'/g | sed -e s/'call d3_[eE][xX][iI][tT]'/'call EXIT'/g | sed -e s/'firstcall d3_'/'firstcall '/g | sed -e s/'lastcall d3_'/'lastcall '/g | sed -e s/'[sS][uU][bB][rR][oO][uU][tT][iI][nN][eE] '/'subroutine d3_'/g | sed -e s/'callphys.def'/'callphysd3_.def '/g | sed -e s/'diagfi.nc'/'diagfid3_.nc'/g | sed -e s/'[iI][nN][cC][lL][uU][dD][eE] "'/'include "d3_'/g | sed -e s/"[iI][nN][cC][lL][uU][dD][eE] '"/"include 'd3_"/g | sed -e s+"[cC][oO][mM][mM][oO][nN]/"+"common/d3_"+g | sed -e s+"[cC][oO][mM][mM][oO][nN] /"+"common /d3_"+g | sed -e s+"d3_netcdf.inc"+"netcdf.inc"+g > d3_${1}_temp
+
+# Specifcic cases for newphys compilation:
+
+sed -e s/'[mM][oO][dD][uU][lL][eE] '/'MODULE d3_'/g d3_${1}_temp > d3_${1}_temp2 ; \mv d3_${1}_temp2 d3_${1}_temp
+sed -e s/'d3_[pP][rR][oO][cC][eE][dD][uU][rR][eE] '/'PROCEDURE '/g d3_${1}_temp > d3_${1}_temp2 ; \mv d3_${1}_temp2 d3_${1}_temp
+sed -e s/'[iI][nN][tT][eE][rR][fF][aA][cC][eE] '/'INTERFACE d3_'/g d3_${1}_temp > d3_${1}_temp2 ; \mv d3_${1}_temp2 d3_${1}_temp
+sed -e s/'[eE][nN][dD] INTERFACE d3_'/'END INTERFACE '/g d3_${1}_temp > d3_${1}_temp2 ; \mv d3_${1}_temp2 d3_${1}_temp
+sed -e s/'calltherm_INTERFACE d3_'/'calltherm_interface '/g d3_${1}_temp > d3_${1}_temp2 ; \mv d3_${1}_temp2 d3_${1}_temp
+sed -e s/'meso_inc_'/'d3_meso_inc_'/g d3_${1}_temp > d3_${1}_temp2 ; \mv d3_${1}_temp2 d3_${1}_temp
+sed -e s+'d3_meso_inc/'+'meso_inc/'+g d3_${1}_temp > d3_${1}_temp2 ; \mv d3_${1}_temp2 d3_${1}_temp
+sed -e s/'[uU][sS][eE] ioipsl_getincom'/'USE d3_ioipsl_getincom'/g d3_${1}_temp > d3_${1}_temp2 ; \mv d3_${1}_temp2 d3_${1}_temp
+sed -e s/'[uU][sS][eE] updaterad'/'USE d3_updaterad'/g d3_${1}_temp > d3_${1}_temp2 ; \mv d3_${1}_temp2 d3_${1}_temp
+sed -e s/'PUBLIC :: getin, getin_dump'/'PUBLIC :: d3_getin, d3_getin_dump'/g d3_${1}_temp > d3_${1}_temp2 ; \mv d3_${1}_temp2 d3_${1}_temp
+sed -e s/' getinrs, getinr1d, getinr2d,'/' d3_getinrs, d3_getinr1d, d3_getinr2d,'/g d3_${1}_temp > d3_${1}_temp2 ; \mv d3_${1}_temp2 d3_${1}_temp
+sed -e s/' getinis, getini1d, getini2d,'/' d3_getinis, d3_getini1d, d3_getini2d,'/g d3_${1}_temp > d3_${1}_temp2 ; \mv d3_${1}_temp2 d3_${1}_temp
+sed -e s/' getincs, getinc1d, getinc2d,'/' d3_getincs, d3_getinc1d, d3_getinc2d,'/g d3_${1}_temp > d3_${1}_temp2 ; \mv d3_${1}_temp2 d3_${1}_temp
+sed -e s/' getinls, getinl1d, getinl2d'/' d3_getinls, d3_getinl1d, d3_getinl2d'/g d3_${1}_temp > d3_${1}_temp2 ; \mv d3_${1}_temp2 d3_${1}_temp
+sed -e s/'PUBLIC :: ipslnlf, ipslerr, ipslerr_act, ipslerr_inq, histerr, ipsldbg'/'PUBLIC :: d3_ipslnlf, d3_ipslerr, d3_ipslerr_act, d3_ipslerr_inq, d3_histerr, d3_ipsldbg'/g d3_${1}_temp > d3_${1}_temp2 ; \mv d3_${1}_temp2 d3_${1}_temp
+sed -e s/'USE ioipsl_errioipsl, ONLY : ipslerr'/'USE d3_ioipsl_errioipsl, ONLY : d3_ipslerr'/g d3_${1}_temp > d3_${1}_temp2 ; \mv d3_${1}_temp2 d3_${1}_temp
+sed -e s/'USE ioipsl_stringop'/'USE d3_ioipsl_stringop'/g d3_${1}_temp > d3_${1}_temp2 ; \mv d3_${1}_temp2 d3_${1}_temp
+sed -e s/'ONLY : nocomma,cmpblank,strlowercase'/'ONLY : d3_nocomma,d3_cmpblank,d3_strlowercase'/g d3_${1}_temp > d3_${1}_temp2 ; \mv d3_${1}_temp2 d3_${1}_temp
+
+# Functions
+
+case ${1} in 
+   'nlte_aux.F') sed -e s/'iaa_we'/'d3_iaa_we'/g d3_${1}_temp | sed -e s/'simrul'/'d3_simrul'/g | sed -e s/'iaa_f'/'d3_iaa_f'/g | sed -e s/'iaa_fi'/'d3_iaa_fi'/g | sed -e s/'voigtf'/'d3_voigtf'/g | sed -e s/'planckdp'/'d3_planckdp'/g | sed -e s/'we_clean'/'d3_we_clean'/g | sed -e s/'bandid'/'d3_bandid'/g > d3_${1}_temp2 ; \mv d3_${1}_temp2 d3_${1}_temp ;;
+   'nlte_tcool.F') sed -e s/'planckdp'/'d3_planckdp'/g d3_${1}_temp | sed -e s/'hrkday_convert'/'d3_hrkday_convert'/g > d3_${1}_temp2 ; \mv d3_${1}_temp2 d3_${1}_temp ;;
+   'nlte_calc.F') sed -e s/'bandid'/'d3_bandid'/g d3_${1}_temp > d3_${1}_temp2 ; \mv d3_${1}_temp2 d3_${1}_temp ;;
+   'geticecover.F90') sed -e s/'isitice'/'d3_isitice'/g d3_${1}_temp | sed -e s/'splatcrocus'/'d3_splatcrocus'/g | sed -e s/'nplatcrocus'/'d3_nplatcrocus'/g > d3_${1}_temp2 ; \mv d3_${1}_temp2 d3_${1}_temp ;;
+   'nuclea.F')  sed -e s/'fshape'/'d3_fshape'/g d3_${1}_temp | sed -e s/'d3_fshapesimple'/'fshapesimple'/g | sed -e s/'zed3_fshape'/'zefshape'/g > d3_${1}_temp2 ; \mv d3_${1}_temp2 d3_${1}_temp ;;
+esac
+# Cleanup
+
+\mv d3_${1}_temp d3_${1}

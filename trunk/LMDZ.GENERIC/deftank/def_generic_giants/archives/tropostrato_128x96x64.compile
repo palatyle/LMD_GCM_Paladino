@@ -1,0 +1,3 @@
+#! /bin/bash
+
+/san/home/spiga/MODELES/LMDZ.GENERIC/makegcm -d 128x96x64 -t 0 newstart

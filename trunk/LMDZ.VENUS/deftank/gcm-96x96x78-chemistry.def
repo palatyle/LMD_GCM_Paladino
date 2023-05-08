@@ -1,0 +1,93 @@
+## $Header$
+#
+## Planet:
+planet_type=venus
+# 
+## Number of dynamical steps per day (must be a multiple of iperiod)      
+day_step=480000
+## Apply a Matsuno step every iperiod dynamical step
+iperiod=5
+## dissipation is applied every dissip_period dynamical steps
+## DEFAULT: dissip_period=0 , meaning dissip_period is automatically computed
+## (in practice it is =>25 in recent runs)
+dissip_period=1
+## dissipation operator to use (star or non-star)
+lstardis=y
+## iterate lateral dissipation operator gradiv nitergdiv times 
+nitergdiv=1
+## iterate lateral dissipation operator nxgradrot nitergrot times
+nitergrot=2
+## iterate lateral dissipation operator divgrad niterh times             
+niterh=2
+## dissipation time scale (s) for shortest wavelengths for u,v (gradiv)  
+tetagdiv=3000.
+## dissipation time scale (s) for shortest wavelengths for u,v (nxgradrot)
+tetagrot=4000.
+## dissipation time scale (s) for shortest wavelengths for u,v (divgrad) 
+tetatemp=4000.
+## coefficient for gamdissip                                            
+coefdis=0.
+## time marching scheme (Matsuno if purmats is y, else Matsuno-Leapfrog)
+purmats=n
+# run with (true) or without (false) physics
+physic=y
+## Physics package type
+## 0: no physics (e.g. Shallow Water mode)
+## 1: with physics (e.g. phyvenus physics package)
+## 2: with a netwonian relaxation scheme in the dynamics                                         
+iflag_phys=1
+## run with or without initial condition files (start.nc, startphy.nc) ?
+## (in the without case, initialization of fields is done via the iniacademic
+## routine in the dynamics => not available for Venus
+read_start=y
+## call physics every iphysiq dynamical steps                                   
+iphysiq=5
+## runwith or without tracers                                                 
+iflag_trac=1
+## run with or without stratosphere // i.e. a sponge layer and secondary
+## higher altitude level of horizontal dissipation
+ok_strato=y
+## Horizontal dissipation multipliers along the vertical
+dissip_fac_mid=2.
+dissip_fac_up=10.
+# deltaz et hdelta in km
+dissip_deltaz=10.
+dissip_hdelta=5.
+# pupstart in Pa
+dissip_pupstart=10.
+## Sponge layer 
+# 1: over the topmost 4 levels
+# 2: over layers at pressures down to 100 times below the topmost layer pressure
+iflag_top_bound=1
+## Sponge layer mode 
+#   mode = 0 : no sponge
+#   mode = 1 : u et v -> 0
+#   mode = 2 : u et v -> zonal average
+#   mode = 3 : u, v et h -> zonale average
+mode_top_bound=3
+#  Coefficient for the sponge layer (value in topmost layer)
+au_top_bound=1.e-4
+#
+###############################################
+### Zoom parameters
+###############################################
+## longitude (degrees) of zoom center                              
+clon=0.
+## latitude (degrees) of zoom center                              
+clat=0.
+## enhancement factor of zoom, along longitudes                     
+grossismx=1.0
+## enhancement factor of zoom, along latitudes                      
+grossismy=1.0
+##  Use an hyperbolic function f(y) if .true., else use a sine      
+fxyhypb=y
+## extention along longitudes of zoom region (fraction of global domain)
+dzoomx=0.0
+## extention along latitudes of zoom region (fraction of global domain)
+dzoomy=0.0
+## zoom stiffness along longitudes
+taux=3.
+## zoom stiffness along latitudes
+tauy=3.
+##  Fonction  f(y) as y = Sin(latitude) if = .true. ,  else  y = latitude
+ysinus=y

@@ -1,0 +1,1225 @@
+!
+! $Header: /home/cvsroot/LMDZ4/libf/phylmd/clmain.F,v 1.3 2005/02/07 16:41:35 fairhead Exp $
+!
+c
+c
+      SUBROUTINE clmain(dtime,itap,
+     .                  t,u,v,
+     .                  rmu0, 
+     .                  ts,
+     .                  ftsoil,
+     .                  paprs,pplay,ppk,radsol,albe,
+     .                  solsw, sollw, sollwdown, fder,
+     .                  rlon, rlat, cufi, cvfi, 
+     .                  debut, lafin, 
+     .                  d_t,d_u,d_v,d_ts,
+     .                  flux_t,flux_u,flux_v,cdragh,cdragm,
+     .                  dflux_t,
+     .                  zcoefh,zu1,zv1) 
+cAA REM:
+cAA-----
+cAA Tout ce qui a trait au traceurs est dans phytrac maintenant
+cAA pour l'instant le calcul de la couche limite pour les traceurs
+cAA se fait avec cltrac et ne tient pas compte de la differentiation
+cAA des sous-fraction de sol.
+cAA REM bis :
+cAA----------
+cAA Pour pouvoir extraire les coefficient d'echanges et le vent 
+cAA dans la premiere couche, 3 champs supplementaires ont ete crees
+cAA zcoefh,zu1 et zv1. Pour l'instant nous avons moyenne les valeurs
+cAA de ces trois champs sur les 4 subsurfaces du modele. Dans l'avenir 
+cAA si les informations des subsurfaces doivent etre prises en compte
+cAA il faudra sortir ces memes champs en leur ajoutant une dimension, 
+cAA c'est a dire nbsrf (nbre de subsurface).
+      USE ioipsl
+      USE interface_surf
+      IMPLICIT none
+c======================================================================
+c Auteur(s) Z.X. Li (LMD/CNRS) date: 19930818
+c Objet: interface de "couche limite" (diffusion verticale)
+c Arguments:
+c dtime----input-R- interval du temps (secondes)
+c itap-----input-I- numero du pas de temps
+c t--------input-R- temperature (K)
+c u--------input-R- vitesse u
+c v--------input-R- vitesse v
+c ts-------input-R- temperature du sol (en Kelvin)
+c paprs----input-R- pression a intercouche (Pa)
+c pplay----input-R- pression au milieu de couche (Pa)
+c radsol---input-R- flux radiatif net (positif vers le sol) en W/m**2
+c rlat-----input-R- latitude en degree
+c cufi-----input-R- resolution des mailles en x (m)
+c cvfi-----input-R- resolution des mailles en y (m)
+c
+c d_t------output-R- le changement pour "t"
+c d_u------output-R- le changement pour "u"
+c d_v------output-R- le changement pour "v"
+c d_ts-----output-R- le changement pour "ts"
+c flux_t---output-R- flux de chaleur sensible (CpT) J/m**2/s (W/m**2)
+c                    (orientation positive vers le bas)
+c flux_u---output-R- tension du vent X: (kg m/s)/(m**2 s) ou Pascal
+c flux_v---output-R- tension du vent Y: (kg m/s)/(m**2 s) ou Pascal
+c dflux_t derive du flux sensible
+cAA on rajoute en output yu1 et yv1 qui sont les vents dans 
+cAA la premiere couche
+c======================================================================
+#include "dimensions.h"
+#include "dimphy.h"
+c$$$ PB ajout pour soil
+#include "dimsoil.h"
+#include "iniprint.h"
+#include "clesphys.h"
+#include "compbl.h"
+c
+      REAL dtime
+      integer itap
+      REAL t(klon,klev)
+      REAL u(klon,klev), v(klon,klev)
+      REAL paprs(klon,klev+1), pplay(klon,klev), radsol(klon)
+! ADAPTATION GCM POUR CP(T)
+      real ppk(klon,klev)
+      REAL rlon(klon), rlat(klon), cufi(klon), cvfi(klon)
+      REAL d_t(klon, klev)
+      REAL d_u(klon, klev), d_v(klon, klev)
+      REAL flux_t(klon,klev)
+      REAL dflux_t(klon)
+
+      REAL flux_u(klon,klev), flux_v(klon,klev)
+      REAL cdragh(klon), cdragm(klon)
+      real rmu0(klon)         ! cosinus de l'angle solaire zenithal
+      LOGICAL debut, lafin
+c
+      REAL ts(klon)
+      REAL d_ts(klon)
+      REAL albe(klon)
+C
+      REAL fder(klon)
+      REAL sollw(klon), solsw(klon), sollwdown(klon)
+cAA
+      REAL zcoefh(klon,klev)
+      REAL zu1(klon)
+      REAL zv1(klon)
+cAA
+c$$$ PB ajout pour soil
+      REAL ftsoil(klon,nsoilmx)
+      REAL ytsoil(klon,nsoilmx)
+c======================================================================
+      EXTERNAL clqh, clvent, coefkz
+c======================================================================
+      REAL yts(klon)
+      REAL yalb(klon)
+      REAL yu1(klon), yv1(klon)
+      real ysollw(klon), ysolsw(klon), ysollwdown(klon)
+      real yfder(klon), ytaux(klon), ytauy(klon)
+      REAL yrads(klon)
+C
+      REAL y_d_ts(klon)
+      REAL y_d_t(klon, klev)
+      REAL y_d_u(klon, klev), y_d_v(klon, klev)
+      REAL y_flux_t(klon,klev)
+      REAL y_flux_u(klon,klev), y_flux_v(klon,klev)
+      REAL y_dflux_t(klon)
+      REAL ycoefh(klon,klev), ycoefm(klon,klev)
+      REAL yu(klon,klev), yv(klon,klev)
+      REAL yt(klon,klev)
+      REAL ypaprs(klon,klev+1), ypplay(klon,klev), ydelp(klon,klev)
+c
+      REAL ycoefm0(klon,klev), ycoefh0(klon,klev)
+
+      real yzlay(klon,klev),yzlev(klon,klev+1)
+      real yteta(klon,klev)
+      real ykmm(klon,klev+1),ykmn(klon,klev+1)
+      real ykmq(klon,klev+1)
+      real yustar(klon),y_cd_m(klon),y_cd_h(klon)
+c
+#include "YOMCST.h"
+#include "YOETHF.h"
+#include "FCTTRE.h"
+      REAL u1lay(klon), v1lay(klon)
+      REAL delp(klon,klev)
+      INTEGER i, k
+      INTEGER ni(klon), knon, j
+      
+c======================================================================
+      REAL zx_alf1, zx_alf2 !valeur ambiante par extrapola.
+c======================================================================
+c
+#include "temps.h"
+      LOGICAL zxli ! utiliser un jeu de fonctions simples
+      PARAMETER (zxli=.FALSE.)
+c
+      REAL zt, zdelta, zcor
+C
+      character (len = 20) :: modname = 'clmain'
+      LOGICAL check
+      PARAMETER (check=.false.)
+C
+      if (check) THEN
+          write(*,*) modname,'  klon=',klon
+          call flush(6)
+      endif
+          
+      DO k = 1, klev   ! epaisseur de couche
+      DO i = 1, klon
+         delp(i,k) = paprs(i,k)-paprs(i,k+1)
+      ENDDO
+      ENDDO
+      DO i = 1, klon  ! vent de la premiere couche
+ccc         zx_alf1 = (paprs(i,1)-pplay(i,2))/(pplay(i,1)-pplay(i,2))
+         zx_alf1 = 1.0
+         zx_alf2 = 1.0 - zx_alf1
+         u1lay(i) = u(i,1)*zx_alf1 + u(i,2)*zx_alf2
+         v1lay(i) = v(i,1)*zx_alf1 + v(i,2)*zx_alf2
+      ENDDO
+c
+c initialisation:
+c
+      DO i = 1, klon
+         cdragh(i) = 0.0
+         cdragm(i) = 0.0
+         dflux_t(i) = 0.0
+         zu1(i) = 0.0
+         zv1(i) = 0.0
+      ENDDO
+      yts = 0.0
+      yalb = 0.0
+      yfder = 0.0
+      ytaux = 0.0
+      ytauy = 0.0
+      ysolsw = 0.0
+      ysollw = 0.0
+      ysollwdown = 0.0
+      yu1 = 0.0
+      yv1 = 0.0
+      yrads = 0.0
+      ypaprs = 0.0
+      ypplay = 0.0
+      ydelp = 0.0
+      yu = 0.0
+      yv = 0.0
+      yt = 0.0
+      y_flux_u = 0.0
+      y_flux_v = 0.0
+C$$ PB
+      y_dflux_t = 0.0
+      ytsoil = 999999.
+      DO i = 1, klon
+         d_ts(i) = 0.0
+      ENDDO
+      flux_t = 0.
+      flux_u = 0.
+      flux_v = 0.
+      DO k = 1, klev
+      DO i = 1, klon
+         d_t(i,k) = 0.0
+         d_u(i,k) = 0.0
+         d_v(i,k) = 0.0
+         zcoefh(i,k) = 0.0
+      ENDDO
+      ENDDO
+c
+c chercher les indices:
+      DO j = 1, klon
+         ni(j) = j
+      ENDDO
+      knon = klon
+
+      DO j = 1, knon
+      i = ni(j)
+        yts(j) = ts(i)
+        yalb(j) = albe(i)
+        yfder(j) = fder(i)
+        ytaux(j) = flux_u(i,1)
+        ytauy(j) = flux_v(i,1)
+        ysolsw(j) = solsw(i)
+        ysollw(j) = sollw(i)
+        ysollwdown(j) = sollwdown(i)
+        yu1(j) = u1lay(i)
+        yv1(j) = v1lay(i)
+        yrads(j) =  ysolsw(j)+ ysollw(j)
+        ypaprs(j,klev+1) = paprs(i,klev+1)
+      END DO
+C
+c$$$ PB ajour pour soil
+      DO k = 1, nsoilmx
+        DO j = 1, knon
+          i = ni(j)
+          ytsoil(j,k) = ftsoil(i,k)
+        END DO  
+      END DO 
+      DO k = 1, klev
+      DO j = 1, knon
+      i = ni(j)
+        ypaprs(j,k) = paprs(i,k)
+        ypplay(j,k) = pplay(i,k)
+        ydelp(j,k) = delp(i,k)
+        yu(j,k) = u(i,k)
+        yv(j,k) = v(i,k)
+        yt(j,k) = t(i,k)
+      ENDDO
+      ENDDO
+c
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c calculer Cdrag et les coefficients d'echange
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+c-------------------------------------------------
+c  Calcul anciens du LMD. 
+c  dans les routines coefkz, coefkz2, coefkzmin
+c-------------------------------------------------
+
+        CALL coefkz(knon, ypaprs, ypplay, ppk,
+     .            yts, yu, yv, yt,
+     .            ycoefm, ycoefh)
+
+c       CALL coefkz2(knon, ypaprs, ypplay,yt,
+c    .                  ycoefm0, ycoefh0)
+c       DO k = 1, klev
+c       DO i = 1, knon
+c        ycoefm(i,k) = MAX(ycoefm(i,k),ycoefm0(i,k))
+c        ycoefh(i,k) = MAX(ycoefh(i,k),ycoefh0(i,k))
+c       ENDDO
+c       ENDDO
+
+c
+cIM: 261103
+        if (ok_kzmin) THEN
+! ADAPTATION GCM POUR CP(T)
+           print*," coefkzmin: ADAPTATION NON FAITE..."
+cIM cf FH: 201103 BEG
+
+c   Calcul d'une diffusion minimale pour les conditions tres stables.
+c        call coefkzmin(knon,ypaprs,ypplay,yu,yv,yt,ycoefm
+c    .   ,ycoefm0,ycoefh0)
+c      call dump2d(iim,jjm-1,ycoefm(2:klon-1,2), 'KZ         ')
+c      call dump2d(iim,jjm-1,ycoefm0(2:klon-1,2),'KZMIN      ')
+ 
+         ycoefm0 = 1.e-3
+         ycoefh0 = 1.e-3
+
+         if ( 1.eq.1 ) then
+          DO k = 1, klev
+          DO i = 1, knon
+           ycoefm(i,k) = MAX(ycoefm(i,k),ycoefm0(i,k))
+           ycoefh(i,k) = MAX(ycoefh(i,k),ycoefh0(i,k))
+          ENDDO
+          ENDDO
+         endif
+cIM cf FH: 201103 END
+        endif !ok_kzmin
+cIM: 261103
+
+      IF (iflag_pbl.ge.3) then
+c-------------------------------------------------
+c MELLOR ET YAMADA adapte a Mars Richard Fournier et Frederic Hourdin
+c-------------------------------------------------
+
+         yzlay(1:knon,1)=
+     .   RD*yt(1:knon,1)/(0.5*(ypaprs(1:knon,1)+ypplay(1:knon,1)))
+     .   *(ypaprs(1:knon,1)-ypplay(1:knon,1))/RG
+         do k=2,klev
+            yzlay(1:knon,k)=
+     .      yzlay(1:knon,k-1)+RD*0.5*(yt(1:knon,k-1)+yt(1:knon,k))
+     .      /ypaprs(1:knon,k)*(ypplay(1:knon,k-1)-ypplay(1:knon,k))/RG
+         enddo
+
+! ADAPTATION GCM POUR CP(T)
+         call t2tpot(knon*llm,yt,yteta,ppk)
+
+         yzlev(1:knon,1)=0.
+         yzlev(1:knon,klev+1)=2.*yzlay(1:knon,klev)-yzlay(1:knon,klev-1)
+         do k=2,klev
+            yzlev(1:knon,k)=0.5*(yzlay(1:knon,k)+yzlay(1:knon,k-1))
+         enddo
+
+
+c   Bug introduit volontairement pour converger avec les resultats
+c  du papier sur les thermiques.
+         if (1.eq.1) then
+         y_cd_m(1:knon) = ycoefm(1:knon,1)
+         y_cd_h(1:knon) = ycoefh(1:knon,1)
+         else
+         y_cd_h(1:knon) = ycoefm(1:knon,1)
+         y_cd_m(1:knon) = ycoefh(1:knon,1)
+         endif
+         call ustarhb(knon,yu,yv,y_cd_m, yustar)
+
+        if (prt_level > 9) THEN
+          WRITE(lunout,*)'USTAR = ',yustar
+        ENDIF
+
+c   iflag_pbl peut etre utilise comme longuer de melange
+
+         if (iflag_pbl.ge.11) then
+            call vdif_kcay(knon,dtime,rg,rd,ypaprs,yt
+     s      ,yzlev,yzlay,yu,yv,yteta
+     s      ,y_cd_m,ykmm,ykmn,yustar,
+     s      iflag_pbl)
+         else
+            call yamada4(knon,dtime,rg,rd,ypaprs,yt
+     s      ,yzlev,yzlay,yu,yv,yteta
+     s      ,y_cd_m,ykmm,ykmn,ykmq,yustar,
+     s      iflag_pbl)
+         endif
+
+         ycoefm(1:knon,1)=y_cd_m(1:knon)
+         ycoefh(1:knon,1)=y_cd_h(1:knon)
+         ycoefm(1:knon,2:klev)=ykmm(1:knon,2:klev)
+         ycoefh(1:knon,2:klev)=ykmn(1:knon,2:klev)
+
+
+c-------------------------------------------------
+      ENDIF
+
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c calculer la diffusion des vitesses "u" et "v"
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+      CALL clvent(knon,dtime,yu1,yv1,ycoefm,yt,yu,ypaprs,ypplay,ydelp,
+     s            y_d_u,y_flux_u)
+      CALL clvent(knon,dtime,yu1,yv1,ycoefm,yt,yv,ypaprs,ypplay,ydelp,
+     s            y_d_v,y_flux_v)
+
+c pour le couplage
+      ytaux = y_flux_u(:,1)
+      ytauy = y_flux_v(:,1)
+
+c FH modif sur le cdrag temperature
+c$$$PB : déplace dans clcdrag
+c$$$      do i=1,knon
+c$$$         ycoefh(i,1)=ycoefm(i,1)*0.8
+c$$$      enddo
+
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c calculer la diffusion de "q" et de "h"
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+! ADAPTATION GCM POUR CP(T)
+      CALL clqh(dtime, itap, debut,lafin,
+     e          rlon, rlat, cufi, cvfi,
+     e          knon, 
+     e          soil_model, ytsoil,
+     e          rmu0, 
+     e          yu1, yv1, ycoefh,
+     e          yt,yts,ypaprs,ypplay,ppk,
+     e          ydelp,yrads,yalb, 
+     e          yfder, ytaux, ytauy,
+     e          ysollw, ysollwdown, ysolsw,
+     s          y_d_t, y_d_ts,
+     s          y_flux_t, y_dflux_t) 
+
+      DO j = 1, knon
+         i = ni(j)
+         d_ts(i) = y_d_ts(j)
+         albe(i) = yalb(j)
+         cdragh(i) = cdragh(i) + ycoefh(j,1)
+         cdragm(i) = cdragm(i) + ycoefm(j,1)
+         dflux_t(i) = dflux_t(i) + y_dflux_t(j)
+         zu1(i) = zu1(i) + yu1(j)
+         zv1(i) = zv1(i) + yv1(j)
+      END DO
+
+c$$$ PB ajout pour soil
+      DO k = 1, nsoilmx
+        DO j = 1, knon
+         i = ni(j)
+         ftsoil(i, k) = ytsoil(j,k)
+        ENDDO
+      END DO
+      
+      DO k = 1, klev
+        DO j = 1, knon
+         i = ni(j)
+         flux_t(i,k) = y_flux_t(j,k)
+         flux_u(i,k) = y_flux_u(j,k)
+         flux_v(i,k) = y_flux_v(j,k)
+         d_t(i,k) = d_t(i,k) + y_d_t(j,k)
+         d_u(i,k) = d_u(i,k) + y_d_u(j,k)
+         d_v(i,k) = d_v(i,k) + y_d_v(j,k)
+         zcoefh(i,k) = zcoefh(i,k) + ycoefh(j,k)
+        ENDDO
+      ENDDO
+
+c --------------------
+c TEST!!!!! PAS DE MELANGE PAR TURBULENCE !!!
+c       d_u = 0. 
+c       d_v = 0.
+c       flux_u = 0.
+c       flux_v = 0.
+c --------------------
+
+c     print*,"y_d_t apres clqh=",y_d_t(klon/2,:)
+
+      RETURN
+      END
+
+C=================================================================
+C=================================================================
+C=================================================================
+C=================================================================
+
+      SUBROUTINE clqh(dtime,itime, debut,lafin,
+     e                rlon, rlat, cufi, cvfi, 
+     e                knon, 
+     $                soil_model,tsoil,
+     e                rmu0, 
+     e                u1lay,v1lay,coef,
+     e                t,ts,paprs,pplay,ppk,
+     e                delp,radsol,albedo, 
+     e                fder, taux, tauy,
+     $                sollw, sollwdown, swnet, 
+     s                d_t, d_ts, 
+     s                flux_t, dflux_s)
+
+      USE interface_surf
+
+      IMPLICIT none
+c======================================================================
+c Auteur(s): Z.X. Li (LMD/CNRS) date: 19930818
+c Objet: diffusion verticale de "h"
+c======================================================================
+#include "dimensions.h"
+#include "dimphy.h"
+#include "YOMCST.h"
+#include "YOETHF.h"
+#include "FCTTRE.h"
+#include "dimsoil.h"
+#include "iniprint.h"
+
+c Arguments:
+      INTEGER knon
+      REAL dtime              ! intervalle du temps (s)
+      REAL u1lay(klon)        ! vitesse u de la 1ere couche (m/s)
+      REAL v1lay(klon)        ! vitesse v de la 1ere couche (m/s)
+      REAL coef(klon,klev)    ! le coefficient d'echange (m**2/s)
+c                               multiplie par le cisaillement du 
+c                               vent (dV/dz); la premiere valeur
+c                               indique la valeur de Cdrag (sans unite)
+      REAL t(klon,klev)       ! temperature (K)
+      REAL ts(klon)           ! temperature du sol (K)
+      REAL paprs(klon,klev+1) ! pression a inter-couche (Pa)
+      REAL pplay(klon,klev)   ! pression au milieu de couche (Pa)
+! ADAPTATION GCM POUR CP(T)
+      REAL ppk(klon,klev)     ! fonction d'Exner milieu de couche
+      REAL delp(klon,klev)    ! epaisseur de couche en pression (Pa)
+      REAL radsol(klon)       ! ray. net au sol (Solaire+IR) W/m2
+      REAL albedo(klon)       ! albedo de la surface
+      real rmu0(klon)         ! cosinus de l'angle solaire zenithal
+      real rlon(klon), rlat(klon), cufi(klon), cvfi(klon)
+c
+      REAL d_t(klon,klev)     ! incrementation de "t"
+      REAL d_ts(klon)         ! incrementation de "ts"
+      REAL flux_t(klon,klev)  ! (diagnostic) flux de la chaleur
+c                               sensible, flux de Cp*T, positif vers
+c                               le bas: j/(m**2 s) c.a.d.: W/m2
+      REAL dflux_s(klon) ! derivee du flux sensible dF/dTs
+c======================================================================
+      INTEGER i, k
+      REAL zx_ch(klon,klev)
+      REAL zx_dh(klon,klev)
+      REAL zx_buf2(klon)
+      REAL zx_coef(klon,klev)
+      REAL local_h(klon,klev) ! enthalpie potentielle
+      REAL local_ts(klon)
+c======================================================================
+c contre-gradient pour la chaleur sensible: Kelvin/metre
+! ADAPTATION GCM POUR CP(T)
+      REAL gamt(klon,klev)
+      REAL z_gamah(klon,klev)
+      REAL zdelz
+c======================================================================
+#include "compbl.h"
+c======================================================================
+c Rajout pour l'interface
+      integer itime
+      logical debut, lafin
+      real zlev1(klon)
+      real fder(klon), taux(klon), tauy(klon)
+      real temp_air(klon)
+      real epot_air(klon)
+      real tq_cdrag(klon), petAcoef(klon)
+      real petBcoef(klon)
+      real sollw(klon), sollwdown(klon), swnet(klon), swdown(klon)
+      real p1lay(klon),pkh1(klon)
+c$$$C PB ajout pour soil
+      LOGICAL soil_model
+      REAL tsoil(klon, nsoilmx)
+
+! Parametres de sortie
+      real fluxsens(klon)
+      real tsol_rad(klon), tsurf_new(klon), alb_new(klon)
+
+      character (len = 20) :: modname = 'Debut clqh'
+      LOGICAL check
+      PARAMETER (check=.false.)
+C
+      if (iflag_pbl.eq.1) then
+        do k = 3, klev
+          do i = 1, knon
+            gamt(i,k)=  -1.0e-03
+          enddo
+        enddo
+        do i = 1, knon
+          gamt(i,2) = -2.5e-03
+! ADAPTATION GCM POUR CP(T)
+          gamt(i,1) = 0.0e0
+        enddo
+      else
+        do k = 1, klev
+          do i = 1, knon
+            gamt(i,k) = 0.0
+          enddo
+        enddo
+      endif
+
+      DO i = 1, knon
+         local_ts(i) = ts(i)
+      ENDDO
+! ADAPTATION GCM POUR CP(T)
+      call t2tpot(knon*llm,t,local_h,ppk)
+                                                   
+c     print*,"tpot en entree de clqh=",local_h(klon/2,:)
+
+c contre-gradient en potentiel:
+! ADAPTATION GCM POUR CP(T)
+      call dt2dtpot(knon*llm,gamt,z_gamah,t,local_h)
+c     print*,"contregradient d(tpot)/dz en entree de clqh=",
+c    .        z_gamah(klon/2,:)
+
+c passage en enthalpie potentielle
+      DO k = 1, klev
+      DO i = 1, knon
+c h = tpot*cp
+         local_h(i,k)= local_h(i,k)*cpdet(t(i,k))
+      ENDDO
+      ENDDO
+c     print*,"enthalpie potentielle en entree de clqh=",
+c    .        local_h(klon/2,:)
+c
+c Convertir les coefficients en variables convenables au calcul:
+c
+c
+      DO k = 2, klev
+      DO i = 1, knon
+         zx_coef(i,k) = coef(i,k)*RG/(pplay(i,k-1)-pplay(i,k))
+     .                  *(paprs(i,k)*2/(t(i,k)+t(i,k-1))/RD)**2
+         zx_coef(i,k) = zx_coef(i,k) * dtime*RG
+      ENDDO
+      ENDDO
+c
+c Preparer les flux lies aux contre-gardients
+c
+      DO k = 2, klev
+      DO i = 1, knon
+         zdelz = RD * (t(i,k-1)+t(i,k))/2.0 / RG /paprs(i,k)
+     .              *(pplay(i,k-1)-pplay(i,k))
+! ADAPTATION GCM POUR CP(T)
+         z_gamah(i,k) = z_gamah(i,k)*cpdet((t(i,k)+t(i,k-1))/2.)*zdelz
+      ENDDO
+      ENDDO
+c     print*,"contregradient d(enth pot) en entree de clqh=",
+c    .        z_gamah(klon/2,:)
+
+      DO i = 1, knon
+! ADAPTATION GCM POUR CP(T)
+         zx_buf2(i) = delp(i,klev) + zx_coef(i,klev)
+         zx_ch(i,klev) = (local_h(i,klev)*delp(i,klev)
+     .                   -zx_coef(i,klev)*z_gamah(i,klev))/zx_buf2(i)
+         zx_dh(i,klev) = zx_coef(i,klev) / zx_buf2(i)
+      ENDDO
+      DO k = klev-1, 2 , -1
+      DO i = 1, knon
+! ADAPTATION GCM POUR CP(T)
+         zx_buf2(i) = delp(i,k)+zx_coef(i,k)
+     .               +zx_coef(i,k+1)*(1.-zx_dh(i,k+1))
+         zx_ch(i,k) = (local_h(i,k)*delp(i,k)
+     .                 +zx_coef(i,k+1)*zx_ch(i,k+1)
+     .                 +zx_coef(i,k+1)*z_gamah(i,k+1)
+     .                 -zx_coef(i,k)*z_gamah(i,k))/zx_buf2(i)
+         zx_dh(i,k) = zx_coef(i,k) / zx_buf2(i)
+      ENDDO
+      ENDDO
+C
+C nouvelle formulation JL Dufresne
+C
+C h1 = zx_ch(i,1) + zx_dh(i,1) * Flux_H(i,1) * dt
+C
+      DO i = 1, knon
+! ADAPTATION GCM POUR CP(T)
+         zx_buf2(i) = delp(i,1) + zx_coef(i,2)*(1.-zx_dh(i,2))
+         zx_ch(i,1) = (local_h(i,1)*delp(i,1)
+     .                 +zx_coef(i,2)*(z_gamah(i,2)+zx_ch(i,2)))
+     .                /zx_buf2(i)
+         zx_dh(i,1) = -1. * RG / zx_buf2(i)
+      ENDDO
+
+C Appel a interfsurf (appel generique) routine d'interface avec la surface
+
+c initialisation
+       petAcoef =0. 
+       petBcoef =0.
+       p1lay =0.
+
+c      do i = 1, knon
+        petAcoef(1:knon) = zx_ch(1:knon,1)
+        petBcoef(1:knon) = zx_dh(1:knon,1)
+        tq_cdrag(1:knon) =coef(1:knon,1)
+        temp_air(1:knon) =t(1:knon,1)
+        epot_air(1:knon) =local_h(1:knon,1)
+        pkh1(1:knon)  = ppk(1:knon,1)
+     .                 *(paprs(1:knon,1)/pplay(1:knon,1))**RKAPPA
+        p1lay(1:knon) = pplay(1:knon,1)
+        zlev1(1:knon) = delp(1:knon,1)
+        swdown(1:knon) = swnet(1:knon)
+c      enddo
+
+! ADAPTATION GCM POUR CP(T)
+      CALL interfsurf_hq(itime, dtime, rmu0,
+     e klon, iim, jjm, knon, 
+     e rlon, rlat, cufi, cvfi, 
+     e debut, lafin, soil_model, nsoilmx,tsoil, 
+     e zlev1,  u1lay, v1lay, temp_air, epot_air,  
+     e tq_cdrag, petAcoef, petBcoef,
+     e sollw, sollwdown, swnet, swdown,
+     e fder, taux, tauy, 
+     e albedo, 
+     e ts, pkh1, p1lay, radsol,
+     s fluxsens, dflux_s,              
+     s tsol_rad, tsurf_new, alb_new) 
+
+
+      do i = 1, knon
+        flux_t(i,1) = fluxsens(i)
+        d_ts(i) = tsurf_new(i) - ts(i)
+        albedo(i) = alb_new(i)
+      enddo
+
+c==== une fois on a zx_h_ts, on peut faire l'iteration ========
+      DO i = 1, knon
+         local_h(i,1) = zx_ch(i,1) + zx_dh(i,1)*flux_t(i,1)*dtime
+      ENDDO
+      DO k = 2, klev
+      DO i = 1, knon
+        local_h(i,k) = zx_ch(i,k) + zx_dh(i,k)*local_h(i,k-1)
+      ENDDO
+      ENDDO
+c======================================================================
+c== flux_t est le flux de cpt (energie sensible): j/(m**2 s) (+ vers bas)
+! ADAPTATION GCM POUR CP(T)
+      DO k = 2, klev
+      DO i = 1, knon
+        flux_t(i,k) = (zx_coef(i,k)/RG/dtime)
+     .                * (local_h(i,k)-local_h(i,k-1)+z_gamah(i,k))
+      ENDDO
+      ENDDO
+c======================================================================
+C Calcul tendances
+! ADAPTATION GCM POUR CP(T)
+c     print*,"enthalpie potentielle en sortie de clqh=",
+c    .        local_h(klon/2,:)
+c tpot = h/cp
+      DO k = 1, klev
+      DO i = 1, knon
+         local_h(i,k) = local_h(i,k)/cpdet(t(i,k))
+      ENDDO
+      ENDDO
+      call tpot2t(knon*llm,local_h,d_t,ppk)
+
+c     print*,"tpot en sortie de clqh=",local_h(klon/2,:)
+c     print*,"T en sortie de clqh=",d_t(klon/2,:)
+      DO k = 1, klev
+      DO i = 1, knon
+         d_t(i,k) = d_t(i,k) - t(i,k)
+      ENDDO
+      ENDDO
+c
+
+      RETURN
+      END
+      
+c======================================================================
+c======================================================================
+c======================================================================
+c======================================================================
+c======================================================================
+c======================================================================
+
+      SUBROUTINE clvent(knon,dtime, u1lay,v1lay,coef,t,ven,
+     e                  paprs,pplay,delp,
+     s                  d_ven,flux_v)
+      IMPLICIT none
+c======================================================================
+c Auteur(s): Z.X. Li (LMD/CNRS) date: 19930818
+c Objet: diffusion vertical de la vitesse "ven"
+c======================================================================
+c Arguments:
+c dtime----input-R- intervalle du temps (en second)
+c u1lay----input-R- vent u de la premiere couche (m/s)
+c v1lay----input-R- vent v de la premiere couche (m/s)
+c coef-----input-R- le coefficient d'echange (m**2/s) multiplie par
+c                   le cisaillement du vent (dV/dz); la premiere
+c                   valeur indique la valeur de Cdrag (sans unite)
+c t--------input-R- temperature (K)
+c ven------input-R- vitesse horizontale (m/s)
+c paprs----input-R- pression a inter-couche (Pa)
+c pplay----input-R- pression au milieu de couche (Pa)
+c delp-----input-R- epaisseur de couche (Pa)
+c
+c
+c d_ven----output-R- le changement de "ven"
+c flux_v---output-R- (diagnostic) flux du vent: (kg m/s)/(m**2 s)
+c======================================================================
+#include "dimensions.h"
+#include "dimphy.h"
+#include "iniprint.h"
+      INTEGER knon
+      REAL dtime
+      REAL u1lay(klon), v1lay(klon)
+      REAL coef(klon,klev)
+      REAL t(klon,klev), ven(klon,klev)
+      REAL paprs(klon,klev+1), pplay(klon,klev), delp(klon,klev)
+      REAL d_ven(klon,klev)
+      REAL flux_v(klon,klev)
+c======================================================================
+#include "YOMCST.h"
+c======================================================================
+      INTEGER i, k
+      REAL zx_cv(klon,2:klev)
+      REAL zx_dv(klon,2:klev)
+      REAL zx_buf(klon)
+      REAL zx_coef(klon,klev)
+      REAL local_ven(klon,klev)
+      REAL zx_alf1(klon), zx_alf2(klon)
+c======================================================================
+      DO k = 1, klev
+      DO i = 1, knon
+         local_ven(i,k) = ven(i,k)
+      ENDDO
+      ENDDO
+c======================================================================
+      DO i = 1, knon
+ccc         zx_alf1(i) = (paprs(i,1)-pplay(i,2))/(pplay(i,1)-pplay(i,2))
+         zx_alf1(i) = 1.0
+         zx_alf2(i) = 1.0 - zx_alf1(i)
+         zx_coef(i,1) = coef(i,1)
+     .                 * SQRT(u1lay(i)**2+v1lay(i)**2)
+     .                 * pplay(i,1)/(RD*t(i,1))
+         zx_coef(i,1) = zx_coef(i,1) * dtime*RG
+      ENDDO
+c======================================================================
+      DO k = 2, klev
+      DO i = 1, knon
+         zx_coef(i,k) = coef(i,k)*RG/(pplay(i,k-1)-pplay(i,k))
+     .                  *(paprs(i,k)*2/(t(i,k)+t(i,k-1))/RD)**2
+         zx_coef(i,k) = zx_coef(i,k) * dtime*RG
+      ENDDO
+      ENDDO
+c======================================================================
+      DO i = 1, knon
+         zx_buf(i) = delp(i,1) + zx_coef(i,1)*zx_alf1(i)+zx_coef(i,2)
+         zx_cv(i,2) = local_ven(i,1)*delp(i,1) / zx_buf(i)
+         zx_dv(i,2) = (zx_coef(i,2)-zx_alf2(i)*zx_coef(i,1))
+     .                /zx_buf(i)
+      ENDDO
+      DO k = 3, klev
+      DO i = 1, knon
+         zx_buf(i) = delp(i,k-1) + zx_coef(i,k)
+     .                         + zx_coef(i,k-1)*(1.-zx_dv(i,k-1))
+         zx_cv(i,k) = (local_ven(i,k-1)*delp(i,k-1)
+     .                  +zx_coef(i,k-1)*zx_cv(i,k-1) )/zx_buf(i)
+         zx_dv(i,k) = zx_coef(i,k)/zx_buf(i)
+      ENDDO
+      ENDDO
+      DO i = 1, knon
+         local_ven(i,klev) = ( local_ven(i,klev)*delp(i,klev)
+     .                        +zx_coef(i,klev)*zx_cv(i,klev) )
+     .                   / ( delp(i,klev) + zx_coef(i,klev)
+     .                       -zx_coef(i,klev)*zx_dv(i,klev) )
+      ENDDO
+      DO k = klev-1, 1, -1
+      DO i = 1, knon
+         local_ven(i,k) = zx_cv(i,k+1) + zx_dv(i,k+1)*local_ven(i,k+1)
+      ENDDO
+      ENDDO
+c======================================================================
+c== flux_v est le flux de moment angulaire (positif vers bas)
+c== dont l'unite est: (kg m/s)/(m**2 s)
+      DO i = 1, knon
+         flux_v(i,1) = zx_coef(i,1)/(RG*dtime)
+     .                 *(local_ven(i,1)*zx_alf1(i)
+     .                  +local_ven(i,2)*zx_alf2(i))
+      ENDDO
+      DO k = 2, klev
+      DO i = 1, knon
+         flux_v(i,k) = zx_coef(i,k)/(RG*dtime)
+     .               * (local_ven(i,k)-local_ven(i,k-1))
+      ENDDO
+      ENDDO
+c
+      DO k = 1, klev
+      DO i = 1, knon
+         d_ven(i,k) = local_ven(i,k) - ven(i,k)
+      ENDDO
+      ENDDO
+c
+      RETURN
+      END
+      
+c======================================================================
+c======================================================================
+c======================================================================
+c======================================================================
+c======================================================================
+c======================================================================
+
+      SUBROUTINE coefkz(knon, paprs, pplay, ppk,
+     .                  ts,u,v,t,
+     .                  pcfm, pcfh)
+      IMPLICIT none
+c======================================================================
+c Auteur(s) F. Hourdin, M. Forichon, Z.X. Li (LMD/CNRS) date: 19930922
+c           (une version strictement identique a l'ancien modele)
+c Objet: calculer le coefficient du frottement du sol (Cdrag) et les
+c        coefficients d'echange turbulent dans l'atmosphere.
+c Arguments:
+c knon-----input-I- nombre de points a traiter
+c paprs----input-R- pression a chaque intercouche (en Pa)
+c pplay----input-R- pression au milieu de chaque couche (en Pa)
+c ts-------input-R- temperature du sol (en Kelvin)
+c u--------input-R- vitesse u
+c v--------input-R- vitesse v
+c t--------input-R- temperature (K)
+c
+c itop-----output-I- numero de couche du sommet de la couche limite
+c pcfm-----output-R- coefficients a calculer (vitesse)
+c pcfh-----output-R- coefficients a calculer (chaleur et humidite)
+c======================================================================
+#include "dimensions.h"
+#include "dimphy.h"
+#include "YOMCST.h"
+#include "iniprint.h"
+#include "compbl.h"
+#include "clesphys.h"
+c
+c Arguments:
+c
+      INTEGER knon
+      REAL ts(klon)
+      REAL paprs(klon,klev+1), pplay(klon,klev)
+! ADAPTATION GCM POUR CP(T)
+      real ppk(klon,klev)
+      REAL u(klon,klev), v(klon,klev), t(klon,klev)
+c
+      REAL pcfm(klon,klev), pcfh(klon,klev)
+      INTEGER itop(klon)
+c
+c Quelques constantes et options:
+c
+      REAL cepdu2, ckap, cb, cc, cd, clam
+c TEST VENUS
+c     PARAMETER (cepdu2 =(0.1)**2)
+      PARAMETER (cepdu2 =(1.e-5)**2)
+
+      PARAMETER (CKAP=0.4)
+      PARAMETER (cb=5.0)
+      PARAMETER (cc=5.0)
+      PARAMETER (cd=5.0)
+      PARAMETER (clam=160.0)
+      REAL ric ! nombre de Richardson critique
+      PARAMETER(ric=0.4)
+      REAL prandtl
+      PARAMETER (prandtl=0.4)
+      INTEGER isommet ! le sommet de la couche limite
+c TEST VENUS
+      PARAMETER (isommet=klev)
+c     PARAMETER (isommet=5)
+
+      LOGICAL tvirtu ! calculer Ri d'une maniere plus performante
+      PARAMETER (tvirtu=.TRUE.)
+      LOGICAL opt_ec ! formule du Centre Europeen dans l'atmosphere
+      PARAMETER (opt_ec=.FALSE.)
+
+c
+c Variables locales:
+c
+      INTEGER i, k
+      REAL zgeop(klon,klev)
+! ADAPTATION GCM POUR CP(T)
+      REAL zmgeom(klon,klev),zpk(klon,klev)
+      REAL zt(klon,klev),ztvu(klon,klev),ztvd(klon,klev)
+      real ztetav(klon,klev),ztetavu(klon,klev),ztetavd(klon,klev)
+      REAL zri(klon),z1(klon)
+      REAL pcfm1(klon), pcfh1(klon)
+c
+      REAL zdphi, zdu2, zcdn, zl2
+      REAL zscf
+      REAL zdelta, zcvm5, zcor
+      REAL z2geomf, zalh2, zalm2, zscfh, zscfm
+cIM
+      LOGICAL check
+      PARAMETER (check=.false.)
+c
+c contre-gradient pour la chaleur sensible: Kelvin/metre
+      REAL gamt(2:klev)
+      REAL gamh(2:klev)
+c
+      LOGICAL appel1er
+      SAVE appel1er
+c
+c Fonctions thermodynamiques et fonctions d'instabilite
+      REAL fsta, fins, x
+      LOGICAL zxli ! utiliser un jeu de fonctions simples
+      PARAMETER (zxli=.FALSE.)
+c
+#include "YOETHF.h"
+#include "FCTTRE.h"
+      fsta(x) = 1.0 / (1.0+10.0*x*(1+8.0*x))
+      fins(x) = SQRT(1.0-18.0*x)
+c
+      DATA appel1er /.TRUE./
+c
+      IF (appel1er) THEN
+        if (prt_level > 9) THEN
+          WRITE(lunout,*)'coefkz, opt_ec:', opt_ec
+          WRITE(lunout,*)'coefkz, isommet:', isommet
+          WRITE(lunout,*)'coefkz, tvirtu:', tvirtu
+          appel1er = .FALSE.
+        endif
+      ENDIF
+c
+c Initialiser les sorties
+c
+      DO k = 1, klev
+      DO i = 1, knon
+         pcfm(i,k) = 0.0
+         pcfh(i,k) = 0.0
+      ENDDO
+      ENDDO
+      DO i = 1, knon
+         itop(i) = 0
+      ENDDO
+c
+c Prescrire la valeur de contre-gradient
+c
+      if (iflag_pbl.eq.1) then
+         DO k = 3, klev
+            gamt(k) = -1.0E-03
+         ENDDO
+         gamt(2) = -2.5E-03
+      else
+         DO k = 2, klev
+            gamt(k) = 0.0
+         ENDDO
+      ENDIF
+
+c
+c Calculer les geopotentiels de chaque couche
+c
+      DO i = 1, knon
+         zgeop(i,1) = RD * t(i,1) / (0.5*(paprs(i,1)+pplay(i,1)))
+     .                   * (paprs(i,1)-pplay(i,1))
+      ENDDO
+      DO k = 2, klev
+      DO i = 1, knon
+         zgeop(i,k) = zgeop(i,k-1)
+     .              + RD * 0.5*(t(i,k-1)+t(i,k)) / paprs(i,k)
+     .                   * (pplay(i,k-1)-pplay(i,k))
+      ENDDO
+      ENDDO
+c
+c Calculer les coefficients turbulents dans l'atmosphere
+! ADAPTATION GCM POUR CP(T)
+c tout a ete modifie...
+c
+
+      DO k = 2,klev 
+      DO i = 1, knon
+            zt(i,k)    = (t(i,k)+t(i,k-1)) * 0.5
+            zmgeom(i,k)= zgeop(i,k)-zgeop(i,k-1)
+            zdphi      = zmgeom(i,k)/2.
+            ztvd(i,k)  = (t(i,k)   + zdphi/cpdet(zt(i,k)))
+            ztvu(i,k)  = (t(i,k-1) - zdphi/cpdet(zt(i,k)))
+            zpk(i,k)   = ppk(i,k)*(paprs(i,k)/pplay(i,k))**RKAPPA
+      ENDDO
+      ENDDO
+      DO i = 1, knon
+        itop(i) = isommet
+        zt(i,1)   = ts(i)
+        ztvu(i,1) = ts(i) 
+        ztvd(i,1) = t(i,1)+zgeop(i,1)/cpdet(zt(i,1)) 
+        zpk(i,1)  = ppk(i,1)*(paprs(i,1)/pplay(i,1))**RKAPPA
+      ENDDO
+      call t2tpot(klon*klev,zt,ztetav,zpk)
+      call t2tpot(klon*klev,ztvu,ztetavu,zpk)
+      call t2tpot(klon*klev,ztvd,ztetavd,zpk)
+
+      DO k = 2, isommet
+        DO i = 1, knon
+            zdu2=MAX(cepdu2,(u(i,k)-u(i,k-1))**2
+     .                     +(v(i,k)-v(i,k-1))**2)
+c contre-gradient en potentiel:
+! ADAPTATION GCM POUR CP(T)
+            call dt2dtpot(1,gamt(k),gamh(k),zt(i,k),ztetav(i,k))
+c
+c           calculer le nombre de Richardson:
+c
+            IF (tvirtu) THEN
+            zri(i) =(  zmgeom(i,k)*(ztetavd(i,k)-ztetavu(i,k))
+     .            + zmgeom(i,k)*zmgeom(i,k)/RG*gamh(k))   ! contregradient
+     .           /(zdu2*ztetav(i,k))
+c
+            ELSE ! calcul de Richardson compatible LMD5
+        print*,"calcul de Richardson sans tvirtu..." 
+        print*,"Pas prevu... A revoir"
+        stop
+            ENDIF
+c
+c           finalement, les coefficients d'echange sont obtenus:
+c
+            zcdn=SQRT(zdu2) / zmgeom(i,k) * RG
+c
+          IF (opt_ec) THEN
+            z2geomf=zgeop(i,k-1)+zgeop(i,k)
+            zalm2=(0.5*ckap/RG*z2geomf
+     .             /(1.+0.5*ckap/rg/clam*z2geomf))**2
+            zalh2=(0.5*ckap/rg*z2geomf
+     .             /(1.+0.5*ckap/RG/(clam*SQRT(1.5*cd))*z2geomf))**2
+            IF (zri(i).LT.0.0) THEN  ! situation instable
+               zscf = ((zgeop(i,k)/zgeop(i,k-1))**(1./3.)-1.)**3
+     .                / (zmgeom(i,k)/RG)**3 / (zgeop(i,k-1)/RG)
+               zscf = SQRT(-zri(i)*zscf)
+               zscfm = 1.0 / (1.0+3.0*cb*cc*zalm2*zscf)
+               zscfh = 1.0 / (1.0+3.0*cb*cc*zalh2*zscf)
+               pcfm(i,k)=zcdn*zalm2*(1.-2.0*cb*zri(i)*zscfm)
+               pcfh(i,k)=zcdn*zalh2*(1.-3.0*cb*zri(i)*zscfh)
+            ELSE ! situation stable
+               zscf=SQRT(1.+cd*zri(i))
+               pcfm(i,k)=zcdn*zalm2/(1.+2.0*cb*zri(i)/zscf)
+               pcfh(i,k)=zcdn*zalh2/(1.+3.0*cb*zri(i)*zscf)
+            ENDIF
+          ELSE
+            zl2=(lmixmin*MAX(0.0,(paprs(i,k)-paprs(i,itop(i)+1))
+     .                          /(paprs(i,2)-paprs(i,itop(i)+1)) ))**2
+            pcfm(i,k)=sqrt(max(zcdn*zcdn*(ric-zri(i))/ric, ksta))
+            pcfm(i,k)= zl2* pcfm(i,k)
+            pcfh(i,k) = pcfm(i,k) /prandtl ! h et m different
+c VENUS TEST :
+c      pcfm(i,k)=1.0e-7
+c      pcfh(i,k)=1.0e-7
+          ENDIF
+        ENDDO
+      ENDDO
+c Richardson au sol:
+      DO i = 1, knon
+            zdu2=MAX(cepdu2,u(i,1)**2+v(i,1)**2)
+            zri(i) = zgeop(i,1)*(ztetavd(i,1)-ztetavu(i,1))
+     .              /(zdu2*ztetav(i,1))
+      ENDDO
+c
+c Calculer le frottement au sol (Cdrag)
+! ADAPTATION GCM POUR CP(T)
+c
+      DO i = 1, knon
+       z1(i) = zgeop(i,1)
+      ENDDO
+c
+      CALL clcdrag(klon, knon, zxli, 
+     $             z1, zri,
+     $             pcfm1, pcfh1) 
+C
+      DO i = 1, knon
+       pcfm(i,1)=pcfm1(i)
+       pcfh(i,1)=pcfh1(i)
+c VENUS TEST :
+c      pcfm(i,1)=1.0e-7
+c      pcfh(i,1)=1.0e-7
+      ENDDO
+c
+c Au-dela du sommet, pas de diffusion turbulente:
+c
+      DO i = 1, knon
+         IF (itop(i)+1 .LE. klev) THEN
+            DO k = itop(i)+1, klev
+               pcfh(i,k) = 0.0
+               pcfm(i,k) = 0.0
+            ENDDO
+         ENDIF
+      ENDDO
+c
+      RETURN
+      END
+
+C=================================================================
+C=================================================================
+C=================================================================
+C=================================================================
+
+      SUBROUTINE coefkz2(knon, paprs, pplay,t,
+     .                  pcfm, pcfh)
+      IMPLICIT none
+c======================================================================
+c J'introduit un peu de diffusion sauf dans les endroits
+c ou une forte inversion est presente
+c On peut dire qu'il represente la convection peu profonde
+c
+c Arguments:
+c knon-----input-I- nombre de points a traiter
+c paprs----input-R- pression a chaque intercouche (en Pa)
+c pplay----input-R- pression au milieu de chaque couche (en Pa)
+c t--------input-R- temperature (K)
+c
+c pcfm-----output-R- coefficients a calculer (vitesse)
+c pcfh-----output-R- coefficients a calculer (chaleur et humidite)
+c======================================================================
+#include "dimensions.h"
+#include "dimphy.h"
+#include "YOMCST.h"
+#include "iniprint.h"
+c
+c Arguments:
+c
+      INTEGER knon
+      REAL paprs(klon,klev+1), pplay(klon,klev)
+      REAL t(klon,klev)
+c
+      REAL pcfm(klon,klev), pcfh(klon,klev)
+c
+c Variables locales:
+c
+      INTEGER i, k, invb(knon)
+      REAL zl2(knon), zt
+      REAL zdthmin(knon), zdthdp
+c
+c Initialiser les sorties
+c
+      DO k = 1, klev
+      DO i = 1, knon
+         pcfm(i,k) = 0.0
+         pcfh(i,k) = 0.0
+      ENDDO
+      ENDDO
+c
+c Chercher la zone d'inversion forte
+c
+      DO i = 1, knon
+         invb(i) = klev
+         zdthmin(i)=0.0
+      ENDDO
+      DO k = 2, klev/2-1
+      DO i = 1, knon
+! ADAPTATION GCM POUR CP(T)
+         zt = 0.5*(t(i,k)+t(i,k+1))
+         zdthdp = (t(i,k)-t(i,k+1))/(pplay(i,k)-pplay(i,k+1))
+     .          - RD * zt/cpdet(zt)/paprs(i,k+1)
+         zdthdp = zdthdp * 100.0
+         IF (pplay(i,k).GT.0.8*paprs(i,1) .AND.
+     .       zdthdp.LT.zdthmin(i) ) THEN
+            zdthmin(i) = zdthdp
+            invb(i) = k
+         ENDIF
+      ENDDO
+      ENDDO
+c
+      RETURN
+      END
+

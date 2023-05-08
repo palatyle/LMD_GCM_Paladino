@@ -1,0 +1,119 @@
+ &time_control
+ start_year       = 2024,    !! (p1) Start Martian Year (20XX for MY XX)
+ start_month      = 07,      !! (p1) Start Martian Month 
+ start_day        = 01,      !! (p1) Start Martian Day 
+ start_hour       = 06,      !! (p1) Start Martian Hour (at longitude 0)
+ end_year         = 2024,    !! (p1) End Martian Year (20XX for MY XX)
+ end_month        = 07,      !! (p1) End Martian Month
+ end_day          = 02,      !! (p1) End Martian Day
+ end_hour         = 06,      !! (p1) End Martian Hour (at longitude 0)
+ history_interval    = 37,   !! Frequency of outputs (37 --> 3700s = 1 Martian hour)  
+ frames_per_outfile  = 24,   !! Size of time dimension in files 
+ restart          = .false.  !! (*) Restart run ?
+ restart_interval = 8880     !! (*) Frequency of output restart files ?
+ io_form_history  = 2        !! (*) Choice of NETCDF for ouputs
+ io_form_restart  = 2        !! (*) Choice of NETCDF for ouputs     
+ io_form_input    = 2        !! (*) Choice of NETCDF for ouputs
+ io_form_boundary = 2        !! (*) Choice of NETCDF for ouputs
+ debug_level      = 0        !! Verbose level
+ !!!!! OPTIONAL !!!!!!!!!!!!!!!
+ interval_seconds = 3700     !! (p2) Frequency of large-scale fields update (s)
+ input_from_file = T,        !! (n)(p2) Initialize a given domain with an input file
+ /
+
+ &domains
+ time_step   = 30            !! Dynamical timestep
+ dx = 20000,                 !! (p2) Horizontal resolution
+ dy = 20000,                 !! (p2) Horizontal resolution (should be equal to dx)
+ e_we   = 61,                !! (r)(p2) Number of longitude grid points
+ e_sn   = 61,                !! (r)(p2) Number of latitude grid points
+ e_vert = 61,                !! (r)(p2) Number of vertical levels
+ p_top_requested = 5         !! (p3) Chosen value of pressure at the top of the model
+ !!!!! OPTIONAL !!!!!!!!!!!!!!!
+ time_step_fract_num = 0     !! Additional fraction to time_step: numerator 
+ time_step_fract_den = 1     !! Additional fraction to time_step: denominator
+ num_metgrid_levels = 26     !! (p1) Number of vertical levels in GCM inputs (+1)
+ force_sfc_in_vinterp = 8    !! (p3) Number of levels hardwired in the PBL 
+                             !!       NB: decrease this parameter if low p_top_requested
+ max_dz = 1500.              !! (p3) Maximal interval (m) between vertical levels
+ eta_levels = -1.            !! (p3)  Specify a list of e_vert eta levels
+ max_dom = 1                 !! (r)(n)(p2) Total number of domains
+ grid_id                = 1, !! (n)(p2) Identification of the domain
+ parent_id              = 0, !! (n)(p2) Associated parent domain
+ i_parent_start         = 0, !! (n)(p2) x-position of the bottom-left nest corner
+ j_parent_start         = 0, !! (n)(p2) x-position of the bottom-left nest corner
+ parent_grid_ratio      = 1, !! (n)(p2) Ratio of horizontal resolution parent/nest
+ parent_time_step_ratio = 1, !! (n) Ratio of time step parent/nest
+ feedback               = 0  !! (n) Define one-way nesting [0] or two-way nesting [1]
+ smooth_option          = 2  !! (n) Smoothing option for parent domain (feedback=1)
+                             !!      0: none; 1: 1-2-1 smooth; 2: smooth-desmooth
+ blend_width            = 5  !! (n) Extent of blending zone for parent/nest boundaries
+ /
+
+ &physics
+ !!!!! OPTIONAL !!!!!!!!!!!!!!!
+ radt = 1,                   !! Ratio between physical and dynamical time step
+                             !! ... 1 is recommended, >5 is not recommended 
+ mars =  0,                  !! (r)(p2) Configuration of tracers: 
+                             !!         0: no tracers, 1: water vapor + ice, 2: dust
+ init_TI = 0.,               !! Define constant thermal inertia value 
+ init_AL = 0.,               !! Define constant albedo value 
+ init_Z0 = 0.1,              !! Define constant roughness length
+ init_U = 0.,                !! (p3) Define constant ini/bdy zonal wind value
+ init_V = 0.,                !! (p3) Define constant ini/bdy meridional wind value
+ init_WX = 0.,               !! (p3) \  Ini/bdy wind profile is everywhere equal to
+ init_WY = 0.,               !! (p3) /  the wind profile @ grid pt (init_WX,init_WY)
+ init_MU = 0.,               !! (p3) Multiply ini & bdy zonal wind by init_MU
+ init_MV = 0.,               !! (p3) Multiply ini & bdy meridional wind by init_MV
+ num_soil_layers = 10.       !! (r)(p1) Number of layers in soil model 
+ /
+
+ &dynamics
+ !!!!! OPTIONAL !!!!!!!!!!!!!!!
+ time_step_sound = 6,        !! Ratio of time step dynamic/acoustic integration
+                             !!   NB: an increase could help solve instabilities
+ non_hydrostatic = T,        !! Integrate in non-hydrostatic/hydrostatic mode
+ pd_scalar = T,              !! Positive-definite advection scheme for tracers 
+ tiso = 140.,                !! (p3) Temperature at which base profile is isotherm
+ !!
+ diff_opt = 1                !! (*d) Diffusion option [set to 0 if GCM-like]
+ km_opt = 4                  !! (*d) Eddy coefficient option           
+ diff_6th_opt = 2,           !! (*d) Knievel numerical diffusion
+ diff_6th_factor = 0.2,      !! (*d) Knievel numerical coeff. [set to 0.5 if GCM]       
+ smdiv = 0.1,                !! (*d) Divergence damping [>0 for NH runs]
+ emdiv = 0.01,               !! (*d) External-mode filter for mass coord. model [>0 for NH runs]
+ epssm = 0.1,                !! (*d) Time off-centering for vertical sound waves [>0 for NH runs]
+ h_mom_adv_order = 5,        !! (*d) Horizontal momentum advection order
+ v_mom_adv_order = 3,        !! (*d) Vertical momentum advection order
+ h_sca_adv_order = 5,        !! (*d) Horizontal scalar advection order
+ v_sca_adv_order = 3,        !! (*d) Vertical scalar advection order
+ /
+
+ &bdy_control
+ !!!!! OPTIONAL !!!!!!!!!!!!!!!
+ specified = T,              !! (n)(p3) Boundary conditions specified by GCM 
+ nested = F,                 !! (n)(p3) Boundary conditions from parent domain
+ periodic_x = F,             !! (p3) Periodic boundary conditions over x
+ periodic_y = F,             !! (p3) Periodic boundary conditions over y
+ open_xs = F,                !! (p3) Open boundary conditions @ western boundary
+ open_xe = F,                !! (p3) Open boundary conditions @ eastern boundary
+ open_ys = F,                !! (p3) Open boundary conditions @ southern boundary
+ open_ye = F,                !! (p3) Open boundary conditions @ northern boundary
+ spec_bdy_width = 5          !! (p3) Width of transition zone with specified=T
+                             !!      (spec_bdy_width must be equal to relax_zone+1)
+ relax_zone = 4              !! (p3) Width of relaxation zone with specified=T
+                             !!      (possible instabilities if relax_zone < 4)
+ /
+
+ !!!!! DO NOT MODIFY !!!!!!!!!!
+ &grib2
+ /
+
+ &fdda
+ /
+
+ &namelist_quilt              !! (*)
+ nio_tasks_per_group = 0,     !! (*)
+ nio_groups = 1,              !! (*)
+ /                            !! (*)
+ !!!!! DO NOT MODIFY !!!!!!!!!!

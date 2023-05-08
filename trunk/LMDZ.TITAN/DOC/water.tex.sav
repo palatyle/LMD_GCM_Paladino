@@ -1,0 +1,52 @@
+\chapter{Water Cycle Simulation}
+
+\label{sc:water}
+
+To simulate the water cycle with the LMD Generic Model:
+
+\begin{itemize}
+
+
+\item In {\tt callphys.def}, set tracer to true: {\tt tracer=.true.}. In the radiative
+transfer sub-section, chose an appropriate correlated-k database that includes the effect
+of water vapour (e.g. {\tt corrkdir=CO2_H2Ovar}), and set {\tt varactive=.true.}, {\tt varfixed=.false.}.
+
+The important parameters are {\tt water=.true.}, to use water vapor
+and ice tracers, and {\tt sedimentation=.true.} to
+allow sedimentation of water ice clouds.
+
+In {\tt traceur.def}, include (at least) two tracers: {\tt h2o_ice} and {\tt h2o_vap}.
+
+\input{input/h2o_list.tex}
+
+\item {\bf Compilation}
+You need to compile with at least 2 tracers. If you don't have CO2 clouds,
+({\tt dustbin=0}) or other tracers,
+compilation is done with the command lines:
+\begin{verbatim}
+makegcm -d 64x48x25 -t 2 -p std newstart
+\end{verbatim}
+\begin{verbatim}
+makegcm -d 64x48x25 -t 2 -p std gcm
+\end{verbatim}
+
+Of course, you will also need an appropriate {\tt traceur.def} file
+indicating you will use tracers {\tt h2o\_vap} and {\tt h2o\_ice};
+if you only run with 2 tracers, then the contents of the {\tt traceur.def}
+file should be:
+\begin{verbatim}
+2
+h2o_ice
+h2o_vap
+\end{verbatim}
+Note that the order in which tracers are set in the {\tt traceur.def} file
+is not important.
+
+\item {\bf Run} \\ \\
+Same as usual. Just make sure that your start files contains
+the initial states for water, with an initial state for water vapor
+and water ice particles.
+
+[+LIQUID]
+
+\end {itemize}

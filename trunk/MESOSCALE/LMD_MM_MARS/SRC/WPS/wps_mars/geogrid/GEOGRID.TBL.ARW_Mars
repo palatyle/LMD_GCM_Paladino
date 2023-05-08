@@ -1,0 +1,262 @@
+# See options.txt for a (somewhat up to date) list of the 
+# options that may be specified here.
+===============================
+name = HGT_M
+        priority = 1
+        dest_type = continuous
+        df_dx=SLPX
+        df_dy=SLPY
+        fill_missing=9000.
+        smooth_option = 1-2-1; smooth_passes=3 #5
+#        smooth_option = smth-desmth_special; smooth_passes=1
+	interp_option =		default:four_pt
+        interp_option = 	32ppd:sixteen_pt+four_pt
+        interp_option =         32ppd_HRalb:four_pt
+        interp_option =         gcm:four_pt
+        interp_option = 	64ppd:four_pt
+        interp_option =         64ppd_noHRti:four_pt
+        interp_option =         128ppd:average_gcell(4.0)+four_pt+average_4pt
+        interp_option =		custom:four_pt
+        interp_option =         omega:four_pt
+        rel_path=               default:mola_topo32/
+        rel_path= 		32ppd:mola_topo32/
+        rel_path=               32ppd_HRalb:mola_topo32/
+        rel_path=               gcm:mola_GCM/
+        rel_path= 		64ppd:mola_topo64/
+        rel_path=               64ppd_noHRti:mola_topo64/
+        rel_path=               custom:mola_tweak/
+        rel_path=               omega:mola_topo64/
+        interp_option =         tyler:four_pt
+        rel_path=               tyler:mola_topo32
+        interp_option =         tylerhires:four_pt
+        rel_path=               tylerhires:mola_topo64
+===============================
+name = HGT_U
+        output_stagger = U
+        priority = 1
+        dest_type = continuous
+        fill_missing=9000.
+        smooth_option = 1-2-1; smooth_passes=3 #5
+	interp_option =		default:four_pt
+        interp_option = 	32ppd:four_pt
+        interp_option =         32ppd_HRalb:four_pt
+        interp_option = 	64ppd:four_pt
+        interp_option =         64ppd_noHRti:four_pt
+        interp_option =         128ppd:average_gcell(4.0)+four_pt+average_4pt
+        interp_option =         custom:four_pt
+        interp_option =         omega:four_pt
+        interp_option =         gcm:four_pt
+        rel_path=               default:mola_topo32/
+        rel_path=               32ppd:mola_topo32/
+        rel_path=               32ppd_HRalb:mola_topo32/
+        rel_path=               gcm:mola_GCM/
+        rel_path=               64ppd:mola_topo64/
+        rel_path=               64ppd_noHRti:mola_topo64/
+        rel_path=               custom:mola_tweak/
+        rel_path=               omega:mola_topo64/
+        interp_option =         tyler:four_pt
+        rel_path=               tyler:mola_topo32
+        interp_option =         tylerhires:four_pt
+        rel_path=               tylerhires:mola_topo64
+===============================
+name = HGT_V
+        output_stagger = V
+        priority = 1
+        dest_type = continuous
+        fill_missing=9000.
+        smooth_option = 1-2-1; smooth_passes=3 #5
+	interp_option =		default:four_pt
+        interp_option = 	32ppd:four_pt
+        interp_option =         32ppd_HRalb:four_pt
+        interp_option = 	64ppd:four_pt
+        interp_option =         64ppd_noHRti:four_pt
+        interp_option =         128ppd:average_gcell(4.0)+four_pt+average_4pt
+        interp_option =         custom:four_pt
+        interp_option =         omega:four_pt
+        interp_option =         gcm:four_pt
+        rel_path=               default:mola_topo32/
+        rel_path=               32ppd:mola_topo32/
+        rel_path=               32ppd_HRalb:mola_topo32/
+        rel_path=               gcm:mola_GCM/
+        rel_path=               64ppd:mola_topo64/
+        rel_path=               64ppd_noHRti:mola_topo64/
+        rel_path=               custom:mola_tweak/
+        rel_path=               omega:mola_topo64/
+        interp_option =         tyler:four_pt
+        rel_path=               tyler:mola_topo32
+        interp_option =         tylerhires:four_pt
+        rel_path=               tylerhires:mola_topo64
+===============================
+name = THERMAL_INERTIA
+        priority = 1
+        dest_type = continuous
+        smooth_option = 1-2-1; smooth_passes=10 #5
+ 	interp_option =	 	32ppd:sixteen_pt+four_pt+average_4pt+average_16pt+search
+        rel_path=               32ppd:thermal_GCM/
+        interp_option =         32ppd_HRalb:sixteen_pt+four_pt+average_4pt+average_16pt+search
+        rel_path=               32ppd_HRalb:thermal_GCM/
+        interp_option =         64ppd:sixteen_pt+four_pt
+        rel_path=               64ppd:thermal_TES/
+        interp_option =         64ppd_noHRti:sixteen_pt+four_pt+average_4pt+average_16pt+search
+        rel_path=               64ppd_noHRti:thermal_GCM/
+        interp_option =         custom:sixteen_pt+four_pt
+        rel_path=               custom:thermal_TES/
+#	rel_path=               custom:thermal_GCM/
+        interp_option =         omega:sixteen_pt+four_pt
+        rel_path=               omega:thermal_GCM/
+        interp_option =         gcm:four_pt
+        rel_path=               gcm:thermal_GCM/
+#	fill_missing=400. #north polar TI (needed with thermal_TES)
+#        fill_missing=180. #polar projection artefacts
+        fill_missing=4100. #north polar TI (needed with thermal_TES 64ppd)
+        interp_option = tyler:sixteen_pt+four_pt
+        rel_path =      tyler:tylerall/ti/
+        interp_option = tylerhires:sixteen_pt+four_pt
+        rel_path =      tylerhires:tylercap
+===============================
+name = ALBEDO_GCM
+        priority = 1
+        dest_type = continuous
+        smooth_option = 1-2-1; smooth_passes=5
+#        fill_missing=0.25
+#        interp_option = default:sixteen_pt+four_pt+average_4pt+average_16pt+search
+        interp_option = 32ppd:four_pt+average_4pt+average_16pt+search
+        rel_path =      32ppd:albedo_GCM/
+        interp_option = 32ppd_HRalb:sixteen_pt+four_pt
+        rel_path=       32ppd_HRalb:albedo_TES/
+        interp_option = 64ppd:sixteen_pt+four_pt
+        rel_path=       64ppd:albedo_TES/
+        interp_option = 64ppd_noHRti:sixteen_pt+four_pt
+        rel_path=       64ppd_noHRti:albedo_TES/
+#        fill_missing=0.35 #north polar alb (needed with albedo_TES - albedo_GCM/1.3 to be consistent)
+        fill_missing=0.325 #north polar alb (needed with albedo_TES 64 ppd)
+        interp_option = custom:sixteen_pt+four_pt
+        rel_path=       custom:albedo_TES/
+        interp_option = omega:sixteen_pt+four_pt
+        rel_path=       omega:albedo_OMG/
+        interp_option = gcm:four_pt
+        rel_path =      gcm:albedo_GCM/
+        interp_option = tyler:sixteen_pt+four_pt
+        rel_path =      tyler:tylerall/albedo/
+        interp_option = tylerhires:sixteen_pt+four_pt
+        rel_path =      tylerhires:tylercap
+===============================
+name = SURF_ROUGHNESS
+        priority = 1
+        dest_type = continuous
+        smooth_option = 1-2-1; smooth_passes=10
+#        interp_option =         32ppd:sixteen_pt+four_pt+average_4pt+average_16pt+search
+#        rel_path=               32ppd:rough_GCM/
+        interp_option =         32ppd:nearest_neighbor
+        rel_path=               32ppd:rough_GCM/
+        interp_option =         32ppd_HRalb:nearest_neighbor
+        rel_path=               32ppd_HRalb:rough_GCM/
+        interp_option =         64ppd:nearest_neighbor
+        rel_path=               64ppd:rough_GCM/
+        interp_option =         64ppd_noHRti:nearest_neighbor
+        rel_path=               64ppd_noHRti:rough_GCM/
+        interp_option =         custom:nearest_neighbor
+        rel_path=               custom:rough_GCM/
+        interp_option =         omega:nearest_neighbor
+        rel_path=               omega:rough_GCM/
+        interp_option =         gcm:nearest_neighbor
+        rel_path=               gcm:rough_GCM/
+        fill_missing=0.12 ## north polar
+        interp_option =         tyler:nearest_neighbor
+	rel_path=               tyler:rough_GCM/
+        interp_option =         tylerhires:nearest_neighbor
+        rel_path=               tylerhires:rough_GCM/
+#===============================
+#name=LANDUSEF
+#        priority=1
+#        dest_type=categorical
+#        z_dim_name=land_cat
+#        landmask_water=16               # Calculate a landmask from this field
+#        dominant=LU_INDEX
+#        interp_option =     30s:nearest_neighbor
+#        interp_option =      2m:four_pt
+#        interp_option =      5m:four_pt
+#        interp_option =     10m:four_pt
+#        interp_option = default:four_pt
+#        rel_path=     30s:landuse_30s/
+#        rel_path=      2m:landuse_2m/
+#        rel_path=      5m:landuse_5m/
+#        rel_path=     10m:landuse_10m/
+#        rel_path= default:landuse_2m/
+#===============================
+#name=SOILTEMP
+#        priority=1
+#        dest_type=continuous
+#        interp_option=default:sixteen_pt+four_pt+average_4pt+average_16pt+search
+#        masked=water
+#        fill_missing=0.
+#        rel_path=default:soiltemp_1deg/
+#===============================
+#name=SOILCTOP
+#        dominant=SOILCAT
+#        priority=1
+#        dest_type=categorical
+#        z_dim_name=soil_cat
+#        interp_option =     30s:nearest_neighbor
+#        interp_option =      2m:four_pt
+#        interp_option =      5m:four_pt
+#        interp_option =     10m:four_pt
+#        interp_option = default:four_pt
+#        rel_path=     30s:soiltype_top_30s/
+#        rel_path=      2m:soiltype_top_2m/
+#        rel_path=      5m:soiltype_top_5m/
+#        rel_path=     10m:soiltype_top_10m/
+#        rel_path= default:soiltype_top_2m/
+#===============================
+#name=SOILCBOT
+#        priority=1
+#        dest_type=categorical
+#        z_dim_name=soil_cat
+#        interp_option =     30s:nearest_neighbor
+#        interp_option =      2m:four_pt
+#        interp_option =      5m:four_pt
+#        interp_option =     10m:four_pt
+#        interp_option = default:four_pt
+#        rel_path=     30s:soiltype_bot_30s/
+#        rel_path=      2m:soiltype_bot_2m/
+#        rel_path=      5m:soiltype_bot_5m/
+#        rel_path=     10m:soiltype_bot_10m/
+#        rel_path= default:soiltype_bot_2m/
+#===============================
+#name=ALBEDO12M
+#        priority=1
+#        dest_type=continuous
+#        z_dim_name=month
+#        masked = water
+#        fill_missing = 8.
+#        interp_option=default:four_pt+average_4pt+average_16pt+search
+#        rel_path=default:albedo_ncep/
+#===============================
+#name=GREENFRAC
+#        priority=1
+#        dest_type=continuous
+#        interp_option=default:four_pt+average_4pt+average_16pt+search
+#        z_dim_name=month
+#        masked = water
+#        fill_missing = 0.
+#        rel_path=default:greenfrac/
+#===============================
+#name=SNOALB
+#        priority=1
+#        dest_type=continuous
+#        interp_option=default:four_pt+average_4pt+average_16pt+search
+#        masked = water
+#        fill_missing = 0.
+#        rel_path=default:maxsnowalb/
+#===============================
+#name=SLOPECAT
+#        priority=1
+#        dominant_only=SLOPECAT
+#        dest_type=categorical
+#        z_dim_name=slope_cat
+#        masked = water
+#        fill_missing = 0.
+#        interp_option=default:nearest_neighbor+average_16pt+search
+#        rel_path=default:islope/
+#===============================
+

@@ -1,0 +1,9 @@
+#PBS -S  /bin/bash
+#PBS -j  oe
+#PBS -q  infini
+#PBS -N  LMDZ.GENERIC
+
+####### prep run
+cd $PBS_O_WORKDIR
+ulimit -s unlimited
+gcm.e > log

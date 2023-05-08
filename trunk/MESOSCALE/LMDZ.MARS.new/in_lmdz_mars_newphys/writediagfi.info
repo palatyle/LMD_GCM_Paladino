@@ -1,0 +1,21 @@
+        call WRITEDIAGFI(ngrid,"emis","Surface emissivity","w.m-1",2,
+     .                  emis)
+        call WRITEDIAGFI(ngrid,"tsurf","Surface temperature","K",2,
+     .                  tsurf)
+        call WRITEDIAGFI(ngrid,"ps","surface pressure","K",2,ps)
+        call WRITEDIAGFI(ngrid,"co2ice","co2 ice thickness","kg.m-2",2,
+     .                  co2ice)
+        call WRITEDIAGFI(ngrid,"temp","temperature","K",3,zt)
+        call WRITEDIAGFI(ngrid,"u","Zonal wind","m.s-1",3,zu)
+        call WRITEDIAGFI(ngrid,"v","Meridional wind","m.s-1",3,zv)
+        call WRITEDIAGFI(ngrid,"tsoil","soil temperature","K",3,tsoil)
+        if (tracer) then
+            do iq=1,nqmx
+              write(str2(1:2),'(i2.2)') iq
+              call WRITEDIAGFI(ngridmx,'q'//str2,noms(iq),
+     &                          'kg/kg',3,zq(1,1,iq))
+              call WRITEDIAGFI(ngridmx,'qsurf'//str2,noms(iq),
+     &                        'kg.m-2',2,qsurf(1,iq))
+            end do
+          end if
+

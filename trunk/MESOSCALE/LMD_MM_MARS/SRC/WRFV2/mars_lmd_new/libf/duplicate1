@@ -1,0 +1,14 @@
+\rm aeronomars/d2_*
+\rm bibio/d2_*
+\rm phymars/d2_*
+\rm grid/d2_*
+\rm dyn3d/d2_*
+
+\rm aeronomars/d3_*
+\rm bibio/d3_*
+\rm phymars/d3_*
+\rm grid/d3_*
+\rm dyn3d/d3_*
+
+
+# this may be used for cleaning purpose as well

@@ -1,0 +1,849 @@
+#!/bin/csh -f
+# $Header: /users/lmdz/cvsroot/LMDZ.3.3/makegcm,v 1.21 2001/07/04 08:41:44 lmdz Exp $
+#set verbose echo
+########################################################################
+# options par defaut pour la commande make
+########################################################################
+set dim="64x48x32"
+set physique=std
+set phys="PHYS=$physique"
+set include='-I$(LIBF)/grid -I$(LIBF)/misc -I. -I$(LIBF)/dynphy_lonlat'
+set ntrac = 1
+set filtre=filtrez
+set grille=reg
+set dyntype="dyn"
+set bands="32x36"
+set scatterers="1"
+set full=""
+#src_dirs: directories containing source files 
+set src_dirs="grid misc" 
+
+########################################################################
+# path a changer contenant les sources et les objets du modele
+########################################################################
+
+#### If you want you can set environment variables here
+# default LMDGCM is where the makegcm script is:
+#setenv LMDGCM `pwd`"/"`dirname $0` # only works for relative paths
+set scriptdir=`dirname $0`
+setenv LMDGCM `readlink -f $scriptdir`
+#setenv LMDGCM "/san/home/rdword/gcm/LMDZ.GENERIC"
+setenv LIBOGCM $LMDGCM/libo
+# NetCDF, on LMD computers:
+setenv NCDFLIB /donnees/emlmd/netcdf64-4.0.1_gfortran/lib
+setenv NCDFINC /donnees/emlmd/netcdf64-4.0.1_gfortran/include
+#####
+# Adapt example below to your personal machine (here "antolini"), if necessary
+if (`hostname -s` == "antolini" ) then
+  setenv NCDFLIB /home/MILLOUR/netcdf64-4.0.1_gfortran/lib
+  setenv NCDFINC /home/MILLOUR/netcdf64-4.0.1_gfortran/include
+endif
+
+setenv localdir "`pwd`"
+set MODIPSL=0
+echo $localdir | grep modipsl >& /dev/null
+if ( ! $status ) then
+  set MODIPSL=1
+  setenv LMDGCM $localdir
+  cd ../..
+  setenv LIBOGCM "`pwd`/lib"
+  cd $localdir
+  if ( `hostname` == rhodes ) then
+    set NCDFINC=`grep sxnec ../../util/AA_make.gdef| grep NCDF_INC|sed -e "s/^.* =//"`
+    set NCDFLIB=`grep sxnec ../../util/AA_make.gdef| grep NCDF_LIB|sed -e 's/^.* =//'`
+  else
+    if ( `hostname` == nymphea0 ) then
+      set NCDFINC=`grep fjvpp ../../util/AA_make.gdef| grep NCDF_INC|sed -e "s/^.* =//"`
+      set NCDFLIB=`grep fjvpp ../../util/AA_make.gdef| grep NCDF_LIB|sed -e 's/^.* =//'`
+    else
+      echo 'Probleme de definition des variables NCDFINC et NCDFLIB'
+    endif 
+  endif 
+else
+  if ( ! $?LMDGCM ) then
+    echo You must initialize the variable LMDGCM in your environnement
+    echo for instance: "setenv LMDGCM /usr/myself/supergcm" in .cshrc
+    exit
+  endif
+  if ( ! $?LIBOGCM ) then
+    set LIBOGCM=$LMDGCM/libo
+  endif
+  if ( ! $?NCDFLIB ) then
+    echo You must initialize the variable NCDFLIB in your environnement
+    echo for instance: "setenv NCDFLIB /usr/myself/netcdf" in .cshrc
+    exit
+  endif
+  if ( ! $?NCDFINC ) then
+    echo You must initialize the variable NCDFINC in your environnement
+    echo for instance: "setenv NCDFINC /usr/myself/netcdf" in .cshrc
+    exit
+  endif
+endif
+set model=$LMDGCM
+set libo=$LIBOGCM
+
+########################################################################
+#  Les differentes platformes reconnues
+########################################################################
+
+set HP=0
+set IBM=0
+set SUN=0
+set VPP=0
+set CRAY=0
+set DEC=0
+set LINUX=0
+set NEC=0
+set XNEC=0
+if ( `uname` == HP-UX ) then
+   set machine=HP
+   set HP=1
+else if (`uname` == UNIX_System_V ) then
+   set machine=VPP
+   set VPP=1
+else if (`uname` == SunOS ) then
+   set machine=SUN
+   set SUN=1
+else if ( `uname` == AIX ) then
+   set machine=IBM
+   set IBM=1
+else if ( `uname` == OSF1 ) then
+   set machine=ALPHA
+   set DEC=1
+else if ( `uname` == Linux ) then
+   set machine=LINUX
+   set LINUX=1
+else if ( `hostname` == atlas || `hostname` == axis  || `hostname` == etoile ) then
+   set machine=CRAY
+   set CRAY=1
+else if ( `uname` == SUPER-UX ) then
+   set machine=NEC
+   set NEC=1
+else if ( `hostname` == rhodes) then
+   set machine=XNEC
+   set XNEC=1
+else if ( `uname` == CYGWIN_NT-6.1-WOW64) then
+   set machine=LINUX
+   set LINUX=1
+else
+   echo Vous travaillez sur une machine non prevue par le reglement
+   exit
+endif
+
+# create $libo directory if it doesn't exist
+if ( ! -d $libo )  then
+   mkdir $libo
+endif
+
+if $VPP then
+set netcdf=netcdf_v
+else 
+set netcdf=netcdf
+endif
+########################################################################
+#  Quelques initialisations de variables du shell.
+########################################################################
+
+set dyn=
+set opt_link=""
+set adjnt=""
+set opt_dep=""
+
+set optim90=""
+set oplink=""
+
+########################################################################
+#  Optimisations par defaut suivant les machines
+########################################################################
+
+echo "Optimisations par defaut suivant les machines"
+set libf=$model/libf
+#setenv localdir "LOCAL_DIR=`pwd`"
+#setenv localdir "`pwd`"
+cd $model
+if $CRAY then
+   set optim90="-Wp'-P' -DCRAY "'-p$(LIBO) -eiv '
+   set oplink="-Wl'-DSTACK=128 -f indef' -L$NCDFLIB -lnetcdf "
+   set mod_loc_dir=" "
+   set mod_suffix=" "
+else if $SUN then
+   set optim90=" -fast"
+   set optimtru90=" -fast -free"
+   set opt_link="-L$NCDFLIB -lnetcdf"
+   set mod_loc_dir=$localdir
+   set mod_suffix=mod
+else if $HP then
+else if $IBM then
+else if $VPP then
+   set optim90="$optim -X9 -w"
+   if $COUPLE then
+     set opt_link="-Wg,-c $IOIPSLDIR/liboasis2.4_mpi2.a /usr/lang/mpi2/lib64/libmpi.a /usr/lang/mpi2/lib64/libmp.a /usr/local/lib/lib64/libnetcdf_cc.a -L$IOIPSLDIR -lioipsl"
+     set oplink="-Wl,-t,-P,-dy "
+   else
+     set opt_link="-Wg,-c /usr/local/lib/lib64/libnetcdf_cc.a -L$IOIPSLDIR -lioipsl"
+     set oplink="-Wl,-t,-dy "
+   endif
+   set mod_loc_dir=$IOIPSLDIR
+   set mod_suffix=mod
+else if $DEC then
+else if $LINUX then
+
+# Ehouarn 'gfortran' compiler
+   set optim="-O3 -funroll-loops "
+   set optim90="-O3 -funroll-loops "
+   set optimtru90="-O3 -funroll-loops "
+   set opt_link=" -L$NCDFLIB -lnetcdf "
+
+   #NB: on gnome -O3 ==> NaNs ...
+   #set optim=" -O2 -ip -mkl=sequential -align common "
+   #set optim90=" -O2 -ip -mkl=sequential -align common "
+   #set optimtru90=" -O2 -ip -mkl=sequential -align common "
+
+   set mod_loc_dir="./"
+   set mod_suffix=mod
+else if $NEC then
+   set optim90=' -clear -C hopt -float0 -ew -P static -Wf,"-pvctl fullmsg noassume "'
+   set optimtru90=' -clear -f4 -C hopt -float0 -ew -P static -Wf,"-pvctl fullmsg noassume "'
+###   set opt_link=" -C hopt -float0 -ew -P static -L$IOIPSLDIR -lioipsl  -L/u/rech/psl/rpsl003/IOIPSL -lnetcdf_i8r8_v "
+   set opt_link=" -C hopt -float0 -ew -P static -L/SX/usr/local/lib  -lnetcdf_i8r8 "
+   set mod_loc_dir="."
+   set mod_suffix="mod"
+else if $XNEC then
+   set optim90=' -clear -R5 -C vopt -float0 -ew -P static -Wf,"-pvctl loopcnt=40000 fullmsg noassume "'
+   set optimtru90=' -clear -R5 -f4 -C vopt -float0 -ew -P static -Wf,"-pvctl loopcnt=40000 fullmsg noassume "'
+   if $MODIPSL then
+     if $COUPLE then
+       set opt_link="-L$IOIPSLDIR -lsxioipsl -loasis2.4_mpi2 -float0 -ew -P static -I$NCDFINC $NCDFLIB "
+     else
+       set opt_link="-L$IOIPSLDIR -lsxioipsl -float0 -ew -P static -I$NCDFINC $NCDFLIB "
+     endif
+     set mod_loc_dir="./"
+   else
+     set opt_link=" -C hopt -float0 -ew -P static -I$NCDFINC -L/SX/usr/local/lib -lnetcdf_i8r8"
+     set mod_loc_dir="."
+   endif
+   set mod_suffix="mod"
+
+endif
+
+set nomlib=${machine}_gfortran
+
+# Impose distinct name for 64 bit Linux machines (to avoid mixing 32 and 64)
+if (`uname` == Linux && `uname -m` == "x86_64") then
+  set nomlib=${machine}64_gfortran
+endif
+
+########################################################################
+# lecture des options de mymake
+########################################################################
+
+top:
+if ($#argv > 0) then
+    switch ($1:q)
+
+    case -h:
+
+########################################################################
+# Manuel en ligne
+########################################################################
+more <<eod
+
+
+makegcm [Options] prog
+
+
+The makegcm script:
+-------------------
+
+1. compiles a series of subroutines located in the $LMDGCM/libf
+ sub-directories.
+ The objects are then stored in the libraries in $LIBOGCM.
+
+2. then, makegcm compiles program prog.f located by default in
+$LMDGCM/libf/dyn3d and makes the link with the libraries.
+
+Environment Variables '$LMDGCM' and '$LIBOGCM'
+ must be set as environment variables or directly
+ in the makegcm file.
+
+The makegcm command is used to control the different versions of the model
+ in parallel, compiled using the compilation options 
+ and the various dimensions, without having to recompile the whole model.
+
+The FORTRAN libraries are stored in directory $LIBOGCM.
+
+
+OPTIONS:
+--------
+
+The following options can either be defined by default by editing the
+makegcm "script", or in interactive mode:
+
+-d imxjmxlm  where im, jm, and lm are the number of longitudes,
+             latitudes and vertical layers respectively.
+
+-s nscat   Number of radiatively active scatterers
+
+-p PHYS    Selects the set of physical parameterizations
+           you want to compile the model with.
+           The model is then compiled using the physical
+           parameterization sources in directory:
+            $LMDGCM/libf/phyPHYS
+
+-g grille  Selects the grid type.
+           This option overwrites file
+           $LMDGCM/libf/grid/fxyprim.h
+           with file
+           $LMDGCM/libf/grid/fxy_grille.h
+           the grid can take the following values:
+           1. reg - the regular grid
+           2. sin - to obtain equidistant points in terms of sin(latitude)
+           3. new - to zoom into a part of the globe
+
+-O "compilation options" set of fortran compilation options to use
+
+-include path
+           Used if the subroutines contain #include files (ccp) that 
+           are located in directories that are not referenced by default.
+
+-adjnt     Compiles the adjoint model to the dynamical code.
+
+-olddyn    To compile GCM with "old dynamics"
+
+-filtre  filter
+           To select the longitudinal filter in the polar regions.
+           "filter" corresponds to the name of a directory located in
+           $LMDGCM/libf. The standard filter for the model is "filtrez"
+           which can be used for a regular grid and for a  
+           grid with longitudinal zoom.
+
+-link "-Ldir1 -lfile1 -Ldir2 -lfile2 ..."
+           Adds a link to FORTRAN libraries
+           libfile1.a, libfile2.a ... 
+           located in directories dir1, dir2 ...respectively
+           If dirn is a directory with an automatic path 
+           (/usr/lib ... for example) 
+           there is no need to specify  -Ldirn.
+
+-full      Full (re)compilation (from scratch)
+
+eod
+exit
+
+########################################################################
+# Lecture des differentes options
+########################################################################
+
+    case -d
+        set dim=$2 ; shift ; shift ; goto top
+                        
+    case -O:
+        set optim90="$2" ; set optim="$2" ; set optimtru90="$2" ; shift ; shift ; goto top
+
+     case -p
+        set physique="$2" ; set phys="PHYS=$physique" ; shift ; shift ; goto top
+
+     case -s
+        set scatterers="$2" ; shift ; goto top
+
+     case -g
+        set grille="$2" ; shift ; shift ; goto top
+
+    case -b
+        set bands=$2 ; shift ; shift ; goto top
+           
+     case -t
+        set ntrac=$2 ; shift ; shift ; goto top
+
+     case -include
+        set include="$include -I$2" ; shift ; shift ; goto top
+
+     case -adjnt
+        set opt_dep="$opt_dep adjnt" ; set adjnt="-ladjnt -ldyn3d "
+
+     case -olddyn
+        set dyntype="olddyn" ; shift; goto top
+
+     case -full
+        set full="full" ; shift ; goto top
+
+     case -filtre
+        set filtre=$2 ; shift ; shift ; goto top
+
+     case -link
+        set opt_link="$opt_link $2" ; shift ; shift ; goto top
+
+     case -debug
+        if $HP then
+           set optim90=" -g "
+        else if $SUN then
+           setenv PARALLEL 4
+           set optim90=" -g -C "
+           set optimtru90=" -g -C "
+        else if $CRAY then
+           set optim90="$optim90"" -G1 "
+        else if $LINUX then
+
+           ## for gfortran
+           set optim="-g3 -Wall -fbounds-check -ffpe-trap=invalid,zero,overflow"
+           set optim90="-g3 -Wall -fbounds-check -ffpe-trap=invalid,zero,overflow"
+           set optimtru90="-g3 -Wall -fbounds-check -ffpe-trap=invalid,zero,overflow"
+
+        else 
+           echo "pas d option debug predefinie pour cette machine"
+           exit
+        endif
+        shift ; goto top
+
+     default
+        set code="$1" ; shift ; goto top
+
+   endsw
+endif
+
+
+echo "apres les opts dim $dim"
+
+########################################################################
+# cas special sans physique
+########################################################################
+if ( "$physique" == 'nophys' ) then
+   set phys="L_PHY= LIBPHY="
+else
+   set src_dirs="$src_dirs phy_common phy$physique"
+   set include="$include "'-I$(LIBF)/phy_common  -I$(LIBF)/phy'"$physique"
+   set LIBPHY_COMMON='$(LIBO)/libphy_common.a'
+endif
+set libdyn_phy=""
+set LIBDYN_PHYS=""
+########################################################################
+#subtilites sur le nom de la librairie
+########################################################################
+
+
+\rm tmp ; touch tmp
+\rm tmp90 ; touch tmp90
+foreach i ( $optim90 )
+   echo $i | sed -e 's/\"//g' -e "s/\'//g" -e 's/-//g' -e 's/://g' -e 's/=//g' -e 's/%//g' >> tmp
+end
+set suf=
+foreach i ( `sort tmp | uniq ` )
+   set suf=$suf$i
+end
+if ( ! $IBM ) then
+   set nomlib="$nomlib$suf"
+endif
+if ( $DEC ) then
+   set nomlib=DEC
+endif
+
+# dimension
+echo "dimension avant sed $dim"
+if ( $IBM ) then
+   set dim=`echo $dim | sed -en 's/[^0-9]/ /g'`
+   set dim_=`echo $dim | sed -en 's/[^0-9]/_/g'`
+else if ( $SUN || $XNEC ) then
+   set dim=`echo $dim | sed -e 's/[^0-9]/ /g'` 
+   set dim_=`echo $dim | sed -e 's/[^0-9]/_/g'`
+else
+     set dim=`echo $dim | sed -e 's/[^0-9]/ /g'`
+     set dim_=`echo $dim | sed -e 's/[^0-9]/_/g'`
+endif
+
+# bands
+echo "bands avant sed $bands"
+if ( $IBM ) then
+   set bands=`echo $bands | sed -en 's/[^0-9]/ /g'`
+   set bands_=`echo $bands | sed -en 's/[^0-9]/_/g'`
+else if ( $SUN || $XNEC ) then
+   set bands=`echo $bands | sed -e 's/[^0-9]/ /g'` 
+   set bands_=`echo $bands | sed -e 's/[^0-9]/_/g'`
+else
+     set bands=`echo $bands | sed -e 's/[^0-9]/ /g'`
+     set bands_=`echo $bands | sed -e 's/[^0-9]/_/g'`
+endif
+
+
+# build final name of libraries directory:
+if ( "$dyntype" == "olddyn" ) then
+  set nomlib=${nomlib}_${dim_}_t${ntrac}_s${scatterers}_${grille}_olddyn
+else
+  set nomlib=${nomlib}_${dim_}_t${ntrac}_s${scatterers}_${grille}
+endif
+
+# Append number of bands to nomlib (new for universal model)
+set nomlib=${nomlib}_${bands_}
+
+# Append 'physique' type, if it is not mars, to nomlib
+if ( "$physique" != "mars" ) then
+  set nomlib=${nomlib}_${physique}
+endif
+
+## M-A-F nomlib trop long sur CRAY pour ar
+if ( $CRAY ) then
+    set nomlib=F90_${dim_}_t${ntrac}
+endif
+if ( $NEC || $XNEC ) then
+    set nomlib=F90_${dim_}_t${ntrac}
+endif
+
+echo "calcul de la dimension"
+set dimc=`echo $dim | wc -w`
+
+if ( "$dimc" == "2" ) then
+  set include="$include "'-I$(LIBF)/dyn2d '
+  set dimh=$dim
+endif
+if ( "$dimc" == "3" ) then
+  if ( "$dyntype" == "olddyn" ) then
+    set include="$include "'-I$(LIBF)/olddyn3d '
+    set src_dirs="$src_dirs olddyn3d dynphy_lonlat dynphy_lonlat/phy$physique"
+  else
+    set include="$include "'-I$(LIBF)/dyn3d '
+    set src_dirs="$src_dirs dyn3d dynphy_lonlat dynphy_lonlat/phy$physique"
+  endif
+  set libdyn_phy="-ldynphy_lonlat"
+  set LIBDYN_PHYS='$(LIBO)/libdynphy_lonlat.a'
+  set dimh=`echo $dim | awk ' { print $1 "." $2 } '`
+endif
+echo "dimc is $dimc"
+
+########################################################################
+# path pour les #include
+########################################################################
+
+set include="$include -I$NCDFINC "
+echo $include
+
+########################################################################
+# Gestion des dimensions du modele.
+# on cree ou remplace le fichier des dimensions/nombre de traceur
+########################################################################
+
+cd $libf/grid
+if ( -f dimensions.h ) then
+  echo "WARNING: you are already compiling the model somewhere else"
+  echo "Wait until the first compilation is finished before starting."
+  echo "If you are sure that you are not compiling elsewhere, you can"
+  echo "type [yes] to continue."
+  echo "Do you want to continue?"
+  if ( $< == "yes" ) then
+    #remove old dimensions.h , bands.h and scatterers.h files
+    \rm -f $libf/grid/dimensions.h
+    \rm -f $libf/grid/bands.h
+    \rm -f $libf/phy${physique}/bands.h
+    \rm -f $libf/phy${physique}/scatterers.h
+  else
+    exit
+  endif
+endif
+
+# Build the appropriate 'dimensions.h' file
+cd dimension
+./makdim $dim
+# echo contents of dimensions.h to standard output
+cat $libf/grid/dimensions.h
+
+# Build the appropriate 'bands.h' file
+cd $libf/phy$physique/bands
+./makbands $bands
+# echo contents of bands.h to standard output
+cat $libf/phy$physique/bands.h
+
+# Build the appropriate 'scatterers.h' file
+cd $libf/phy$physique/scatterers
+./make_scatterers $scatterers
+# echo contents of scatterers.h to standard output
+cat $libf/phy$physique/scatterers.h
+
+cd $LMDGCM
+# set path to objects directory
+set libo=$libo/$nomlib
+# create objects directory, if it doesn't exist
+if ( ! -d $libo )  then
+   mkdir $libo
+   cd $model
+endif
+
+########################################################################
+# Differentes dynamiques (3d, 2d, 1d)
+########################################################################
+
+set dimension=`echo $dim | wc -w`
+echo dimension $dimension dim $dim
+if ( $dimension == 1 ) then
+  echo "No dynamics"
+##  set dyn="L_DYN= DYN= L_FILTRE= "
+## NB: we still need to have L_DYN=libdyn3d to reach routines and module
+## objects which are located in dyn3d
+  set dyntype=""
+  set filtre="L_DYN= DYN= FILTRE= L_FILTRE= "
+  set dyn="L_DYN= DYN= L_FILTRE= "
+  set dirmain="phy$physique/dyn1d"
+  set src_dirs="$src_dirs phy$physique/dyn1d "
+  set include="$include "' -I$(LIBF)/phy'"$physique"'/dyn1d'
+endif
+endif
+
+cd $model
+if ( $dimension == 3 ) then
+  cd libf/grid
+  \rm fxyprim.h
+  cp -p fxy_${grille}.h fxyprim.h
+endif
+
+######################################################################
+# Gestion du filtre qui n'existe qu'en 3d.
+######################################################################
+
+# set filtre to 'oldfiltrez' if using -olddyn option
+if ( "$dyntype" == "olddyn" ) then
+  set filtre="oldfiltrez"
+endif
+
+if ( `expr $dimc \> 2` == 1 ) then
+   set filtre="FILTRE=$filtre"
+   if ( "$dyntype" == "olddyn" ) then
+     set src_dirs="$src_dirs oldfiltrez"
+   else
+     set src_dirs="$src_dirs filtrez"
+   endif
+else
+   set filtre="FILTRE= L_FILTRE= L_DYN= "
+endif
+echo "MACRO FILTRE $filtre"
+
+echo "dimc $dimc"
+
+#cleanup for a full recompilation, if requested
+if ("$full" == "full") then
+# remove makefile and $libo
+  cd $model
+  \rm -f makefile
+  \rm -rf $libo/*
+endif
+
+########################################################################
+#  Avant de lancer le make, on recree le makefile si necessaire
+########################################################################
+# c'est a dire dans 3 cas:
+# 1. si la liste des fichiers .F et .h a ete modifiee depuis la
+#    derniere creation du makefile
+# 2. si le fichier contenant cette liste "liste_des_sources"
+#    n'existe pas.
+# 3. Si le makefile n'existe pas.
+########################################################################
+
+cd $model
+find libf -name '*.[Fh]' -print | sort >! tmp77
+#find libf -name '*.[Fh]' -exec egrep -i " *use *ioipsl" {} \; -print >! tmp90
+find libf -name '*.[Fh]90' -print | sort >> tmp90
+
+if (    `diff tmp77 liste_des_sources_f77 | wc -w` \
+     || `diff tmp90 liste_des_sources_f90 | wc -w` \
+     || ! -f makefile \
+     || ! -f liste_des_sources_f90 \
+     || ! -f liste_des_sources_f77 ) then
+        echo "les fichiers suivants ont ete crees ou detruits"
+        echo "ou les fichiers suivants sont passes ou ne sont plus en Fortran 90"
+        diff liste_des_sources_f77 tmp77
+        diff liste_des_sources_f90 tmp90
+        \cp tmp77 liste_des_sources_f77
+        \cp tmp90 liste_des_sources_f90
+        echo "Remaking the makefile!"
+        echo "src_dirs: $src_dirs"
+        create_make_gcm $src_dirs >! tmp
+        \mv tmp makefile
+        echo "New makefile created."
+endif
+
+########################################################################
+#  Execution de la comande make
+########################################################################
+
+
+echo PHYSIQUE $phys
+echo dynamique $dyn $dimension
+echo OPTIM90="$optim90" $filtre LIBO=$libo $dyn PHYS=$phys DIM=$dimc PROG=$code
+echo PATH pour les fichiers INCLUDE $include
+echo OPLINK="$oplink"
+
+if $HP then
+   set f77='fort77 +OP'
+   set f90='jensaisrien'
+   set opt_link="$opt_link -lm"
+else  if $VPP then
+   set f77=frt
+   set f90=$f77
+else if $CRAY then
+   set f77=f90
+   set f90=f90
+else if $LINUX then
+# default for gfortran is that "free format" is up to 132 characters,
+# but we sometimes have more, so move that limit to 264 characters
+   set f77="gfortran -ffree-line-length-264"
+   set f90="gfortran -ffree-line-length-264"
+#   set opt_link=" -L$LIBOGCM -L$NCDFLIB -lnetcdff -lnetcdf "
+   set opt_link=" -L$LIBOGCM -L$NCDFLIB -lnetcdf "
+else if $SUN then
+   set f77=f90
+   set f90=f90
+else if $NEC then
+   set f77=f90
+   set f90=f90
+else if $XNEC then
+   set f77=sxmpif90
+   set f90=sxmpif90
+else
+   set f77=f77
+   set f90=f90
+endif
+
+cd $model
+
+if $VPP then
+  set make="gmake RANLIB=ls"
+else if $CRAY then
+  set make="make RANLIB=ls"
+else if $NEC then
+  set make="make RANLIB=ls"
+else if $LINUX then
+  set make="make -k RANLIB=ranlib"
+else if $XNEC then
+  set make="/usr/local/bin/gmake RANLIB=ls"
+  set make="/usr/freeware/bin/gmake RANLIB=ls"
+else
+  set make="make RANLIB=ranlib"
+endif
+
+#
+# etat0_netcdf a besoin d'info de la physique
+# A revoir
+set include="$include"" -I$libf/phy$physique"
+
+
+#################################################################
+# Execution de la comande make... ENFIN!
+#################################################################
+
+if $VPP then
+  set optim90=" $optim90 -Am -M$libo"
+  set optimtru90="$optim90"
+else if $SUN then
+ set optim90=" $optim90 -M$libo"
+ set optimtru90=" $optimtru90 "
+else if $NEC then
+ set optim90=" $optim90 -I$libo "
+else if $XNEC then
+ set optim90=" $optim90 -I$libo "
+ set optimtru90=" $optimtru90 -I$libo "
+else if $LINUX then
+# set optim="$optim -module $libo"
+# set optim90="$optim90 -module $libo"
+# set optimtru90="$optimtru90 -module $libo"
+# Ehouarn: remove set mod_loc_dir def below; mod_loc_dir=$localdir (set above)
+# set mod_loc_dir=$libo
+
+# Ehouarn : adapt to gfortran
+ set optim="$optim -I${libo}"
+ set optim90="$optim90 -I${libo}"
+ set optimtru90="$optimtru90 -ffree-form -I${libo}"
+
+endif
+
+set link="$f90 $optim90"
+
+set ar=ar
+
+if $XNEC then
+  set link="sxld $opt_link"
+  set link="$f90 "
+#  set ar=sxar
+endif
+
+cd $localdir
+
+set source_code=${code}.F
+# handle cases when the main program is in the physics directory
+set dirmain=dyn${dimc}d
+if ( -f $LMDGCM/libf/dyn3d/${code}.F90 ) then
+  set source_code=${code}.F90
+endif
+if ( -f $LMDGCM/libf/phy${physique}/dyn1d/${code}.F ) then
+  set dirmain=phy${physique}/dyn1d
+  set source_code=${code}.F
+endif
+if ( -f $LMDGCM/libf/phy${physique}/dyn1d/${code}.F90 ) then
+  set dirmain=phy${physique}/dyn1d
+  set source_code=${code}.F90
+endif
+if ( -f $LMDGCM/libf/dynphy_lonlat/phy${physique}/${code}.F ) then
+  set dirmain=dynphy_lonlat/phy${physique}
+  set source_code=${code}.F
+endif
+if ( -f $LMDGCM/libf/dynphy_lonlat/phy${physique}/${code}.F90 ) then
+  set dirmain=dynphy_lonlat/phy${physique}
+  set source_code=${code}.F90
+endif
+
+echo $make -f $LMDGCM/makefile \
+OPTION_DEP="$opt_dep" OPTION_LINK="$opt_link" \
+OPTIM="$optim" \
+OPTIM90="$optim90" \
+OPTIMTRU90="$optimtru90" \
+INCLUDE="$include" \
+$filtre \
+LIBO=$libo \
+$phys \
+LIBPHY_COMMON=${LIBPHY_COMMON} \
+LIBDYN_PHYS=${LIBDYN_PHYS} \
+DIM=$dimc \
+DYNTYPE="$dyntype" \
+L_DYN_PHY="$libdyn_phy" \
+L_ADJNT="$adjnt" \
+LOCAL_DIR="$localdir"  \
+F77="$f77" \
+F90="$f90" \
+OPLINK="$oplink" \
+LINK="$link" \
+GCM="$LMDGCM" \
+MOD_LOC_DIR=$mod_loc_dir \
+MOD_SUFFIX=$mod_suffix \
+AR=$ar \
+DIRMAIN=$dirmain \
+SOURCE=$source_code \
+PROG=$code
+
+
+$make -f $LMDGCM/makefile \
+OPTION_DEP="$opt_dep" OPTION_LINK="$opt_link" \
+OPTIM="$optim" \
+OPTIM90="$optim90" \
+OPTIMTRU90="$optimtru90" \
+INCLUDE="$include" \
+$filtre \
+LIBO=$libo \
+$phys \
+LIBPHY_COMMON=${LIBPHY_COMMON} \
+LIBDYN_PHYS=${LIBDYN_PHYS} \
+DIM=$dimc \
+DYNTYPE="$dyntype" \
+L_DYN_PHY="$libdyn_phy" \
+L_ADJNT="$adjnt" \
+LOCAL_DIR="$localdir"  \
+F77="$f77" \
+F90="$f90" \
+OPLINK="$oplink" \
+LINK="$link" \
+GCM="$LMDGCM" \
+MOD_LOC_DIR=$mod_loc_dir \
+MOD_SUFFIX=$mod_suffix \
+AR=$ar \
+DIRMAIN=$dirmain \
+SOURCE=$source_code \
+PROG=$code
+
+\rm -f $libf/grid/dimensions.h
+\rm -f $libf/grid/bands.h
+\rm -f $libf/phy$physique/bands.h
+\rm -f $libf/phy$physique/scatterers.h

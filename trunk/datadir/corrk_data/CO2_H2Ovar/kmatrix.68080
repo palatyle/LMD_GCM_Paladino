@@ -1,0 +1,21 @@
+
+IBM iDataPlex Linux #1.2.6.16.60-0.21-smp LOAD LEVELER 3.5.0.5
+STEP n201.68080.0 STARTED Wed Nov 24 17:31:00 CET 2010
+PROCESSOR LIST n134 
+********************************************************************************
+
+cp: cannot stat `38x36/narrowbands_VI.in': No such file or directory
+At line 145 of file generate_kmatrix.F90
+Fortran runtime error: End of file
+mv: cannot stat `corrk_gcm.dat': No such file or directory
+
+********************************************************************************
+STEP n201.68080.0 TERMINATED Wed Nov 24 20:48:42 CET 2010
+User   CPU time :     3.27 h.
+System CPU time :     0.00 h.
+Total  CPU time :     3.28 h.
+Elapsed time    :     3.29 h.
+CPU utilization :    99.50%
+Major page faults (I/O required) per cpu second : 0.000
+Virtual memory  maximum :    21.211 Mb  average :    21.211 Mb
+Resident size   maximum :    15.273 Mb  average :    15.271 Mb

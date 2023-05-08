@@ -1,0 +1,84 @@
+#! /bin/bash
+
+#---------------------------------------#
+# A script to install the model         #
+#---------------------------------------#
+# Author: Aymeric Spiga - November 2008 #
+#---------------------------------------#
+
+
+touch download_log
+
+mkdir SRC
+cd SRC/
+
+cp -f ../../dl.tar.gz .
+
+mv ../g95.tar.gz .
+mv ../mac.tar.gz .
+mv ../datesave .
+mv ../saved .
+mv ../INIT_SIMPLE_TEST.tar.gz .
+
+###########################
+gunzip dl.tar.gz
+tar xf dl.tar
+cp -rf dl/* .
+rm -rf dl 
+rm -rf dl.tar
+###########################
+
+echo 1/8 get WRF sources
+gunzip  WRFV2.2.TAR.gz  > /dev/null
+tar xf  WRFV2.2.TAR     > /dev/null
+\rm     WRFV2.2.TAR 
+## patch
+mv -f rsl_bcast.c WRFV2/external/RSL_LITE/
+mv -f solve_em.F.fix WRFV2/dyn_em/solve_em.F
+## patch
+
+echo 2/8 get WPS sources
+gunzip  WPSV2.2.TAR.gz  > /dev/null
+tar xf  WPSV2.2.TAR     > /dev/null
+\rm     WPSV2.2.TAR
+
+echo 3/8 get WRF modified Martian sources
+mv ../sources_Mars.tar.gz .
+gunzip  sources_Mars.tar.gz  > /dev/null
+tar xf  sources_Mars.tar     > /dev/null
+cp -rf save/* WRFV2/
+\rm -rf save
+\rm     sources_Mars.tar 
+
+echo 4/8 get WPS modified Martian sources
+mv ../WPS.tar.gz .
+gunzip  WPS.tar.gz  > /dev/null
+tar xf  WPS.tar     > /dev/null
+\rm     WPS.tar
+
+echo 5/8 get ARWpost for Mars
+mv ../ARWpost.tar.gz .
+gunzip  ARWpost.tar.gz  > /dev/null
+tar xf  ARWpost.tar     > /dev/null
+\rm     ARWpost.tar
+
+echo 6/8 get PREP_MARS
+mv ../PREP_MARS.tar.gz .
+gunzip  PREP_MARS.tar.gz  > /dev/null
+tar xf  PREP_MARS.tar     > /dev/null
+\rm     PREP_MARS.tar
+
+cd ..
+
+echo 7/8 get surface data utilities
+gunzip  WPS_GEOG.tar.gz  > /dev/null
+tar xf  WPS_GEOG.tar     > /dev/null
+mv SRC/dust_tes.nc WPS_GEOG/
+\rm     WPS_GEOG.tar
+
+echo 8/8 get run utilies
+gunzip  SIMU.tar.gz      > /dev/null
+tar xf  SIMU.tar         > /dev/null
+\rm     SIMU.tar
+
+echo ok

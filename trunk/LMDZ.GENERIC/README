@@ -1,0 +1,1535 @@
+== 17/09/08 ==
+>>> Build a version with new soil but old radiative transfer,
+    but keeping possibility of switching back to new radiative transfer),
+    which incorporates changes & improvements currently included in the
+    'reference version' GCM (see /u/emlmd/LMDZ.MARS.mixdyn)
+
+>>> start by modifying makegcm as in /u/emlmd/LMDZ.MARS.mixdyn, so that it runs
+    without environment variables and set LIBOGCM to /tmp15/emlmd/libo
+
+>>> directory contents of 'aeronomars', 'grid' and 'filtrez' are simillar
+    to those in /u/emlmd/LMDZ.MARS.mixdyn
+
+>>> in bibio , only file mxva.F needed be upgraded
+
+>>> get phymars and dyn3d contents from /u/emlmd/LMDZ.MARS.mixdyn
+    (and remove all *old files)
+
+>>> check differences between dyn3d and /u/emlmd/LMDZ.MARS.170908/libf/dyn3d
+    and upgrade when necessary:
+    - removed 'netcdf.inc' file (has nothing to do there!)
+    - comgeom.h and comgeom.h : made fortran90 compliant
+    - control.h : made fortran90 compliant
+    - dynredem.F : more read/write controls + comments in english
+    - ini_archive.F : new soil/thermal inertia changes
+    - integrd.F : added additional information to output when crashing
+    - lect_start_archive.F : new soil/thermal inertia changes
+    - newstart.F : new soil/thermal inertia changes + comments in english
+    - start2archive.F : new soil/thermal inertia changes
+    - vanleer.F : removed inapropriate 'external' statement
+    - write_archive.F : enable writting a subterranean field
+
+>>> check differences between phymars and /u/emlmd/LMDZ.MARS.170908/libf/phymars
+    and upgrade when necessary:
+    New soil stuff:
+    - added comsoil.h
+    - iniwrite.F : new soil changes
+    - added iniwritesoil.F90 and writediagsoil.F90 for subterranean fields
+    - added interp_line.F (for subterranean grid interpolation)
+    - adapted phyetat0.F for subterranean temperature & inertia
+    - adapted physdem1.F to include new soil stuff
+    - physiq.F : added calls to writediagsoil 
+    - soil.F : new routine (fixed vertical grid + variable thermal inertia)
+    - added soil_settings.F (to read/initialize/interpolate soil properties)
+    - updated surfdat.h (since thermal inertia is now in comsoil.h)
+    - updated tabfi.F : include new soil properties
+    - updated testphys1d.F
+    - updated dimphys.h (set nsoil=18 as default)
+
+== 18/09/08 ==
+>>> add the possibility of easily switching to Tran radiative transfert
+    - updated aerdust.h.ocke97 (changed some variables name) so it can
+      replace aerdust.h (which is currently the same as aerdust.h.clan91).
+    - imported Tran's 'gfluxv.F' routine
+    - imported Trans' version of 'swr.F' routine, saved it as 'swr.F.toon'
+
+>>> Backup of 'old' Morcrette swr.F is 'swr.F.morc'
+    NB: to switch from one radiative transfer to the other, just copy
+    swr.F.morc or swr.F.toon to swr.F (and eventually 'touch swr.F' so that
+    makegcm recompiles swr.F)
+    No other dependencies (swr.F.toon uses 'gfluxv.F' and swr.F.morc uses
+    'dedd.F').
+
+>>> Changed the latter, so that users can switch from one to the other
+    - modified swr.F.toon to become swr_toon.F (and to include gfluxv.F)
+    - modified swr.F.morc to become swr_fouquart.F (and to include dedd.F)
+    - added a flag in callkeys.h, swrtype (parameter to be set/changed by
+      the user 1=Fouquart and 2=Toon)
+    - update readtesassim so that the coefficient by which opacity
+      is multiplied is set according to the 'swrtype' parameter
+
+== 25/09/08 ==
+>>> Implement the use of tracer-by-name in physics
+    - in phymars/tracer.h set 'noms' length to 20 (instead of 10)
+    - in phymars/callsedim2q.F and phymars/callsedim.F, use tracers by name
+    - in phymars/dustopacity.F, use tracers by name
+    - in phymars/vdifc.F, use tracers by name
+
+== 26/09/08 ==
+>>> Change implementation strategy (for now); don't move surface tracer around
+    i.e.: surface ice remains equivalent to qsurf(nqmx)=qsurf(i_h2o_vap)
+          and likewise for surface tendencies ...
+    - modified vdifc.F and callsedim.F back
+    - modified initracer.F (so that water names are h2o_vap & h2o_ice)
+    
+== 29/09/08 ==
+    - modified aeronomars/init_chimie_B (cosmetics)
+    - corrected aeronomars/moldiff.F internal routine tridag; changed
+      "pause" error messages to 'stop' messages
+    - modified phymars/watercloud.F to use tracers by name
+    - corrected aeronomars/molvis.F (undefined 'fac' and 'Akk' written to 
+       output at first call)
+    
+== 30/09/08 ==
+    - modified aeronomars/calchim.F to use tracers by name
+    - adapted aeronomars/photochemist_B.F to use tracers by name
+    - adapted aeronomars/chemtermos.F to use tracers by name
+    - adapted aeronomars/concentrations.F to use tracers by name
+    - corrected aeronomars/conduction.F (undefined 'Akk' written to output
+      at first call)
+    - adapted aeronomars/euvheat.F to use tracers by name
+    - adapted aeronomars/moldiff.F and moldiffcoeff.F to use tracers by name
+
+== 01/10/08 ==
+    - For more compatibility with LMDZ4; mimic reading a 'traceur.def' file
+      in the dynamics via a call to a routine 'iniadvtrac.F' and saving
+      tracers names in 'advtrac.h'
+     -> created 'iniadvtrac.F', 'advtrac.h' and modified gcm.F
+    - modified 'dynetat0.F' so that tracers are loaded from 'start.nc' by name
+    - modified 'dynredem.F' so that tracers are written to 'restart.nc'
+      by name
+    - modified 'initracer.F' tu use tracers by name
+
+== 02/10/08 ==
+    - removed use of 'nqchem_min' everywhere:
+      adapted 'euvheat.F','inifis.F','physiq.F'
+      (leave 'inichim.F' for later)
+    - updated 'phyetat0' and 'physdem1.F' to read/write surface tracers by name
+    - modify things so that surface water ice index is the same as
+      atmospheric water ice (except when running without water ice; then
+      simply set i_h2o_ice=i_h2o_vap).
+      NB: the easiest is to have global storage of tracer names/indexes in
+      tracer.h
+      => changed initracer.F & tracer.h to have global igcm_something indexes
+
+== 03/10/08 ==
+    - adaptations for surface ice index, modified files:
+      phyetat0.F : if there is a dynamical tracer 'h2o_vap' then load
+                   surface tracer called 'h2o_ice' instead
+      initracer.F : in 'old' tracer name case: move qsurf(nqmx)->qsurf(nqmx-1)
+                    and set i_h2o_ice=i_h2o_vap if iceparty=.false.
+      physdem1.F : if old tracer names: move qsurf(nqmx-1)->qsurf(nqmx)
+                   if iceparty=.false., write surface tracer 'h2o_ice'
+                   (and not 'h2o_vap') to file.
+      adapted vdifc.F, callsedim.F & watercloud.F & physiq.F so that surface
+      ice is now identified as qsurf(i_h2o_ice)
+    - updated aeronomars/perosat.F (cosmetics)
+
+== 06/10/08 ==
+    - modify newstart.F and lect_start_archive.F to use tracers by name
+== 07/10/08 ==
+    - adapted inichim_newstart.F (added qsurf to arguments)
+      and inichim_readcallphys.F
+== 08/10/08 ==
+    - implement reading traceur.def in dyn3d/iniadvtrac.F
+
+== 16/10/08==
+    -small change in inifis.F (only warn if too many tracers, compared
+     to the expected number, not stop).
+     - corrected bug in initracer.F
+== 21/10/08 ==
+    - modified newstart.F to load B.Diez subsurface ice maps.
+    - corrected small bug (uninitialized variable) in interp_horiz.F
+== 22/10/08 ==
+    - updated iniwritediagsoil.F so that thermal inertia is written to
+      diagsoil.nc
+== 31/10/08 ==
+    - changed xvik.F program so it works even if we don't have atmospheric
+     temperature at hand (then it uses a 10km reference scale height) and so
+     that it does surface pressure interpolation log-wise.
+== 03/11/08 ==
+    - modified physiq to compute (and output) co2 column.
+    - added improvement by Francois in newcondens.F about computing CO2
+      partial pressure. This behavior is turned on by setting internal logical
+      flag 'improved_ztcond' to '.true.' (and running with a co2 tracer)
+    - updated 'start2archive' to work with 'new' gcm output (soil, tracers ...)
+== 04/11/08 ==
+    - upgraded xvik program to look for temperature in 7th layer variable if
+     there is no global atmospheric temperature field at hand.
+== 05/11/08 ==
+    - more modifs to newcondens.F: added another internal flag 'bound_qco2' to
+     enforce (if set to .true.) that co2 mass mixing ratio remains bounded.
+== 07/11/08 ==
+    - corrected 'writediagfi' & 'writediagsoil' so that an error message is 
+      issued if called with a variable name which is too long.
+== 18/12/08 ==
+    - corrected bug in dyn3d 'addfi.F', (dimensions of local array p())
+== 23/02/09 ==
+    - modified "aeronomars/param_read.F" to do strictly fortran data
+     initialization (otherwise xlf compiler complains)
+    - changed a few '1.e-30' to '1.d-30' in aeronomars/photochemist_B.F
+     so that max functions has 2 doubles as arguments (otherwise xlf
+     compiler complains)
+
+==07/04/09 ==
+    -cosmetic changes/minor improvements in the handling of tracers in:
+     aeronomars/photochemist_B.F
+     aeronomars/perosat.F
+     aeronomoars/euvheat.F
+     aeronomars/moldiffcoeff.F
+     aeronomars/moldiff.F
+     aeronomars/cocentrations.F
+     aeronomars/chemtermos.F
+     aeronomars/calchim.F
+
+--> NB: still there are differences in outputs when order of tracers is changed
+
+== 09/04/09 ==
+>>> fixed problem in 'vdifc.F' which lead to different results when moving
+    tracers around.
+
+== 10/04/09 ==
+>>> corrected small bug in diagnostic outputs of 'watercloud.F' (tendencies were
+    not added to tracer values).
+
+== 21/04/09 ==
+>>> corrected small bug in "physdem1.F" about writing water ice surface tracer
+    to file
+
+== 07/05/09 ==
+>>> very minor correction (firstcall not set to true after first call
+    if no tracers) in convadj.F
+
+== 30/06/09 ==
+>>> Implement reading *def files with IOIPSL ersatz 'getin' function
+   - import "ioipsl_errioipsl.F90","ioipsl_getincom.F90","ioipsl_stringop.F90"
+     in bibio
+   - adapted 'dyn3d/defrun_new.F' to use "getin" function
+   - adapted 'phymars/inifis.F' to use "getin" function
+
+== 01/07/09 ==
+>>> Adapted 'create_make_gcm' so that the "use" in *.F files is identified and
+    corresponding dependencies included in the makefile rules.
+
+>>> Added the 3D scattering from aerosols by JB Madeleine:
+    - minor changes in aerave.F
+    - added the calls to aeropacity.F, and aeroptproperties.F in callradite.F
+    - changed the calls to lwu.F and swr.F in lwmain.F and swmain.F, respectively
+    - added 3D scattering properties in lwu.F and swr.F
+    - added the new aeroptproperties.F, aeropacity.F and suaer.F90 routines
+        (removed dustopacity.F)
+    - updated aeropacity.F with new tracer names
+    - changed the call to callradite.F in physiq.F, added the initialization 
+        of reffrad and nueffrad (aerosol effective radius and variance)
+    - removed all the lines relative to the old "activice" option, including
+        temperature variation due to latent heat release (now in comments)
+    - renamed nsize into naersize in watercloud.F, watersat.F and newsedim.F,
+        to avoid conflicts with another "nsize" variable in the radiative transfer
+    - added the statement of nuice in watercloud.F, which is the effective variance
+        of the log-normal distribution for ice
+    - updated yomaer.h and removed aerice.h (and corresponding "includes")
+
+== 02/07/09 ==
+>>> Adapted 'aeronomars/inichim_readcallphys.F' (called by newstart)
+     to use "getin" routine.
+    + minor correction in 'inifis.F' (close 'iradia.def' file)
+>>> Minor correction in 'dyn3d/dynetat0.F' and 'phymars/phyetat0.F'; do not
+    attempt to reindex tracers if none were found.
+
+>>> in 'deftank' added examples of 'traceur.def' files (traceur.def.co2 : 1
+    co2 tracer; traceur.def.watercycle : 2 traceurs, water vapour and water ice
+    tracer.def.chemistry : all 15 species)
+
+== 06/07/09 ==
+>>> Modified 'makegcm' and makegcm_g95' so that modules files are put 
+    with libraries (and not in current directory)
+
+==
+== WORK FOR GENERIC MODEL STARTS HERE
+== 
+    
+== 01/08/09 ==
+>>> Old Martian radiative transfer removed completely, new correlated-k
+    scheme implemented in its place. Central function is callcorrk.F.
+    Radiative properties are no longer stored in dimradmars.h, but in the two
+    files radinc_h.F90 and radcommon_h.F90. 3D aerosol scheme
+    incorporated into callcorrk.F. dustopacity.F renamed aeropacity.F
+    and substantially simplified. For now the option to include dust
+    as an aerosol has been removed.
+
+>>> newcondense.F replaced by condense_co2cloud.F90. This is basically
+    Francois' routine from the old model, adapted to work with the new
+    generalised tracer scheme.
+
+>>> Options added in physiq.F and tabfi.F to allow for planets with
+    varying orbital parameters, radii, gravity etc. For the moment we
+    select the planet using the variable 'planettype' in
+    callphys.def. This could probably be improved in the future.
+
+>>> Many new options added to callphys.def.
+
+    
+    
+    
+    
+== 25/11/2009 ==
+>>>> List of changes and modifications
+- modified watercloud.F: added sanity check (i.e. do we have a water tracer?)
+- modified dyn3d/dynetat0.F --> removed possibility of reindexing tracers
+- modified phyetat0.F --> removed possibility of reindexing tracers
+
+-- removed using a "co2ice" array to store surface CO2 ice
+  -> adapted surfini.F & physiq.F to use qsurf(:,igcm_co2_ice)
+     instead of co2ice(:)
+  -> modified initracer.F & tracer.h to properly initialize (and store)
+     a "co2_ice" tracer.
+  -> removed 'co2ice' from vdifc.F (it was not used there anyway)
+     and from phsdem1.F
+  -> removed possibility of calling 'newcondens' from physiq.F
+  -> cleaned up newstart.F, lect_start_archive.F, start2archive.F to not use
+  "co2ice" field but qsurf(igcm_co2_ice)
+
+-- adapted 'create_make_gcm' and 'makegcm' scripts so that we don't need
+   to have and (unused) 'aeronomars' directory around.
+ 
+-- shifted to reading traceur.def (dyn3d/iniadvtrac.F) in an Earth-LMDZ4-like
+   fashion:
+   first line == number of tracers
+   and then tracer name (1 per line; later we'll also add advection scheme type)
+-- NOTE BY RW: Here would be a good place to also note which tracer (if any) is
+   the 'variable gas' in the radiative transfer
+
+-- Made some changes in tabfi.F to let user change planet parameters
+   such as rotation rate, molar mass of atmosphere, ...
+   (NB: note however that we seem to lose dynamics/physics coherence ...
+    we should probably read these values from a planet.def file) 
+
+-- Changed condens_co2cloud.F : added a check for presence of CO2 gas and output
+   of corresponding tendency.
+
+
+== 15/12/2009 ==
+>>> Correlated-k radiative transfer now reads spectral bands and p-T
+    matrix values from ascii files; the code checks that the number of
+    bands and matrix elements in the files match those written in
+    radinc.F90 on the first call.
+
+>>> Water vapour tracer coupled to variable gas species in radiative
+    transfer; option also given to run with fixed relative humidity
+    profiles. 'Variable gas species' option added to callphys.def.
+
+>>> Surface albedo updated to be one band everywhere.
+
+>>> suaer_corrk.F90 modified to use different ep, omeg, g variables in
+    the visible and infrared. This is necessary because the number of
+    bands is, in general, different.
+
+>>> suaer_corrk.F90 has an option to accept Francois' new CO2 ice
+    values (and convert wvl to metres!!).
+
+>>> optci.F --> optci.F90 so that water vapour continuum subroutine
+    can be included.
+
+== 08/01/10 ==
+>>> Option to change pref for hybrid coordinates added to newstart.F.
+
+
+== 15/01/2010 ==
+>>> Upgraded newstart.F: added possibility to reset refrence surface pressure
+   "preff" (and pa)
+>>> tabfi.F: added possibility of changing value of "year_day"
+>>> cosmetic change in callphys.def : separate "universal" parameters
+    and planet-specific parameters (in a separate file, e.g. earlymars.def)
+    
+== 22/01/2010 ==
+==> call this version LMDZ.GENERIC
+>>> Some cleanup & upgrades:
+-- split parameters in callphys.def into generic stuff (stays in callphys.def)
+   and another more specific file (e.g. earlymars.def).
+-- added 'output_olr' key (in callkeys.h; read in physiq.F) to trigger
+   output of fluxes in ascii file 'olr.txt'
+-- removed (non-generic) 'kastprof' and 'nearcond' keys/options in physiq.F
+  (also removed file kastprof_fn.F)
+-- had to set 'fixh2ovap  =.false. in callcorrk.F to avoid
+   "out of range subscript" pb in callcorrk.F
+   ==> this should be improved / better controlled in the future
+-- updated newsedim.F to use "molrad, visc, avogado values from comcstfi.h
+   (and not local versions of these constants)
+-- fixed buggy -O option in makegcm (and makegcm_g95);
+
+== 22/02/2010 ==
+==> call this version LMDZ.GENERIC.v0.31
+-- rain.F, manabe.F and largescale.F subroutines added to water cycle
+-- several new toggles added to earlymars.def
+
+== 28/03/2010 ==
+==> call this version LMDZ.GENERIC.v0.4
+-- many changes for this version!
+-- radiative transfer --
+   A new system was implemented that automatically reads the p, T, g,
+   Q and band values from files. The dataset required is now specified
+   in callphys.def. We still need to edit radinc_h when the corrk array
+   sizes change - think about improving this in the future.
+-- water cycle --
+   A watercommon_h mod file was created, several files were renamed
+   and moist convection and precipitation subroutines were added.
+   Still needs some testing!
+-- OLR --
+   Two new functions were added: one to produce .nc files of the OLR
+   by band, and the other to save the upgoing radiation by band in 1D
+   as a .txt file. 
+-- general structure --
+   tabfi.F, newstart.F etc. cleaned up + it was checked that they pass
+   variables correctly. Several new options added to run.def for 1D,
+   in order to allow truly arbitrary planet simulations. The
+   'planettype' option has been removed as it screwed things up completely.
+-- energy conservation --
+   I found that the planckir function in the radiative transfer did not
+   always produce values that summed to sigma T^4. A new test was implemented
+   to check for this problem and the standard band widths in the IR
+   were increased.
+
+== 31/03/2010 ==
+==> call this version LMDZ.GENERIC.v0.5
+-- OLR --
+   The .nc functions were implemented and tested. It was necessary to add
+   new functions 'writediagspec.F' and 'iniwrite_spec.F'.
+-- CO2 condensation --
+   In 1D we now exit automatically if CO2 is condensing on the
+   surface.
+-- G1D --
+   We can now choose at the beginning of physiq.F, using saveG1D, how
+   many times we want to save per day in 1D (rather than every single
+   time that physiq is called).
+-- water cycle --
+   I corrected a nasty bug in callcorrk involving varfixed, real*8 and
+   epsi. I corrected a simple bug in the writing of qsurf in g1d.dat.
+   rain.F has been tested and the algorithm for precipitation evaporation
+   modified to that written in the manual of Larent Li. Cloud fraction
+   variable is now included. activice and iceparty are gone, ~replaced
+   by watercond and waterrain.
+-- orbit --
+   nres and tlocked were added as basic options to callphys.def
+-- radiative transfer --
+   I added error checking for out-of-bounds temperature in
+   callcorrk.F. I added a new file calc_rayleigh.F90 to calculate
+   Rayleigh scattering using a weighted mean, as opposed to simply the
+   midpoint band values. Band discretisation is now even more
+   automated than before: the coefficients are stored in directories
+   like /earth/32x36/, and we can compile the GCM like this:
+   makegcm -d 32x24x20 -b 32x36 -p std gcm.
+   A bug was fixed involving emissivity not being properly passed from
+   newstart.e to the main part of the code.
+   Stellar spectra are now calculated automatically for any range of
+   bands from high resolution data (originally from the VPL website).
+-- vertical discretisation --
+   I corrected a bug in testphys1d that used a fixed value of
+   temperature to compute the altitude levels in the model. Now we use
+   the scale height from z2sig.def instead. Values of preff and pa are
+   no longer defined in testphys1d (they're not needed).
+-- Non-ideal gases --
+   I have replaced cpp in many places with cpp_3D in physiq. This is a
+   major change, but there are enough cases where it will be useful to
+   make it worthwhile in the universal code. I have done the same with rcp.
+
+== 10/10/2010 ==
+==> call this version LMDZ.GENERIC.v0.6
+-- startup --
+   We now check water tracers exist in newstart.F before all watery initialisation options.
+   Added an option 'autozlevs' to run.def (and logic.h). When true this recalculates the scale
+   height in z2sig.def in order to get the same minimum pressure for any resolution.
+   Currently, this is only useful for one-d simulations.
+   Pressure is now distributed better in newstart.F. There was a bug before when the global mean of phi
+   was not equal to zero and the surface pressure was changed with topography still present.
+   In initracer, we no longer automatically set h2o_vap=h2o_ice.   
+
+-- general --
+   periheli, apheli --> periastr, apoastr. Note this necessitates a change in start_planet too.
+   testphys1d.F --> rcm1d.F
+   physiq.F, callcorrk.F upgraded to Fortran 90 to remove evil zerophys.
+   I cleaned up the method of displaying energy balance and temperature range in the model a bit.
+   Pure H2 atmospheres are now permitted, although the code is _untested_. Rayleigh scattering,
+   specific heat capacities and molar masses are varied, and the H2-H2 collision-induced data 
+   of Grushka et al. is used for the radiative transfer.
+
+-- boundary layer --
+   An improved version of vdifc.F has been created that includes the latent heat effect of water vapor,
+   following the method used in 'clmain' in the LMDZ terrestrial model.
+
+-- water cycle --
+   Benjamin's improvements have been added, namely the hydrology, and reevaporation.
+   Variable cloud fractions are allowed, or a global fixed value may be chosen
+   for use in aeropacity. Surface wetness (beta) is now calculated in a simple way, and
+   outputed as a diagnostic, along with the atmospheric relative humidity.
+  
+   mol/mol to kg/kg bug in callcorrk corrected.
+
+-- radiative transfer --
+   A major bug in gfluxv.F was corrected. It involved BSURF, the radiation reflected upwards from 
+   the ground.
+   In aeropacity, we now set the cloud opacity in the top layer of the atmosphere to zero. This solves
+   an instability problem that was occurring when CO2 clouds formed.
+   Dust is back! Only fixed profiles allowed for now. It is assigned "naerkind=3" in aeropacity.F90.
+   If 'CLFvarying' is enabled, the corrk subroutine is now called twice per timestep - once for clear
+   skies and once for cloudy. This slows things down but is effective for Earth-like simulations.
+   An optional Newtonian cooling scheme has been implemented that can replace the correlated-k method
+   for dynamical tests etc. It is pretty experimental and has not been extensively tested.
+
+-- Dynamics --
+   callgroupeun in gcm.F has been set to FALSE, as it does not conserve tracers.
+   The coefficient facup has been set to 1 in inidissip.F. We may need to mess
+   with this later if it makes the model too unstable.
+
+== 1/08/2011 ==
+==> call this version LMDZ.GENERIC.v0.7
+
+   Main change: a new file 'gases.def' now required at startup. This tells us which gases are in
+   the planet's atmosphere. It is used to calculate fundamental quantities like cpp and mugaz.
+   A check is made against the radiative transfer data to make sure they correspond.
+
+   Code has been tested successfully using the 'gfortran compiler'.
+
+-- startup --
+   a bug involving tsoil interpolation in lect_start_archive.F was corrected.   
+
+-- aerosols --
+   gauss integration number 5-->10 in aeroptproperties.F90
+
+-- water cycle --
+   Big fat bug in rain.F90 corrected. The routine internally updated the temperature 
+   with new tendencies before it was supposed to happen!
+   Bug in oborealis where phi not properly updated was corrected.
+   Improvements to hydrol.F90: zdtsurf_hyd --> pdtsurf_hyd
+   A 'sourceevol' option was added (accessed in callphys.def) that allows us to track the
+   evolution of the surface distribution over time.
+   Another bug in rain corrected involving evaporation - it was heating the atmosphere
+   rather than cooling it...
+
+-- convection --
+   I found a bug in convadj.F that breaks tracer conservation when convection stops at one layer 
+   and immediately restarts in the next one.
+
+-- diagnostics --
+   Some bugs corrected in the computation of 3D averages for the H2O / energy conservation 
+   diagnostics.
+
+-- radiative transfer --
+   A bug involving continuum opacities (variable DCONT) was corrected in optci.F90 and optcv.F0.
+   H2-H2 warming now in theory reliable and correct (60-1000 K).
+   A bug involving the definition of the Planck function boundaries was corrected in sfluxi.F90
+   and gfluxi.F.
+
+== 21/10/2011 == EM
+- added FF's upgrade of writediagfi. Now, if at runtime there is a diagfi.def
+  file, it should contain the list of variables (1 per line) than will be put
+  in the diagfi.nc file. If there is no diagfi.def file, then all variables
+  are put in the diagfi.nc file (as was the case before).
+
+=== 10/11/2011 == EM
+- Updated the makegcm(s) so that default behaviour is to set LMDGCM env variable
+  to be the directory in which the makegcm script is. Updated the makegcm_*
+  to use "SOURCE" to identify code and be compatible with latest
+  'create_make_gcm'.
+ 
+== 10/11/2011 == EM
+- Upgrade: The location of the 'datagcm' directory can now be given in the
+  callphys.def file ( datadir = /absolute/path/to/datagcm ). Changed
+  "datafile.h" into a F90 module "datafile_mod.F90" and spread this change
+  to all routines that used to use "datafile.h".
+
+== 10/11/2011 == EM
+- Upgrade of the 'create_make_gcm' script: objects are removed from the
+  libraries before compilation, which enforces that the gcm will fail to
+  compile if any routine failed to compile.
+
+== 12/12/2011 == AS
+- Use of allocatable arrays to set corrk stuff through reading *.dat files, without the need to change radinc_h manually.
+- Allocation is done in sugas_corrk which is within firstcall loop in callcorrk.
+- Note that N_LGAUSS is still a parameter. It is not supposed to change much.
+- Compiles fine. Tested with debugging options through pgdbg. Runs fine. Exact same results in Early Mars test case. 
+
+Modified files:
+M              469   libf/phystd/physiq.F90
+M              469   libf/phystd/sugas_corrk.F90
+M              469   libf/phystd/callcorrk.F90
+M              469   libf/phystd/radinc_h.F90
+M              469   libf/phystd/radcommon_h.F90
+
+== 13/12/2011 == AS
+- Same spirit as previous commit, but for ngasmx which is now read in gases.def -- before arrays w/ dim ngasmx are allocated dynamically
+- Allocation is done in su_gases.F90 which is called in inifis
+- Outside su_gases.F90, very few modifications to the code : the new module "gases_h.F90" simply replaces the old common "gases.h" !
+- Compiles fine. Tested with debugging options through pgdbg. Runs fine. Exact same results in Early Mars test case.
+
+== 20/12/2011 == JL + AS
+- Allocatable gastype in sugas_corrk instead of hardcoded (it was a problem for more than 4 gases!)
+
+== 13/02/2012 == JL + AS
+- All outputs are now in netCDF format. Even in 1D (No more G1D)
+- Clean up of the call to callcorrk when CLFvarying=true
+- Corrects a bug in writediagspecIR/VI. Output are now in W/m2/cm-1 as a function of the wavenumber in cm-1
+- Enable writediagspecIR/V to work in the CLFvarying=true case (output now done in Physiq after writediagfi)
+- Add a simple treatment for the supersaturation of CO2 (see forget et al 2012)
+- corrects a small bug when no clouds are present in aeropacity
+
+== 16/02/2012 == JL + EM
+- Mesh area now present in 1d diag files.
+- Spectral Bandwidth included in the diagspec files
+- Correction of a initialzation bug on day_step and ecritphy in rcm1d
+
+== 17/02/2012 == RW
+- qsurf bug in variable species rad. tran. removed
+- line to update kappa in newstart.F added - necessary to synchronise dynamics and physics
+- three obsolete files removed from dyn3d/ directory
+- calc_cpp_mugaz --> check_cpp_mugaz, with override option in callphys.def
+- kcm1d no longer consistent with new code, but I haven't updated as I'm still working on it
+  and as far as I know noone else uses it. If that changes let me know.
+
+== 27/02/2012 == AS
+- Temperature grid for Planck calculations can now be refined through the parameter NTfac in radinc_h. 
+  Default is NTfac = 1.0D-1, i.e. Delta T = 0.1 K
+
+== 16/03/2012 == JL
+- Removed cpp3D and nonideal stuff.
+
+== 19/03/2012 == EM
+Some cleanup and bug fixing:
+- "cloudfrac" was not well written to restartfi (wrong size).
+- missing save attribute for "reffrad" in physiq.F90.
+- cleanup recomputation of surface pressure in newstart and change loop order
+  in interp_horiz (which "fixes" an odd behaviour which fills some arrays with
+  zeros, but only when using some versions of ifort!)
+
+== 19/03/2012 == AS
+- Cleaned rcm1d.F and made it truly generic by asking for planetary constants without any default values.
+- Settings are now needed in a rcm1d.def file. Unbeknown to the user, we create a minimal run.def file, read parameters, then remove this dummy run.def.
+- Introduced a keyword force_cpp if the user wants to give values for cpp and mugaz in def files.
+
+== 19/03/2012 == AS+FF
+- Introduced global1d in callcorrk so that global (using sza) or local (using latitude) 1D simulations can be carried out.
+- Converted all astronomical distances in AU instead of Mkm.
+- This might cause problems with old start files. So added a test in iniorbit. A quite dirty test, but that'll do the job.
+
+== 22/03/2012 == JL
+- New turbulent diffusion scheme solving "most" energy conservation problems:
+     - Turbulent energy created by buoyancy effects is now dissipated back into enthalpy
+     - the scheme is now written in an enthalpy conservative way
+- Turbulent diffusion now treated in routine turbdiff (in F90).
+- Temporarily, for comparison, the old vdifc can be used
+      by setting UseTurbDiff=.false. in physiq.F90
+- The sensible heat flux is now an output
+- Corrected evaporation at the surface when all the surface water is evaporated (JL+BC).
+- Added new energy conservation diagnostic variables and output
+
+== 26/03/2012 == JL
+- Added double gray case (if graybody=true in callphys.def):
+   - opacities are set to a constant value in sugas_corrk.
+   - the values are kappa_IR m^2/kg in the infrared (to be read in callphys.def)
+                    kappa_VI m^2/kg in the visible (to be read in callphys.def)
+- Cleaned continuum part in optc*
+- Added .def files for a typical 1d earth case in deftank (dry case for the moment)
+- Corrects a bug on potential temperature calculation in physic 
+
+== 27/03/2012 == JL
+- Corrects the computation of planck function at the surface in sfluxi
+     so that its integral is equal to sigma Tsurf^4.
+- This ensure that no flux is lost due to:
+     -truncation of the planck function at high/low wavenumber
+     -numerical error during first spectral computation of the planck function
+     -discrepancy between Tsurf and NTS/NTfac in sfluxi
+- OLR now equal to LW net heating/cooling at equilibrium!
+- As much as possible, only the value of the stephan boltzmann constant defined in racommon_h (and the
+corresponding variable, sigma) should be used. Now done in physics, vdifc and turbdiff.
+  
+== 16/04/2012 == JL
+- Added consistency checks for calculations including water and global1d+diurnal.
+- Corrected small bugs in precipitation scheme
+
+== 04/05/2012 == JL
+- Correction a huge bug in newstart: rcp and cpp can now be changed in start.nc files and are the same as in startfi.nc; 
+       Even when starting from start and startfi files.
+   - rcp, cpp and mugaz can now be computed using gases.def in newstart
+- Correction of a bug arising in gcm.F when the solar days are long (thanks Melanie V.)
+- Corrected the temperature used to differentiate sublimation and evaporation in watersat_grad
+- Minor name changes in watercommon
+- Better physical parametrization of the effective radius of liquid and icy water cloud particles in callcorrk
+       (for radfixed=true)
+- Added consistency check in inifis
+- Moved 1d water initialization from physiqu to rcm1d
+- All enertests in physiq written in a matricial (F90) way. The rest of physiqu should follow soon
+
+== 25/05/2012 == EM
+- Significant update on how the number of scatterers is managed:
+  Instead of having to manualy change 'nearkind' in radinc_h.F90, the
+  number of scatterers must now be set when compiling, using makegcm
+  "makegcm -s 1" for one scatterer or "makegcm -s 2" for two (e.g. dust
+  and water ice), default behaviour (ie not specifying -s #) is -s 1
+  Modified phystd/radinc_h.F90 , added directory phystd/scatterers
+  with script make_scatterers , and adapted makegcm* scripts.
+
+== 06/06/2012 == EM
+- Corrected the polar mesh surface area which was wrong in the physics (changes
+  in phyetat0.F, calfis.F and newstart.F)
+- Some cleanup in newstart.F (removed some obsolete "Mars" options: mons_ice,..)
+  and also added option "q=profile" to initialize a tracer with a profile
+  read from file "profile_tracername"
+
+== 29/06/2012 == EM
+- Some cleanup in start2archive.F and ini_archive.F to get them to work for
+  the generic model (removed some "Martian" specificities).
+  
+== 17/07/2012 == JL for LK
+- Generalization of aerosol scheme:
+    - any number of aerosols can be used and id numbers are determined consistently by the code. Aerosol order
+    not important anymore.
+    - addition of a module with the id numbers for aerosols (aerosol_mod.F90).
+    - initialization of aerosols id numbers in iniaerosol.F90 
+    - compile with -s x where x *must* be equal to the number of aerosols turned on in callphys.def (either by a
+    flag or by dusttau>0 for dust).
+      => may have to erase object files when compiling with s option for the first time.
+- For no aerosols, run with aeroco2=.true. and aerofixco2=.true (the default distribution for fixed co2
+aerosols is 1.e-9; can be changed in aeropacity).
+- If starting from an old start file, recreate start file with the q=0 option in newstart.e.
+- update callphys.def with aeroXXX and aerofixXXX options (only XXX=co2,h2o supported for
+now). Dust is activated by setting dusttau>0. See the early mars case in deftank. 
+- To add other aerosols, see Laura Kerber.
+
+== 18/07/2012 == JL
+- New water cycle scheme:
+   - largescale now in F90. Robustness increased by i) including evap inside largescale ii) computing the 
+        condensed water amount iteratively
+   - same improvements in moistadj.
+   - Water thermodynamical data and saturation curves centralized in module watercommn_h
+       - The saturation curves used are now Tetens formula as they are analyticaly inversible (Ts(P)-> Ps(T)).
+          New saturation curve yields very good agreement with the former one.
+       - Saturation curves are now generalized for arbitrary water amount (not just q<<1)
+       - The old watersat should be removed soon.
+   - The effect of water vapor on total (surface) pressure can be taken into account by setting 
+      mass_redistrib=.true. in callphys.def (routine mass_redistribution inspired from co2_condense in martian
+      model but with a different scheme as many routines evaporate/condense water vapor).
+- New cloud and precipitation scheme (JL + BC):
+   - The default recovery assumption for computing the total cloud fraction has been changed (total random gave too
+      large cloud fractions). See totalcloudfrac.F90 for details and to change this.
+   - Totalcloudfraction now set the total cloud fraction to the fraction of the
+      optically thickest cloud and totalcloudfrac is thus called in aeropacity.
+   - Only the total cloud fraction is used to compute optical depth in aeropacity (no more effective 
+      optical depth with exponential formula).
+   - 4 precipitation schemes are now available (see rain.F90 for details). The choice can be made using precip_scheme
+      in callphys.def. Usage of the more physically based model of Boucher et al 95 (precip_scheme=4) is recommended.
+      default behavior is set to the former "simple scheme" (precip_scheme=1).
+   - See rain.f90 to determine the parameter to be defined in callphys.def as a function of the precipitation scheme used.
+- Physiq.F90 now written in a matricial (more F90) way.
+- Radii (H2O and CO2 cloud particles, aerosols, duts, ...) calculations now centralized in module radii_mod.F90 
+   and work with the new aerosol scheme implemented by Laura K. Some inconsistency may remain in callsedim.
+- Corrected gray gas mode. The use of kappa_VI or kappa_IR far a given band is now based on its wavenumber independently of
+   SW and LW calculations 
+   
+Implementation compiled with ifort and pgf90.
+gcm.e runs in Earth and Early Mars case with CO2 and H2O cycle + dust. 
+
+== 19/07/2012 == JL
+- Corrected precipitation evaporation scheme + snow fall (JL+BC)
+- Commented some unecessary writediagfi calls that where used for test.
+
+== 24/07/2012 == JL
+- Correction of a bug in turbulent diffusion (turbdiff.F90)
+   => This solves a water conservation problem arising when the code tries to
+   evaporate over dry land.
+
+== 26/07/2012 == AS
+- Bug fix in physiq : the size of OLR_nu is L_NSPECTI and not L_NSPECTV
+- A more robust aerosol_mod + iniaerosol : problems with ifort+parallel solved, while still OK with other compilers and seq runs.
+
+== 05/09/2012 == JL
+- Correction of the calculation of the solar longitude in tlocked case.
+    -Can now handle any prograde resonance with nres=omega_rot/omega_orb.
+    -Sun now goes westward for the standard 2:1 case, as expected.
+- In the gray case, the separation between kappa_IR and VI is now set by 
+    wave number, independently of the usual IR/VISIBLE calculation separation.
+    i.e. kappa_IR can be used in the calculation of the downward stellar flux
+      if the wavenumber in the band is low enough and vice versa.
+- In ave_stelspec, stellar flux averaging has been generalized to incorporate
+    very red/blue stellar spectra (great care must however be taken of the band
+    limit used for the corralated k distributions).
+     -Brown dwarf spectra from Allard et al. have been added.
+     -Any Black body temperature can now be used.
+
+== 19/09/2012 == JL
+- Correction in largescale to improve robustness when large water vapor amount
+- Correction in soil_setting to allow change of the number of subsurface layers
+
+== 19/09/2012 == AS
+
+(Sorry for long text but this is a quite major commit)
+
+Paving the path for parallel computations. And moving towards a more flexible code.
+
+Automatic allocation is used within all routines in phystd. No further mention to ngridmx and nqmx.
+
+1. ngridmx and nqmx are still used in LMDZ.GENERIC in the dyn3d part
+2. if the LMDZ4/LMDZ5 dynamical core is used, there is no more fixed dimensions ngridmx and nqmx
+   --> a fully flexible parallel implementation is now possible (e.g. no need to recompile when changing numbers of processors)
+
+The important stuff :
+- Compilation checked with ifort. OK with and without debug mode. No errors.
+  Checked for: gcm, newstart, rcm1d, kcm1d
+- RUN GCM: Running an Earth test case. Comparison with previous revision
+  --> debug mode : perfect match. bit by bit (diff command). checked with plots
+  --> O1 mode : close match (checked with plots)
+  --> O2 mode : sometimes up to 0.5 K departure.... 
+  BUT in this new version O2 and O1 are quite close while in previous version O1 and O2 differed by about, well, typically 0.5 K
+  (pictures available on request)
+- RUN NEWSTART : perfect match (bit-by-bit) in either debug or normal mode.
+- RUN RCM1D : perfect match in normal mode.
+- RUN KCM1D : not tested (I don't know what is the use of kcm1d)
+
+List of main changes :
+- Additional arguments to some subroutines (ngrid and nq)
+- F77 include strategy is obsolete and replaced by F90 module strategy
+  In this new strategy arrays are allocatable and allocated once at first use
+  This has to be done for all common featuring arrays defined with ngridmx or nqmx
+    surfdat.h >> surfdat_h.F90
+    tracer.h >> tracer_h.F90
+    comsaison.h >> comsaison_h.F90
+    comgeomfi.h >> comgeomfi_h.F90   
+    comsoil.h >> comsoil_h.F90
+    comdiurn.h >> comdiurn_h.F90
+    fisice.h >> DELETED. was not used. probably a fossil.
+    watercap.h >> DELETED. variable put in surfdat_h.F90
+- F77 'save' strategy is obsolete and replaced by F90 'allocatable save' strategy
+  (see previous point and e.g. new version of physiq.F90)
+- Suppressing any mention to advtrac.h which is a common in the dynamics and needs nqmx
+  This was easily solved by adding an argument with tracer names, coming from the dynamics
+  This is probably not a definitive solution, 
+  ... but this allows for generic physics to work easily with either LMDZ.GENERIC or LMDZ dynamical cores
+- Removing consistency tests between nq and nqmx ; and ngrid and ngridmx. No use now!
+- Adaptation of rcm1d, kcm1d, newstart given above-mentioned changes
+
+A note on phyetat0 and soil_setting:
+- Now written so that a slice of horizontal size 'ngrid' starting at grid point 'cursor' is read in startfi.nc
+  'cursor' is defined in dimphys.h and initialized by inifis (or in newstart)
+  this is useful for parallel computations. 
+  default behavior is the usual one : sequential runs, cursor is 1, size ngrid is the whole global domain
+
+A note on an additional change : 
+- nueffrad is now an argument to callcorrk as is the case for reffrad
+  both are saved in physiq
+  this is for consistency and lisibility (previously nueffrad was saved in callcorrk)
+  ... but there is a call to a function which modifies nueffrad in physiq
+  ... previously this was not modifying nueffrad (although it was quite cumbersome to detect this) 
+  ... to be conservative I kept this behaviour and highlighted it with an array nueffrad_dummy
+  ... I added a comment because someone might want to change this
+
+== 20/09/2012 == AS
+A more robust way to count lines in setspi and setspv. 
+bandlen.txt file is no longer used. This was causing problems with MPI computations.
+
+== 06/11/2012 == EM
+- Fixed bug in disvert: pseudo-altitude pseudoalt() should be computed using
+  the scale height H provided in "z2sig.def" (and not 10.0).
+
+== 10/11/2012 and 23/11/2012 == AS
+- Corrected problems with allocated arrays in start2archive and newstart since the 19/09/2012 major commit
+- Modified those programs (and iniadvtrac) so that they can be used when compiling with -t 0
+
+== 20/12/2012 == EM
+- Fixed sedimentation issue: ensure in callsedim that the correct radii are 
+  provided to newsedim and also that the updated temperature and tracer
+  mixing ratios are used to compute sedimentation.
+- Updated the way aerosol radii are considered and used; routines in radii_mod
+  (h2o_reffrad, co2_reffrad, etc.) only handle a single aerosol. The idea here
+  is that these can be called from anywhere and that the caller doesn't need to
+  have the full (naerkind size) array of aerosol radii.
+- cleanup (addition of intent(..) to routine arguments) in various routines
+
+== 10/01/2013 == AS
+- Fixed an allocating bug which arises from previous modifications 
+  owing to the double use of callcorrk with CLF_varying
+- Fixed a small bug in a diagnostic in the end of calc_rayleigh. Some picky compilers complain.
+- Fixed a small bug with the array noms which is not allocated when tracer is false. But still need in physdem1.
+
+== 10/01/2013 == AS
+Added calls to FH subroutines to output physical fields in parallel. This is under precompiling flags CPP_PARA.
+This allows for LMDZ.UNIVERSAL users to use writediagfi with parallel computations.
+These lines are not compiled by casual users of LMDZ.GENERIC (or users of LMDZ.UNIVERSAL in sequential mode).
+
+== 23/01/2013 == JL
+- Correction in largescale. a rneb factor was forgotten
+- Added some spectra in ave_stelpec
+- Corrected reevaporation in rain. Now conserve water better
+
+== 24/01/2013 == AS + JL
+A more robust way to refer to gas type. 
+- Gas names with an arbitrary number of characters (<20) can be used
+  This is good for C2H2, C2H6, H2SO4, C17H21NO4, etc...
+  !!! Remember this must be compliant with Q.dat in corrk_data !!!
+- igas_... labels are assigned once for all in su_gases 
+  Then using igas_... everywhere instead of gnom (except for kcm stuff)
+- Users can still use e.g. H2_ but H2 also works
+- Simplified condense_cloud so that igas_CO2 is used directly
+
+== 09/02/2013 == AS
+- Optimized calculations for continuum (done for H2 and He, to be done for others)
+      - new common bilinear interpolation routine (bilinearbig)
+      - optimization: only one calculation is actually needed
+                      to find indexes of wavelength for bilinear interpolation
+                      ... because this will not change with level and integration step!
+      - optimization: use while loop in bilinearbig
+      - completely similar results obtained (test case for a gas giant, many simulated days)
+  NB: those changes really improve gcm speed (factor 2.2 for whole model!)
+      continuum was very expensive, now very cheap
+      --> e.g. 1 day, 25 dyn ts, 5 phys ts
+      --> before: 243 seconds (including 120 seconds for continuum bilinear interpolation)
+      --> after: 108 seconds
+- Corrected a bug: Continuum in inifis instead of continuum
+    ... until now, most users (unbeknownst to them) were running with the continuum by default!
+- Cosmetic changes in optcv (mostly spaces and line breaks) 
+    ... so that comparisons with optci are easy e.g. through vimdiff
+    
+== 11/02/2013 == JL
+- Updated moist convection scheme to handle situations with a large water vapor content 
+- Added a keyword to enable ocean runoff in callphys.def (activerunoff)
+
+== 12/02/2013 == JL
+- Follows previous commit by Aymeric about bilinear interpolations:
+   - Extended to all existing continua
+   - generalized bilinearbig to work for various size inputs
+- because N2 and H2O continua databases are smaller, improvement around 15% for
+an earth case.
+ 
+== 25/02/2013 == EM
+- added "-fp-model precise" option when compiling with ifort (fixes unexplained
+  mass loss of tracer in the dynamics)
+  
+== 13/03/2013 == AS + EM
+- corrected a bug in bilinearbig (found with debug mode)
+  not harmful but possible -1 index at first call
+
+== 18/03/2013 == EM
+- removed the "-static" ifort compilation option (problematic on Gnome cluster)
+  and added some additional debug options
+- fixed bug in newstart about initialization of albedo and thermal inertia.
+
+== 28/03/2013 == JL
+- optimization of optci and optcv routines. 15to 25% gain on these routines.
+     around 10% on the whole code with 1 scatterer.
+     - No changes on output (byte to byte) 
+- corrected bug in gray case in callcorrk. 
+- added profiling option in makegcm_ifort. See the file for details
+- changed capcal back to default in physics
+
+== 01/05/2013 == AS + JL
+- added possibility to remove surface 
+  (particularly exchanges heat+momentum exchanges between surface and atmosphere)
+- added possibility to add an internal heat flux
+
+== 10/05/2013 == EM
+- moved the 'makbands' script from "grid" to (more appropriate) "phystd/bands"
+  subdirectory, and consequently adapted the makegcm_* scripts
+
+== 15/05/2013 == JL
+- correction in radiative scheme to enforce double precision
+- corrects calculation of ISR
+
+== 22/05/2013 == EM
+- made all outputs (stats.nc,diag*nc files) compatible with running in parallel
+  (MPI mode only)
+
+== 11/06/2013 == JL+EM
+- User manual (+ sources) added in DOC.
+
+== 12/06/2013 == EM
+- Moved "newstart" (and related "lect_start_archive.F") to phystd directory
+- Adapted makegcm_* scripts to enable compiling main prog from physics
+- Added in newstart the possibility to not read in any surface.nc file
+  (when loading a start_archive) with keyword "none" (instead of surface
+  file name)
+- Some general cleanup:
+  - in bibio: removed unused lmdstd.h readstd.F writestd.F mywrite.F 
+              readcoord.F scatter.F gather.F ini36.F from36.F to36.F
+              lnblnk.F (F90 len_trim() should be used instead)
+  - in dyn3d: removed unused inigrads.F wrgrads.F gradsdef.h
+              xvik.F (specific to current Mars)
+
+== 14/06/2013 == EM
+- Some minor changes so that gcm compiles with gfortran:
+  - Added option to compile "long lines" (>132 characters) in makegcm_gfortran
+  - Removed use of isnan() in physiq.F90 (it is not a standard function)
+  - Avoid possible underflow of psat in watercommon_h.F90
+  - Adapted the checks on the *IR and *VI band files to be more strict
+
+== 17/06/2013 == EM
+- Some more cleanup in dynamics:
+ - Moved "start2archive" (and auxilliary routines) to phystd
+ - removed unused (obsolete) testharm.F , para_netcdf.h , readhead_NC.F ,
+   angtot.h from dyn3d
+ - removed obsolete addit.F (and change corresponding lines in gcm)
+ - remove unused "description.h" (and many places where it was "included")
+
+== 21/06/2013 == AS
+- Added possibility to initialize temperature from a rcm1d profile (t=profile)
+- Added output for Ls in diagfi
+
+== 28/06/2013 == JL
+- bug fix in setspi & setspv : counters must be initialized in routine in
+  case of multiple calls
+
+== 02/07/2013 == EM
+- some cleanup: ismax and ismin were defined in multiple places...
+
+== 19/07/2013 == EM
+- update the sponge layer: trun it into a module and (more important)
+  compute the sponge quenching analytically rather than via Forward Euler
+  approximation.
+
+== 07/08/2013 == JL
+- Water cycle in double precision (largescale+moistadj)
+- Improved wate rayleigh.
+- First step for rayleigh with variable species. Now, just need to change optcv.
+- changed some interpolation indices in callcorrk to limit dependency of OLR on the number of layers
+
+== 05/12/2013 == JL
+- corrected sugascorrk to work in the two band gray aproximation with -b 1x1 and NGAUSS=2
+
+== 03/04/2014 == EM
+Major cleanup, in order to ease the use of LMDZ.GENERIC with (parallel) dynamics
+in LMDZ.COMMON: (NB: this will break LMDZ.UNIVERSAL, which should be thrashed
+in the near future)
+- Updated makegcm_* scripts (and makdim) and added the "-full" (to enforce
+  full recomputation of the model) option
+- In dyn3d: converted control.h to module control_mod.F90 and converted
+  iniadvtrac.F to module infotrac.F90
+- Added module mod_const_mpi.F90 in dyn3d (not used in serial mode)
+- Rearanged input/outputs routines everywhere to handle serial/MPI cases.
+  physdem.F => phyredem.F90 , phyetat0.F => phyetat0.F90 ; all read/write
+  routines for startfi files are gathered in module iostart.F90
+- added parallelism related routines init_phys_lmdz.F90, comgeomphy.F90,
+  dimphy.F90, iniphysiq.F90, mod_grid_phy_lmdz.F90, mod_phys_lmdz_mpi_data.F90,
+  mod_phys_lmdz_mpi_transfert.F90, mod_phys_lmdz_omp_data.F90,
+  mod_phys_lmdz_omp_transfert.F90, mod_phys_lmdz_para.F90,
+  mod_phys_lmdz_transfert_para.F90 in phymars
+  and mod_const_mpi.F90 in dyn3d (for compliance with parallelism)
+- added created generic routines 'planetwide_maxval' and 'planetwide_minval',
+  in module "planetwide_mod", that enable obtaining the max and min of a field
+  over the whole planet. This should be further imroved with computation of
+  means (possibly area weighed), etc.
+
+== 05/06/2014 == EM
+Bug fixes:
+- hice() in physiq.F90 must be a saved array.
+- bad use of min/max on arrays in h2o_cloudrad (radii_mod.F90) which actually
+  ended up setting all array elements to the same value.
+And some cosmetic cleanup in rain.F90, vdif_kc.F and turbdiff.F90
+
+== 10/07/2014 == EM
+Some cleanup to simplify dynamics/physics interactions by getting rid 
+of dimphys.h (i.e. the nlayermx parameter) and minimizing use of
+dimension.h in the physics.
+
+== 11/07/2014 == EM
+- Changed the variable passed from LMDZ.GENERIC dynamics to physics:
+it is now a mass flux (kg/s) which is then converted to a vertical
+velocity (m/s) in the physics. This is to be consistent with what is
+done in LMDZ.COMMON.
+
+== 18/08/2014 == JL
+- fixed variable type declaration bug in ave_stelspec
+- corrected insolation calculation in locked and inclined case (proper calculation of sub solar longitude and declination)
+- in the ring shadow calculation, temporary variables for the orbbital parameters are now used (we want the declin and RA output at the same time w and wo rings)
+
+== 29/09/2014 == EM
+- Added missing allocation in soil_settings, needed when changing number of
+  soil layers.
+
+== 04/03/2015 == EM
+- Some code cleanup: turning comcstfi.h into module comcstfi_mod
+
+== 31/03/2015 == EM
+- Reorganizing the physics/dynamics interface, for better compatibility
+  between models and with the parallel LMDZ.COMMON dyn core. Main structural
+  changes are:
+* misc: (replaces what was the "bibio" directory)
+- Should only contain extremely generic (and non physics or
+  dynamics-specific) routines
+* dynlonlat_phylonlat: (new interface directory)
+- This directory contains routines relevent to physics/dynamics grid
+  interactions, e.g. routines gr_dyn_fi or gr_fi_dyn and calfis
+- Moreover the dynlonlat_phylonlat contains directory "phystd".
+  This subdirectories should only contain specific interfaces (e.g. 
+  iniphysiq) or main programs (e.g. newstart).
+* phystd/dyn1d: this subdirectory contains the 1D models.
+
+== 17/04/2015 == JL & SG
+- Correct radiative transfer bug for the Top layer in callcorrk (=rev 1419). Only impacts plevrad(2).
+== 04/05/2015 == SG
+- Return to a previous interpolation scheme for pmid and tmid in callcorrk.
+
+== 16/09/2015 == EM
+- reorganizing the "datadir" structure: aerosol properties should now be in 
+  subdirectory 'aerosol_properties' of datadir, and surface.nc files should
+  be in subdirectory 'surface_data'. These subdirectory names are stored in
+  module datafile_mod.
+- Made things retro-compatible so that using an 'old' datadir structure (ie.
+  aerosol properties files and surface files in datadir) still works.
+
+== 21/09/2015 == MT
+- Cleanup of physiq.F90 and changed condense_cloud.F90 to condense_co2.F90
+
+== 14/10/2015 == MT
+- Implementation of the Spectral Albedo. Albedo(ngrid) is now Albedo(ngrid,L_NSPECTV) and has a value for each visible band.
+- Albedodat/Albedo0 have been removed. We now use Albedo_bareground.
+- CO2 Ice Albedo North/South dichotomy has been removed. CO2 ice Albedo is no longer stocked in start file. You can now
+prescribe CO2 ice albedo in callphys.def with "albedoco2ice". Its default value is 0.5.
+
+== 14/10/2015 == MT
+- Cleanup of callcorrk.F90.
+
+== 15/10/2015 == MT
+- Harmonization of the calculation of the surface tracer tendencies in physiq.F90.
+
+== 22/10/2015 == MT
+- Cleaning of condense_co2.F90.
+
+== 04/11/2015 == MT
+- Corrections of bugs in phyetat0.F90 (vap tracer) and in physiq.F90 (ice evolution scheme).
+
+== 05/11/2015 == MT
+- Minor Albedo correction of bugs in rcm1d.
+
+== 13/11/2015 == MT
+- Spectral Snow Albebdo implemented in the code.
+
+== 13/01/2016 == EM
+- Fix/improvement on planetwide_min/max/sum for the 3D fields which assumed the vertical dimension to be klev.
+  Now works for any (klon,...) field (e.g. albedo).
+
+== 10/02/2016 == MT
+- Added a generic routine (in utilities directory) to extrapolate ice fields.
+- Added a generic version of streamfunction (in utilities directory).
+
+== 17/03/2016 == EM
+- Added tests to ensure that soil model settings are adequate to resolve
+  sub-surface diurnal and annual thermal waves.
+
+== 24/03/2016 == EM
+- Some fixes/adjustments to run using OpenMP (in the physics, best practice is to always have "save" variables,
+  this of course includes all module variables, as "threadprivate").
+
+== 25/03/2016 == EM
+- Code reorganization (to mach comming evolutions on all planetary models),
+  created a "phy_common" directory to contain routines common (wrt structural
+  nature of underlying code/grid) to all LMDZ-related physics packages.
+- Moved ioipsl_getincom_p.F90 from "misc" to "phy_common" and modified it
+  to match Earth GCM version and renamed it ioipsl_getin_p_mod.F90
+- Adapted calls from phystd/* routines accordingly
+- Adapted "create_make_gcm" and "makegcm*" scripts accordingly
+  (deleted obsolete makegcm_g95)
+
+== 28/03/2016 == EM
+- Added module "regular_lonlat_mod.F90" (to store information on global
+  lon-lat grid) in phy_common.
+- Turned iniphysiq (in dynlonlat_phylonlat/phymars)into module
+  "iniphysiq_mod.F90".
+
+== 29/03/2016 == EM
+- Added "time_phylmdz_mod.F90" module to store information on time and
+  calendar in the physics, should be used instead of accessing "temps_mod"
+  from the dynamics. And moved daysec and dtphys from module "comcstfi_mod"
+  to module "time_phylmdz_mod".
+- made "inifis" a module.
+
+== 30/03/2016 == EM
+- Got rid of references to "control_mod" from the physics. Added a couple
+  of relevent variables for outputs in time_phylmdz_mod.
+
+== 05/04/2016 == EM
+- Got rid of references to "dimensions.h" from physics packages:
+  use nbp_lon (=iim), nbp_lat (=jjp1) and nbp_lev 
+  from module mod_grid_phy_lmdz (in phy_common) instead.
+- Removed module "comhdiff_mod.F90", as it is only used by module
+  surf_heat_transp_mod.F90, moved module variables there.
+- Added in "surf_heat_transp_mod" local versions of some arrays
+  and routines (from dyn3d) required to compute gradient, divergence, etc. 
+  on the global dynamics grid.
+  As before, the slab ocean only works in serial.
+
+== 07/04/2016 == EM+MT
+- Fix buggy ouputs in 1D introduced by previous code modifications.
+
+== 07/04/2016 == MT
+- In rcm1d.F (1d model), tracers profiles added in input.
+
+== 08/04/2016 == EM
+- Adapted rcm1d.F so that it also runs when compiled from LMDZ.COMMON.
+
+== 08/04/2016 == EM
+- Bug fix in surf_heat_transp_mod (introduced with revision 1529, 05/04/2016, modifications).
+- Initialize runoff in hydrol.F90.
+
+== 08/04/2016 == EM
+- Made nsoilmx be no longer a "parameter" and thus added the possibility to define the 
+  number of subsurface layers nsoilmx, along with first layer thickness "lay1_soil" and
+  companion coefficient "alpha_soil", in callphys.def at run time.
+  As before (when these were hard-coded), these are such that the depth of
+  soil mid-layers are:
+  mlayer(k)=lay1_soil*alpha_soil**(k-1/2), for k=0,nsoil-1
+
+== 13/04/2016 == EM
+- Some code reorganization: "dynlonlat_phylonlat" directory becomes
+  "dynphy_lonlat".
+- "iniprint.h" moved from "dyn3d" to "misc".
+
+== 18/04/2016 == EM
+- fix for 1D in writediagfi to enable writing at 
+  "ecritphy" rate.
+- move iniprint.h to "misc"
+- Some code cleanup in anticipation of future updates:
+ - changed variable names in comgeomphy.F90: give them more
+   explicit names: rlond => longitude , 
+   rlatd => latitude, airephy => cell_area,
+   cuphy => dx , cvphy => dy
+ - removed long(), lati() and area() from comgeomfi_h.F90,
+   use longitude(), latitude() and cell_are() from
+   comgeomphy.F90 instead
+
+== 22/04/2016 == EM
+- Updates and cleanup wrt dynamics/physics separation:
+  Removed init_phys_lmdz.F90 and comgeomphy.F90 from phystd;
+  comgeomphy is replaced by geometry_mod (located in phy_common).
+  Added physics_distribution_mod.F90 in phy_common and
+  mod_interface_dyn_phys.F90 in dynphy_lonlat.
+  Added nrtype.F90 (contains math const. like PI, etc.) in "misc"
+
+== 02/05/2016 == JL+EM
+- bug fix in calfis: wrong array (pw) sent to physics: the transfered
+  mass flux should be on the physics grid, not the dynamics grid.
+  Moreover values at the poles needed to be correctly recomputed.
+
+== 06/05/2016 == EM
+- turn physiq.F90 into module physiq_mod.F90
+
+== 20/05/2016 == AS+EM
+- cleanup around iniphysiq: separate things between planet-independent
+  initializations (now done by inigeomphy in dynphy_lonlat) and
+  mosre physics-package specific things (remain in iniphysiq).
+
+== 20/05/2016 == EM
+- Fix in wstats: use "def_var_stats" and not "def_var" (intended for
+  writediagfi).
+
+== 27/05/2016 == EM
+- missing libf/dynphy_lonlat/phymars/inigeomphy_mod.F90 in updates around
+  iniphysiq
+
+== 12/07/2016 == EM
+- move initialization of dimphy from inigeomphy to iniphysiq (initializations
+related to routines in phy_common or dynphy_lonlat can be done in 
+inigeomphy, but any initialization for modules/routines in a physics
+package (directory phystd) must be done in the related phystd/iniphysiq
+routine.
+
+== 27/07/2016 == EM
+- further cleanup in the dynamics/physics interface: stop sending information
+  about tracer advection (tracerdyn) back from physics to dynamics as this
+  input parameter can be read and set in the dynamics.
+
+== 30/08/2016 == EM
+- fix newstart which was broken due to recent updates of the physics/dynamics
+  interface.
+
+== 09/09/2016 == EM
+- Some code cleanup (and harmonization with LMDZ.COMMON): remove "ecritphy"
+  from the dynamics (since it is read/used in the physics) and remove
+  "grireg" (unused) and "physic" (use iflag_phys instead) parameters from
+  the dynamics.
+
+== 13/09/2016 == EM
+- Further cleanup to harmonize with LMDZ.COMMON turn "idissip" into
+  "dissip_period".
+
+== 15/09/2016 == TB
+- bug fix in tpindex.F : when computing weights for abundance of species one
+  should not return the maximum index (leads to out-of-bounds index use in 
+  the caller).
+
+== 25/10/2016 == EM
+Updates for full physics/dynamics separation:
+- introduced module vertical_layers_mod.F90 in phy_common to store information
+  about the vertical grid to be used in the physics. Routines in the physics
+  should "use vertical_layers_mod" and not "use comvert_mod".
+- added nqtot to tracer_h.F90. Always "use tracer_h" in physics instead of
+  infotrac (which is in the dynamics).
+- removed some purely dynamics-related outputs (etot0, zoom parameters, etc.)
+  from diagfi.nc and stats.nc outputs as these informations are not available
+  in the physics.
+- added scalheight (atmospheric scale height) in comvert_mod.
+
+== 31/10/2016 == EM
+Introducing a first prototype of XIOS outputs: requires compiling with
+"-io xios" flag and having an XIOS library at hand. Corresponding
+companion xml files iodef.xml and context_lmdz_physics.xml in the "deftank"
+subdirectory. Still some work to do concerning the XIOS calendar (definition
+of an initial date and month number and lenght).
+
+== 21/02/2017 == EM
+Added possibility to run without a startfi.nc file (mainly usefull for 
+tests with coupling with dynamico dynamical core):
+- added flag "startphy_file" flag (.false. if doing an "academic" start
+  on the physics side).
+- turned phyetat0.F90 into module  phyetat0_mod.F90
+- turned tabfi.F into module tabfi_mod.F90 and added handling of
+  startphy_file==.false. case
+- extra initializations in physiq_mod for startphy_file==.false. case.
+
+== 09/03/2017 == EM
+>> Followup on updates in LMDZ.COMMON, add print_control_mod.F90
+   and abort_physic.F90 inphy_common
+
+== 30/03/2017 == EM
+>> Keep up with updates in LMDZ.COMMON:
+In phystd:
+- ocean_slab_mod.F90 : call abort_physic, rather than abort_gcm
+- inifis_mod.F90 : initialize print_control variables
+- physiq_mod.F90 : add XIOS context initialization and finalization
+- xios_output_mod.F90 : update initialize_xios_output initialization
+                        of the horizontal domain
+In dynphy_lonlat : 
+- inigeomphy_mod.F90 : add ind_cell_glo computation and  transfer
+                       to init_geometry
+- mod_interface_dyn_phys.F90 : use is_north_pole_dyn and is_south_pole_dyn
+                               (instead of is_north_pole, is_south_pole)
+
+In phy_common:
+- geometry_mod.F90 : add ind_cell_glo module variable to store global
+                     column index
+- init_print_control_mod.F90 : added to initialize print_control_mod module
+                               variables
+- print_control_mod.F90 : make initialization occur via init_print_control_mod
+                          to avoid circular module dependencies
+- mod_phys_lmdz_mpi_data.F90 : use print_control_mod (rather than iniprint.h)
+                               and define is_north_pole_dyn, is_south_pole_dyn
+                               (instead of is_north_pole, is_south_pole)
+- mod_phys_lmdz_mpi_transfert.F90 : use is_north_pole_dyn, is_south_pole_dyn
+                                    (instead of is_north_pole, is_south_pole)
+- mod_phys_lmdz_omp_data.F90 : add is_omp_master (alias of is_omp_root) module
+                               variable and use print_control_mod (rather than
+                               iniprint.h), and introduce is_north_pole_phy
+                               and is_south_pole_phy
+- mod_phys_lmdz_para.F90 : use print_control_mod (rather than iniprint.h)
+- physics_distribution_mod.F90 : add call to init_dimphy in
+                                 init_physics_distribution
+
+== 07/04/2017 == EM
+Fixing a big bug (dating from revision 1529) in wstats.
+
+== 14/04/2017 == JL+EM
+Fixed a bug in start2archive: missing initialization of tracer names.
+<<<<<<< .mine
+
+== 21/04/2017 == JL
+Add some arch files for a cluster in Bordeaux
+added some is_master before printouts in callcorrk and physiq_mod
+corrected a bug in bilinear big
+
+== 16/11/2017 == AS
+Added surfalbedo and surfemis keywords to be used with startphy_file = .false.
+Also made default values in phyetat0_mod unambiguously float
+
+== 07/06/2017 == MT
+Resurrection of kcm1d, part I
+
+== 21/07/2017 == JVO
+Optimization of the optci/cv routines
+ - The repeated calls to huge matrices gasi/v increased dramatically the execution time because of memory access
+ - Added a tmpk variable
+ - Save ~ 50% time on the RT, ~30% on the whole code on the tested simulations
+
+== 14/09/2017 == MT
+Add qs=x option to newstart.F (chose a specific value to a surface tracer)
+Add Proxima Centauri and TRAPPIST-1 spectra
+Add scripts to read (in python) and modify (in fortran 90) the correlated-k files
+
+== 02/01/2018 == EM
+Fix som recently introduced problems:
+- inichim_1D is used by the 1D model and should be in the libf/dyn1d directory
+- inichim_newstart is used by newstart and should be in the
+  libf/dynphy_lonlat/phystd directory
+- dtridgl.F already exists in libf/phystd
+- fix rcm1d.F to cope with modifications introduced in revision 1835-1836
+- also add some missing threadprivate OpenMP directives in phys_state_var_mod
+  and turb_mod
+
+== 31/07/2018 == EM
+Follow-up of change in maximum length of tracer names in the dynamics
+
+== 28/08/2018 == JL
+Start a series of commits to change the upper boundary conditions in the radiative transfer to solve some issues with the last two layers.
+It seems to be good to have aerosols in the first "radiative layer" of the gcm in the IR but visible does not handle very well diffusion in first layer.
+Tauaero and tauray are set to 0 (a small value for rayleigh because the code crashes otherwise) in the 4 first semilayers in optcv, but not optci. 
+This solves random variations of the sw heating at the model top. 
+
+== 28/08/2018 == JL
+We now shift the radiative model top from p=0 to the middle of the last physical layer. This is done by changing pmid and plevrad in callcorrk and some corrections need to be done in gfluxv. 
+This seems to get rid of the aratic temperature behavior in the last two layers of the model (especially on the night side on synchronous planets).
+Additional speedup corrections have been made in gfluxi that change nothing to the result.
+Finally, if aerosols are present in the last layer we must account for them. Provides better upper boundary condition in the IR. They must however be put to zero in the sw (see optcv and changes in last commit.)
+This has been done for water ice in aeropacity, but same correction should probably be done for other aerosol types.
+
+== 28/08/2018 == JL
+correct bug on rain initialization at each timestep in physiqu_mod so that mass_redist can work without rain (if precipitations are taken care with sedimentation for example)
+change a table that was used as a float to a float in gfluxv for speedup. Does not change results bit for bit
+
+== 29/08/2018 == JL
+-watersat was used only in vdifc and thus it was not consistent with other routines (turbdiff, rain, largescale...) which used Psat_water from watercommon.
+This is now harmonized. ALl routines use Psat_water. Watersat.F has been removed, but the routine is now in watercommon for archival purpose. It is not used anymore.
+-also changed the number of chars for tname in the dyn3D/infotrac.F90 to be able to run rcm1d.
+
+== 02/10/2018 == JL
+- correct a bug introduced in commit 1987 in optcv.
+
+== 30/10/2018 == EM
+- correct a bug introduced in revision 2026; now that L_NGAUSS is a parameter
+  read in via sugas_corrk (called at first call by callcorrk), automatic arrays
+  of size L_NGAUSS cannot be declared in callcorrk and must be allocated
+  once the value of L_NGAUSS has been set.
+- turned optci, optcv and callcorrk into modules in the process.
+
+== 30/10/2018 == EM
+- Cleanup around aeroptproperties.90, remove arrays that were not initialized
+  but still used, probably for nothing since removing them leads to no change
+  in results. Possibly to revisit and further clean up later.
+
+== 12/12/2018 == JL
+- Correct a bug from commit 2032 in callcorrk: automatic arrays must be allocated
+only if they haven't been before (callcorrk is called twice in physiq when cloud cover is not uniform).
+
+== 21/12/2018 == MT
+- Officially add a CECILL licence to the LMD Generic GCM. The licence is the same than in the LMDz Earth GCM.
+
+== 07/01/2018 == AB
+- Planck step function is replaced by a piecewise linear function in gfluxi.F and sfluxi.F
+  in the computation of B1, B0, PLTOP, PLANCKSUM and BSURF.
+
+== 09/01/2018 == AB
+- Add the thermal plume model (cf. Rio et al. 2010) extended to gas giant. Specific parameters are set in thermcell_mod.
+- Add keys (back2lay_visname, back2lay_irname) to set aeroback2lay aerosol optprop files names and solve the name conflict between Saturn and Jupiter.
+  Default values are the previously hard coded values.
+
+== 10/01/2018 == AB
+- Fix a bug in thermcell_closure arguments.
+
+== 11/01/2018 == AB
+- in thermcell_plume, replace a useless test on zalpha by a test on zw2m to avoid a possible division by zero.
+- in thermcell_plume, remove useless variable zbuoybis
+- in physiq_mod, save variable f0
+
+== 14/01/2018 == AB
+- Fix f0 saving
+- Restore d_temp functionality. d_temp is set in thermcell_mod and used in thermcell_alim.
+- Remove a potential division by zero in thermcell_plume with variable zw2m.
+
+== 14/01/2018 == AB
+- add comment in README for revisions 2066 and 2067
+- allocate f0 only if calltherm=true
+- remove useless flag "iflag_thermals_alim" in thermcell_alim, thermcell_mod and thermcell_plume
+- replace watersat subroutine by Psat_water in the thermal plume model, cf. revision 1993 or 29/08/2018 JL comment.
+
+== 07/02/2018 == AB
+- uncomment two "corrections" in thermcell_flux. They are used only if iflag_thermals_optflux is set to 0 (1 by default)
+- remove useless parameter fact_shell in thermcell_mod
+- now take d_temp into acocunt in thermcell_plume to trigger the plume and compute first unstable layer speed.
+
+== 15/02/2018 == AB
+- Fix a bug in thermcell_alim.F90 where loops were inverted.
+- In thermal plume model, arrays size is set with ngrid,nlay arguments, no longer thanks to dimphy module.
+- Remove useless variable zmax0 in thermcell_main, thermcell_height and physiq_mod.
+- Some minor changes in thermcell_plume and thermcell_main.
+
+== 18/02/2018 == AB
+- use detr as thermcell_dq argument (called in thermcell_main) and clean up thermcell_dq.
+- fix a bug in thermcell_flux with lmax.
+- fix a bug in thermcell_flux when updraft fraction is too high.
+- add new correction in thermcell_flux when entrainement is too high.
+- evaporate ice before calling thermal plume model
+
+== 26/02/2019 == AB
+- now convective adjustment can be used for layers beyond thermals
+
+== 05/03/2019 == EM
+- some fixes for the slab ocean. Still need to make it work in parallel.
+
+== 26/03/2019 == AB
+- new formulae to compute vertical speed in thermcell_plume
+- fix an inconsistency in zdttherm and zdqtherm computation according to water key value in physiq_mod
+
+== 29/04/2019 == AB
+- fix in convadj.F
+- new version of the thermal plume model (new entrainment and detrainment, removed alimentation)
+- removal of useless files thermcell_alp, thermcell_dv2, thermcell_alim and thermcell_dry.F90
+
+== 29/04/2019 == JVO
++ Add diagnostics of optical thickness, if 'diagdtau' key is activated, it 
+ outputs dtaui/v(altitude) in diagfi.nc for every narrowband (could be done with one var
+ but would require to be able to have writediag in 5D)
+ EDIT (22/05/19) : To have correct calculations, output is now exp(-tau), you need to postproc it to have tau.
+
+== 20/06/2019 == AB
+- update the thermal plume model (check formulae consistency between thermcell_plume and thercell_closure,
+  compute correctly thermal plume height, fix alimentation computation in the first unstable layer)
+- thermal plume model parameters are now set in callphys.def
+- (re)add flag to choose between thermcell_dv2 or thermcell_dq to transport horizontal momentum.
+
+== 20/06/2019 == AB
+- remove temporary outputs in thermcell_closure and fix a bug in thermcell_plume.
+
+== 12/11/2019 == AB
+- fm0, entr0 and detr0 are now allocatable variables in physiq_mod. That is necessary if tau_thermals > 0.
+- In thermcell_flux, "bidouilles" are modified: now the plumes stop when the updraft fraction is greater than alpha_max ;
+  e > e_max is no longer permitted ; b <= incoming mass flux is checked last
+- Cleanup thermal plums model subroutines (thermcell_main, thermcell_env, thercell_dq, thermcell_dv2, thermcell_closure, thermcell_height)
+- In thermcell_plume, restore initial formula to compute the vertical speed and cleanup the file
+
+== 29/01/2020 == AB
+- clean up thermcell_dq
+
+== 30/01/2020 == AB
+- fix a bug in thermcell_env. Now zqt is correctly initialized when tracer h2o_vap is missing (consistency with flag water is assumed).
+- clean up thermcell_dv2 and use plume height (zmin-zmax) instead of maximal altitude (zmax) in computations
+- the thermal plume model is able to manage several plumes in the same column and work without the convective adjustment.
+
+== 24/02/2020 (r2243) == JVO 
+- Get rid of the old 'sparadrap' in iniorbit.F assuming Mkm instead of AU if periastre or apostre gt 25, (otherwise Neptune is a pb)
+  Everybody should be using AU, that's all.
+
+== 24/02/2020 (r2244) == JVO
++ Add a 'versH2H2cia' int key in callphys that allows two values (2011 or 2018) to
+  deal with updated HITRAN file (for interpolateH2H2.F90) from 2018 that includes the
+  H2H2 dimer from Fletcher et al. 2018, useful for giant planets.
+  Retrocompatibility is ok, default value to 2011.
+
+== 27/03/2020 == EM
+- Cleanup OpenMP statements in callcorrk.F90 and also use "call abort_physic"
+  instead of "stop" or "call abort"
+
+== 07/04/2020 == EM
+- Get rid of "zerophys"; modern Fortran syntax is better to initialize an
+  array.
+
+== 09/04/2020 (r2283) == JVO
++ Set the temperature boundaries and step for Planck function
+  integration as input in callphys.def, for more flexibility.
+  + User can now set them by tplanckmin, tplanckmax and dtplanck
+  + Default values are a wide range 30-1500K
+  + Add a sanity check in callcorrk instead of leaving out-of-bounds planckir indexes.
+
+

@@ -1,0 +1,22 @@
+
+## RUN.DEF
+
+# nombre de pas par jour (multiple de iperiod) ( ici pour dt = 1 min )
+ day_step = 280
+
+# periode de la physique (en pas) (en pas dynamiques, n'a de sens que si iflag_phys=1)                                      
+  iphysiq=7
+
+# temps de dissipation des plus petites long.d ondes pour u,v (gradiv)  
+ tetagdiv=1800.
+
+# temps de dissipation des plus petites long.d ondes pour u,v(nxgradrot)
+ tetagrot=2700.
+
+# temps de dissipation des plus petites long.d ondes pour  h ( divgrad) 
+ tetatemp=2700.
+
+## CALLPHYS.DEF
+
+# the rad. transfer is computed every "iradia" physical timestep
+iradia     = 640

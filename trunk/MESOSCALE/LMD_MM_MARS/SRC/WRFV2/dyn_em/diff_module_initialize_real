@@ -1,0 +1,1761 @@
+9,11d8
+< !****MARS: modified May 2007
+< 
+< 
+224,225d220
+< read (20+grid%id) grid%em_albedo_gcm
+< read (20+grid%id) grid%em_therm_inert
+243,244d237
+< write (20+grid%id) grid%em_albedo_gcm
+< write (20+grid%id) grid%em_therm_inert
+258d250
+<               !!****MARS: tsk is surface temperature           
+264,268d255
+< !!****MARS
+< !!un peu artificiel, mais u10 et v10 sont des bons intermediaires (facultatifs de plus)
+<               grid%u10(i,j) = grid%em_albedo_gcm(i,j)
+<               grid%v10(i,j) = grid%em_therm_inert(i,j)
+< !!****MARS
+272d258
+< 
+275,286d260
+< !!****MARS
+< !!fix pour être certain d'être avec les bons flag
+< print *,flag_psfc
+< flag_psfc=1
+< print *,flag_soilhgt
+< flag_soilhgt=1
+< print *,flag_metgrid
+< flag_metgrid=1
+< !!**** TODO: trouver quand même pourquoi ça donne 0 :)
+< !!****MARS
+< 
+< 
+317,330c291,302
+< !****MARS
+< !         DO j = jts, min(jde-1,jte)
+< !            DO i = its, min(ide,ite)
+< !               grid%u10(i,j)=grid%em_u_gc(i,1,j)
+< !            END DO
+< !         END DO
+< !   
+< !         DO j = jts, min(jde,jte)
+< !            DO i = its, min(ide-1,ite)
+< !               grid%v10(i,j)=grid%em_v_gc(i,1,j)
+< !            END DO
+< !         END DO
+< !****MARS   
+< 
+---
+>          DO j = jts, min(jde-1,jte)
+>             DO i = its, min(ide,ite)
+>                grid%u10(i,j)=grid%em_u_gc(i,1,j)
+>             END DO
+>          END DO
+>    
+>          DO j = jts, min(jde,jte)
+>             DO i = its, min(ide-1,ite)
+>                grid%v10(i,j)=grid%em_v_gc(i,1,j)
+>             END DO
+>          END DO
+>    
+467,477c439,443
+< !!****MARS: decide to switch off this option 
+< !!****MARS: --> cf sfcprs2 and geopotential function at 500mb
+< !         IF ( config_flags%adjust_heights ) THEN
+< !            we_have_tavgsfc = ( flag_tavgsfc == 1 ) 
+< !         ELSE
+< !            we_have_tavgsfc = .FALSE.
+< !         END IF
+< !****MARS:
+< we_have_tavgsfc = .FALSE.
+< 
+< 
+---
+>          IF ( config_flags%adjust_heights ) THEN
+>             we_have_tavgsfc = ( flag_tavgsfc == 1 ) 
+>          ELSE
+>             we_have_tavgsfc = .FALSE.
+>          END IF
+479d444
+< !****MARS: hi-res psfc is done if the flag 'sfcp_to_sfcp' is active
+482d446
+< 	    print *,'compute psfc from hi-res topography'
+488,497c452,457
+< 
+< !****MARS: no sea-level pressure inputs possible
+< !         ELSE
+< !            CALL sfcprs (grid%em_t_gc, grid%em_qv_gc, grid%em_ght_gc, grid%em_pslv_gc, grid%ht, &
+< !                         grid%em_tavgsfc, grid%em_p_gc, grid%psfc, we_have_tavgsfc, &
+< !                         ids , ide , jds , jde , 1   , num_metgrid_levels , &
+< !                         ims , ime , jms , jme , 1   , num_metgrid_levels , &
+< !                         its , ite , jts , jte , 1   , num_metgrid_levels )
+< !****MARS: no sea-level pressure inputs possible
+< 
+---
+>          ELSE
+>             CALL sfcprs (grid%em_t_gc, grid%em_qv_gc, grid%em_ght_gc, grid%em_pslv_gc, grid%ht, &
+>                          grid%em_tavgsfc, grid%em_p_gc, grid%psfc, we_have_tavgsfc, &
+>                          ids , ide , jds , jde , 1   , num_metgrid_levels , &
+>                          ims , ime , jms , jme , 1   , num_metgrid_levels , &
+>                          its , ite , jts , jte , 1   , num_metgrid_levels )
+509d468
+< 
+533,534d491
+< !****MARS: em_dhs seems OK
+< 
+567d523
+< 
+580,583c536
+< 	 !****MARS: normalement c'est vert_interp
+<          !****MARS: mais les résultats sont trop discontinus > retour à une
+<          !****MARS: interpolation plus classique
+<          CALL vert_interp_old ( grid%em_qv_gc , grid%em_pd_gc , moist(:,:,:,P_QV) , grid%em_pb , &
+---
+>          CALL vert_interp ( grid%em_qv_gc , grid%em_pd_gc , moist(:,:,:,P_QV) , grid%em_pb , &
+590,592c543,544
+< 
+<          !****MARS: normalement c'est vert_interp
+<          CALL vert_interp_old ( grid%em_t_gc , grid%em_pd_gc , grid%em_t_2               , grid%em_pb , &
+---
+>    
+>          CALL vert_interp ( grid%em_t_gc , grid%em_pd_gc , grid%em_t_2               , grid%em_pb , &
+599d550
+< 
+686,688c637,638
+< 
+< 	!****MARS: normalement c'est vert_interp   
+<          CALL vert_interp_old ( grid%em_u_gc , grid%em_pd_gc , grid%em_u_2               , grid%em_pb , &
+---
+>    
+>          CALL vert_interp ( grid%em_u_gc , grid%em_pd_gc , grid%em_u_2               , grid%em_pb , &
+695,696c645,646
+< 	!****MARS: normalement c'est vert_interp   
+<          CALL vert_interp_old ( grid%em_v_gc , grid%em_pd_gc , grid%em_v_2               , grid%em_pb , &
+---
+>    
+>          CALL vert_interp ( grid%em_v_gc , grid%em_pd_gc , grid%em_v_2               , grid%em_pb , &
+705a656,657
+>       !  Protect against bad grid%em_tsk values over water by supplying grid%sst (if it is 
+>       !  available, and if the grid%sst is reasonable).
+707,951c659,666
+< !****MARS: no need
+< !      !  Protect against bad grid%em_tsk values over water by supplying grid%sst (if it is 
+< !      !  available, and if the grid%sst is reasonable).
+< !
+< !      DO j = jts, MIN(jde-1,jte)
+< !         DO i = its, MIN(ide-1,ite)
+< !            IF ( ( grid%landmask(i,j) .LT. 0.5 ) .AND. ( flag_sst .EQ. 1 ) .AND. &
+< !                 ( grid%sst(i,j) .GT. 200. ) .AND. ( grid%sst(i,j) .LT. 350. ) ) THEN
+< !               grid%tsk(i,j) = grid%sst(i,j)
+< !            ENDIF            
+< !         END DO
+< !      END DO
+< !
+< !      !  Save the grid%em_tsk field for later use in the sea ice surface temperature
+< !      !  for the Noah LSM scheme.
+< !
+< !       DO j = jts, MIN(jte,jde-1)
+< !         DO i = its, MIN(ite,ide-1)
+< !            grid%tsk_save(i,j) = grid%tsk(i,j)
+< !         END DO
+< !      END DO
+< !
+< !!****MARS: no need
+< !      !  Take the data from the input file and store it in the variables that
+< !      !  use the WRF naming and ordering conventions.
+< !
+< !       DO j = jts, MIN(jte,jde-1)
+< !         DO i = its, MIN(ite,ide-1)
+< !            IF ( grid%snow(i,j) .GE. 10. ) then
+< !               grid%snowc(i,j) = 1.
+< !            ELSE
+< !               grid%snowc(i,j) = 0.0
+< !            END IF
+< !         END DO
+< !      END DO
+< !
+< !      !  Set flag integers for presence of snowh and soilw fields
+< !
+< !      grid%ifndsnowh = flag_snowh
+< !      IF (num_sw_levels_input .GE. 1) THEN
+< !         grid%ifndsoilw = 1
+< !      ELSE
+< !         grid%ifndsoilw = 0
+< !      END IF
+< !
+< !****MARS: no need
+< !      !  We require input data for the various LSM schemes.
+< !
+< !      enough_data : SELECT CASE ( model_config_rec%sf_surface_physics(grid%id) )
+< !
+< !         CASE (LSMSCHEME)
+< !            IF ( num_st_levels_input .LT. 2 ) THEN
+< !               CALL wrf_error_fatal ( 'Not enough soil temperature data for Noah LSM scheme.')
+< !            END IF
+< !
+< !         CASE (RUCLSMSCHEME)
+< !            IF ( num_st_levels_input .LT. 2 ) THEN
+< !               CALL wrf_error_fatal ( 'Not enough soil temperature data for RUC LSM scheme.')
+< !            END IF
+< !
+< !      END SELECT enough_data
+< !
+< !      !  For sf_surface_physics = 1, we want to use close to a 30 cm value
+< !      !  for the bottom level of the soil temps.
+< !
+< !      fix_bottom_level_for_temp : SELECT CASE ( model_config_rec%sf_surface_physics(grid%id) )
+< !
+< !         CASE (SLABSCHEME)
+< !            IF      ( flag_tavgsfc  .EQ. 1 ) THEN
+< !               DO j = jts , MIN(jde-1,jte)
+< !                  DO i = its , MIN(ide-1,ite)
+< !                     grid%tmn(i,j) = grid%em_tavgsfc(i,j)
+< !                  END DO
+< !               END DO
+< !            ELSE IF ( flag_st010040 .EQ. 1 ) THEN
+< !               DO j = jts , MIN(jde-1,jte)
+< !                  DO i = its , MIN(ide-1,ite)
+< !                     grid%tmn(i,j) = grid%st010040(i,j)
+< !                  END DO
+< !               END DO
+< !            ELSE IF ( flag_st000010 .EQ. 1 ) THEN
+< !               DO j = jts , MIN(jde-1,jte)
+< !                  DO i = its , MIN(ide-1,ite)
+< !                     grid%tmn(i,j) = grid%st000010(i,j)
+< !                  END DO
+< !               END DO
+< !            ELSE IF ( flag_soilt020 .EQ. 1 ) THEN
+< !               DO j = jts , MIN(jde-1,jte)
+< !                  DO i = its , MIN(ide-1,ite)
+< !                     grid%tmn(i,j) = grid%soilt020(i,j)
+< !                  END DO
+< !               END DO
+< !            ELSE IF ( flag_st007028 .EQ. 1 ) THEN
+< !               DO j = jts , MIN(jde-1,jte)
+< !                  DO i = its , MIN(ide-1,ite)
+< !                     grid%tmn(i,j) = grid%st007028(i,j)
+< !                  END DO
+< !               END DO
+< !            ELSE
+< !               CALL wrf_debug ( 0 , 'No 10-40 cm, 0-10 cm, 7-28, or 20 cm soil temperature data for grid%em_tmn')
+< !               CALL wrf_debug ( 0 , 'Using 1 degree static annual mean temps' )
+< !            END IF
+< !
+< !         CASE (LSMSCHEME)
+< !
+< !         CASE (RUCLSMSCHEME)
+< !
+< !      END SELECT fix_bottom_level_for_temp
+< !
+< !      !  Adjustments for the seaice field PRIOR to the grid%tslb computations.  This is
+< !      !  is for the 5-layer scheme.
+< !
+< !      num_veg_cat      = SIZE ( grid%landusef , DIM=2 )
+< !      num_soil_top_cat = SIZE ( grid%soilctop , DIM=2 )
+< !      num_soil_bot_cat = SIZE ( grid%soilcbot , DIM=2 )
+< !      CALL nl_get_seaice_threshold ( grid%id , grid%seaice_threshold ) 
+< !      CALL nl_get_isice ( grid%id , grid%isice )
+< !      CALL nl_get_iswater ( grid%id , grid%iswater )
+< !      CALL adjust_for_seaice_pre ( grid%xice , grid%landmask , grid%tsk , grid%ivgtyp , grid%vegcat , grid%lu_index , &
+< !                                   grid%xland , grid%landusef , grid%isltyp , grid%soilcat , grid%soilctop , &
+< !                                   grid%soilcbot , grid%tmn , &
+< !                                   grid%seaice_threshold , &
+< !                                   num_veg_cat , num_soil_top_cat , num_soil_bot_cat , &
+< !                                   grid%iswater , grid%isice , &
+< !                                   model_config_rec%sf_surface_physics(grid%id) , & 
+< !                                   ids , ide , jds , jde , kds , kde , & 
+< !                                   ims , ime , jms , jme , kms , kme , & 
+< !                                   its , ite , jts , jte , kts , kte ) 
+< !
+< !      !  surface_input_source=1 => use data from static file (fractional category as input)
+< !      !  surface_input_source=2 => use data from grib file (dominant category as input)
+< !  
+< !      IF ( config_flags%surface_input_source .EQ. 1 ) THEN
+< !         grid%vegcat (its,jts) = 0
+< !         grid%soilcat(its,jts) = 0
+< !      END IF
+< !
+< !      !  Generate the vegetation and soil category information from the fractional input
+< !      !  data, or use the existing dominant category fields if they exist.
+< !
+< !      IF ( ( grid%soilcat(its,jts) .LT. 0.5 ) .AND. ( grid%vegcat(its,jts) .LT. 0.5 ) ) THEN
+< !
+< !         num_veg_cat      = SIZE ( grid%landusef , DIM=2 )
+< !         num_soil_top_cat = SIZE ( grid%soilctop , DIM=2 )
+< !         num_soil_bot_cat = SIZE ( grid%soilcbot , DIM=2 )
+< !   
+< !         CALL process_percent_cat_new ( grid%landmask , &               
+< !                                    grid%landusef , grid%soilctop , grid%soilcbot , &
+< !                                    grid%isltyp , grid%ivgtyp , &
+< !                                    num_veg_cat , num_soil_top_cat , num_soil_bot_cat , &
+< !                                    ids , ide , jds , jde , kds , kde , &
+< !                                    ims , ime , jms , jme , kms , kme , &
+< !                                    its , ite , jts , jte , kts , kte , &
+< !                                    model_config_rec%iswater(grid%id) )
+< !
+< !         !  Make all the veg/soil parms the same so as not to confuse the developer.
+< !
+< !         DO j = jts , MIN(jde-1,jte)
+< !            DO i = its , MIN(ide-1,ite)
+< !               grid%vegcat(i,j)  = grid%ivgtyp(i,j)
+< !               grid%soilcat(i,j) = grid%isltyp(i,j)
+< !            END DO
+< !         END DO
+< !
+< !      ELSE
+< !
+< !         !  Do we have dominant soil and veg data from the input already?
+< !   
+< !         IF ( grid%soilcat(its,jts) .GT. 0.5 ) THEN
+< !            DO j = jts, MIN(jde-1,jte)
+< !               DO i = its, MIN(ide-1,ite)
+< !                  grid%isltyp(i,j) = NINT( grid%soilcat(i,j) )
+< !               END DO
+< !            END DO
+< !         END IF
+< !         IF ( grid%vegcat(its,jts) .GT. 0.5 ) THEN
+< !            DO j = jts, MIN(jde-1,jte)
+< !               DO i = its, MIN(ide-1,ite)
+< !                  grid%ivgtyp(i,j) = NINT( grid%vegcat(i,j) )
+< !               END DO
+< !            END DO
+< !         END IF
+< !
+< !      END IF
+< !         
+< !      !  Land use assignment.
+< !
+< !      DO j = jts, MIN(jde-1,jte)
+< !         DO i = its, MIN(ide-1,ite)
+< !            grid%lu_index(i,j) = grid%ivgtyp(i,j)
+< !            IF ( grid%lu_index(i,j) .NE. model_config_rec%iswater(grid%id) ) THEN
+< !               grid%landmask(i,j) = 1
+< !               grid%xland(i,j)    = 1
+< !            ELSE
+< !               grid%landmask(i,j) = 0
+< !               grid%xland(i,j)    = 2
+< !            END IF
+< !         END DO
+< !      END DO
+< !
+< !      !  Adjust the various soil temperature values depending on the difference in
+< !      !  in elevation between the current model's elevation and the incoming data's
+< !      !  orography.
+< !         
+< !      IF ( flag_soilhgt .EQ. 1 ) THEN
+< !         adjust_soil : SELECT CASE ( model_config_rec%sf_surface_physics(grid%id) )
+< !
+< !            CASE ( SLABSCHEME , LSMSCHEME , RUCLSMSCHEME )
+< !               CALL adjust_soil_temp_new ( grid%tmn , model_config_rec%sf_surface_physics(grid%id) , &
+< !                                           grid%tsk , grid%ht , grid%toposoil , grid%landmask , flag_soilhgt , &
+< !                                           grid%st000010 , grid%st010040 , grid%st040100 , grid%st100200 , grid%st010200 , &
+< !                                           flag_st000010 , flag_st010040 , flag_st040100 , flag_st100200 , flag_st010200 , &
+< !                                           grid%st000007 , grid%st007028 , grid%st028100 , grid%st100255 , &
+< !                                           flag_st000007 , flag_st007028 , flag_st028100 , flag_st100255 , &
+< !                                           grid%soilt000 , grid%soilt005 , grid%soilt020 , grid%soilt040 , grid%soilt160 , &
+< !                                           grid%soilt300 , &
+< !                                           flag_soilt000 , flag_soilt005 , flag_soilt020 , flag_soilt040 , &
+< !                                           flag_soilt160 , flag_soilt300 , &
+< !                                           ids , ide , jds , jde , kds , kde , &
+< !                                           ims , ime , jms , jme , kms , kme , &
+< !                                           its , ite , jts , jte , kts , kte )
+< !
+< !         END SELECT adjust_soil
+< !      END IF
+< !
+< !      !  Fix grid%em_tmn and grid%em_tsk.
+< !
+< !      fix_tsk_tmn : SELECT CASE ( model_config_rec%sf_surface_physics(grid%id) )
+< !
+< !         CASE ( SLABSCHEME , LSMSCHEME , RUCLSMSCHEME )
+< !            DO j = jts, MIN(jde-1,jte)
+< !               DO i = its, MIN(ide-1,ite)
+< !                  IF ( ( grid%landmask(i,j) .LT. 0.5 ) .AND. ( flag_sst .EQ. 1 ) .AND. &
+< !                       ( grid%sst(i,j) .GT. 240. ) .AND. ( grid%sst(i,j) .LT. 350. ) ) THEN
+< !                     grid%tmn(i,j) = grid%sst(i,j)
+< !                     grid%tsk(i,j) = grid%sst(i,j)
+< !                  ELSE IF ( grid%landmask(i,j) .LT. 0.5 ) THEN
+< !                     grid%tmn(i,j) = grid%tsk(i,j)
+< !                  END IF
+< !               END DO
+< !            END DO
+< !      END SELECT fix_tsk_tmn
+< !    
+< !      !  Is the grid%em_tsk reasonable?
+< !
+---
+>       DO j = jts, MIN(jde-1,jte)
+>          DO i = its, MIN(ide-1,ite)
+>             IF ( ( grid%landmask(i,j) .LT. 0.5 ) .AND. ( flag_sst .EQ. 1 ) .AND. &
+>                  ( grid%sst(i,j) .GT. 200. ) .AND. ( grid%sst(i,j) .LT. 350. ) ) THEN
+>                grid%tsk(i,j) = grid%sst(i,j)
+>             ENDIF            
+>          END DO
+>       END DO
+952a668,669
+>       !  Save the grid%em_tsk field for later use in the sea ice surface temperature
+>       !  for the Noah LSM scheme.
+954c671,898
+< !!**** MARS
+---
+>        DO j = jts, MIN(jte,jde-1)
+>          DO i = its, MIN(ite,ide-1)
+>             grid%tsk_save(i,j) = grid%tsk(i,j)
+>          END DO
+>       END DO
+> 
+>       !  Take the data from the input file and store it in the variables that
+>       !  use the WRF naming and ordering conventions.
+> 
+>        DO j = jts, MIN(jte,jde-1)
+>          DO i = its, MIN(ite,ide-1)
+>             IF ( grid%snow(i,j) .GE. 10. ) then
+>                grid%snowc(i,j) = 1.
+>             ELSE
+>                grid%snowc(i,j) = 0.0
+>             END IF
+>          END DO
+>       END DO
+> 
+>       !  Set flag integers for presence of snowh and soilw fields
+> 
+>       grid%ifndsnowh = flag_snowh
+>       IF (num_sw_levels_input .GE. 1) THEN
+>          grid%ifndsoilw = 1
+>       ELSE
+>          grid%ifndsoilw = 0
+>       END IF
+> 
+>       !  We require input data for the various LSM schemes.
+> 
+>       enough_data : SELECT CASE ( model_config_rec%sf_surface_physics(grid%id) )
+> 
+>          CASE (LSMSCHEME)
+>             IF ( num_st_levels_input .LT. 2 ) THEN
+>                CALL wrf_error_fatal ( 'Not enough soil temperature data for Noah LSM scheme.')
+>             END IF
+> 
+>          CASE (RUCLSMSCHEME)
+>             IF ( num_st_levels_input .LT. 2 ) THEN
+>                CALL wrf_error_fatal ( 'Not enough soil temperature data for RUC LSM scheme.')
+>             END IF
+> 
+>       END SELECT enough_data
+> 
+>       !  For sf_surface_physics = 1, we want to use close to a 30 cm value
+>       !  for the bottom level of the soil temps.
+> 
+>       fix_bottom_level_for_temp : SELECT CASE ( model_config_rec%sf_surface_physics(grid%id) )
+> 
+>          CASE (SLABSCHEME)
+>             IF      ( flag_tavgsfc  .EQ. 1 ) THEN
+>                DO j = jts , MIN(jde-1,jte)
+>                   DO i = its , MIN(ide-1,ite)
+>                      grid%tmn(i,j) = grid%em_tavgsfc(i,j)
+>                   END DO
+>                END DO
+>             ELSE IF ( flag_st010040 .EQ. 1 ) THEN
+>                DO j = jts , MIN(jde-1,jte)
+>                   DO i = its , MIN(ide-1,ite)
+>                      grid%tmn(i,j) = grid%st010040(i,j)
+>                   END DO
+>                END DO
+>             ELSE IF ( flag_st000010 .EQ. 1 ) THEN
+>                DO j = jts , MIN(jde-1,jte)
+>                   DO i = its , MIN(ide-1,ite)
+>                      grid%tmn(i,j) = grid%st000010(i,j)
+>                   END DO
+>                END DO
+>             ELSE IF ( flag_soilt020 .EQ. 1 ) THEN
+>                DO j = jts , MIN(jde-1,jte)
+>                   DO i = its , MIN(ide-1,ite)
+>                      grid%tmn(i,j) = grid%soilt020(i,j)
+>                   END DO
+>                END DO
+>             ELSE IF ( flag_st007028 .EQ. 1 ) THEN
+>                DO j = jts , MIN(jde-1,jte)
+>                   DO i = its , MIN(ide-1,ite)
+>                      grid%tmn(i,j) = grid%st007028(i,j)
+>                   END DO
+>                END DO
+>             ELSE
+>                CALL wrf_debug ( 0 , 'No 10-40 cm, 0-10 cm, 7-28, or 20 cm soil temperature data for grid%em_tmn')
+>                CALL wrf_debug ( 0 , 'Using 1 degree static annual mean temps' )
+>             END IF
+> 
+>          CASE (LSMSCHEME)
+> 
+>          CASE (RUCLSMSCHEME)
+> 
+>       END SELECT fix_bottom_level_for_temp
+> 
+>       !  Adjustments for the seaice field PRIOR to the grid%tslb computations.  This is
+>       !  is for the 5-layer scheme.
+> 
+>       num_veg_cat      = SIZE ( grid%landusef , DIM=2 )
+>       num_soil_top_cat = SIZE ( grid%soilctop , DIM=2 )
+>       num_soil_bot_cat = SIZE ( grid%soilcbot , DIM=2 )
+>       CALL nl_get_seaice_threshold ( grid%id , grid%seaice_threshold ) 
+>       CALL nl_get_isice ( grid%id , grid%isice )
+>       CALL nl_get_iswater ( grid%id , grid%iswater )
+>       CALL adjust_for_seaice_pre ( grid%xice , grid%landmask , grid%tsk , grid%ivgtyp , grid%vegcat , grid%lu_index , &
+>                                    grid%xland , grid%landusef , grid%isltyp , grid%soilcat , grid%soilctop , &
+>                                    grid%soilcbot , grid%tmn , &
+>                                    grid%seaice_threshold , &
+>                                    num_veg_cat , num_soil_top_cat , num_soil_bot_cat , &
+>                                    grid%iswater , grid%isice , &
+>                                    model_config_rec%sf_surface_physics(grid%id) , & 
+>                                    ids , ide , jds , jde , kds , kde , & 
+>                                    ims , ime , jms , jme , kms , kme , & 
+>                                    its , ite , jts , jte , kts , kte ) 
+> 
+>       !  surface_input_source=1 => use data from static file (fractional category as input)
+>       !  surface_input_source=2 => use data from grib file (dominant category as input)
+>   
+>       IF ( config_flags%surface_input_source .EQ. 1 ) THEN
+>          grid%vegcat (its,jts) = 0
+>          grid%soilcat(its,jts) = 0
+>       END IF
+> 
+>       !  Generate the vegetation and soil category information from the fractional input
+>       !  data, or use the existing dominant category fields if they exist.
+> 
+>       IF ( ( grid%soilcat(its,jts) .LT. 0.5 ) .AND. ( grid%vegcat(its,jts) .LT. 0.5 ) ) THEN
+> 
+>          num_veg_cat      = SIZE ( grid%landusef , DIM=2 )
+>          num_soil_top_cat = SIZE ( grid%soilctop , DIM=2 )
+>          num_soil_bot_cat = SIZE ( grid%soilcbot , DIM=2 )
+>    
+>          CALL process_percent_cat_new ( grid%landmask , &               
+>                                     grid%landusef , grid%soilctop , grid%soilcbot , &
+>                                     grid%isltyp , grid%ivgtyp , &
+>                                     num_veg_cat , num_soil_top_cat , num_soil_bot_cat , &
+>                                     ids , ide , jds , jde , kds , kde , &
+>                                     ims , ime , jms , jme , kms , kme , &
+>                                     its , ite , jts , jte , kts , kte , &
+>                                     model_config_rec%iswater(grid%id) )
+> 
+>          !  Make all the veg/soil parms the same so as not to confuse the developer.
+> 
+>          DO j = jts , MIN(jde-1,jte)
+>             DO i = its , MIN(ide-1,ite)
+>                grid%vegcat(i,j)  = grid%ivgtyp(i,j)
+>                grid%soilcat(i,j) = grid%isltyp(i,j)
+>             END DO
+>          END DO
+> 
+>       ELSE
+> 
+>          !  Do we have dominant soil and veg data from the input already?
+>    
+>          IF ( grid%soilcat(its,jts) .GT. 0.5 ) THEN
+>             DO j = jts, MIN(jde-1,jte)
+>                DO i = its, MIN(ide-1,ite)
+>                   grid%isltyp(i,j) = NINT( grid%soilcat(i,j) )
+>                END DO
+>             END DO
+>          END IF
+>          IF ( grid%vegcat(its,jts) .GT. 0.5 ) THEN
+>             DO j = jts, MIN(jde-1,jte)
+>                DO i = its, MIN(ide-1,ite)
+>                   grid%ivgtyp(i,j) = NINT( grid%vegcat(i,j) )
+>                END DO
+>             END DO
+>          END IF
+> 
+>       END IF
+>          
+>       !  Land use assignment.
+> 
+>       DO j = jts, MIN(jde-1,jte)
+>          DO i = its, MIN(ide-1,ite)
+>             grid%lu_index(i,j) = grid%ivgtyp(i,j)
+>             IF ( grid%lu_index(i,j) .NE. model_config_rec%iswater(grid%id) ) THEN
+>                grid%landmask(i,j) = 1
+>                grid%xland(i,j)    = 1
+>             ELSE
+>                grid%landmask(i,j) = 0
+>                grid%xland(i,j)    = 2
+>             END IF
+>          END DO
+>       END DO
+> 
+>       !  Adjust the various soil temperature values depending on the difference in
+>       !  in elevation between the current model's elevation and the incoming data's
+>       !  orography.
+>          
+>       IF ( flag_soilhgt .EQ. 1 ) THEN
+>          adjust_soil : SELECT CASE ( model_config_rec%sf_surface_physics(grid%id) )
+> 
+>             CASE ( SLABSCHEME , LSMSCHEME , RUCLSMSCHEME )
+>                CALL adjust_soil_temp_new ( grid%tmn , model_config_rec%sf_surface_physics(grid%id) , &
+>                                            grid%tsk , grid%ht , grid%toposoil , grid%landmask , flag_soilhgt , &
+>                                            grid%st000010 , grid%st010040 , grid%st040100 , grid%st100200 , grid%st010200 , &
+>                                            flag_st000010 , flag_st010040 , flag_st040100 , flag_st100200 , flag_st010200 , &
+>                                            grid%st000007 , grid%st007028 , grid%st028100 , grid%st100255 , &
+>                                            flag_st000007 , flag_st007028 , flag_st028100 , flag_st100255 , &
+>                                            grid%soilt000 , grid%soilt005 , grid%soilt020 , grid%soilt040 , grid%soilt160 , &
+>                                            grid%soilt300 , &
+>                                            flag_soilt000 , flag_soilt005 , flag_soilt020 , flag_soilt040 , &
+>                                            flag_soilt160 , flag_soilt300 , &
+>                                            ids , ide , jds , jde , kds , kde , &
+>                                            ims , ime , jms , jme , kms , kme , &
+>                                            its , ite , jts , jte , kts , kte )
+> 
+>          END SELECT adjust_soil
+>       END IF
+> 
+>       !  Fix grid%em_tmn and grid%em_tsk.
+> 
+>       fix_tsk_tmn : SELECT CASE ( model_config_rec%sf_surface_physics(grid%id) )
+> 
+>          CASE ( SLABSCHEME , LSMSCHEME , RUCLSMSCHEME )
+>             DO j = jts, MIN(jde-1,jte)
+>                DO i = its, MIN(ide-1,ite)
+>                   IF ( ( grid%landmask(i,j) .LT. 0.5 ) .AND. ( flag_sst .EQ. 1 ) .AND. &
+>                        ( grid%sst(i,j) .GT. 240. ) .AND. ( grid%sst(i,j) .LT. 350. ) ) THEN
+>                      grid%tmn(i,j) = grid%sst(i,j)
+>                      grid%tsk(i,j) = grid%sst(i,j)
+>                   ELSE IF ( grid%landmask(i,j) .LT. 0.5 ) THEN
+>                      grid%tmn(i,j) = grid%tsk(i,j)
+>                   END IF
+>                END DO
+>             END DO
+>       END SELECT fix_tsk_tmn
+>     
+>       !  Is the grid%em_tsk reasonable?
+> 
+>       IF ( internal_time_loop .NE. 1 ) THEN
+957,1248c901,1036
+<                 !!grid%tsk(i,j)=200
+<                 grid%tmn(i,j)=0  
+<                 grid%sst(i,j)=0  !!no use on Mars!!
+<                 grid%tslb(i,j)=0
+<                END DO
+<             END DO
+< !!**** MARS
+< 
+< !      IF ( internal_time_loop .NE. 1 ) THEN
+< !         DO j = jts, MIN(jde-1,jte)
+< !            DO i = its, MIN(ide-1,ite)
+< !               IF ( grid%tsk(i,j) .LT. 170 .or. grid%tsk(i,j) .GT. 400. ) THEN
+< !                  grid%tsk(i,j) = grid%em_t_2(i,1,j)
+< !               END IF
+< !            END DO
+< !         END DO
+< !      ELSE
+< !         DO j = jts, MIN(jde-1,jte)
+< !            DO i = its, MIN(ide-1,ite)
+< !               IF ( grid%tsk(i,j) .LT. 170 .or. grid%tsk(i,j) .GT. 400. ) THEN
+< !                  print *,'error in the grid%em_tsk'
+< !                  print *,'i,j=',i,j
+< !                  print *,'grid%landmask=',grid%landmask(i,j)
+< !                  print *,'grid%tsk, grid%sst, grid%tmn=',grid%tsk(i,j),grid%sst(i,j),grid%tmn(i,j)
+< !                  if(grid%tmn(i,j).gt.170. .and. grid%tmn(i,j).lt.400.)then
+< !                     grid%tsk(i,j)=grid%tmn(i,j)
+< !                  else if(grid%sst(i,j).gt.170. .and. grid%sst(i,j).lt.400.)then
+< !                     grid%tsk(i,j)=grid%sst(i,j)
+< !                  else
+< !                     CALL wrf_error_fatal ( 'grid%em_tsk unreasonable' )
+< !                  end if
+< !               END IF
+< !            END DO
+< !         END DO
+< !      END IF
+< !
+< !      !  Is the grid%em_tmn reasonable?
+< !
+< !      DO j = jts, MIN(jde-1,jte)
+< !         DO i = its, MIN(ide-1,ite)
+< !            IF ( ( ( grid%tmn(i,j) .LT. 170. ) .OR. ( grid%tmn(i,j) .GT. 400. ) ) &
+< !               .AND. ( grid%landmask(i,j) .GT. 0.5 ) ) THEN
+< !               IF ( model_config_rec%sf_surface_physics(grid%id) .NE. LSMSCHEME ) THEN
+< !                  print *,'error in the grid%em_tmn'
+< !                  print *,'i,j=',i,j
+< !                  print *,'grid%landmask=',grid%landmask(i,j)
+< !                  print *,'grid%tsk, grid%sst, grid%tmn=',grid%tsk(i,j),grid%sst(i,j),grid%tmn(i,j)
+< !               END IF
+< !
+< !               if(grid%tsk(i,j).gt.170. .and. grid%tsk(i,j).lt.400.)then
+< !                  grid%tmn(i,j)=grid%tsk(i,j)
+< !               else if(grid%sst(i,j).gt.170. .and. grid%sst(i,j).lt.400.)then
+< !                  grid%tmn(i,j)=grid%sst(i,j)
+< !               else
+< !                  CALL wrf_error_fatal ( 'grid%em_tmn unreasonable' )
+< !               endif
+< !            END IF
+< !         END DO
+< !      END DO
+< !   
+< !      interpolate_soil_tmw : SELECT CASE ( model_config_rec%sf_surface_physics(grid%id) )
+< !
+< !         CASE ( SLABSCHEME , LSMSCHEME , RUCLSMSCHEME )
+< !            CALL process_soil_real ( grid%tsk , grid%tmn , &
+< !                                  grid%landmask , grid%sst , &
+< !                                  st_input , sm_input , sw_input , st_levels_input , sm_levels_input , sw_levels_input , &
+< !                                  grid%zs , grid%dzs , grid%tslb , grid%smois , grid%sh2o , &
+< !                                  flag_sst , flag_soilt000, flag_soilm000, &
+< !                                  ids , ide , jds , jde , kds , kde , &
+< !                                  ims , ime , jms , jme , kms , kme , &
+< !                                  its , ite , jts , jte , kts , kte , &
+< !                                  model_config_rec%sf_surface_physics(grid%id) , &
+< !                                  model_config_rec%num_soil_layers , &
+< !                                  model_config_rec%real_data_init_type , &
+< !                                  num_st_levels_input , num_sm_levels_input , num_sw_levels_input , &
+< !                                  num_st_levels_alloc , num_sm_levels_alloc , num_sw_levels_alloc )
+< !
+< !      END SELECT interpolate_soil_tmw
+< !
+< !      !  Minimum soil values, residual, from RUC LSM scheme.  For input from Noah and using
+< !      !  RUC LSM scheme, this must be subtracted from the input total soil moisture.  For
+< !      !  input RUC data and using the Noah LSM scheme, this value must be added to the soil
+< !      !  moisture input.
+< !
+< !      lqmi(1:num_soil_top_cat) = &
+< !      (/0.045, 0.057, 0.065, 0.067, 0.034, 0.078, 0.10,     &
+< !        0.089, 0.095, 0.10,  0.070, 0.068, 0.078, 0.0,      &
+< !        0.004, 0.065 /)
+< !!       0.004, 0.065, 0.020, 0.004, 0.008 /)  !  has extra levels for playa, lava, and white sand
+< !
+< !      !  At the initial time we care about values of soil moisture and temperature, other times are
+< !      !  ignored by the model, so we ignore them, too.  
+< !
+< !      IF ( domain_ClockIsStartTime(grid) ) THEN
+< !         account_for_zero_soil_moisture : SELECT CASE ( model_config_rec%sf_surface_physics(grid%id) )
+< !   
+< !            CASE ( LSMSCHEME )
+< !               iicount = 0
+< !               IF      ( FLAG_SM000010 .EQ. 1 ) THEN
+< !                  DO j = jts, MIN(jde-1,jte)
+< !                     DO i = its, MIN(ide-1,ite)
+< !                        IF ( (grid%landmask(i,j).gt.0.5) .and. ( grid%tslb(i,1,j) .gt. 200 ) .and. &
+< !                             ( grid%tslb(i,1,j) .lt. 400 ) .and. ( grid%smois(i,1,j) .lt. 0.005 ) ) then
+< !                           print *,'Noah -> Noah: bad soil moisture at i,j = ',i,j,grid%smois(i,:,j)
+< !                           iicount = iicount + 1
+< !                           grid%smois(i,:,j) = 0.005
+< !                        END IF
+< !                     END DO
+< !                  END DO
+< !                  IF ( iicount .GT. 0 ) THEN
+< !                     print *,'Noah -> Noah: total number of small soil moisture locations = ',iicount
+< !                  END IF
+< !               ELSE IF ( FLAG_SOILM000 .EQ. 1 ) THEN
+< !                  DO j = jts, MIN(jde-1,jte)
+< !                     DO i = its, MIN(ide-1,ite)
+< !                        grid%smois(i,:,j) = grid%smois(i,:,j) + lqmi(grid%isltyp(i,j))
+< !                     END DO
+< !                  END DO
+< !                  DO j = jts, MIN(jde-1,jte)
+< !                     DO i = its, MIN(ide-1,ite)
+< !                        IF ( (grid%landmask(i,j).gt.0.5) .and. ( grid%tslb(i,1,j) .gt. 200 ) .and. &
+< !                             ( grid%tslb(i,1,j) .lt. 400 ) .and. ( grid%smois(i,1,j) .lt. 0.005 ) ) then
+< !                           print *,'RUC -> Noah: bad soil moisture at i,j = ',i,j,grid%smois(i,:,j)
+< !                           iicount = iicount + 1
+< !                           grid%smois(i,:,j) = 0.005
+< !                        END IF
+< !                     END DO
+< !                  END DO
+< !                  IF ( iicount .GT. 0 ) THEN
+< !                     print *,'RUC -> Noah: total number of small soil moisture locations = ',iicount
+< !                  END IF
+< !               END IF
+< !   
+< !            CASE ( RUCLSMSCHEME )
+< !               iicount = 0
+< !               IF      ( FLAG_SM000010 .EQ. 1 ) THEN
+< !                  DO j = jts, MIN(jde-1,jte)
+< !                     DO i = its, MIN(ide-1,ite)
+< !                        grid%smois(i,:,j) = MAX ( grid%smois(i,:,j) - lqmi(grid%isltyp(i,j)) , 0. )
+< !                     END DO
+< !                  END DO
+< !               ELSE IF ( FLAG_SOILM000 .EQ. 1 ) THEN
+< !                  ! no op
+< !               END IF
+< !   
+< !         END SELECT account_for_zero_soil_moisture
+< !      END IF
+< !
+< !      !  Is the grid%tslb reasonable?
+< !
+< !      IF ( internal_time_loop .NE. 1 ) THEN
+< !         DO j = jts, MIN(jde-1,jte)
+< !            DO ns = 1 , model_config_rec%num_soil_layers
+< !               DO i = its, MIN(ide-1,ite)
+< !                  IF ( grid%tslb(i,ns,j) .LT. 170 .or. grid%tslb(i,ns,j) .GT. 400. ) THEN
+< !                     grid%tslb(i,ns,j) = grid%em_t_2(i,1,j)
+< !                     grid%smois(i,ns,j) = 0.3
+< !                  END IF
+< !               END DO
+< !            END DO
+< !         END DO
+< !      ELSE
+< !         DO j = jts, MIN(jde-1,jte)
+< !            DO i = its, MIN(ide-1,ite)
+< !               IF ( ( ( grid%tslb(i,1,j) .LT. 170. ) .OR. ( grid%tslb(i,1,j) .GT. 400. ) ) .AND. &
+< !                       ( grid%landmask(i,j) .GT. 0.5 ) ) THEN
+< !                     IF ( ( model_config_rec%sf_surface_physics(grid%id) .NE. LSMSCHEME    ) .AND. &
+< !                          ( model_config_rec%sf_surface_physics(grid%id) .NE. RUCLSMSCHEME ) ) THEN
+< !                        print *,'error in the grid%tslb'
+< !                        print *,'i,j=',i,j
+< !                        print *,'grid%landmask=',grid%landmask(i,j)
+< !                        print *,'grid%tsk, grid%sst, grid%tmn=',grid%tsk(i,j),grid%sst(i,j),grid%tmn(i,j)
+< !                        print *,'grid%tslb = ',grid%tslb(i,:,j)
+< !                        print *,'old grid%smois = ',grid%smois(i,:,j)
+< !                        grid%smois(i,1,j) = 0.3
+< !                        grid%smois(i,2,j) = 0.3
+< !                        grid%smois(i,3,j) = 0.3
+< !                        grid%smois(i,4,j) = 0.3
+< !                     END IF
+< !   
+< !                     IF ( (grid%tsk(i,j).GT.170. .AND. grid%tsk(i,j).LT.400.) .AND. &
+< !                          (grid%tmn(i,j).GT.170. .AND. grid%tmn(i,j).LT.400.) ) THEN
+< !                        fake_soil_temp : SELECT CASE ( model_config_rec%sf_surface_physics(grid%id) )
+< !                           CASE ( SLABSCHEME )
+< !                              DO ns = 1 , model_config_rec%num_soil_layers
+< !                                 grid%tslb(i,ns,j) = ( grid%tsk(i,j)*(3.0 - grid%zs(ns)) + &
+< !                                                       grid%tmn(i,j)*(0.0 - grid%zs(ns)) ) /(3.0 - 0.0)
+< !                              END DO
+< !                           CASE ( LSMSCHEME , RUCLSMSCHEME )
+< !                              CALL wrf_error_fatal ( 'Assigning constant soil moisture, bad idea')
+< !                              DO ns = 1 , model_config_rec%num_soil_layers
+< !                                 grid%tslb(i,ns,j) = ( grid%tsk(i,j)*(3.0 - grid%zs(ns)) + &
+< !                                                       grid%tmn(i,j)*(0.0 - grid%zs(ns)) ) /(3.0 - 0.0)
+< !                              END DO
+< !                        END SELECT fake_soil_temp
+< !                     else if(grid%tsk(i,j).gt.170. .and. grid%tsk(i,j).lt.400.)then
+< !                        CALL wrf_error_fatal ( 'grid%tslb unreasonable 1' )
+< !                        DO ns = 1 , model_config_rec%num_soil_layers
+< !                           grid%tslb(i,ns,j)=grid%tsk(i,j)
+< !                        END DO
+< !                     else if(grid%sst(i,j).gt.170. .and. grid%sst(i,j).lt.400.)then
+< !                        CALL wrf_error_fatal ( 'grid%tslb unreasonable 2' )
+< !                        DO ns = 1 , model_config_rec%num_soil_layers
+< !                           grid%tslb(i,ns,j)=grid%sst(i,j)
+< !                        END DO
+< !                     else if(grid%tmn(i,j).gt.170. .and. grid%tmn(i,j).lt.400.)then
+< !                        CALL wrf_error_fatal ( 'grid%tslb unreasonable 3' )
+< !                        DO ns = 1 , model_config_rec%num_soil_layers
+< !                           grid%tslb(i,ns,j)=grid%tmn(i,j)
+< !                        END DO
+< !                     else
+< !                        CALL wrf_error_fatal ( 'grid%tslb unreasonable 4' )
+< !                     endif
+< !               END IF
+< !            END DO
+< !         END DO
+< !      END IF
+< !
+< !      !  Adjustments for the seaice field AFTER the grid%tslb computations.  This is
+< !      !  is for the Noah LSM scheme.
+< !
+< !      num_veg_cat      = SIZE ( grid%landusef , DIM=2 )
+< !      num_soil_top_cat = SIZE ( grid%soilctop , DIM=2 )
+< !      num_soil_bot_cat = SIZE ( grid%soilcbot , DIM=2 )
+< !      CALL nl_get_seaice_threshold ( grid%id , grid%seaice_threshold ) 
+< !      CALL nl_get_isice ( grid%id , grid%isice )
+< !      CALL nl_get_iswater ( grid%id , grid%iswater )
+< !      CALL adjust_for_seaice_post ( grid%xice , grid%landmask , grid%tsk , grid%tsk_save , &
+< !                                    grid%ivgtyp , grid%vegcat , grid%lu_index , &
+< !                                    grid%xland , grid%landusef , grid%isltyp , grid%soilcat ,  &
+< !                                    grid%soilctop , &
+< !                                    grid%soilcbot , grid%tmn , grid%vegfra , &
+< !                                    grid%tslb , grid%smois , grid%sh2o , &
+< !                                    grid%seaice_threshold , &
+< !                                    num_veg_cat , num_soil_top_cat , num_soil_bot_cat , &
+< !                                    model_config_rec%num_soil_layers , &
+< !                                    grid%iswater , grid%isice , &
+< !                                    model_config_rec%sf_surface_physics(grid%id) , & 
+< !                                    ids , ide , jds , jde , kds , kde , & 
+< !                                    ims , ime , jms , jme , kms , kme , & 
+< !                                    its , ite , jts , jte , kts , kte ) 
+< !
+< !      !  Let us make sure (again) that the grid%landmask and the veg/soil categories match.
+< !
+< !oops1=0
+< !oops2=0
+< !      DO j = jts, MIN(jde-1,jte)
+< !         DO i = its, MIN(ide-1,ite)
+< !            IF ( ( ( grid%landmask(i,j) .LT. 0.5 ) .AND. &
+< !                   ( grid%ivgtyp(i,j) .NE. config_flags%iswater .OR. grid%isltyp(i,j) .NE. 14 ) ) .OR. &
+< !                 ( ( grid%landmask(i,j) .GT. 0.5 ) .AND. &
+< !                   ( grid%ivgtyp(i,j) .EQ. config_flags%iswater .OR. grid%isltyp(i,j) .EQ. 14 ) ) ) THEN
+< !               IF ( grid%tslb(i,1,j) .GT. 1. ) THEN
+< !oops1=oops1+1
+< !                  grid%ivgtyp(i,j) = 5
+< !                  grid%isltyp(i,j) = 8
+< !                  grid%landmask(i,j) = 1
+< !                  grid%xland(i,j) = 1
+< !               ELSE IF ( grid%sst(i,j) .GT. 1. ) THEN
+< !oops2=oops2+1
+< !                  grid%ivgtyp(i,j) = config_flags%iswater
+< !                  grid%isltyp(i,j) = 14
+< !                  grid%landmask(i,j) = 0
+< !                  grid%xland(i,j) = 2
+< !               ELSE
+< !                  print *,'the grid%landmask and soil/veg cats do not match'
+< !                  print *,'i,j=',i,j
+< !                  print *,'grid%landmask=',grid%landmask(i,j)
+< !                  print *,'grid%ivgtyp=',grid%ivgtyp(i,j)
+< !                  print *,'grid%isltyp=',grid%isltyp(i,j)
+< !                  print *,'iswater=', config_flags%iswater
+< !                  print *,'grid%tslb=',grid%tslb(i,:,j)
+< !                  print *,'grid%sst=',grid%sst(i,j)
+< !                  CALL wrf_error_fatal ( 'mismatch_landmask_ivgtyp' )
+< !               END IF
+< !            END IF
+< !         END DO
+< !      END DO
+< !if (oops1.gt.0) then
+< !print *,'points artificially set to land : ',oops1
+< !endif
+< !if(oops2.gt.0) then
+< !print *,'points artificially set to water: ',oops2
+< !endif
+< !! fill grid%sst array with grid%em_tsk if missing in real input (needed for time-varying grid%sst in wrf)
+< !      DO j = jts, MIN(jde-1,jte)
+< !         DO i = its, MIN(ide-1,ite)
+< !           IF ( flag_sst .NE. 1 ) THEN
+< !             grid%sst(i,j) = grid%tsk(i,j)
+< !           ENDIF
+< !         END DO
+< !      END DO
+---
+>                IF ( grid%tsk(i,j) .LT. 170 .or. grid%tsk(i,j) .GT. 400. ) THEN
+>                   grid%tsk(i,j) = grid%em_t_2(i,1,j)
+>                END IF
+>             END DO
+>          END DO
+>       ELSE
+>          DO j = jts, MIN(jde-1,jte)
+>             DO i = its, MIN(ide-1,ite)
+>                IF ( grid%tsk(i,j) .LT. 170 .or. grid%tsk(i,j) .GT. 400. ) THEN
+>                   print *,'error in the grid%em_tsk'
+>                   print *,'i,j=',i,j
+>                   print *,'grid%landmask=',grid%landmask(i,j)
+>                   print *,'grid%tsk, grid%sst, grid%tmn=',grid%tsk(i,j),grid%sst(i,j),grid%tmn(i,j)
+>                   if(grid%tmn(i,j).gt.170. .and. grid%tmn(i,j).lt.400.)then
+>                      grid%tsk(i,j)=grid%tmn(i,j)
+>                   else if(grid%sst(i,j).gt.170. .and. grid%sst(i,j).lt.400.)then
+>                      grid%tsk(i,j)=grid%sst(i,j)
+>                   else
+>                      CALL wrf_error_fatal ( 'grid%em_tsk unreasonable' )
+>                   end if
+>                END IF
+>             END DO
+>          END DO
+>       END IF
+> 
+>       !  Is the grid%em_tmn reasonable?
+> 
+>       DO j = jts, MIN(jde-1,jte)
+>          DO i = its, MIN(ide-1,ite)
+>             IF ( ( ( grid%tmn(i,j) .LT. 170. ) .OR. ( grid%tmn(i,j) .GT. 400. ) ) &
+>                .AND. ( grid%landmask(i,j) .GT. 0.5 ) ) THEN
+>                IF ( model_config_rec%sf_surface_physics(grid%id) .NE. LSMSCHEME ) THEN
+>                   print *,'error in the grid%em_tmn'
+>                   print *,'i,j=',i,j
+>                   print *,'grid%landmask=',grid%landmask(i,j)
+>                   print *,'grid%tsk, grid%sst, grid%tmn=',grid%tsk(i,j),grid%sst(i,j),grid%tmn(i,j)
+>                END IF
+> 
+>                if(grid%tsk(i,j).gt.170. .and. grid%tsk(i,j).lt.400.)then
+>                   grid%tmn(i,j)=grid%tsk(i,j)
+>                else if(grid%sst(i,j).gt.170. .and. grid%sst(i,j).lt.400.)then
+>                   grid%tmn(i,j)=grid%sst(i,j)
+>                else
+>                   CALL wrf_error_fatal ( 'grid%em_tmn unreasonable' )
+>                endif
+>             END IF
+>          END DO
+>       END DO
+>    
+>       interpolate_soil_tmw : SELECT CASE ( model_config_rec%sf_surface_physics(grid%id) )
+> 
+>          CASE ( SLABSCHEME , LSMSCHEME , RUCLSMSCHEME )
+>             CALL process_soil_real ( grid%tsk , grid%tmn , &
+>                                   grid%landmask , grid%sst , &
+>                                   st_input , sm_input , sw_input , st_levels_input , sm_levels_input , sw_levels_input , &
+>                                   grid%zs , grid%dzs , grid%tslb , grid%smois , grid%sh2o , &
+>                                   flag_sst , flag_soilt000, flag_soilm000, &
+>                                   ids , ide , jds , jde , kds , kde , &
+>                                   ims , ime , jms , jme , kms , kme , &
+>                                   its , ite , jts , jte , kts , kte , &
+>                                   model_config_rec%sf_surface_physics(grid%id) , &
+>                                   model_config_rec%num_soil_layers , &
+>                                   model_config_rec%real_data_init_type , &
+>                                   num_st_levels_input , num_sm_levels_input , num_sw_levels_input , &
+>                                   num_st_levels_alloc , num_sm_levels_alloc , num_sw_levels_alloc )
+> 
+>       END SELECT interpolate_soil_tmw
+> 
+>       !  Minimum soil values, residual, from RUC LSM scheme.  For input from Noah and using
+>       !  RUC LSM scheme, this must be subtracted from the input total soil moisture.  For
+>       !  input RUC data and using the Noah LSM scheme, this value must be added to the soil
+>       !  moisture input.
+> 
+>       lqmi(1:num_soil_top_cat) = &
+>       (/0.045, 0.057, 0.065, 0.067, 0.034, 0.078, 0.10,     &
+>         0.089, 0.095, 0.10,  0.070, 0.068, 0.078, 0.0,      &
+>         0.004, 0.065 /)
+> !       0.004, 0.065, 0.020, 0.004, 0.008 /)  !  has extra levels for playa, lava, and white sand
+> 
+>       !  At the initial time we care about values of soil moisture and temperature, other times are
+>       !  ignored by the model, so we ignore them, too.  
+> 
+>       IF ( domain_ClockIsStartTime(grid) ) THEN
+>          account_for_zero_soil_moisture : SELECT CASE ( model_config_rec%sf_surface_physics(grid%id) )
+>    
+>             CASE ( LSMSCHEME )
+>                iicount = 0
+>                IF      ( FLAG_SM000010 .EQ. 1 ) THEN
+>                   DO j = jts, MIN(jde-1,jte)
+>                      DO i = its, MIN(ide-1,ite)
+>                         IF ( (grid%landmask(i,j).gt.0.5) .and. ( grid%tslb(i,1,j) .gt. 200 ) .and. &
+>                              ( grid%tslb(i,1,j) .lt. 400 ) .and. ( grid%smois(i,1,j) .lt. 0.005 ) ) then
+>                            print *,'Noah -> Noah: bad soil moisture at i,j = ',i,j,grid%smois(i,:,j)
+>                            iicount = iicount + 1
+>                            grid%smois(i,:,j) = 0.005
+>                         END IF
+>                      END DO
+>                   END DO
+>                   IF ( iicount .GT. 0 ) THEN
+>                      print *,'Noah -> Noah: total number of small soil moisture locations = ',iicount
+>                   END IF
+>                ELSE IF ( FLAG_SOILM000 .EQ. 1 ) THEN
+>                   DO j = jts, MIN(jde-1,jte)
+>                      DO i = its, MIN(ide-1,ite)
+>                         grid%smois(i,:,j) = grid%smois(i,:,j) + lqmi(grid%isltyp(i,j))
+>                      END DO
+>                   END DO
+>                   DO j = jts, MIN(jde-1,jte)
+>                      DO i = its, MIN(ide-1,ite)
+>                         IF ( (grid%landmask(i,j).gt.0.5) .and. ( grid%tslb(i,1,j) .gt. 200 ) .and. &
+>                              ( grid%tslb(i,1,j) .lt. 400 ) .and. ( grid%smois(i,1,j) .lt. 0.005 ) ) then
+>                            print *,'RUC -> Noah: bad soil moisture at i,j = ',i,j,grid%smois(i,:,j)
+>                            iicount = iicount + 1
+>                            grid%smois(i,:,j) = 0.005
+>                         END IF
+>                      END DO
+>                   END DO
+>                   IF ( iicount .GT. 0 ) THEN
+>                      print *,'RUC -> Noah: total number of small soil moisture locations = ',iicount
+>                   END IF
+>                END IF
+>    
+>             CASE ( RUCLSMSCHEME )
+>                iicount = 0
+>                IF      ( FLAG_SM000010 .EQ. 1 ) THEN
+>                   DO j = jts, MIN(jde-1,jte)
+>                      DO i = its, MIN(ide-1,ite)
+>                         grid%smois(i,:,j) = MAX ( grid%smois(i,:,j) - lqmi(grid%isltyp(i,j)) , 0. )
+>                      END DO
+>                   END DO
+>                ELSE IF ( FLAG_SOILM000 .EQ. 1 ) THEN
+>                   ! no op
+>                END IF
+>    
+>          END SELECT account_for_zero_soil_moisture
+>       END IF
+1249a1038,1181
+>       !  Is the grid%tslb reasonable?
+> 
+>       IF ( internal_time_loop .NE. 1 ) THEN
+>          DO j = jts, MIN(jde-1,jte)
+>             DO ns = 1 , model_config_rec%num_soil_layers
+>                DO i = its, MIN(ide-1,ite)
+>                   IF ( grid%tslb(i,ns,j) .LT. 170 .or. grid%tslb(i,ns,j) .GT. 400. ) THEN
+>                      grid%tslb(i,ns,j) = grid%em_t_2(i,1,j)
+>                      grid%smois(i,ns,j) = 0.3
+>                   END IF
+>                END DO
+>             END DO
+>          END DO
+>       ELSE
+>          DO j = jts, MIN(jde-1,jte)
+>             DO i = its, MIN(ide-1,ite)
+>                IF ( ( ( grid%tslb(i,1,j) .LT. 170. ) .OR. ( grid%tslb(i,1,j) .GT. 400. ) ) .AND. &
+>                        ( grid%landmask(i,j) .GT. 0.5 ) ) THEN
+>                      IF ( ( model_config_rec%sf_surface_physics(grid%id) .NE. LSMSCHEME    ) .AND. &
+>                           ( model_config_rec%sf_surface_physics(grid%id) .NE. RUCLSMSCHEME ) ) THEN
+>                         print *,'error in the grid%tslb'
+>                         print *,'i,j=',i,j
+>                         print *,'grid%landmask=',grid%landmask(i,j)
+>                         print *,'grid%tsk, grid%sst, grid%tmn=',grid%tsk(i,j),grid%sst(i,j),grid%tmn(i,j)
+>                         print *,'grid%tslb = ',grid%tslb(i,:,j)
+>                         print *,'old grid%smois = ',grid%smois(i,:,j)
+>                         grid%smois(i,1,j) = 0.3
+>                         grid%smois(i,2,j) = 0.3
+>                         grid%smois(i,3,j) = 0.3
+>                         grid%smois(i,4,j) = 0.3
+>                      END IF
+>    
+>                      IF ( (grid%tsk(i,j).GT.170. .AND. grid%tsk(i,j).LT.400.) .AND. &
+>                           (grid%tmn(i,j).GT.170. .AND. grid%tmn(i,j).LT.400.) ) THEN
+>                         fake_soil_temp : SELECT CASE ( model_config_rec%sf_surface_physics(grid%id) )
+>                            CASE ( SLABSCHEME )
+>                               DO ns = 1 , model_config_rec%num_soil_layers
+>                                  grid%tslb(i,ns,j) = ( grid%tsk(i,j)*(3.0 - grid%zs(ns)) + &
+>                                                        grid%tmn(i,j)*(0.0 - grid%zs(ns)) ) /(3.0 - 0.0)
+>                               END DO
+>                            CASE ( LSMSCHEME , RUCLSMSCHEME )
+>                               CALL wrf_error_fatal ( 'Assigning constant soil moisture, bad idea')
+>                               DO ns = 1 , model_config_rec%num_soil_layers
+>                                  grid%tslb(i,ns,j) = ( grid%tsk(i,j)*(3.0 - grid%zs(ns)) + &
+>                                                        grid%tmn(i,j)*(0.0 - grid%zs(ns)) ) /(3.0 - 0.0)
+>                               END DO
+>                         END SELECT fake_soil_temp
+>                      else if(grid%tsk(i,j).gt.170. .and. grid%tsk(i,j).lt.400.)then
+>                         CALL wrf_error_fatal ( 'grid%tslb unreasonable 1' )
+>                         DO ns = 1 , model_config_rec%num_soil_layers
+>                            grid%tslb(i,ns,j)=grid%tsk(i,j)
+>                         END DO
+>                      else if(grid%sst(i,j).gt.170. .and. grid%sst(i,j).lt.400.)then
+>                         CALL wrf_error_fatal ( 'grid%tslb unreasonable 2' )
+>                         DO ns = 1 , model_config_rec%num_soil_layers
+>                            grid%tslb(i,ns,j)=grid%sst(i,j)
+>                         END DO
+>                      else if(grid%tmn(i,j).gt.170. .and. grid%tmn(i,j).lt.400.)then
+>                         CALL wrf_error_fatal ( 'grid%tslb unreasonable 3' )
+>                         DO ns = 1 , model_config_rec%num_soil_layers
+>                            grid%tslb(i,ns,j)=grid%tmn(i,j)
+>                         END DO
+>                      else
+>                         CALL wrf_error_fatal ( 'grid%tslb unreasonable 4' )
+>                      endif
+>                END IF
+>             END DO
+>          END DO
+>       END IF
+> 
+>       !  Adjustments for the seaice field AFTER the grid%tslb computations.  This is
+>       !  is for the Noah LSM scheme.
+> 
+>       num_veg_cat      = SIZE ( grid%landusef , DIM=2 )
+>       num_soil_top_cat = SIZE ( grid%soilctop , DIM=2 )
+>       num_soil_bot_cat = SIZE ( grid%soilcbot , DIM=2 )
+>       CALL nl_get_seaice_threshold ( grid%id , grid%seaice_threshold ) 
+>       CALL nl_get_isice ( grid%id , grid%isice )
+>       CALL nl_get_iswater ( grid%id , grid%iswater )
+>       CALL adjust_for_seaice_post ( grid%xice , grid%landmask , grid%tsk , grid%tsk_save , &
+>                                     grid%ivgtyp , grid%vegcat , grid%lu_index , &
+>                                     grid%xland , grid%landusef , grid%isltyp , grid%soilcat ,  &
+>                                     grid%soilctop , &
+>                                     grid%soilcbot , grid%tmn , grid%vegfra , &
+>                                     grid%tslb , grid%smois , grid%sh2o , &
+>                                     grid%seaice_threshold , &
+>                                     num_veg_cat , num_soil_top_cat , num_soil_bot_cat , &
+>                                     model_config_rec%num_soil_layers , &
+>                                     grid%iswater , grid%isice , &
+>                                     model_config_rec%sf_surface_physics(grid%id) , & 
+>                                     ids , ide , jds , jde , kds , kde , & 
+>                                     ims , ime , jms , jme , kms , kme , & 
+>                                     its , ite , jts , jte , kts , kte ) 
+> 
+>       !  Let us make sure (again) that the grid%landmask and the veg/soil categories match.
+> 
+> oops1=0
+> oops2=0
+>       DO j = jts, MIN(jde-1,jte)
+>          DO i = its, MIN(ide-1,ite)
+>             IF ( ( ( grid%landmask(i,j) .LT. 0.5 ) .AND. &
+>                    ( grid%ivgtyp(i,j) .NE. config_flags%iswater .OR. grid%isltyp(i,j) .NE. 14 ) ) .OR. &
+>                  ( ( grid%landmask(i,j) .GT. 0.5 ) .AND. &
+>                    ( grid%ivgtyp(i,j) .EQ. config_flags%iswater .OR. grid%isltyp(i,j) .EQ. 14 ) ) ) THEN
+>                IF ( grid%tslb(i,1,j) .GT. 1. ) THEN
+> oops1=oops1+1
+>                   grid%ivgtyp(i,j) = 5
+>                   grid%isltyp(i,j) = 8
+>                   grid%landmask(i,j) = 1
+>                   grid%xland(i,j) = 1
+>                ELSE IF ( grid%sst(i,j) .GT. 1. ) THEN
+> oops2=oops2+1
+>                   grid%ivgtyp(i,j) = config_flags%iswater
+>                   grid%isltyp(i,j) = 14
+>                   grid%landmask(i,j) = 0
+>                   grid%xland(i,j) = 2
+>                ELSE
+>                   print *,'the grid%landmask and soil/veg cats do not match'
+>                   print *,'i,j=',i,j
+>                   print *,'grid%landmask=',grid%landmask(i,j)
+>                   print *,'grid%ivgtyp=',grid%ivgtyp(i,j)
+>                   print *,'grid%isltyp=',grid%isltyp(i,j)
+>                   print *,'iswater=', config_flags%iswater
+>                   print *,'grid%tslb=',grid%tslb(i,:,j)
+>                   print *,'grid%sst=',grid%sst(i,j)
+>                   CALL wrf_error_fatal ( 'mismatch_landmask_ivgtyp' )
+>                END IF
+>             END IF
+>          END DO
+>       END DO
+> if (oops1.gt.0) then
+> print *,'points artificially set to land : ',oops1
+> endif
+> if(oops2.gt.0) then
+> print *,'points artificially set to water: ',oops2
+> endif
+> ! fill grid%sst array with grid%em_tsk if missing in real input (needed for time-varying grid%sst in wrf)
+>       DO j = jts, MIN(jde-1,jte)
+>          DO i = its, MIN(ide-1,ite)
+>            IF ( flag_sst .NE. 1 ) THEN
+>              grid%sst(i,j) = grid%tsk(i,j)
+>            ENDIF
+>          END DO
+>       END DO
+1348,1351d1279
+< 
+< !****MARS         
+< !TODO: étudier si une meilleure formule n'existe pas pour Mars
+< !****MARS
+1357c1285
+<         
+---
+> 
+1457,1469c1385,1391
+< !!---------------------------------------------------------------
+< !!****MARS: no 500mb adjustment needed
+< !!****MARS: must keep however the hydrostatic equation integration performed in this loop !
+< !!****MARS: the DO WHILE loop is deactivated, since we will always be in the case
+< !!****MARS: ... of "ELSE dpmu = 0."
+< !!---------------------------------------------------------------
+< !            dpmu = 10001.
+< !            loop_count = 0
+< !
+< !            DO WHILE ( ( ABS(dpmu) .GT. 10. ) .AND. &
+< !                       ( loop_count .LT. 5 ) )  
+< !
+< !               loop_count = loop_count + 1
+---
+>             dpmu = 10001.
+>             loop_count = 0
+> 
+>             DO WHILE ( ( ABS(dpmu) .GT. 10. ) .AND. &
+>                        ( loop_count .LT. 5 ) )  
+> 
+>                loop_count = loop_count + 1
+1490c1412
+<                 DO k=kte-2,1,-1
+---
+>                DO k=kte-2,1,-1
+1509a1432,1495
+>    
+>                !  Adjust the column pressure so that the computed 500 mb height is close to the
+>                !  input value (of course, not when we are doing hybrid input).
+>    
+>                IF ( ( flag_metgrid .EQ. 1 ) .AND. ( i .EQ. its ) .AND. ( j .EQ. jts ) ) THEN
+>                   DO k = 1 , num_metgrid_levels
+>                      IF ( ABS ( grid%em_p_gc(i,k,j) - 50000. ) .LT. 1. ) THEN
+>                         lev500 = k
+>                         EXIT
+>                      END IF
+>                   END DO
+>                END IF
+>            
+>                !  We only do the adjustment of height if we have the input data on pressure
+>                !  surfaces, and folks have asked to do this option.
+>    
+>                IF ( ( flag_metgrid .EQ. 1 ) .AND. &
+>                     ( config_flags%adjust_heights ) .AND. &
+>                     ( lev500 .NE. 0 ) ) THEN
+>    
+>                   DO k = 2 , kte-1
+>       
+>                      !  Get the pressures on the full eta levels (grid%em_php is defined above as 
+>                      !  the full-lev base pressure, an easy array to use for 3d space).
+>       
+>                      pl = grid%em_php(i,k  ,j) + &
+>                           ( grid%em_p(i,k-1  ,j) * ( grid%em_znw(k    ) - grid%em_znu(k  ) ) + &             
+>                             grid%em_p(i,k    ,j) * ( grid%em_znu(k-1  ) - grid%em_znw(k  ) ) ) / &
+>                           ( grid%em_znu(k-1  ) - grid%em_znu(k  ) )
+>                      pu = grid%em_php(i,k+1,j) + &
+>                           ( grid%em_p(i,k-1+1,j) * ( grid%em_znw(k  +1) - grid%em_znu(k+1) ) + &             
+>                             grid%em_p(i,k  +1,j) * ( grid%em_znu(k-1+1) - grid%em_znw(k+1) ) ) / &
+>                           ( grid%em_znu(k-1+1) - grid%em_znu(k+1) )
+>                    
+>                      !  If these pressure levels trap 500 mb, use them to interpolate
+>                      !  to the 500 mb level of the computed height.
+>        
+>                      IF ( ( pl .GE. 50000. ) .AND. ( pu .LT. 50000. ) ) THEN
+>                         zl = ( grid%em_ph_2(i,k  ,j) + grid%em_phb(i,k  ,j) ) / g
+>                         zu = ( grid%em_ph_2(i,k+1,j) + grid%em_phb(i,k+1,j) ) / g
+>       
+>                         z500 = ( zl * ( LOG(50000.) - LOG(pu    ) ) + &
+>                                  zu * ( LOG(pl    ) - LOG(50000.) ) ) / &
+>                                ( LOG(pl) - LOG(pu) ) 
+> !                       z500 = ( zl * (    (50000.) -    (pu    ) ) + &
+> !                                zu * (    (pl    ) -    (50000.) ) ) / &
+> !                              (    (pl) -    (pu) ) 
+>       
+>                         !  Compute the difference of the 500 mb heights (computed minus input), and
+>                         !  then the change in grid%em_mu_2.  The grid%em_php is still full-levels, base pressure.
+>       
+>                         dz500 = z500 - grid%em_ght_gc(i,lev500,j)
+>                         tvsfc = ((grid%em_t_2(i,1,j)+t0)*((grid%em_p(i,1,j)+grid%em_php(i,1,j))/p1000mb)**(r_d/cp)) * &
+>                                 (1.+0.6*moist(i,1,j,P_QV))
+>                         dpmu = ( grid%em_php(i,1,j) + grid%em_p(i,1,j) ) * EXP ( g * dz500 / ( r_d * tvsfc ) )
+>                         dpmu = dpmu - ( grid%em_php(i,1,j) + grid%em_p(i,1,j) )
+>                         grid%em_mu_2(i,j) = grid%em_mu_2(i,j) - dpmu
+>                         EXIT
+>                      END IF
+>       
+>                   END DO
+>                ELSE
+>                   dpmu = 0.
+>                END IF
+1511,1575c1497
+< !               !  Adjust the column pressure so that the computed 500 mb height is close to the
+< !               !  input value (of course, not when we are doing hybrid input).
+< !   
+< !               IF ( ( flag_metgrid .EQ. 1 ) .AND. ( i .EQ. its ) .AND. ( j .EQ. jts ) ) THEN
+< !                  DO k = 1 , num_metgrid_levels
+< !                     IF ( ABS ( grid%em_p_gc(i,k,j) - 50000. ) .LT. 1. ) THEN
+< !                        lev500 = k
+< !                        EXIT
+< !                     END IF
+< !                  END DO
+< !               END IF
+< !           
+< !               !  We only do the adjustment of height if we have the input data on pressure
+< !               !  surfaces, and folks have asked to do this option.
+< !   
+< !               IF ( ( flag_metgrid .EQ. 1 ) .AND. &
+< !                    ( config_flags%adjust_heights ) .AND. &
+< !                    ( lev500 .NE. 0 ) ) THEN
+< !   
+< !                  DO k = 2 , kte-1
+< !      
+< !                     !  Get the pressures on the full eta levels (grid%em_php is defined above as 
+< !                     !  the full-lev base pressure, an easy array to use for 3d space).
+< !      
+< !                     pl = grid%em_php(i,k  ,j) + &
+< !                          ( grid%em_p(i,k-1  ,j) * ( grid%em_znw(k    ) - grid%em_znu(k  ) ) + &             
+< !                            grid%em_p(i,k    ,j) * ( grid%em_znu(k-1  ) - grid%em_znw(k  ) ) ) / &
+< !                          ( grid%em_znu(k-1  ) - grid%em_znu(k  ) )
+< !                     pu = grid%em_php(i,k+1,j) + &
+< !                          ( grid%em_p(i,k-1+1,j) * ( grid%em_znw(k  +1) - grid%em_znu(k+1) ) + &             
+< !                            grid%em_p(i,k  +1,j) * ( grid%em_znu(k-1+1) - grid%em_znw(k+1) ) ) / &
+< !                          ( grid%em_znu(k-1+1) - grid%em_znu(k+1) )
+< !                   
+< !                     !  If these pressure levels trap 500 mb, use them to interpolate
+< !                     !  to the 500 mb level of the computed height.
+< !!**** PB on MARS .... ?       
+< !                     IF ( ( pl .GE. 50000. ) .AND. ( pu .LT. 50000. ) ) THEN
+< !                        zl = ( grid%em_ph_2(i,k  ,j) + grid%em_phb(i,k  ,j) ) / g
+< !                        zu = ( grid%em_ph_2(i,k+1,j) + grid%em_phb(i,k+1,j) ) / g
+< !      
+< !                        z500 = ( zl * ( LOG(50000.) - LOG(pu    ) ) + &
+< !                                 zu * ( LOG(pl    ) - LOG(50000.) ) ) / &
+< !                               ( LOG(pl) - LOG(pu) ) 
+< !!                       z500 = ( zl * (    (50000.) -    (pu    ) ) + &
+< !!                                zu * (    (pl    ) -    (50000.) ) ) / &
+< !!                              (    (pl) -    (pu) ) 
+< !      
+< !                        !  Compute the difference of the 500 mb heights (computed minus input), and
+< !                        !  then the change in grid%em_mu_2.  The grid%em_php is still full-levels, base pressure.
+< !      
+< !                        dz500 = z500 - grid%em_ght_gc(i,lev500,j)
+< !                        tvsfc = ((grid%em_t_2(i,1,j)+t0)*((grid%em_p(i,1,j)+grid%em_php(i,1,j))/p1000mb)**(r_d/cp)) * &
+< !                                (1.+0.6*moist(i,1,j,P_QV))
+< !                        dpmu = ( grid%em_php(i,1,j) + grid%em_p(i,1,j) ) * EXP ( g * dz500 / ( r_d * tvsfc ) )
+< !                        dpmu = dpmu - ( grid%em_php(i,1,j) + grid%em_p(i,1,j) )
+< !                        grid%em_mu_2(i,j) = grid%em_mu_2(i,j) - dpmu
+< !                        EXIT
+< !                     END IF
+< !      
+< !                  END DO
+< !               ELSE
+< !                  dpmu = 0.
+< !               END IF
+< !
+< !            END DO
+---
+>             END DO
+1580,1619c1502,1537
+< !!****MARS: we use WPS
+< !
+< !      !  If this is data from the SI, then we probably do not have the original
+< !      !  surface data laying around.  Note that these are all the lowest levels
+< !      !  of the respective 3d arrays.  For surface pressure, we assume that the
+< !      !  vertical gradient of grid%em_p prime is zilch.  This is not all that important.
+< !      !  These are filled in so that the various plotting routines have something
+< !      !  to play with at the initial time for the model.
+< !
+< !      IF ( flag_metgrid .NE. 1 ) THEN
+< !         DO j = jts, min(jde-1,jte)
+< !            DO i = its, min(ide,ite)
+< !               grid%u10(i,j)=grid%em_u_2(i,1,j)
+< !            END DO
+< !         END DO
+< !   
+< !         DO j = jts, min(jde,jte)
+< !            DO i = its, min(ide-1,ite)
+< !               grid%v10(i,j)=grid%em_v_2(i,1,j)
+< !            END DO
+< !         END DO
+< !
+< !         DO j = jts, min(jde-1,jte)
+< !            DO i = its, min(ide-1,ite)
+< !               p_surf = p00 * EXP ( -t00/a + ( (t00/a)**2 - 2.*g*grid%ht(i,j)/a/r_d ) **0.5 ) 
+< !               grid%psfc(i,j)=p_surf + grid%em_p(i,1,j)
+< !               grid%q2(i,j)=moist(i,1,j,P_QV)
+< !               grid%th2(i,j)=grid%em_t_2(i,1,j)+300.
+< !               grid%t2(i,j)=grid%th2(i,j)*(((grid%em_p(i,1,j)+grid%em_pb(i,1,j))/p00)**(r_d/cp))
+< !            END DO
+< !         END DO
+< !
+< !      !  If this data is from WPS, then we have previously assigned the surface
+< !      !  data for u, v, and t.  If we have an input qv, welp, we assigned that one,
+< !      !  too.  Now we pick up the left overs, and if RH came in - we assign the 
+< !      !  mixing ratio.
+< !
+< !      ELSE IF ( flag_metgrid .EQ. 1 ) THEN
+< !
+< !!****MARS: we use WPS
+---
+>       !  If this is data from the SI, then we probably do not have the original
+>       !  surface data laying around.  Note that these are all the lowest levels
+>       !  of the respective 3d arrays.  For surface pressure, we assume that the
+>       !  vertical gradient of grid%em_p prime is zilch.  This is not all that important.
+>       !  These are filled in so that the various plotting routines have something
+>       !  to play with at the initial time for the model.
+> 
+>       IF ( flag_metgrid .NE. 1 ) THEN
+>          DO j = jts, min(jde-1,jte)
+>             DO i = its, min(ide,ite)
+>                grid%u10(i,j)=grid%em_u_2(i,1,j)
+>             END DO
+>          END DO
+>    
+>          DO j = jts, min(jde,jte)
+>             DO i = its, min(ide-1,ite)
+>                grid%v10(i,j)=grid%em_v_2(i,1,j)
+>             END DO
+>          END DO
+> 
+>          DO j = jts, min(jde-1,jte)
+>             DO i = its, min(ide-1,ite)
+>                p_surf = p00 * EXP ( -t00/a + ( (t00/a)**2 - 2.*g*grid%ht(i,j)/a/r_d ) **0.5 ) 
+>                grid%psfc(i,j)=p_surf + grid%em_p(i,1,j)
+>                grid%q2(i,j)=moist(i,1,j,P_QV)
+>                grid%th2(i,j)=grid%em_t_2(i,1,j)+300.
+>                grid%t2(i,j)=grid%th2(i,j)*(((grid%em_p(i,1,j)+grid%em_pb(i,1,j))/p00)**(r_d/cp))
+>             END DO
+>          END DO
+> 
+>       !  If this data is from WPS, then we have previously assigned the surface
+>       !  data for u, v, and t.  If we have an input qv, welp, we assigned that one,
+>       !  too.  Now we pick up the left overs, and if RH came in - we assign the 
+>       !  mixing ratio.
+> 
+>       ELSE IF ( flag_metgrid .EQ. 1 ) THEN
+1636c1554
+< !      END IF
+---
+>       END IF
+2186,2192d2103
+< !****MARS
+< !big problems ... discontinuity in the interpolated fields ...
+< print *, '25/05/2007: decided to use simple linear interpolations'
+< stop
+< !****MARS
+< 
+< 
+2616d2526
+< !****MARS
+2619d2528
+< !****MARS
+2621c2530
+<       !  Horizontal loop bounds for different variable types.
+---
+>       !  Horiontal loop bounds for different variable types.
+2765d2673
+< 
+2778d2685
+< 
+2782,2794d2688
+< !!****MARS
+< !!
+< !! Pressure level may be OK, however data from the diagfi is possibly missing
+< IF (forig(i,ko,j) .EQ. -1.0e+30) THEN
+<         ko_above_sfc(i) = -1
+< END IF
+<         !! Once the right start level is found, check that it is OK
+<         !! >> first column should be 1e30 or so, second column should be a realistic value
+<         !IF ( ko_above_sfc(i) .NE. -1 ) THEN
+<         !        print *, 'verif', forig(i,ko-1,j), forig(i,ko,j), forig(i,ko+1,j), ko
+<         !END IF
+< !!
+< !!****MARS
+2797d2690
+< 
+2843,2844d2735
+< !****MARS
+< !the possible issue is fixed later in the code ...
+2847d2737
+< !****MARS
+2882,2885d2771
+< !!****MARS
+< !!check: values are usually quite close
+< !print *,porig(i,1,j),pnew(i,kn,j)
+< !!****MARS
+2905,2910d2790
+< !!****MARS
+< k_above(i,kn) = 1
+< ks(i) = 1
+< !!"Hopefully, we are not extrapolating too far"
+< !!>> true on Mars ?? 
+< !!****MARS
+2941,2958d2820
+< !!****MARS
+< !!ne doit pas arriver avec la temperature si l'on definit bien le champ au sol
+< IF (forig(i,1,j) .EQ. -1.0e+30) THEN
+<         print *,'no data here - surface - var is ...',var_type,i,j,1
+<         print *,'setting to first level with data...',ko_above_sfc(i),porig(i,ko_above_sfc(i),j)
+<         forig(i,1,j) = forig(i,ko_above_sfc(i),j)
+<         !IF      ( ( var_type .EQ. 'U' ) .OR. &
+<         !    ( var_type .EQ. 'V' ) .OR. &
+<         !    ( var_type .EQ. 'Q' ) ) THEN
+<         !    print *,'zero wind at the ground'
+<         !    forig(i,1,j) = 0
+<         !ENDIF
+<                 IF (forig(i,1,j) .EQ. -1.0e+30) THEN
+<                 print *,'well ... are you sure ?'
+<                 stop
+<                 ENDIF
+< END IF
+< !!****MARS
+2966,2979d2827
+< !!****MARS
+< IF (forig(i,k2,j) .EQ. -1.0e+30) THEN
+<         print *,'no data here - level above - you_d better stop',i,j,k2
+<         stop        
+< END IF
+< IF (forig(i,k1,j) .EQ. -1.0e+30) THEN
+<         print *,'no data here - level below - var is ...',var_type,i,j,k1
+<         print *,'setting to first level with data...',ko_above_sfc(i),porig(i,ko_above_sfc(i),j)
+<         forig(i,k1,j) = forig(i,ko_above_sfc(i),j)
+<         !!!VERIFIER QUE LA TEMPERATURE AU SOL N'EST PAS CONCERNEE
+<         !!!(montagnes=sources locales de chaleur)
+<         !!!normalement, pas de souci, et lors de l'exécution rien ne s'affiche
+< END IF
+< !!****MARS
+3026d2873
+< print *,'finished with ... ', var_type
+3062d2908
+< 
+3089,3097d2934
+< !****MARS: check if no errors here
+< !print *,'interpolating ... ',var_type
+< !       print *,'i,j = ',i,j
+< !       print *,'target pressure and value = ',target_x(target_loop),target_y(target_loop)
+< !       DO loop = 1 , all_dim
+< !         print *,'column of pressure and value = ',all_x(loop),all_y(loop)
+< !       END DO
+< !END IF  
+< !****MARS
+3118,3119d2954
+< !****MARS: normally, no errors here (otherwise, keep this part commented ?)
+<             print *, var_type
+3125,3126c2960
+<            CALL wrf_error_fatal ( 'troubles, could not find trapping x locations' )
+< !****MARS: end of 'keep this part commented'
+---
+>             CALL wrf_error_fatal ( 'troubles, could not find trapping x locations' )
+3313,3317c3147,3149
+< !****MARS ....
+<       REAL , PARAMETER :: Rd = 192.
+<       REAL , PARAMETER :: g  =   3.72
+< print *,'compute dry, hydrostatic surface pressure'
+< !****MARS ....
+---
+> 
+>       REAL , PARAMETER :: Rd = 287.
+>       REAL , PARAMETER :: g  =   9.8
+3325,3334d3156
+< !****MARS
+< !****MARS cette formule est-elle juste sur Mars ?
+< !****MARS >> a première vue, ne donne pas de résultats absurdes
+< !****TODO: il y a peut être meilleur !
+< !****MARS
+< 
+< !print *,pdhs
+< !stop
+< 
+< 
+3408,3412c3230,3233
+< !****MARS 
+<       REAL , PARAMETER :: Rd = 192.
+<       REAL , PARAMETER :: Cp = 844.6
+< !****MARS
+<       
+---
+> 
+>       REAL , PARAMETER :: Rd = 287.
+>       REAL , PARAMETER :: Cp = 1004.
+> 
+3456,3460c3277,3278
+< !****MARS
+<       REAL , PARAMETER :: Rd = 192.
+<       REAL , PARAMETER :: g  =   3.72
+< !****MARS
+<       
+---
+>       REAL , PARAMETER :: Rd = 287.
+>       REAL , PARAMETER :: g  =   9.8
+3597,3605d3414
+< 
+< !!****MARS: no water vapor pressure
+< !    DO k = level_above_sfc(i)-1,kts+1,-1
+< !         pd(i,k) = p(i,k)
+< !    END DO
+< !    pd(i,kts) = psfc(i,j)
+< !!****MARS
+< 
+< 
+3632,3633c3441
+< !****MARS .... à régler si besoin ....
+< !****MARS
+---
+> 
+3663,3665d3470
+< !****MARS
+< !****MARS
+< 
+3743,3749d3547
+< !****MARS
+< !****TEMPORARY
+< !****TEMPORARY
+< !TODO: change once tracers are activated ?
+< q=0.
+< !****MARS
+< 
+3788,3796d3585
+< !****MARS      
+< !****MARS
+< print *, 'check Mars: p_top , g , p00 , cvpm , a , r_d , cp , t00 , p1000mb , t0' 
+< print *, p_top , g , p00 , cvpm , a , r_d , cp , t00 , p1000mb , t0
+< !-----solution alternative: définir dans la namelist les niveaux verticaux
+< !****MARS
+< !****MARS
+< 
+< 
+3823,3843c3612,3613
+< !         znw_prac = (/ 1.000 , 0.993 , 0.983 , 0.970 , 0.954 , 0.934 , 0.909 , &
+< !                       0.88 , 0.8 , 0.7 , 0.6 , 0.5 , 0.4 , 0.3 , 0.2 , 0.1 , 0.0 /)
+< 
+< !****MARS
+< !****MARS
+< ! on Mars, this is important to correctly resolve the surface
+< ! -- levels were changed to get closer to the surface
+< ! -- values were chosen as done typically in LMD GCM simulations
+< !TODO: better repartition ?
+<         znw_prac = (/ 1.000 , &
+<                         0.9995 , &  
+<                         0.9980 , &
+<                         0.9950 , &
+<                         0.9850 , &
+<                         0.9700 , &
+<                         0.9400 , &
+<                         0.9000 , &
+<                         0.8 , 0.7 , 0.6 , 0.5 , 0.4 , 0.3 , 0.2 , 0.1 , 0.0 /)
+< !****MARS
+< !****MARS
+< 
+---
+>          znw_prac = (/ 1.000 , 0.993 , 0.983 , 0.970 , 0.954 , 0.934 , 0.909 , &
+>                        0.88 , 0.8 , 0.7 , 0.6 , 0.5 , 0.4 , 0.3 , 0.2 , 0.1 , 0.0 /)
+3876a3647
+> 
+3901d3671
+< 
+3911,3920d3680
+< !!****MARS
+< !!attention 'base_lapse' ne doit pas être trop grand
+< !!sinon ... des NaN car températures négatives en haut
+< !IF ( ( loop1 .EQ. 5 ) .AND. ( loop .EQ. 10 ) ) THEN
+< !	IF (k .EQ. 8) THEN
+< !		print *, 'p,t,z,k'
+< !	END IF
+< !	print *,  pb,temp,znw(k+1),k 
+< !END IF
+< !****MARS
+3950,3960d3709
+< 
+< ! ****MARS
+< ! Display the computed levels
+< print *,'WRF levels are:'
+< print *,'z (m)            = ',phb(1)/g
+< do k = 2 ,kte
+< print *,'z (m) and dz (m) = ',phb(k)/g,(phb(k)-phb(k-1))/g
+< end do
+< ! ****MARS
+< 
+< 
+4108,4115c3857
+< !****MARS
+<       REAL , PARAMETER :: Rd = 192.
+<       REAL , PARAMETER :: Cp = 844.6
+<       REAL, PARAMETER    :: g = 3.72
+<       REAL, PARAMETER    :: pconst = 610.
+< !****MARS
+<       
+< !****MARS .... to be changed if used
+---
+>       REAL, PARAMETER    :: g         = 9.8
+4116a3859,3860
+>       REAL, PARAMETER    :: pconst    = 10000.0
+>       REAL, PARAMETER    :: Rd        = 287.
+4117a3862
+> 
+4120d3864
+< !****MARS .... to be changed if used
+4158,4163d3901
+< !****MARS ....
+< !****MARS .... the mean sea level method is abandoned
+< print *, 'no sea level pressure on Mars, please'
+< stop
+< !****MARS ....
+< 
+4412,4415c4150,4151
+< !****MARS
+<       REAL , PARAMETER :: Rd = 192.
+<       REAL, PARAMETER    :: g = 3.72
+< !****MARS
+---
+>       REAL, PARAMETER    :: g         = 9.8
+>       REAL, PARAMETER    :: Rd        = 287.
+4435,4444c4171,4172
+< 
+< !****MARS: as is done in MCD/pres0 with the MOLA topography :)
+< 
+< 
+<         !!  del_z = diff in surface topo, lo-res vs hi-res
+<         !grid%em_ght_gc - grid%ht
+<         !!* em_ght_gc: surface geopotential height from the GCM 
+<         !!* ht: hi-res altimetry
+<         !  psfc = psfc_in * exp ( g del_z / (Rd Tv_sfc ) )
+< 
+---
+>       !  del_z = diff in surface topo, lo-res vs hi-res
+>       !  psfc = psfc_in * exp ( g del_z / (Rd Tv_sfc ) )
+4448,4450d4175
+< !!
+< !!****MARS: 'ez_method' is 'we_have_tavgsfc', hard-coded as false
+< !!
+4459,4462d4183
+< !!****MARS .... here is what is done
+< !!****TODO:
+< !!****MARS .... toujours 0.608 ???
+< !!****MARS .... changer pour la température à 1 km ??? 
+4468,4478d4188
+< !	       !****MARS .... check of the altimetry differences
+< !	       print *,del_z, tv_sfc
+< 
+< 
+< !****MARS
+< !****MARS .... which temperature is used in the Laplace formula ?
+< !!****TODO: change the 220K value ??
+< !!****NB: pas d'influence énorme cependant de la valeur de T 
+< psfc(i,j) = psfc_in(i,j) * EXP ( g * del_z / ( Rd * 220 ) )
+< 
+< 

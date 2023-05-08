@@ -1,0 +1,62 @@
+## $Id: gcm.def 1403 2010-07-01 09:02:53Z fairhead $
+## nombre de pas par jour (multiple de iperiod) ( ici pour  dt = 1 min )      
+day_step=480
+## periode pour le pas Matsuno (en pas)
+iperiod=5
+## periode de la dissipation (en pas)
+idissip=5
+## choix de l'operateur de dissipation (star ou  non star )
+lstardis=y
+## nombre d'iterations de l'operateur de dissipation   gradiv
+nitergdiv=1
+## nombre d'iterations de l'operateur de dissipation  nxgradrot
+nitergrot=2
+## nombre d'iterations de l'operateur de dissipation  divgrad            
+niterh=2
+## temps de dissipation des plus petites long.d ondes pour u,v (gradiv)  
+tetagdiv=5400.
+## temps de dissipation des plus petites long.d ondes pour u,v(nxgradrot)
+tetagrot=5400.
+## temps de dissipation des plus petites long.d ondes pour  h ( divgrad) 
+tetatemp=5400.
+## coefficient pour gamdissip                                            
+coefdis=0.
+## choix du shema d'integration temporelle (Matsuno:y ou Matsuno-leapfrog:n) 
+purmats=n
+## avec ou sans physique
+## 0: pas de physique (e.g. en mode Shallow Water)
+## 1: avec physique (e.g. physique phylmd)
+## 2: avec rappel newtonien dans la dynamique                                         
+iflag_phys=1
+## avec ou sans fichiers de demarrage (start.nc, startphy.nc) ?
+## (sans fichiers de demarrage, initialisation des champs par iniacademic
+##  dans la dynamique)
+read_start=y
+## periode de la physique (en pas dynamiques, n'a de sens que si iflag_phys=1)                                       
+iphysiq=10
+##  Avec ou sans strato
+ok_strato=n 
+#  Couche eponge dans les couches de pression plus faible que 100 fois la pression de la derniere couche
+iflag_top_bound=2
+#  Coefficient pour la couche eponge (valeur derniere couche)
+tau_top_bound=5.e-5
+## longitude en degres du centre du zoom                                 
+clon=0.
+## latitude en degres du centre du zoom                                  
+clat=0.
+## facteur de grossissement du zoom,selon longitude                      
+grossismx=1.0
+## facteur de grossissement du zoom ,selon latitude                      
+grossismy=1.0
+##  Fonction  f(y)  hyperbolique  si = .true.  , sinon  sinusoidale         
+fxyhypb=y
+## extension en longitude  de la zone du zoom  ( fraction de la zone totale)
+dzoomx=0.0
+## extension en latitude de la zone  du zoom  ( fraction de la zone totale)
+dzoomy=0.0
+##raideur du zoom en  X
+taux=3.
+##raideur du zoom en  Y
+tauy=3.
+##  Fonction  f(y) avec y = Sin(latit.) si = .true. , sinon y = latit.         
+ysinus=y

@@ -1,0 +1,454 @@
+      SUBROUTINE ps_amont(nq,iq,q,w,pbaru,pbarv,dq)
+c
+c     Auteurs:   P.Le Van, F.Hourdin, F.Forget 
+c
+c    ********************************************************************
+c     Shema  d'advection " pseudo amont " .
+c    ********************************************************************
+c     nq,iq,q,pbaru,pbarv,w sont des arguments d'entree  pour le s-pg ....
+c     dq 	       sont des arguments de sortie pour le s-pg ....
+c
+c
+c   --------------------------------------------------------------------
+      IMPLICIT NONE
+c
+#include "dimensions.h"
+#include "paramet.h"
+#include "logic.h"
+#include "comvert.h"
+#include "comgeom.h"
+c
+c
+c   Arguments:
+c   ----------
+      INTEGER nq,iq
+      REAL pbaru( ip1jmp1,llm ),pbarv( ip1jm,llm)
+      REAL q(ip1jmp1,llm,nq), dq( ip1jmp1,llm,nq )
+      REAL w(ip1jmp1,llm)
+c
+c      Local 
+c   ---------
+c
+      INTEGER i,ij,l
+c
+      REAL airej2,airejjm,airescb(iim),airesch(iim)
+      REAL pente(ip1jmp1),xg(ip1jmp1),xd(ip1jmp1),xs(ip1jmp1) ,
+     *     xn(ip1jmp1),xb(ip1jmp1),xh(ip1jmp1)
+      REAL qg(ip1jmp1),qd(ip1jmp1),qs(ip1jmp1) ,
+     *     qn(ip1jmp1),qb(ip1jmp1,llm),qh(ip1jmp1,llm)
+      REAL qbyv(ip1jm,llm), qbxu(ip1jmp1,llm), ww,dqh(ip1jmp1,llm)
+      REAL qpns,qpsn
+      logical first,extrpn,extrps
+      save first
+c
+c
+      REAL      SSUM,CVMGP,CVMGT
+      EXTERNAL  SSUM, convflu
+
+      data first/.true./
+
+      if(first) then
+         print*,'SCHEMA AMONT NOUVEAU'
+         first=.false.
+      endif
+
+
+c
+c
+      IF( forward.OR.leapf )   THEN
+c
+c
+      DO  100  l = 1, llm
+c
+c   ...  Boucle sur les  llm niveaux verticaux ...
+c
+c
+c  --------------------------------------------------------------
+c  --------------------------------------------------------------
+c  .............      Traitement en longitude     ...............
+c  --------------------------------------------------------------
+c  --------------------------------------------------------------
+c
+c     
+c        |          |            |           |
+c        |   q(i-1) |     q(i)   |   q(i+1)  |
+c        |          |qg(i)  qd(i)|qg(i+1)    |
+c
+c
+c      En  longitude ,
+c      Pour chaque maille ( i ) avec q(i,j,l,iq), on cherche a determiner
+c      avec une methode de ' pente' les valeurs qg(i) et qd(i) qui se trouvent
+c      au bord gauche et droite de cette maille .
+c
+c      Si ( q(i+1)-q(i) ) * ( q(i)-q(i-1)) < 0. ,on a qg(i)=qd(i)=q(i)
+c              Sinon
+c      qg(i)= q(i) - 1/4 * ( q(i+1) - q(i-1))
+c      qd(i)= q(i) + 1/4 * ( q(i+1) - q(i-1) )
+c
+c      On utilisera la meme methode pour determiner les valeurs qs(i) et qn(i)
+c      en latitude , ainsi que les valeurs qb(i) et qh(i) en  altitude .
+c
+c
+c
+       DO      ij    = 1,iip1
+       qg(ij)        = 0.
+       qd(ij)        = 0.
+       qg(ij+ ip1jm) = 0.
+       qd(ij+ ip1jm) = 0.
+       ENDDO
+c
+c     ....  calculs pour les lignes j= 2 a j = jjm  ....
+c
+       DO   ij    = iip2, ip1jm -1
+       pente(ij)  =( q(ij+1,l,iq)-q(ij,l,iq)) *(q(ij,l,iq)-q(ij-1,l,iq)) 
+       xg(ij)     = q(ij,l,iq) - 0.25 * ( q(ij+1,l,iq) - q(ij-1,l,iq) )
+       xd(ij)     = q(ij,l,iq) + 0.25 * ( q(ij+1,l,iq) - q(ij-1,l,iq) )
+       qg(ij)     = CVMGP( xg(ij), q(ij,l,iq) ,pente(ij) )
+       qd(ij)     = CVMGP( xd(ij), q(ij,l,iq), pente(ij) )
+       ENDDO
+
+c    ... Correction aux points  ( i= 1,  j )  .....
+c
+       DO   ij   = iip2, ip1jm, iip1
+       pente(ij) = ( q(ij+1,l,iq) - q(ij,l,iq) )     * 
+     *                                ( q(ij,l,iq)  - q(ij+iim-1,l,iq) )
+       xg(ij)    = q(ij,l,iq) - 0.25* ( q(ij+1,l,iq)- q(ij+iim-1,l,iq) )
+       xd(ij)    = q(ij,l,iq) + 0.25* ( q(ij+1,l,iq)- q(ij+iim-1,l,iq) )
+       qg(ij)    = CVMGP( xg(ij), q(ij,l,iq) ,pente(ij) )
+       qd(ij)    = CVMGP( xd(ij), q(ij,l,iq), pente(ij) )
+       ENDDO
+c
+c    ... Correction aux points ( i= iip1,  j ) .....
+c
+       DO     ij      = iip2, ip1jm, iip1
+       qg( ij+ iim  ) = qg( ij )
+       qd( ij+ iim )  = qd( ij )
+       ENDDO
+c
+c   .............................................................
+c   .........    Limitation des pentes a gauche des boites  .....
+c
+c    Si (q(i)-qg(i))*(qg(i)-q(i-1)) < 0.  , on a  qg(i)=q(i-1)  
+c                                         et qd(i)=2*q(i)-qg(i)
+c   .............................................................
+c
+       DO   ij  = iip2,ip1jm -1
+       pente(ij)= ( qg(ij) -q(ij-1,l,iq))*(q(ij,l,iq)-qg(ij) )
+       qg(ij)   = CVMGP( qg(ij), q(ij-1,l,iq) ,pente(ij) )
+       qd(ij)   = CVMGP( qd(ij), 
+     *                q(ij,l,iq)+ q(ij,l,iq) -qg(ij) , pente(ij) ) 
+       ENDDO
+c
+c      .....   Correction aux points ( i= 1,  j )  ......
+c
+       DO    ij  = iip2 ,ip1jm, iip1
+       qg(ij)    =  qg(ij+ iim)
+       qd(ij)    =  qd(ij+ iim)
+       ENDDO
+c    
+c      ...............................................................
+c      ...... Limitation des pentes a droite des boites      .........
+c      Si (q(i+1)-qd(i))*(qd(i)-q(i)) < 0. , on a qd(i)=q(i+1)
+c                                              et qg(i)=2*q(i)-qd(i) .
+c      ...............................................................
+c
+       DO ij = iip2, ip1jm -1
+       pente(ij) = ( qd(ij)-q(ij,l,iq) )*(q(ij+1,l,iq)-qd(ij) ) 
+       qd(ij)    =  CVMGP( qd(ij), q(ij+1,l,iq), pente(ij) )
+       qg(ij)    =  CVMGP( qg(ij), 
+     *                q(ij,l,iq)+ q(ij,l,iq) -qd(ij) , pente(ij) ) 
+       ENDDO
+c
+c      ....  Correction aux points ( i = iip1, j )  .....
+c
+       DO     ij     = iip2, ip1jm, iip1
+       qg( ij+ iim ) = qg( ij )
+       qd( ij+ iim ) = qd( ij )
+       ENDDO
+c
+
+c     -------------------------------------------------------------
+c     -------------------------------------------------------------
+c     .............    Traitement en  latitude    .................
+c     -------------------------------------------------------------
+c     -------------------------------------------------------------
+c
+c
+c      q(j=1)   PN
+c   --------------
+c     ---------  
+c   --------------
+c
+c      q(j-1)
+c
+c   --------------
+c            qn(j)
+c      q(j)
+c            qs(j)
+c   --------------
+c        
+c      q(j+1)
+c
+c   --------------
+c
+c      q(jjp1)  PS
+c
+c   --------------
+c
+c
+c     ......   operations pour les lignes j= 2 a j= jjm  .......
+c
+       DO    ij    = iip2, ip1jm
+       pente(ij)   = ( q(ij-iip1,l,iq)- q(ij,l,iq)  )  *
+     *               ( q(ij,l,iq) - q(ij+iip1,l,iq) )
+       xs(ij) = q(ij,l,iq) - 0.25 * ( q(ij-iip1,l,iq) -q(ij+iip1,l,iq) )
+       xn(ij) = q(ij,l,iq) + 0.25 * ( q(ij-iip1,l,iq) -q(ij+iip1,l,iq) )
+       qs(ij) = CVMGP( xs(ij), q(ij,l,iq), pente(ij) )
+       qn(ij) = CVMGP( xn(ij), q(ij,l,iq), pente(ij) )
+       ENDDO
+c
+c
+c     ......    Calculs aux  poles   .............................
+c     ............................................................
+c
+c     On n'a pas besoin des valeurs de  qn au pole Nord ( j=    1) ,
+c      ainsi que de celles de           qs au pole Sud  ( j= jjp1)
+c
+c
+      airej2 = SSUM( iim, aire(iip2), 1 )
+      airejjm= SSUM( iim, aire(ip1jm -iim), 1 ) 
+      DO i = 1, iim
+      airescb(i) = aire(i+ iip1) * q(i+ iip1,l,iq)
+      airesch(i) = aire(i+ ip1jm- iip1) * q(i+ ip1jm- iip1,l,iq)
+      ENDDO
+      qpns   = SSUM( iim,  airescb ,1 ) / airej2
+      qpsn   = SSUM( iim,  airesch ,1 ) / airejjm
+c
+c     qpns , val.moyenne de q sur la ligne j= 2
+c     qpsn , val.moyenne de q sur la ligne j= jjm
+c
+c
+c
+c  on cherche si on a un extremum au pole
+c
+      extrpn=.true.
+      extrps=.true.
+      DO ij=2,iim
+         if((q(iip1+i,l,iq)-q(1,l,iq))*(q(iip2,l,iq)-q(1,l,iq)).lt.0.)
+     .   extrpn=.false.
+         if((q(ip1jm-iip1+i,l,iq)-q(1,l,iq))*
+     .     (q(ip1jm-iim,l,iq)-q(1,l,iq)).lt.0.)
+     .      extrps=.false.
+      ENDDO
+
+c   calcul des pentes au pole
+
+      if(extrpn) then
+         DO    ij     = 1, iip1
+            qs(ij)= q(ij,l,iq)
+         ENDDO
+      else
+         DO    ij     = 1, iip1
+            qs(ij)= q(ij,l,iq) + 0.5 * ( q(ij+ iip1,l,iq) - qpns )
+         ENDDO
+      endif
+
+      if(extrps) then
+         DO    ij     = 1, iip1
+            qn(ij+ip1jm) = q(ij+ip1jm,l,iq)
+         ENDDO
+      else
+         DO    ij     = 1, iip1
+            qn(ij+ip1jm) = q(ij+ip1jm,l,iq) +   0.5 *
+     *                    ( q(ij+ip1jm-iip1,l,iq) - qpsn )
+         ENDDO
+      endif
+
+c
+c
+c    .........................................................
+c    ......    Limitation des pentes au sud des boites   .....
+c    .........................................................    
+c
+      DO   ij     = 1, ip1jm
+      pente(ij)   = ( qs(ij) - q (ij+iip1,l,iq) )   *
+     *              ( q( ij,l,iq) - qs( ij ) )
+      qs(ij) = CVMGP( qs(ij) , q(ij+iip1,l,iq), pente(ij) )
+      qn(ij) = CVMGP( qn(ij) , 
+     *                q(ij,l,iq)+ q(ij,l,iq) -qs(ij), pente(ij) )
+      ENDDO
+c
+c
+c     .......................................................
+c     .... Limitation des pentes au nord des boites .........
+c     .......................................................
+c
+      DO   ij     = iip2, ip1jmp1
+      pente(ij)   = ( qn( ij  ) -  q(ij,l,iq) )  *
+     *              (  q(ij-iip1,l,iq) - qn(ij) )
+      qn(ij)      = CVMGP( qn(ij), q(ij-iip1,l,iq), pente(ij) )
+      qs(ij)      = CVMGP( qs(ij), 
+     *                q(ij,l,iq)+ q(ij,l,iq) -qn(ij) , pente(ij) )
+      ENDDO
+c
+c
+c    .............................................................
+c    .....   Calculs des flux de  q  sur le plan horizontal ......
+c    .............................................................
+c
+c
+c
+c      
+c      ....  Selon   X  .... 
+c
+         DO  ij     = iip2, ip1jm - 1
+c
+         qbxu( ij,l ) =  pbaru( ij,l )   *
+     *            CVMGT( qd(ij), qg(ij +1), pbaru(ij,l).GT.0. )
+         ENDDO
+c
+c     ..... correction  pour  qbxu(iip1,j,l)   .....
+c     ...   qbxu(iip1,j,l)= qbxu(1,j,l)  ...
+c
+c           &&&CDIR$ IVDEP
+         DO    ij     = iip1 +iip1, ip1jm, iip1
+         qbxu( ij,l ) = qbxu( ij - iim, l )
+         ENDDO
+c
+c      .... Selon Y  .....
+c
+         DO    ij     = 1, ip1jm
+         qbyv( ij,l ) =  pbarv( ij,l )    *
+     *             CVMGT( qn(ij+iip1), qs(ij), pbarv(ij,l).GT.0. )
+         ENDDO
+c
+c
+c
+  100  CONTINUE
+c
+c     ..........................................................
+c     ( ... fin des traitements en longitude et latitude  ... )
+c
+c
+c   stockage dans  dqh  de la convergence horiz.du flux d'humidite  .
+c                   ....
+c
+c
+                 CALL convflu( qbxu, qbyv, llm, dqh )
+c
+c
+c
+c    ----------------------------------------------------------------
+c    ----------------------------------------------------------------
+c    .............      Traitement  en  altitude        .............
+c    ----------------------------------------------------------------
+c    ----------------------------------------------------------------
+c
+c
+c     -------------
+c        q (llm)
+c
+c     -------------
+c     -------------
+c
+c        q(l+1)
+c
+c     -------------
+c             qh(l)
+c        q(l)
+c             qb(l)
+c     -------------
+c
+c        q(l-1)
+c
+c     -------------
+c     -------------
+c        q(1)
+c     -------------
+c
+c
+c    ... Calculs pour les niveaux 2 a llm -1  ...
+c
+c
+      DO  200   l = 2, llm -1
+
+       DO   ij     = 1, ip1jmp1
+       pente(ij)   = ( q(ij, l+1 ,iq)  - q(ij , l  ,   iq) )  * 
+     *               ( q(ij,   l ,iq)  - q(ij ,l-1 ,   iq) )
+       xb(ij)      = q(ij,l,iq) - 0.25* ( q(ij,l+1,iq) - q(ij,l-1,iq) )
+       xh(ij)      = q(ij,l,iq) + 0.25* ( q(ij,l+1,iq) - q(ij,l-1,iq) )
+       qb(ij,l)    = CVMGP( xb(ij), q(ij,l,iq), pente(ij) )
+       qh(ij,l)    = CVMGP( xh(ij), q(ij,l,iq), pente(ij) )
+       ENDDO
+c
+c     ........................................................
+c     ......  Limitation des pentes en bas des boites   ......
+c     ........................................................
+c
+       DO   ij     = 1, ip1jmp1
+       pente(ij)   = ( qb(ij,l) - q ( ij,l-1,iq) )   *
+     *                ( q (ij,l,iq) - qb( ij,l ) )
+       qb(ij,l)    = CVMGP( qb(ij,l), q(ij,l-1,iq), pente(ij) )
+       qh(ij,l)    = CVMGP( qh(ij,l), 
+     *               q(ij,l,iq) + q(ij,l,iq) -qb(ij,l), pente(ij) )
+       ENDDO
+c
+c
+c     ........................................................
+c     ......  Limitation des pentes en haut des boites   ......
+c     ........................................................
+c
+       DO   ij     = 1, ip1jmp1
+       pente(ij)   = ( qh(ij,l) - q ( ij,l+1,iq) )   *
+     *                ( q (ij,l,iq) - qh( ij,l ) )
+       qh(ij,l)    = CVMGP( qh(ij,l), q(ij,l+1,iq), pente(ij) )
+       qb(ij,l)    = CVMGP( qb(ij,l), 
+     *               q(ij,l,iq) + q(ij,l,iq) -qh(ij,l), pente(ij) )
+       ENDDO
+c
+c
+  200  CONTINUE
+c
+c
+c    ............................................................
+c    .....     Calculs pour les niveaux l= 1 et l= llm  .........
+c    ............................................................
+c
+      DO   ij    = 1, ip1jmp1
+      qb(ij,1)   = q(ij, 1 , iq)
+      qb(ij,llm) = q(ij,llm, iq)
+      qh(ij,1)   = q(ij, 1 , iq)
+      qh(ij,llm) = q(ij,llm, iq)
+      ENDDO
+c
+
+c ---------------------------------------------------------------
+c   .... calcul des termes d'advection verticale  .......
+c ---------------------------------------------------------------
+
+c calcul de  - d( q   * w )/ d(sigma)    qu'on ajoute a  dqh pour calculer dq
+c
+
+       DO 300 l = 1,llmm1
+c
+         DO  ij = 1,ip1jmp1
+          ww= - w( ij,l+1 ) * 
+     *        CVMGT ( qh(ij,l), qb(ij,l+1), w(ij,l+1).LT.0.)
+
+          dq (ij, l ,iq ) = dqh(ij, l )   - dsig1( l ) * ww
+          dqh(ij,l+1    ) = dqh(ij,l+1)   + dsig1(l+1) * ww
+         ENDDO
+c
+  300   CONTINUE 
+c
+c
+c
+        DO  ij = 1,ip1jmp1
+          dq( ij,llm,iq ) = dqh( ij,llm )
+        END DO
+c
+c
+      END IF
+c
+      RETURN
+      END

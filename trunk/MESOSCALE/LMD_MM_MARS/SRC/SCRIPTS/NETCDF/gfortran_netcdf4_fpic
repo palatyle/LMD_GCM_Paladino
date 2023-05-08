@@ -1,0 +1,22 @@
+#!/bin/bash
+#Tue Feb 28 18:29:46 EST 2012
+
+FC=gfortran
+FFLAGS=" -O2"
+F90=gfortran
+FCFLAGS="-O2 -ffree-form"
+CPPFLAGS=""
+CC=gcc
+CFLAGS="-O2"
+CXX=g++
+CXXFLAGS="-O2"
+
+./configure --with-pic \
+  --prefix=/home/jmadelei/PROGRAMS/netcdf-4.0.1-gfortran \
+  > configure.log 2>&1
+
+make > make.log 2>&1
+
+make test > make_test.log 2>&1
+
+make install > make_install.log 2>&1

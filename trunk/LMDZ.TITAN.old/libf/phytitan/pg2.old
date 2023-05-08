@@ -1,0 +1,727 @@
+            subroutine pg2(
+     &      tpplev,tpt,tq,tdq,nq,ptimestep,mu0,fract,last)
+c
+c
+c
+c
+c
+c
+c    &      tpplev,tpt,tq,tdq,nq,ptimestep,last)
+c                     /                    \
+c       |  PHYSIQUE  | AEROSOLS            |
+c
+c                     \|/
+c                    (o o)
+c-----------------oOo--O--oOo--------------------------
+c                      
+c Interface entre physiq.F et aerosols.F 
+c
+c Date: 5 Nov 96
+c
+c   -->(  )          q(x,nlayer,nq) 
+c
+c             q(x,nlayer,nq) <==>  c(nz,nrad)
+c
+c          c(nz,nrad)(t) -->  aerosol.F --> c(nz,nrad)(t+dt)
+c
+c             c(nz,nrad) <==> q(x,nlayer,nq)
+c     
+c              c(IHOR,NRAD,NRAD)  en aerosols
+c              c0(NZ,NRAD)        en aerosols/m^3  
+c
+c   L'ECHANGE N'EST POSSIBLE QUE SI LES QUANTITES SONT
+c   DES NOMBRES D'AEROSOLS.........
+c
+c   LES QUANTITES Q SONT EN AEROSOLS / CASE (BOUT DE COLONNE
+c   DE 1m^2 * DZ(J)..................ATTENTION AU PASSAGE 
+c      PHYSIQUE <---> DYNAMIQUE QUI A BESOINS DE ????
+c
+c   LE MODELE MICROPHYSIQUE A BESOIN DE CONCENTRATIONS
+c                     AEROSOLS/M^3
+c------------------------------------------------------
+
+      use dimphy
+      USE geometry_mod, ONLY: latitude_deg
+#include "dimensions.h"
+#include "microtab.h"
+#include "paramet.h"
+#include "aerprod.h"
+#include "clesphys.h"
+#include "YOMCST.h"
+
+     
+        parameter (NG=jjm+1)   ! NG: on travaille en moyenne zonale
+ 
+c*************************************
+c declaration des variables internes *
+c*************************************
+	
+c       GCM        *
+c------------------*
+
+        real tzzlev(ng,klev+1)
+     &         ,tpplev(ng,klev+1)
+     &         ,tzzlay(ng,klev)
+     &         ,tpt(ng,klev)
+     &         ,tq(ng,klev,nq)
+     &         ,tdq(ng,klev,nq)
+        real   mu0(ng),fract(ng)
+
+        real    zzlev(NG,klev+1)
+     &         ,pplev(NG,klev+1)
+     &         ,zzlay(NG,klev)
+     &         ,pt(NG,klev)
+     &         ,q(NG,klev,nq)
+     &         ,qdel(NG,klev,nq)
+     &         ,qcumul(NG,0:200,nq)
+
+        integer jsup,jinf,h
+ 
+        logical last
+
+
+c    microphysique    *
+c---------------------*
+
+        real aire(ng),airetot,lati(ng)
+	save aire,lati
+
+	real z(nz),zb(nz+1),alt(200)
+	real dz(nz),dzb(nz+1)
+        real pb(nz+1),p(nz)
+        real tb(nz+1),t(nz) 
+ 
+	real c0(200,nrad),c(nz,nrad),ctp(nz,nrad)
+	double precision c0lu(200,nrad)
+        real cmemoire(nz,nrad)
+        real micropas,ddt
+
+      integer iprem
+      save iprem
+      data iprem/0/
+
+c          print*,'DEBUT DE PG2'
+
+
+         ngrid=ng
+         nlayer=klev
+         if(nrad.ne.nq) then
+             print*,'microphysique:nrad.ne.nq:',nrad,nq
+             stop 
+         endif
+
+* ici, on evalue les niveaux d'altitudes en fonction des niveaux de
+*  pressions.
+
+          do h=1,ngrid
+          tpplev(h,nlayer+1)=tpplev(h,nlayer)*.1
+          enddo
+
+        r=8.314*1000./28.
+
+* pour chaque point de grille
+
+       do h=1,ngrid
+         zz=0.
+         tzzlev(h,1)=zz
+
+* bord de couche
+
+        do l=1,nlayer
+         eff_g = 1.345*(2575./(2575.+zz/1000.))**2
+          zz=zz+r*2.*tpt(h,l)/
+     &    eff_g*(tpplev(h,l)-tpplev(h,l+1))/(tpplev(h,l)+tpplev(h,l+1))
+          tzzlev(h,l+1)=zz
+c         print*,l,eff_g,tpplev(h,l),tpplev(h,l+1),zz
+        enddo
+
+* milieu  de couche
+
+        do l=1,nlayer
+        xlog=( alog(tpplev(h,l+1)) + alog(tpplev(h,l)) )/2.
+        rapport=(tzzlev(h,l+1)-tzzlev(h,l))
+     &             /(alog(tpplev(h,l+1))-alog(tpplev(h,l)))
+        tzzlay(h,l)=rapport*(xlog-alog(tpplev(h,l+1)))
+     &              +tzzlev(h,l+1)
+        enddo
+       enddo
+
+
+c       PRINT*,'PROFILE #1'
+c       h=10
+c       do l=1,nlayer
+c        print*, tpplev(h,l),tpt(h,l),tq(h,1,1),tq(h,l,7)
+c       enddo
+c        print*, tpplev(h,nlayer+1)
+
+         do j=1,200
+           alt(j)=(j-1)*5000.     !0 5000 10000 15000 .......!
+         enddo
+         
+
+
+
+c      			**************************
+c        		INITIALISATION DE TABLEAUX
+c    		 	**************************
+c                         A NE FAIRE QU'UNE FOIS
+c     		        **************************
+
+ 
+        IF (iprem.eq.0) THEN
+
+       qdel = 0.
+
+c initialisation de aire(ig)
+c --------------------------
+
+      airetot=0.
+      
+      lati(1)     = 0.5*RPI
+      DO ig=2,ngrid-1
+        lati(ig)  = latitude_deg(2+(ig-2)*iim)*RPI/180.
+      ENDDO
+      lati(ngrid) = -0.5*RPI
+      
+      DO ig=1,ngrid
+      if(ig.eq.1)
+     &   aire(ig)=2*RPI*(1.-sin(lati(ig)/2.+lati(ig+1)/2.))*RA*RA
+      if(ig.eq.ngrid)
+     &   aire(ig)=2*RPI*(1.+sin(lati(ig-1)/2.+lati(ig)/2.))*RA*RA
+       if(ig.ne.1. .and. ig.ne.ngrid) aire(ig)=2*RPI*RA*RA*
+     &      (sin(lati(ig-1)/2.+lati(ig)/2.)
+     &      -sin(lati(ig)/2.+lati(ig+1)/2.))
+
+      airetot=airetot+aire(ig)
+      ENDDO
+c     print*,"ENTREE PG2 PREMIER APPEL"
+c     print*,airetot,' airetot?= ',4.*RPI*RA*RA
+c     print*,1,latitude_deg(1),aire(1),aire(1)/airetot,' aires'
+c     DO ig=2,ngrid-1
+c     print*,ig,latitude_deg(2+(ig-2)*iim),aire(ig),aire(ig)/airetot,' aires'
+c     ENDDO
+c     print*,ngrid,latitude_deg(klon),aire(ngrid),aire(ngrid)/airetot,' aires'
+c     stop
+      
+c initialisation de c(z,r)
+c --------------------------
+
+
+        itype=2
+
+
+c remplissage type 1:            OBSOLETE !
+c----------------------
+
+
+        if(itype.eq.1) then !****************************
+
+        taer=tcorrect
+
+#ifdef CRAY
+        open (unit=32,file='aerosols',status='old',iostat=ii,
+     1  form='formatted')
+        if(ii.ne.0) then
+           print*,'WARNING!!! pas de reinitialisation des traceurs'
+           print*,'On part des traceurs contenus dans start'
+           return
+        endif
+        print*,'pg2 apres open version cray',ii
+        read(32,'(e8.3)') tt
+        read(32,'(5e10.3)') c0
+        close(32)
+#else
+        print*,'pg2 avant open'
+        open (unit=31,file='initfich',iostat=ii,
+     1  access='sequential',form='formatted')
+
+13      read(unit=31,fmt=1010,iostat=ii,end=15)tt,((c0lu(j,k),
+     1   k=1,nrad),j=1,200)
+1010    format(e8.3,2000(e8.3))
+
+15      continue
+
+c Conversion: lecture en double, variable utile en simple...
+        do j=1,200
+        do k=1,nrad
+          c0(j,k) = real(c0lu(j,k))
+c          print*,c0(j,k)
+        enddo
+        enddo
+#endif
+ 
+c        print*,'fichier microphysique'
+c        do j=1,200
+c        print*,'L&0',j,c0(j,1),c0(j,3),c0(j,5),c0(j,7),c0(j,9)
+c        enddo
+
+         close (unit=31)
+        
+         do k=1,nrad 
+         do h=1,ngrid
+            qcumul(h,0,k)=0.
+            qcumul(h,1,k)=c0(200,k)*taer*5000.
+          do j=2,200
+            qcumul(h,j,k)=c0(200-j+1,k)*taer*5000.+qcumul(h,j-1,k)   
+          enddo 
+          do j=1,nlayer
+           qdel(h,j,k)=tq(h,j,k)   ! etat q provenant des starts a effacer!
+           tq(h,j,k)=0.
+          enddo
+         enddo 
+         enddo 
+c        do j=1,200
+c        print*,'L&1',j,qcumul(12,j,1),qcumul(12,j,3),qcumul(12,j,5)
+c        enddo
+         write(92,*) qdel
+
+c interpolation des q_cumules
+
+c         do j=1,nlayer
+c          print*,tzzlev(10,j),alt(j)
+c         enddo
+         do k=1,nrad 
+         do h=1,ngrid
+          jsup=int(tzzlev(h,2)/5000.+2.)
+          xfact=tzzlev(h,2)/alt(jsup)
+          tq(h,1,k)=xfact*qcumul(h,1,k)
+          do j=2,nlayer
+             jsup=int(tzzlev(h,j+1)/5000.+2.)
+             jinf=int(tzzlev(h,j+1)/5000.+1.)
+             xfact=(tzzlev(h,j+1)-alt(jinf))/(alt(jsup)-alt(jinf))
+             tq(h,j,k)=xfact*(qcumul(h,jsup-1,k)-qcumul(h,jinf-1,k))
+     &       +qcumul(h,jinf-1,k)
+          enddo
+         enddo 
+         enddo 
+
+c soustraction des q_cumules
+
+         do k=1,nrad 
+         do h=1,ngrid
+         do j=nlayer,2,-1
+          tq(h,j,k)=tq(h,j,k)-tq(h,j-1,k)
+         enddo 
+         enddo 
+         enddo 
+
+c on inverse q <--> tq, et tq=0 ====> dq=q-qt a la fin pour intitialiser. 
+
+         do k=1,nrad 
+         do h=1,ngrid
+         do j=nlayer,1,-1
+             q(h,j,k)=tq(h,nlayer-j+1,k)
+             tq(h,nlayer-j+1,k)=0.
+
+c        if (h.eq.12) then
+c         if (k.eq.nrad) then
+c            print*,'L&3',j,q(12,j,1),q(12,j,3),q(12,j,5)
+c          endif
+c        endif
+
+         enddo 
+         enddo 
+         enddo 
+           print*,'itype=1'
+
+         do h=1,ngrid 
+          somme=0.
+         do k=1,nrad 
+         do j=nlayer,1,-1
+         ref=1.63789E-09*(2.**.3333333333)**(4.*(k-1))
+           somme=somme+q(h,j,k)*4.1888*ref**3. 
+         enddo 
+         enddo 
+           print*,'bilan externe: m3/m2 grid#',h, somme
+         enddo 
+
+
+           else  !**********************************
+
+c remplissage type 2:
+c----------------------
+
+c       open (unit=31,file='finfich',iostat=ii,
+c    1  access='sequential',form='formatted')
+
+c       read(unit=31,fmt=1011,iostat=ii,end=18)tt,(((q(i,j,k),
+c    1  k=1,nrad),j=1,nlayer),i=1,ngrid)
+c8      continue
+c       close (unit=31)
+c----------------------
+
+
+          print*,'entre dans itype2'
+
+
+         do k=1,nrad 
+         do h=1,ngrid
+         do j=nlayer,1,-1
+
+          
+
+          q(h,nlayer+1-j,k)=tq(h,j,k)*tcorrect
+
+             tq(h,j,k)=0.  
+c
+c  Car les q initiaux sont lus dans la physiq, mais les dq doivent
+c  etre passes dans la dynamique via dqfi. C'est ici que les valeurs
+c  de dqfi=(q_lu*tcorrect - 0) sont definie
+
+         enddo 
+         enddo 
+         enddo
+
+
+           print*,'itype=2'
+         do h=1,ngrid 
+          somme=0.
+         do k=1,nrad 
+         do j=nlayer,1,-1
+         ref=1.63789E-09*(2.**.3333333333)**(4.*(k-1))
+           somme=somme+q(h,j,k)*4.1888*ref**3. 
+         enddo 
+         enddo 
+           print*,'bilan externe: m3/m2 grid#',h, somme
+         enddo 
+
+
+
+
+
+        endif 
+
+
+        ENDIF !FIN IPREM 
+  
+
+
+c	      ************************************
+c                FIN: A NE FAIRE QU'UNE FOIS 
+c	      ************************************
+c              
+
+
+
+c	   ************************************
+c            IL FAUT INVERSER LES TABLEAUX...            
+c	   ************************************
+
+
+
+
+       do n=1,ngrid
+         do j=1,NLAYER+1               ! j de 1 a 120
+           zzlev(n,j)=tzzlev(n,nlayer-j+2) ! indice de 120 a 1
+           pplev(n,j)=tpplev(n,nlayer-j+2)
+         enddo
+       enddo
+
+c les tq() doivent etre en nombre d'aerosols / cases 
+
+       do j=1,NLAYER                ! j de 1 a 119 
+         do n=1,ngrid
+           zzlay(n,j)=tzzlay(n,nlayer-j+1)  ! indice de 119 a 1
+           pt(n,j)=tpt(n,nlayer-j+1)
+         enddo
+       enddo
+
+        if (iprem.eq.0) goto 119  ! pour ne pas effacer les q()|t=0
+
+       do j=1,NLAYER                ! j de 1 a 119 
+         do n=1,ngrid
+           do i=1,nq
+             qdel(n,j,i)=0.
+             q(n,j,i)=tq(n,nlayer-j+1,i)
+           enddo
+         enddo
+       enddo
+
+ 119    continue
+
+
+c               ******************************
+c                      BILAN DE MASSE
+c               ******************************
+
+       total=0.
+       do ihor=1,ngrid
+          do iq=1,nq
+           do JALT=1,nlayer
+            total=total+tq(ihor,JALT,iq)*(16.**(iq-5))*aire(ihor)
+           enddo
+          enddo
+       enddo
+c         print*,'Bilan entree masse des qaer (unite M_mono)',total   
+    
+
+c****************************************
+c                                       *
+c         ADAPTATION GCM > micro        *
+c                                       *
+c****************************************
+
+
+c correpondance des couches / sens GCM > microphysique 
+c-----------------------------------------------------
+c
+c But remplir les c(nz,i) avec les concentrations
+c Q(ng,NLAYER,i) d'aerosols calculee par gcm.F
+
+
+ 
+      totalc1=0. 
+      totalc2=0. 
+      
+      if (iprem.eq.0) then 
+c ici, les tableaux definissant la structure des aerosols sont
+c remplis: rf,df(nq),rayon(nq,)v(nq)......
+       call rdf()
+      endif
+
+
+
+c---------------------------------------------
+
+       IF (iprem.eq.0) goto 102 
+
+c      !! La premiere fois, on ne passe pas par 
+c      !! q--->c et par pg3.F
+c      !! on passe directement au remplissage c-->q
+c---------------------------------------------
+
+       
+       do IHOR=1,NGRID      ! GRANDE BOUCLE HORIZONTALE
+
+         cpt=0.
+         cpx=0.
+         nzhau=0
+  
+
+       do JALT=1,nlayer-1         ! 1ere BOUCLE SUR Z (indice nz=1,120)
+         dz(jalt)=(zzlay(ihor,jalt)-zzlay(ihor,jalt+1))
+       enddo   
+         dz(nlayer)=dz(nlayer-1)  ! ARBITRAIRE ET SANS IMPORTANCE!!!!!
+
+       do JALT=1,nlayer         ! 1ere BOUCLE SUR Z (indice nz=1,120)
+         dzb(jalt)=(zzlev(ihor,jalt)-zzlev(ihor,jalt+1))
+         pb(jalt)=pplev(ihor,jalt)
+         t(jalt)=pt(ihor,jalt) 
+       enddo 
+         pb(nlayer+1)=pplev(ihor,nlayer+1)
+ 
+
+
+c** T(>300km) = T(300km)
+
+
+         pb(nlayer+1)=pplev(IHOR,nlayer+1)
+
+         zb1=zzlev(ihor,1)
+         z1 =zzlay(ihor,1)
+
+
+c        if(ihor.eq.12) 
+c    &   print*,'nzhau pour la latitude # ',ihor,' : ',nzhau
+c        if(ihor.eq.1) 
+c    &   print*,'nzhau pour la latitude # ',ihor,' : ',nzhau
+c        if(ihor.eq.24) 
+c    &   print*,'nzhau pour la latitude # ',ihor,' : ',nzhau
+
+
+c Interpolation des tableaux tb et p a partir de t et pb
+c******************************************************
+
+        do i=1,nz-1
+         tb(i+1)=(t(i)+t(i+1))/2.  ! temperature au bord des couches
+        enddo
+
+         tb(1)=t(1)
+         tb(nz+1)=(t(nz)-t(nz-1))*.5+t(nz)
+         
+        do i=1,nz
+         p(i)=(alog(pb(i))+alog(pb(i+1)))/2. ! pression au centre des couches
+         p(i)=exp(p(i))
+        enddo
+
+
+        
+c****************************************
+c 
+c   APPEL DU MODEL MICROPHYSIQUE
+c
+c****************************************
+
+
+        do i=1,nrad
+         do j=1,nz
+          c(j,i)=q(IHOR,j,i)/dzb(j) ! concentration aerosols/m^3
+         enddo
+        enddo 
+
+c                                   -------
+101      continue
+
+
+       ddt=0.
+       micropas=min(36000.,ptimestep)        
+103    micropas=micropas/2.
+      ddt=ptimestep/(int(ptimestep/(2*micropas))*1.)/2.  
+      if (int(ptimestep/ddt/2.).lt.2) goto 103
+
+      call pg3(dz,dzb,tb,t,pb,p,c,z1,zb1,ptimestep,ddt
+     & ,nzhau,ihor,mu0(ihor),fract(ihor))
+
+ 
+       do i=1,nrad
+         do j=1,nz
+            totalc2=totalc2+c(J,i)*dzb(j)
+     &      *2.**(i*7.-7.)
+          q(IHOR,j,i)=c(j,i)*dzb(j) ! nombre  aerosols
+         enddo
+       enddo 
+
+       ENDDO             ! Fin de la boucle IHOR
+
+
+102   CONTINUE           ! la premiere fois, c'est une boucle vide!
+
+
+
+c***************************************************************
+c FIN: on renvoie les nouvelles valeurs de dq=q(t+dt)-q(t)
+c***************************************************************
+
+
+
+
+       do n=1,ngrid
+       do i=1,nq
+       do j=1,NLAYER                ! j de 1 a 54 
+
+
+          tdq(n,nlayer+1-j,i)=0.
+
+          tdq(n,nlayer+1-j,i)=(q(n,j,i)
+     &                         -tq(n,nlayer+1-j,i))/ptimestep
+
+       if (tdq(n,nlayer+1-j,i).eq.0.)  tdq(n,nlayer+1-j,i)=1.e-20
+       enddo
+       enddo
+       enddo
+
+c Calcul de la surface des aerosols pour la chimie heterogene
+c-------------------------------------------------------------
+
+       do ihor=1,ngrid
+       do jalt=1,nlayer
+
+         dzb(jalt)=(zzlev(ihor,jalt)-zzlev(ihor,jalt+1))
+         psurfhaze(ihor,jalt)=0.
+
+         do iq=1,nq
+          if(iq .le. 6)
+     &       surf1=4.*3.1415926353*rf(6)**2./(2.519842**(6-iq))**2.
+          if(iq .gt. 6)
+     &       surf1=4.*3.1415926353*rf(6)**2. * (16.**(iq-6))
+
+            psurfhaze(ihor,jalt)=psurfhaze(ihor,jalt)+
+     &             q(ihor,nlayer+1-jalt,iq)/dzb(jalt)*surf1
+         enddo
+
+         psurfhaze(ihor,jalt)=psurfhaze(ihor,jalt)
+     &                        *1.e12/1.e6  !passage m^2/m^3 a um^2/cm^3
+c        print*,psurfhaze(ihor,jalt),dzb(jalt),q(ihor,nlayer+1-jalt,1)
+c    &         ,surf1,rf(6)
+
+         enddo
+       enddo
+
+c***** WARNING, SI IPREM=0 ON DOIT EGALEMENT SOUSTRAIRE QDEL
+c******* VOIR PLUS LOIN. DANS CE CAS, LA BOUCLE SI DESSUS
+c****** NE SRT QU'A FAIRE LE BIALN DQ=Q_FICHIER-0
+c**** LE DQ EFFECTIVEMENT PRIS EN COMPTE EST CALCULE APRES LE BILAN
+
+c      BILAN DE MASSE SORTIE
+
+
+       total=0.
+       tmass=0.
+       do ihor=1,ngrid
+          do iq=1,nq
+           do JALT=1,nlayer
+            total=total+tdq(ihor,JALT,iq)*(16.**(iq-5))
+     .                      *aire(ihor)*ptimestep
+            tmass=tmass+q(ihor,JALT,iq)*(16.**(iq-5))*aire(ihor)
+           enddo
+          enddo
+       enddo
+c         print*,'Bilan sortie masse des qaer (unite M_mono)',
+c    .                  tmass,total,total/tmass   
+
+
+c POUR LE PREMIER PASSAGE, IL FAUT ELIMINER L'ETAT DE Q
+c PROVENANT DE LA LECTURE DES FICHIERS STARTS
+c QD DOIT DONC CONTENIR -QDEL
+
+       if (iprem.eq.0) then
+
+       do n=1,ngrid
+       do i=1,nq
+       do j=1,NLAYER                ! j de 1 a 54 
+
+             tdq(n,nlayer+1-j,i)=0.
+
+             tdq(n,nlayer+1-j,i)=(q(n,j,i)
+     &                         -tq(n,nlayer+1-j,i)
+     &                       -qdel(n,nlayer+1-j,i))/ptimestep
+
+
+       tq(n,nlayer+1-j,i)=tq(n,nlayer+1-j,i)+qdel(n,nlayer+1-j,i)
+
+       if (tdq(n,nlayer+1-j,i).eq.0.)  tdq(n,nlayer+1-j,i)=1.e-20
+
+       enddo
+       enddo
+       enddo
+       endif
+
+c      print*,'ok1'
+c EN GENERAL, TDQ= (Q_FICHIER - Q_START)/PTIMESTEP
+
+ 
+          iprem=1       ! LA PROCHAINE FOIS NE SERA PLUS LA 1ERE 
+c      print*,'************************************'
+c      print*,'***********TABLEAU APRES************'
+c      print*,'************************************'
+c      do h=12,12
+c      do j=1,NLAYER
+c         print*,'exit',h,j,tdq(h,j,7),q(h,j,7),tpt(h,j),tpplev(h,j)
+c      enddo
+c      enddo
+c      print*,'************************************'
+
+c Au dernier appel...on ecrit finfich
+
+          if (last) then
+        open (unit=31,file='finfich',iostat=ii,
+     1  access='sequential',form='formatted')
+
+
+         write(unit=31,fmt=1011,iostat=ii)tt,(((q(i,j,k),
+     1   k=1,nrad),j=1,nz),i=1,ngrid)
+         endif
+c        print*,'ok2'
+
+1011    format(e8.3,21000(e8.3))
+
+ 
+ 16      return  
+ 500    print*,'erreur lecture initfich' 
+          stop
+ 499    print*,'erreur ouverture initfich' 
+          stop
+          end 
+
+
+c---------------------------------------------------------------------

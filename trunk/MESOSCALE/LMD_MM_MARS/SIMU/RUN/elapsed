@@ -1,0 +1,8 @@
+#! /bin/bash
+
+if [[ -f rsl.error.0000 ]]
+then
+  more rsl.error.0000 | grep elapsed | grep 'Timing for main' | awk '{s+=$9} END{print s}'
+else
+  more log_wrf | grep elapsed | grep 'Timing for main' | awk '{s+=$9} END{print s}'
+fi

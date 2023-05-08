@@ -1,0 +1,17 @@
+type=continuous
+signed=yes
+projection=regular_ll
+dx=0.05
+dy=0.05
+known_x = 1.
+known_y = 1.
+known_lat = -90.
+known_lon = -180.
+wordsize=2
+tile_x=3600
+tile_y=3600
+tile_z=1
+tile_bdr=0
+missing_value=0
+units="meters"
+description="TES 2007 thermal inertia"

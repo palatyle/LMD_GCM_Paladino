@@ -1,0 +1,23 @@
+diagfi10.nc        
+diagfi11.nc        
+diagfi12.nc        
+
+515              ! Starting sol of the run stored in the first input file?
+sol              ! output timescale ("sol" or "ls")
+tsurf            
+ps
+
+
+
+-----------------------------------------------------------------------
+ABOVE is the list of inputs to be fed to "concatnc.e" if you don t want
+to reply directly to the program: 
+
+1) List of N files to be read  (N lines)
+2) blank line at the end
+3) Starting sol of the run stored in the first input file?
+4) List of X variables to be kept (X lines) or 'all'
+5) blank line at the end
+
+The use is : 
+> concatnc.e < concatnc.def

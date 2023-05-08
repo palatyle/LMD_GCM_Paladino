@@ -1,0 +1,31 @@
+- reference state need to be hydrostatically balanced
+- reference state function of height only
+(- reference state satisfy the governing equations for an atmosphere at rest)
+- use ref state of idealized stuff ?
+
+attention dans start_em
+
+c'est l'avant-dernier level qui compte
+
+problem
+- souci de temperature negative parce que base_lapse trop eleve
+- repartition verticale pas bonne, meilleure avec exponentielle
+
+
+fin de compute_eta (plus rajouter des -2)
+
+         !  Add those 2 levels back into the middle, just above the 8 levels
+         !  that semi define a boundary layer.  After we open up the levels,
+         !  then we just linearly interpolate in znw.  So now levels 1-8 are
+         !  specified as the fixed boundary layer levels given in this routine.
+         !  The top levels, 12 through kte are those computed.  The middle
+         !  levels 9, 10, and 11 are equi-spaced in znw, and are each 1/2 the
+         !  the znw thickness of levels 11 through 12.
+
+         DO k = kte-2 , 9 , -1
+            znw(k+2) = znw(k)
+         END DO
+
+         znw( 9) = 0.75 * znw( 8) + 0.25 * znw(12)
+         znw(10) = 0.50 * znw( 8) + 0.50 * znw(12)
+         znw(11) = 0.25 * znw( 8) + 0.75 * znw(12)

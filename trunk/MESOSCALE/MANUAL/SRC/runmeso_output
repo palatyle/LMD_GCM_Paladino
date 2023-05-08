@@ -1,0 +1,35 @@
+**********************************************
+**** LMD Martian Mesoscale Model launcher ****
+**********************************************
+** User                  >>> aymeric
+** Hostname              >>> aymeric-laptop
+** Hardware              >>> i686
+** Processor             >>> unknown
+**********************************************
+** Simulation directory  >>> /home/aymeric/Science/MODELES/MESOSCALE/LMD_MM_MARS/TESTCASE
+** Start date            >>> 2024-01-17 [sol=16, Ls=8.102209]
+** End date              >>> 2024-01-17 [sol=16, Ls=8.102209]
+** Domain(s)             >>> 1
+** Tracer(s)             >>> 1
+** Grid points           >>> 61 x 61 x 61
+** Horizontal resolution >>> 20000
+**********************************************
+** The runmeso script does it for you !
+**********************************************
+** Step 0: compile the model if not done yet
+** Step 1: run GCM and prepare inputs
+** Step 2: interpolate on domain horizontal grid
+** Step 3: interpolate on chosen vertical levels
+** Step 4: run the model
+************************* Please make a choice
+ 1 --> Perform steps 0 1 2 3 4  [ -1: step 0 skipped]
+ 2 --> Perform steps 0 2 3 4    [ -2: step 0 skipped]
+ 3 --> Perform steps 0 3 4      [ -3: step 0 skipped]
+ 4 --> Perform steps 0 4        [ -4: step 0 skipped]
+11 --> Perform steps 0 1 2 3    [-11: step 0 skipped]
+12 --> Perform steps 0 2 3      [-12: step 0 skipped]
+13 --> Perform steps 0 3        [-13: step 0 skipped]
+ 0 --> Perform step  0 only
+99 --> Oops ! Exit now please.
+**********************************************
+What is your choice? 

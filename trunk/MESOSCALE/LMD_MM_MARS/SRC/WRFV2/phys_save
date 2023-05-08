@@ -1,0 +1,8 @@
+mkdir save/phys
+cp -rf phys/diff_module_physics_init save/phys
+cp -rf phys/Makefile save/phys
+cp -rf phys/module_physics_init.F save/phys
+cp -rf phys/module_lmd_driver.F save/phys
+cp -rf phys/diff_module_physics_addtendc save/phys
+cp -rf phys/diff_Makefile save/phys
+cp -rf phys/module_physics_addtendc.F save/phys

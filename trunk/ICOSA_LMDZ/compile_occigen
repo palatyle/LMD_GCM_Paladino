@@ -1,0 +1,2 @@
+make_icosa_lmdz -p std -p_opt "-b 23x25 -s 1" -debug -parallel mpi_omp -arch X64_OCCIGEN -arch_path ../ARCH -job 8
+

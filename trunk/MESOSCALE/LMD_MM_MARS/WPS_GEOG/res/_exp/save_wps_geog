@@ -1,0 +1,70 @@
+mkdir WPS_GEOG
+
+cp save_wps_geog WPS_GEOG
+cp save_data WPS_GEOG
+cd WPS_GEOG
+
+mkdir albedo_GCM
+cd albedo_GCM
+cp ../../albedo_GCM/albedo_build.m .
+cp ../../albedo_GCM/index* .
+cd ..
+
+mkdir albedo_TES
+cd albedo_TES
+cp ../../albedo_TES/tesalbedo_build.m .
+cp ../../albedo_TES/index* .
+cp ../../albedo_TES/tesalbedo_get .
+cd ..
+
+mkdir mola_topo32
+cd mola_topo32
+cp ../../mola_topo32/mola_build.m .
+cp ../../mola_topo32/index* .
+cp ../../mola_topo32/mola_topo32_get .
+cd ..
+
+mkdir mola_topo64
+cd mola_topo64
+cp ../../mola_topo64/mola_build*.m .
+cp ../../mola_topo64/index* .
+cp ../../mola_topo64/mola_topo64_get .
+cd ..
+
+mkdir thermal_GCM
+cd thermal_GCM
+cp ../../thermal_GCM/thermal_build.m .
+cp ../../thermal_GCM/index* .
+cd ..
+
+mkdir thermal_TES
+cd thermal_TES
+cp ../../thermal_TES/testhermal_build.m .
+cp ../../thermal_TES/index* .
+cp ../../thermal_TES/testhermal*_get .
+cd ..
+
+mkdir martian_data
+cd martian_data
+cp ../../martian_data/surface.nc .
+cd ..
+
+mkdir crater
+cd crater
+cp ../../crater/*.m .
+cp ../../crater/index* .
+cp ../../crater/readenvimos.pro .
+cd ..
+
+mkdir crater2
+cd crater2
+cp ../../crater2/*.m .
+cp ../../crater2/index .
+cd ..
+
+
+cd ..
+tar czvf WPS_GEOG.tar.gz WPS_GEOG
+
+rm -rf WPS_GEOG
+echo 'ok'

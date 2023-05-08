@@ -1,0 +1,9 @@
+!
+! $Header$
+!
+      LOGICAL LEVOIGT
+      PARAMETER (LEVOIGT=.FALSE.)
+      INTEGER NOVLP
+      PARAMETER (NOVLP=1)
+      INTEGER KAER
+      PARAMETER (KAER=0)

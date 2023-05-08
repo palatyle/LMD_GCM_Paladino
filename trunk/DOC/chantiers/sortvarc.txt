@@ -1,0 +1,10 @@
+Dans sortvarc, il y a un bug sur le calcul de ang:
+il faut enlever un /g:
+AFAIRE:
+<           angl(l) = rad *
+VS:
+>           angl(l) = radsg *
+
+Il faudrait aussi pouvoir choisir si on reinitialise les valeurs de reference
+ou pas -> flag dans gcm.def a mettre
+

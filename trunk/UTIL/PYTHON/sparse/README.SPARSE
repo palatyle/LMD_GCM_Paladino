@@ -1,0 +1,75 @@
+*****************************************
+*****************************************
+*****************************************
+         SPARSE.PY EXAMPLES
+*****************************************
+               Author : TN
+*****************************************
+  DON'T FORGET YOUR BEST FRIEND IS
+   sparse.py -h [or] sparse.py --help
+*****************************************
+*****************************************
+*****************************************
+
+*****************************************
+SIMPLE EXAMPLES on a SAMPLE TES DATA FILE
+*****************************************
+
+sparse.py reads sparse data, i.e. not binned in a lat/lon/vert/time grid and does plots.
+
+
+Goal: I would like to plot surface temperature vs. latitude for a .sav file from IDL.
+sparse.py -f TES_MY26_90_120.sav -X lat -Y surft
+[files in /planeto/lmlmd/TESdata/]
+
+Goal: I would like the same plot, but with local time for points color.
+sparse.py -f TES_MY26_90_120.sav -X lat -Y surft -C loctime
+
+Goal: I would like the same plot, but for local time > 10.
+sparse.py -f TES_MY26_90_120.sav -X lat -Y surft -C loctime -w 'loctime>12'
+
+Goal: I would like the same plot, but for longitude between 170 and 180.
+sparse.py -f TES_MY26_90_120.sav -X lat -Y surft -C loctime -w 'loctime>12,lon>170,lon<180'
+
+Goal: I would like another plot for local time < 12.
+sparse.py -f TES_MY26_90_120.sav -X lat -Y surft -C loctime -w 'loctime>12,lon>170,lon<180' -w 'loctime<12,lon>170,lon<180'
+
+Goal: I would the same plot with the same 'spectral' colorbar.
+sparse.py -f TES_MY26_90_120.sav -X lat -Y surft -C loctime -w 'loctime>12,lon>170,lon<180' -w 'loctime<12,lon>170,lon<180' -c spectral -m 0 -M 24
+
+Goal: I would like to map surface temperature on a polar projection.
+sparse.py -f TES_MY26_90_120.sav -X lon -Y lat -C surft -w 'lat>70,loctime>12' -p npstere --blat 70
+
+Goal: I would like to plot surface temperature vs LS for Northern pole ice deposits for two different files.
+sparse.py -f TES_MY26_90_120.sav,TES_MY26_120_150.sav -X areoc -Y lat -C surft -w 'lat>70,loctime>10,lon>160,lon<180'
+
+Goal: I would like the same plot, but with merged data from the two files.
+sparse.py -f TES_MY26_90_120.sav,TES_MY26_120_150.sav -X areoc -Y lat -C surft -w 'lat>70,loctime>10,lon>160,lon<180' --merge
+
+Goal: I would like to plot surface temperature occurences for day and night.
+sparse.py -f TES_MY26_90_120.sav -X surft -w 'loctime>12,areoc>110' -w  'loctime<12,areoc>110' --div 50
+
+Goal: I would like the plot surface temperature and surface pressure for z-axis.
+sparse.py -f TES_MY26_90_120.sav -X lat -Y lon -C surft -Z surfp -w 'loctime>12,lon>170,lon<180,lat>75'
+
+Goal: I would like to plot data from .txt files, knowing that 1st column is latitude, 2nd is longitude and 3rd is water vapor.
+sparse.py -f media_prum_SPICAM.dat,media_prum_TES.dat,media_prum_OMEGA.dat -X 1 -Y 2 -C 3 -c 'spectral' -w '3>1' -m 0 -M 65
+[files in /planeto/tnalmd/data/water_vapor]
+
+
+sparse.py also supports min and max options (--xmin,--xmax,-m,-M,etc..), background (-b) and 
+transparency (--trans) options from planetoplot.
+
+
+carte opacite poussiere
+sparse.py -f /planeto/lmlmd/TESdata/TES_MY25_180_210.sav -X lon -Y lat -C coldust -p ortho --blon 90 -m 0. -M 1. -c spectral -w 'areoc>180,areoc<185' -b molabw
+
+*****************************************
+to do:
+*****************************************
+- read other formats than txt and sav ?
+- variable that depends on 2 variables, such as atmospheric temperatures measurements
+- interface with binned data for comparison with simulations (use of writeascii in planetoplot, etc...)
+
+
+

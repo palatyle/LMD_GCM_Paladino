@@ -1,0 +1,33 @@
+#!/bin/bash
+
+mv start_archive.nc ../
+rm -f gcm_*
+rm -f fort*
+rm -f g1d.dat
+rm -f g1d.ctl
+rm -f exe_planet
+rm -f lruns?
+rm -f lrun*
+rm -f olr.txt
+rm -f olr?.txt
+rm -f start.nc
+rm -f start*.nc
+rm -f startfi.nc
+rm -f startfi*.nc
+rm -f stats*.nc
+rm -f diagfi.nc
+rm -f diagfi*.nc
+rm -f diagspec.nc
+rm -f diagspec*.nc
+rm -f *.out
+rm -f num_run
+rm -f num_run.crash
+rm -f gcm_3D.*
+rm -f rcm_1D.*
+rm -f *~
+rm -rf files_out
+rm -f profile*.out
+mv ../start_archive.nc .
+
+
+exit 0

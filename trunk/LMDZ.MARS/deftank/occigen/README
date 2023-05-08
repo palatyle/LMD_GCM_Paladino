@@ -1,0 +1,7 @@
+>> EXAMPLES FOR OCCIGEN CLUSTER
+Job "run_month1" runs a simulation for month #1 and then possibly launches
+a job "run_month2" which runs a simulation for month #2 which then possibly
+launches a job "run_month3" etc.
+The starting and ending months of the simulation can be set in "run_month1"
+One should adapt the script (and underlying "run0" and "run.def.ref") to
+match their needs.

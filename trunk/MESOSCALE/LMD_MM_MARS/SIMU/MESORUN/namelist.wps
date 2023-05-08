@@ -1,0 +1,41 @@
+&share				      	
+ wrf_core = 'ARW',                    !!   [do not modify: choice of dynamical core]
+ max_dom = 1 !! (r)(n)(p2) Total number of domains
+ start_date = '2024-04-03_06:00:00' !! YYYY-MM-DD_HH:mm:ss start date
+ end_date   = '2024-04-03_12:00:00' !! YYYY-MM-DD_HH:mm:ss end date
+ interval_seconds = 3700 !! (p2) Frequency of large-scale fields update (s)
+ io_form_geogrid = 2,                 !!   [do not modify: choice of NETCDF outputs]	
+ debug_level = 0,                     !! verbose level of the programs 
+ opt_output_from_geogrid_path='../geogrid/'    !! location of the geogrid outputs
+/
+
+
+&geogrid
+ parent_id = 0, !! (n)(p2) Associated parent domain
+ parent_grid_ratio = 1, !! (n)(p2) Ratio of horizontal resolution parent/nest
+ i_parent_start = 0, !! (n)(p2) x-position of the bottom-left nest corner
+ j_parent_start = 0, !! (n)(p2) y-position of the bottom-left nest corner
+  e_we   = 121,                !! (r)(p2) Number of longitude grid points
+  e_sn   = 121,                !! (r)(p2) Number of latitude grid points
+ dx = 30000
+ dy = 30000
+ geog_data_res     = '64ppd_noHRti',       !! choice of static data sources
+                                            !! NB: possible: '64ppd', '32ppd', ...
+                                            !! NB: please glance at geogrid/GEOGRID.TBL
+ map_proj = 'mercator',           !! map projection: 'mercator', 'lambert' or 'polar'
+ ref_lat   =  10.,            !! north latitude of the center of the domain 
+ ref_lon   =  -125.,            !! east longitude of the center of the domain
+ truelat1  =  10.,            !! (lambert or polar) lat position of projection cone
+ truelat2  =  0.0,                !!   [do not modify]
+ stand_lon =  -125.,            !! (lambert or polar) lon position of projection cone
+ geog_data_path = '../data_static/',   !!   [do not modify: symbolic link in the WPS folder]
+ OPT_GEOGRID_TBL_PATH = '../geogrid/'
+/
+
+&metgrid
+ fg_name = '../prep/WPSFEED/LMD'        !!   [do not modify: symbolic link in the WPS folder]
+ io_form_metgrid = 2,             !!   [do not modify: choice of NETCDF outputs]
+ opt_output_from_metgrid_path='../metgrid/'  !!   [do not modify: symbolic link]
+ OPT_METGRID_TBL_PATH = "../metgrid/"
+/
+

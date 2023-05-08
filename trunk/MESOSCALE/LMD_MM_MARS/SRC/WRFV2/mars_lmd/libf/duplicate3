@@ -1,0 +1,61 @@
+#!/bin/bash
+
+./duplicate2
+
+echo 'duplicate sources for domain 3'
+
+### deja fait dans duplicate1
+#\rm aeronomars/d3_*
+#\rm bibio/d3_*
+#\rm phymars/d3_*
+#\rm grid/d3_*
+#\rm dyn3d/d3_*
+
+
+cd aeronomars
+cp ../generate3 .
+find * -exec generate3 {} \;
+\rm *generate3
+cd ..
+
+cd bibio
+cp ../generate3 .
+find * -exec generate3 {} \;
+\rm *generate3
+cd ..
+
+cd phymars
+cp ../generate3 .
+find *.F -exec generate3 {} \;
+find *.h -exec generate3 {} \;
+find *.F90 -exec generate3 {} \;
+find *.inc -exec generate3 {} \;
+\rm *generate3
+cd ..
+
+cd grid
+cp ../generate3 .
+find * -exec generate3 {} \;
+\rm *generate3
+\rm d3_dimension
+cd ..
+
+cd dyn3d
+cp ../generate3 .
+find * -exec generate3 {} \;
+\rm *generate3
+cd ..
+
+\rm aeronomars/d3_d2*
+\rm bibio/d3_d2*
+\rm phymars/d3_d2*
+\rm grid/d3_d2*
+\rm dyn3d/d3_d2*
+
+\rm aeronomars/d2_d3*
+\rm bibio/d2_d3*
+\rm phymars/d2_d3*
+\rm grid/d2_d3*
+\rm dyn3d/d2_d3*
+
+  

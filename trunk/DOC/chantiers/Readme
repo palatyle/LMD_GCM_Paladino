@@ -1,0 +1,18 @@
+Ici, on peut mettre tous les chantiers en vue, les idees, la todolist, etc...
+
+****
+Les commits IMPORTANTS doivent etre reportes dans le fichier commit_importants.log
+****
+
+Ajouter des fichiers genre monprochainprojet-Seb.txt, avec une description des
+modifs proposees, a discuter, etc...
+
+En bref, outil juste de communication sur le chantier.
+
+Quand le sujet aborde dans un fichier a ete traite, le fichier est clos. 
+On le renomme en nomfichier.clos
+
+Contributeurs
+E. Millour
+S. Lebonnois
+A. Spiga [entree 17/11/2010]

@@ -1,0 +1,12 @@
+NETCDF_LIBDIR="-L/usr/local/lib"
+NETCDF_LIB=" -lnetcdf -lnetcdff"
+NETCDF_INCDIR="-I/usr/local/include"
+
+IOIPSL_INCDIR="-I/home/leconte/script/ioipsl/modipsl/lib/"
+IOIPSL_LIBDIR="-L/home/leconte/script/ioipsl/modipsl/lib/"
+IOIPSL_LIB="-lioipsl"
+
+XIOS_INCDIR=$LMDGCM/../XIOS/inc
+XIOS_LIBDIR=$LMDGCM/../XIOS/lib
+
+

@@ -1,0 +1,884 @@
+15c15
+<   LOGICAL :: WRF_ERROR_FATAL_PRINT = .FALSE.
+---
+>   LOGICAL :: WRF_ERROR_FATAL_PRINT = .TRUE. !FALSE.
+77,78c77,78
+<     it_MM = 1
+<     it_DD = 1
+---
+>     it_MM = 1  ! same as Earth more simple 
+>     it_DD = 1  ! same as Earth more simple 
+366,367c366,367
+<     iop1_t_MM = 1
+<     iop1_t_DD = 1
+---
+>     iop1_t_MM = 1  !see above
+>     iop1_t_DD = 1  !see above
+382,383c382,383
+<     iop2_t_MM = 1
+<     iop2_t_DD = 1
+---
+>     iop2_t_MM = 1  !see above
+>     iop2_t_DD = 1  !see above
+398,399c398,399
+<     ires_t_MM = 1
+<     ires_t_DD = 1
+---
+>     ires_t_MM = 1  !see above
+>     ires_t_DD = 1  !see above
+921,922c921,922
+<     istart_MM = 1
+<     istart_DD = 1
+---
+>     istart_MM = 1  !see above
+>     istart_DD = 1  !see above
+927,928c927,928
+<     istop_MM = 1
+<     istop_DD = 1
+---
+>     istop_MM = 1  !see above
+>     istop_DD = 1  !see above
+1322c1322
+< !  PRINT *,'DEBUG:  back from WRFU_Initialize(), rc = ',rc
+---
+>   PRINT *,'DEBUG:  back from WRFU_Initialize(), rc = ',rc
+1331,1332c1331,1332
+<   CALL test_print( t_yy=2001,  t_mm=12,  t_dd=3,  t_h=1,  t_m=20,  t_s=10, &
+<     res_str='2001-12-03_01:20:10', testname='printT_1' )
+---
+>   CALL test_print( t_yy=2025,  t_mm=03,  t_dd=23,  t_h=1,  t_m=20,  t_s=10, &
+>     res_str='2025-03-23_01:20:10', testname='printT_1' )
+1334,1366c1334,1369
+<   CALL test_print( t_yy=0,  t_mm=1,  t_dd=1,  t_h=0,  t_m=0,  t_s=0, &
+<     res_str='0000-01-01_00:00:00', testname='printT_2' )
+<   CALL test_print( t_yy=2003,  t_mm=12,  t_dd=30,  t_h=23,  t_m=59,  t_s=50, &
+<     res_str='2003-12-30_23:59:50', testname='printT_3' )
+<   CALL test_print( t_yy=2003,  t_mm=12,  t_dd=31,  t_h=23,  t_m=59,  t_s=50, &
+<     res_str='2003-12-31_23:59:50', testname='printT_4' )
+<   CALL test_print( t_yy=2004,  t_mm=12,  t_dd=30,  t_h=23,  t_m=59,  t_s=50, &
+<     res_str='2004-12-30_23:59:50', testname='printT_5' )
+<   CALL test_print( t_yy=2004,  t_mm=12,  t_dd=31,  t_h=23,  t_m=59,  t_s=50, &
+<     res_str='2004-12-31_23:59:50', testname='printT_6' )
+< !$$$  NOTE that this fails -- need to fix up output string for negative year
+< !  CALL test_print( t_yy=-2004,  t_mm=12,  t_dd=31,  t_h=23,  t_m=59,  t_s=50, &
+< !    res_str='-2004-12-31_23:59:50', testname='printT_6' )
+< 
+<   ! these test default behavior of test harness
+<   CALL test_print( t_s=0, &
+<     res_str='0000-01-01_00:00:00', testname='printT_D1' )
+<   CALL test_print( t_yy=0, &
+<     res_str='0000-01-01_00:00:00', testname='printT_D2' )
+< 
+<   ! fractions
+<   CALL test_print( t_yy=2001,  t_mm=12,  t_dd=3,  t_h=1,  t_m=20,  t_s=10, &
+<     t_sn=1, t_sd=3, &
+<     res_str='2001-12-03_01:20:10+01/03', testname='printT_F1' )
+<   CALL test_print( t_yy=2001,  t_mm=12,  t_dd=3,  t_h=1,  t_m=20,  t_s=10, &
+<     t_sn=4, t_sd=3, &
+<     res_str='2001-12-03_01:20:11+01/03', testname='printT_F2' )
+<   CALL test_print( t_yy=2001,  t_mm=12,  t_dd=3,  t_h=1,  t_m=20,  t_s=10, &
+<     t_sn=12, t_sd=3, &
+<     res_str='2001-12-03_01:20:14', testname='printT_F3' )
+<   CALL test_print( t_yy=2001,  t_mm=12,  t_dd=3,  t_h=1,  t_m=20,  t_s=10, &
+<     t_sn=-1, t_sd=3, &
+<     res_str='2001-12-03_01:20:09+02/03', testname='printT_F4' )
+---
+>   CALL test_print( t_yy=2000,  t_mm=1,  t_dd=1,  t_h=0,  t_m=0,  t_s=0, &
+>     res_str='2000-01-01_00:00:00', testname='printT_2' )
+>   CALL test_print( t_yy=2026,  t_mm=07,  t_dd=74,  t_h=23,  t_m=36,  t_s=90, &
+>     res_str='2026-07-74_23:36:90', testname='printT_3' )
+>   CALL test_print( t_yy=2026,  t_mm=07,  t_dd=75,  t_h=23,  t_m=36,  t_s=90, &
+>     res_str='2026-07-75_23:36:90', testname='printT_4' )
+> !  CALL test_print( t_yy=2004,  t_mm=12,  t_dd=30,  t_h=23,  t_m=59,  t_s=50, &
+> !    res_str='2004-12-30_23:59:50', testname='printT_5' )
+> !  CALL test_print( t_yy=2004,  t_mm=12,  t_dd=31,  t_h=23,  t_m=59,  t_s=50, &
+> !    res_str='2004-12-31_23:59:50', testname='printT_6' )
+> !!$$$  NOTE that this fails -- need to fix up output string for negative year
+> !!  CALL test_print( t_yy=-2004,  t_mm=12,  t_dd=31,  t_h=23,  t_m=59,  t_s=50, &
+> !!    res_str='-2004-12-31_23:59:50', testname='printT_6' )
+> 
+> !  ! these test default behavior of test harness
+> !  CALL test_print( t_s=0, &
+> !    res_str='0000-00-00_00:00:00', testname='printT_D1' )
+> !  CALL test_print( t_yy=0, &
+> !    res_str='0000-00-00_00:00:00', testname='printT_D2' )
+> 
+>   PRINT *,'yeah yeah yeah'
+> 
+> 
+> !  ! fractions
+> !  CALL test_print( t_yy=2001,  t_mm=12,  t_dd=3,  t_h=1,  t_m=20,  t_s=10, &
+> !    t_sn=1, t_sd=3, &
+> !    res_str='2001-12-03_01:20:10+01/03', testname='printT_F1' )
+> !  CALL test_print( t_yy=2001,  t_mm=12,  t_dd=3,  t_h=1,  t_m=20,  t_s=10, &
+> !    t_sn=4, t_sd=3, &
+> !    res_str='2001-12-03_01:20:11+01/03', testname='printT_F2' )
+> !  CALL test_print( t_yy=2001,  t_mm=12,  t_dd=3,  t_h=1,  t_m=20,  t_s=10, &
+> !    t_sn=12, t_sd=3, &
+> !    res_str='2001-12-03_01:20:14', testname='printT_F3' )
+> !  CALL test_print( t_yy=2001,  t_mm=12,  t_dd=3,  t_h=1,  t_m=20,  t_s=10, &
+> !    t_sn=-1, t_sd=3, &
+> !    res_str='2001-12-03_01:20:09+02/03', testname='printT_F4' )
+1379,1380c1382,1383
+<   CALL test_print( ti_yy=0,  ti_mm=0,  ti_dd=500,  ti_h=0,  ti_m=0,  ti_s=7270, &
+<     res_str='0000000500_002:001:010', testname='printTI_2' )
+---
+>   CALL test_print( ti_yy=0,  ti_mm=0,  ti_dd=500,  ti_h=0,  ti_m=0,  ti_s=9510, &
+>     res_str='0000000500_002:021:010', testname='printTI_2' )
+1382,1408c1385,1412
+<   ! these test default behavior of test harness
+<   CALL test_print( ti_s=0, &
+<     res_str='0000000000_000:000:000', testname='printTI_D1' )
+<   CALL test_print( ti_yy=0, &
+<     res_str='0000000000_000:000:000', testname='printTI_D2' )
+< 
+<   ! these test negative values
+<   CALL test_print( ti_yy=0000,  ti_mm=0,  ti_dd=-3,  ti_h=-1,  ti_m=-20,  ti_s=-10, &
+<     res_str='-0000000003_001:020:010', testname='printTI_N1' )
+< 
+<   ! these test mixed values
+<   CALL test_print( ti_yy=0000,  ti_mm=0,  ti_dd=-3,  ti_h=1,  ti_m=20,  ti_s=10, &
+<     res_str='-0000000002_022:039:050', testname='printTI_M1' )
+< 
+<   ! fractions
+<   CALL test_print( ti_yy=0000,  ti_mm=0,  ti_dd=3,  ti_h=1,  ti_m=20,  ti_s=10, &
+<     ti_sn=1, ti_sd=3, &
+<     res_str='0000000003_001:020:010+01/03', testname='printTI_F1' )
+<   CALL test_print( ti_yy=0000,  ti_mm=0,  ti_dd=3,  ti_h=1,  ti_m=20,  ti_s=10, &
+<     ti_sn=5, ti_sd=3, &
+<     res_str='0000000003_001:020:011+02/03', testname='printTI_F2' )
+<   CALL test_print( ti_yy=0000,  ti_mm=0,  ti_dd=-3,  ti_h=-1,  ti_m=-20,  ti_s=-10, &
+<     ti_sn=-1, ti_sd=3, &
+<     res_str='-0000000003_001:020:010-01/03', testname='printTI_F3' )
+<   CALL test_print( ti_yy=0000,  ti_mm=0,  ti_dd=-3,  ti_h=-1,  ti_m=-20,  ti_s=-10, &
+<     ti_sn=1, ti_sd=3, &
+<     res_str='-0000000003_001:020:009-02/03', testname='printTI_F4' )
+---
+> !  ! these test default behavior of test harness
+> !  CALL test_print( ti_s=0, &
+> !    res_str='0000000000_000:000:000', testname='printTI_D1' )
+> !  CALL test_print( ti_yy=0, &
+> !    res_str='0000000000_000:000:000', testname='printTI_D2' )
+> 
+> !  ! these test negative values
+> !  CALL test_print( ti_yy=0000,  ti_mm=0,  ti_dd=-3,  ti_h=-1,  ti_m=-20,  ti_s=-10, &
+> !    res_str='-0000000003_001:020:010', testname='printTI_N1' )
+> !
+> !  ! these test mixed values
+> !  CALL test_print( ti_yy=0000,  ti_mm=0,  ti_dd=-3,  ti_h=1,  ti_m=20,  ti_s=10, &
+> !    res_str='-0000000002_022:039:050', testname='printTI_M1' )
+> !
+> !  ! fractions
+> !  CALL test_print( ti_yy=0000,  ti_mm=0,  ti_dd=3,  ti_h=1,  ti_m=20,  ti_s=10, &
+> !    ti_sn=1, ti_sd=3, &
+> !    res_str='0000000003_001:020:010+01/03', testname='printTI_F1' )
+> !  CALL test_print( ti_yy=0000,  ti_mm=0,  ti_dd=3,  ti_h=1,  ti_m=20,  ti_s=10, &
+> !    ti_sn=5, ti_sd=3, &
+> !    res_str='0000000003_001:020:011+02/03', testname='printTI_F2' )
+> !  CALL test_print( ti_yy=0000,  ti_mm=0,  ti_dd=-3,  ti_h=-1,  ti_m=-20,  ti_s=-10, &
+> !    ti_sn=-1, ti_sd=3, &
+> !    res_str='-0000000003_001:020:010-01/03', testname='printTI_F3' )
+> !  CALL test_print( ti_yy=0000,  ti_mm=0,  ti_dd=-3,  ti_h=-1,  ti_m=-20,  ti_s=-10, &
+> !    ti_sn=1, ti_sd=3, &
+> !    res_str='-0000000003_001:020:009-02/03', testname='printTI_F4' )
+> !
+1417a1422
+> 
+1430c1435
+<      op1_t_yy=2001,  op1_t_mm=12,  op1_t_dd=3,  op1_t_h=1,  op1_t_m=20,  op1_t_s=10, &
+---
+>      op1_t_yy=2026,  op1_t_mm=03,  op1_t_dd=23,  op1_t_h=1,  op1_t_m=20,  op1_t_s=10, &
+1432c1437
+<      res_t_yy=2001,  res_t_mm=12,  res_t_dd=3,  res_t_h=4,  res_t_m=30,  res_t_s=20, &
+---
+>      res_t_yy=2026,  res_t_mm=03,  res_t_dd=23,  res_t_h=4,  res_t_m=30,  res_t_s=20, &
+1435c1440
+<      op1_t_yy=2001,  op1_t_mm=12,  op1_t_dd=31,  op1_t_h=22,  op1_t_m=30,  op1_t_s=00, &
+---
+>      op1_t_yy=2001,  op1_t_mm=07,  op1_t_dd=75,  op1_t_h=22,  op1_t_m=30,  op1_t_s=00, &
+1437c1442
+<      res_t_yy=2002,  res_t_mm= 1,  res_t_dd=1,  res_t_h=2,  res_t_m=40,  res_t_s=10, &
+---
+>      res_t_yy=2002,  res_t_mm= 1,  res_t_dd=1,  res_t_h=3,  res_t_m=03,  res_t_s=10, &
+1439,1456c1444,1448
+<   CALL test_arithmetic( add_op=.TRUE.,                                             &
+<      op1_t_yy=2003,  op1_t_mm=12,  op1_t_dd=31,  op1_t_h=22,  op1_t_m=30,  op1_t_s=00, &
+<     op2_ti_yy=   0, op2_ti_mm= 0, op2_ti_dd=0, op2_ti_h=4, op2_ti_m=10, op2_ti_s=10, &
+<      res_t_yy=2004,  res_t_mm= 1,  res_t_dd=1,  res_t_h=2,  res_t_m=40,  res_t_s=10, &
+<     testname='AddT_T_TI3' )
+<   CALL test_arithmetic( add_op=.TRUE.,                                             &
+<      op1_t_yy=2004,  op1_t_mm=12,  op1_t_dd=31,  op1_t_h=22,  op1_t_m=30,  op1_t_s=00, &
+<     op2_ti_yy=   0, op2_ti_mm= 0, op2_ti_dd=0, op2_ti_h=4, op2_ti_m=10, op2_ti_s=10, &
+<      res_t_yy=2005,  res_t_mm= 1,  res_t_dd=1,  res_t_h=2,  res_t_m=40,  res_t_s=10, &
+<     testname='AddT_T_TI4' )
+<   ! this case hung after the CCSM contribution
+<   CALL test_arithmetic( add_op=.TRUE.,                                             &
+<      op1_t_yy=2004,  op1_t_mm=12,  op1_t_dd=30,  op1_t_h=22,  op1_t_m=30,  op1_t_s=00, &
+<     op2_ti_yy=   0, op2_ti_mm= 0, op2_ti_dd=0, op2_ti_h=4, op2_ti_m=10, op2_ti_s=10, &
+<      res_t_yy=2004,  res_t_mm=12,  res_t_dd=31,  res_t_h=2,  res_t_m=40,  res_t_s=10, &
+<     testname='AddT_T_TI5' )
+< ! NOTE:  CCSM folks need to decide what it means to add "1 month" to Feb. 29.  And all the 
+< !        other very similar cases.  Then, write this unit test!  
+---
+> !  CALL test_arithmetic( add_op=.TRUE.,                                             &
+> !     op1_t_yy=2003,  op1_t_mm=12,  op1_t_dd=31,  op1_t_h=22,  op1_t_m=30,  op1_t_s=00, &
+> !    op2_ti_yy=   0, op2_ti_mm= 0, op2_ti_dd=0, op2_ti_h=4, op2_ti_m=10, op2_ti_s=10, &
+> !     res_t_yy=2004,  res_t_mm= 1,  res_t_dd=1,  res_t_h=2,  res_t_m=40,  res_t_s=10, &
+> !    testname='AddT_T_TI3' )
+1458a1451,1463
+> !    op2_ti_yy=   0, op2_ti_mm= 0, op2_ti_dd=0, op2_ti_h=4, op2_ti_m=10, op2_ti_s=10, &
+> !     res_t_yy=2005,  res_t_mm= 1,  res_t_dd=1,  res_t_h=2,  res_t_m=40,  res_t_s=10, &
+> !    testname='AddT_T_TI4' )
+> !  ! this case hung after the CCSM contribution
+> !  CALL test_arithmetic( add_op=.TRUE.,                                             &
+> !     op1_t_yy=2004,  op1_t_mm=12,  op1_t_dd=30,  op1_t_h=22,  op1_t_m=30,  op1_t_s=00, &
+> !    op2_ti_yy=   0, op2_ti_mm= 0, op2_ti_dd=0, op2_ti_h=4, op2_ti_m=10, op2_ti_s=10, &
+> !     res_t_yy=2004,  res_t_mm=12,  res_t_dd=31,  res_t_h=2,  res_t_m=40,  res_t_s=10, &
+> !    testname='AddT_T_TI5' )
+> !! NOTE:  CCSM folks need to decide what it means to add "1 month" to Feb. 29.  And all the 
+> !        other very similar cases.  Then, write this unit test!  
+> !!  CALL test_arithmetic( add_op=.TRUE.,                                             &
+> !!!     op1_t_yy=2004,  op1_t_mm=12,  op1_t_dd=31,  op1_t_h=22,  op1_t_m=30,  op1_t_s=00, &
+1460,1481c1465,1486
+< !     res_t_yy=2007,  res_t_mm= 1,  res_t_dd=1,  res_t_h=2,  res_t_m=40,  res_t_s=10, &
+< !    testname='AddT_T_TI6' )
+<   CALL test_arithmetic( add_op=.TRUE.,                                             &
+<      op1_t_yy=2004,  op1_t_mm=12,  op1_t_dd=30,  op1_t_h=4,  op1_t_m=30,  op1_t_s=00, &
+<     op2_ti_yy=   0, op2_ti_mm= 0, op2_ti_dd=365, op2_ti_h=4, op2_ti_m=10, op2_ti_s=10, &
+<      res_t_yy=2005,  res_t_mm=12,  res_t_dd=30,  res_t_h=8,  res_t_m=40,  res_t_s=10, &
+<     testname='AddT_T_TI7' )
+<   CALL test_arithmetic( add_op=.TRUE.,                                             &
+<      op1_t_yy=2004,  op1_t_mm=12,  op1_t_dd=30,  op1_t_h=4,  op1_t_m=30,  op1_t_s=00, &
+<     op2_ti_yy=   0, op2_ti_mm= 0, op2_ti_dd=367, op2_ti_h=4, op2_ti_m=10, op2_ti_s=10, &
+<      res_t_yy=2006,  res_t_mm=01,  res_t_dd=01,  res_t_h=8,  res_t_m=40,  res_t_s=10, &
+<     testname='AddT_T_TI8' )
+<   CALL test_arithmetic( add_op=.TRUE.,                                             &
+<      op1_t_yy=2003,  op1_t_mm=12,  op1_t_dd=30,  op1_t_h=4,  op1_t_m=30,  op1_t_s=00, &
+<     op2_ti_yy=   0, op2_ti_mm= 0, op2_ti_dd=365, op2_ti_h=4, op2_ti_m=10, op2_ti_s=10, &
+<      res_t_yy=2004,  res_t_mm=12,  res_t_dd=29,  res_t_h=8,  res_t_m=40,  res_t_s=10, &
+<     testname='AddT_T_TI9' )
+<   CALL test_arithmetic( add_op=.TRUE.,                                             &
+<      op1_t_yy=2003,  op1_t_mm=12,  op1_t_dd=30,  op1_t_h=4,  op1_t_m=30,  op1_t_s=00, &
+<     op2_ti_yy=   0, op2_ti_mm= 0, op2_ti_dd=366, op2_ti_h=4, op2_ti_m=10, op2_ti_s=10, &
+<      res_t_yy=2004,  res_t_mm=12,  res_t_dd=30,  res_t_h=8,  res_t_m=40,  res_t_s=10, &
+<     testname='AddT_T_TI10' )
+---
+> !!     res_t_yy=2007,  res_t_mm= 1,  res_t_dd=1,  res_t_h=2,  res_t_m=40,  res_t_s=10, &
+> !!    testname='AddT_T_TI6' )
+> !  CALL test_arithmetic( add_op=.TRUE.,                                             &
+> !     op1_t_yy=2004,  op1_t_mm=12,  op1_t_dd=30,  op1_t_h=4,  op1_t_m=30,  op1_t_s=00, &
+> !    op2_ti_yy=   0, op2_ti_mm= 0, op2_ti_dd=365, op2_ti_h=4, op2_ti_m=10, op2_ti_s=10, &
+> !     res_t_yy=2005,  res_t_mm=12,  res_t_dd=30,  res_t_h=8,  res_t_m=40,  res_t_s=10, &
+> !    testname='AddT_T_TI7' )
+> !  CALL test_arithmetic( add_op=.TRUE.,                                             &
+> !     op1_t_yy=2004,  op1_t_mm=12,  op1_t_dd=30,  op1_t_h=4,  op1_t_m=30,  op1_t_s=00, &
+> !    op2_ti_yy=   0, op2_ti_mm= 0, op2_ti_dd=367, op2_ti_h=4, op2_ti_m=10, op2_ti_s=10, &
+> !     res_t_yy=2006,  res_t_mm=01,  res_t_dd=01,  res_t_h=8,  res_t_m=40,  res_t_s=10, &
+> !    testname='AddT_T_TI8' )
+> !  CALL test_arithmetic( add_op=.TRUE.,                                             &
+> !     op1_t_yy=2003,  op1_t_mm=12,  op1_t_dd=30,  op1_t_h=4,  op1_t_m=30,  op1_t_s=00, &
+> !    op2_ti_yy=   0, op2_ti_mm= 0, op2_ti_dd=365, op2_ti_h=4, op2_ti_m=10, op2_ti_s=10, &
+> !     res_t_yy=2004,  res_t_mm=12,  res_t_dd=29,  res_t_h=8,  res_t_m=40,  res_t_s=10, &
+> !    testname='AddT_T_TI9' )
+> !  CALL test_arithmetic( add_op=.TRUE.,                                             &
+> !     op1_t_yy=2003,  op1_t_mm=12,  op1_t_dd=30,  op1_t_h=4,  op1_t_m=30,  op1_t_s=00, &
+> !    op2_ti_yy=   0, op2_ti_mm= 0, op2_ti_dd=366, op2_ti_h=4, op2_ti_m=10, op2_ti_s=10, &
+> !     res_t_yy=2004,  res_t_mm=12,  res_t_dd=30,  res_t_h=8,  res_t_m=40,  res_t_s=10, &
+> !    testname='AddT_T_TI10' )
+1483,1485c1488,1490
+<      op1_t_yy=2003,  op1_t_mm=12,  op1_t_dd=30,  op1_t_h=4,  op1_t_m=30,  op1_t_s=00, &
+<     op2_ti_yy=   0, op2_ti_mm= 0, op2_ti_dd=367, op2_ti_h=4, op2_ti_m=10, op2_ti_s=10, &
+<      res_t_yy=2004,  res_t_mm=12,  res_t_dd=31,  res_t_h=8,  res_t_m=40,  res_t_s=10, &
+---
+>      op1_t_yy=2003,  op1_t_mm=03,  op1_t_dd=23,  op1_t_h=0,  op1_t_m=0,  op1_t_s=0, &
+>     op2_ti_yy=   0, op2_ti_mm= 0, op2_ti_dd=675, op2_ti_h=4, op2_ti_m=10, op2_ti_s=10, &
+>      res_t_yy=2004,  res_t_mm=03,  res_t_dd=29,  res_t_h=4,  res_t_m=10,  res_t_s=10, &
+1487,1516c1492,1512
+<   CALL test_arithmetic( add_op=.TRUE.,                                             &
+<      op1_t_yy=2003,  op1_t_mm=12,  op1_t_dd=30,  op1_t_h=4,  op1_t_m=30,  op1_t_s=00, &
+<     op2_ti_yy=   0, op2_ti_mm= 0, op2_ti_dd=368, op2_ti_h=4, op2_ti_m=10, op2_ti_s=10, &
+<      res_t_yy=2005,  res_t_mm=01,  res_t_dd=01,  res_t_h=8,  res_t_m=40,  res_t_s=10, &
+<     testname='AddT_T_TI12' )
+<   CALL test_arithmetic( add_op=.TRUE.,                                             &
+<      op1_t_yy=2004,  op1_t_mm=03,  op1_t_dd=30,  op1_t_h=4,  op1_t_m=30,  op1_t_s=00, &
+<     op2_ti_yy=   0, op2_ti_mm= 0, op2_ti_dd=365, op2_ti_h=4, op2_ti_m=10, op2_ti_s=10, &
+<      res_t_yy=2005,  res_t_mm=03,  res_t_dd=30,  res_t_h=8,  res_t_m=40,  res_t_s=10, &
+<     testname='AddT_T_TI13' )
+<   CALL test_arithmetic( add_op=.TRUE.,                                             &
+<      op1_t_yy=2004,  op1_t_mm=03,  op1_t_dd=30,  op1_t_h=4,  op1_t_m=30,  op1_t_s=00, &
+<     op2_ti_yy=   0, op2_ti_mm= 0, op2_ti_dd=365, op2_ti_h=22, op2_ti_m=10, op2_ti_s=10, &
+<      res_t_yy=2005,  res_t_mm=03,  res_t_dd=31,  res_t_h=2,  res_t_m=40,  res_t_s=10, &
+<     testname='AddT_T_TI14' )
+<   CALL test_arithmetic( add_op=.TRUE.,                                             &
+<      op1_t_yy=2004,  op1_t_mm=03,  op1_t_dd=30,  op1_t_h=4,  op1_t_m=30,  op1_t_s=00, &
+<     op2_ti_yy=   0, op2_ti_mm= 0, op2_ti_dd=366, op2_ti_h=22, op2_ti_m=10, op2_ti_s=10, &
+<      res_t_yy=2005,  res_t_mm=04,  res_t_dd=01,  res_t_h=2,  res_t_m=40,  res_t_s=10, &
+<     testname='AddT_T_TI15' )
+<   ! ESMF_Time = ESMF_Time + ESMF_TimeInterval with fractions
+<   CALL test_arithmetic( add_op=.TRUE.,                                             &
+<      op1_t_yy=2004,  op1_t_mm=12,  op1_t_dd=31,  op1_t_h=22,  op1_t_m=30,  op1_t_s=00, &
+<      op1_t_sn=01,  op1_t_sd=03, &
+<     op2_ti_yy=   0, op2_ti_mm= 0, op2_ti_dd=0, op2_ti_h=4, op2_ti_m=10, op2_ti_s=10, &
+<     op2_ti_sn=01, op2_ti_sd=03, &
+<      res_t_yy=2005,  res_t_mm= 1,  res_t_dd=1,  res_t_h=2,  res_t_m=40,  res_t_s=10, &
+<      res_t_sn=02,  res_t_sd=03, &
+<     testname='AddT_T_TI_F1' )
+<   ! this should fail (and does)
+---
+> !  CALL test_arithmetic( add_op=.TRUE.,                                             &
+> !     op1_t_yy=2003,  op1_t_mm=12,  op1_t_dd=30,  op1_t_h=4,  op1_t_m=30,  op1_t_s=00, &
+> !    op2_ti_yy=   0, op2_ti_mm= 0, op2_ti_dd=368, op2_ti_h=4, op2_ti_m=10, op2_ti_s=10, &
+> !     res_t_yy=2005,  res_t_mm=01,  res_t_dd=01,  res_t_h=8,  res_t_m=40,  res_t_s=10, &
+> !    testname='AddT_T_TI12' )
+> !  CALL test_arithmetic( add_op=.TRUE.,                                             &
+> !     op1_t_yy=2004,  op1_t_mm=03,  op1_t_dd=30,  op1_t_h=4,  op1_t_m=30,  op1_t_s=00, &
+> !    op2_ti_yy=   0, op2_ti_mm= 0, op2_ti_dd=365, op2_ti_h=4, op2_ti_m=10, op2_ti_s=10, &
+> !     res_t_yy=2005,  res_t_mm=03,  res_t_dd=30,  res_t_h=8,  res_t_m=40,  res_t_s=10, &
+> !    testname='AddT_T_TI13' )
+> !  CALL test_arithmetic( add_op=.TRUE.,                                             &
+> !     op1_t_yy=2004,  op1_t_mm=03,  op1_t_dd=30,  op1_t_h=4,  op1_t_m=30,  op1_t_s=00, &
+> !    op2_ti_yy=   0, op2_ti_mm= 0, op2_ti_dd=365, op2_ti_h=22, op2_ti_m=10, op2_ti_s=10, &
+> !     res_t_yy=2005,  res_t_mm=03,  res_t_dd=31,  res_t_h=2,  res_t_m=40,  res_t_s=10, &
+> !    testname='AddT_T_TI14' )
+> !  CALL test_arithmetic( add_op=.TRUE.,                                             &
+> !     op1_t_yy=2004,  op1_t_mm=03,  op1_t_dd=30,  op1_t_h=4,  op1_t_m=30,  op1_t_s=00, &
+> !    op2_ti_yy=   0, op2_ti_mm= 0, op2_ti_dd=366, op2_ti_h=22, op2_ti_m=10, op2_ti_s=10, &
+> !     res_t_yy=2005,  res_t_mm=04,  res_t_dd=01,  res_t_h=2,  res_t_m=40,  res_t_s=10, &
+> !    testname='AddT_T_TI15' )
+> !  ! ESMF_Time = ESMF_Time + ESMF_TimeInterval with fractions
+1523,1691c1519,1557
+< !     res_t_sn=01,  res_t_sd=03, &
+< !    testname='AddT_T_TI_F2' )
+<   ! ESMF_Time = ESMF_TimeInterval + ESMF_Time
+<   CALL test_arithmetic( add_op=.TRUE.,                                             &
+<     op1_ti_yy=   0, op1_ti_mm= 0, op1_ti_dd=0, op1_ti_h=3, op1_ti_m=10, op1_ti_s=10, &
+<      op2_t_yy=2001,  op2_t_mm=12,  op2_t_dd=3,  op2_t_h=1,  op2_t_m=20,  op2_t_s=10, &
+<      res_t_yy=2001,  res_t_mm=12,  res_t_dd=3,  res_t_h=4,  res_t_m=30,  res_t_s=20, &
+<     testname='AddT_TI_T1' )
+<   CALL test_arithmetic( add_op=.TRUE.,                                             &
+<     op1_ti_yy=   0, op1_ti_mm= 0, op1_ti_dd=0, op1_ti_h=4, op1_ti_m=10, op1_ti_s=10, &
+<      op2_t_yy=2001,  op2_t_mm=12,  op2_t_dd=31,  op2_t_h=22,  op2_t_m=30,  op2_t_s=00, &
+<      res_t_yy=2002,  res_t_mm= 1,  res_t_dd=1,  res_t_h=2,  res_t_m=40,  res_t_s=10, &
+<     testname='AddT_TI_T2' )
+<   ! ESMF_TimeInterval = ESMF_TimeInterval + ESMF_TimeInterval
+<   CALL test_arithmetic( add_op=.TRUE.,                                             &
+<     op1_ti_yy=0000, op1_ti_mm=00, op1_ti_dd=3, op1_ti_h=1, op1_ti_m=20, op1_ti_s=10, &
+<     op2_ti_yy=0000, op2_ti_mm=00, op2_ti_dd=1, op2_ti_h=1, op2_ti_m=10, op2_ti_s=10, &
+<     res_ti_yy=0000, res_ti_mm=00, res_ti_dd=4, res_ti_h=2, res_ti_m=30, res_ti_s=20, &
+<     testname='AddTI_TI_TI1' )
+<   CALL test_arithmetic( add_op=.TRUE.,                                             &
+<     op1_ti_yy=0000, op1_ti_mm=00, op1_ti_dd=-3, op1_ti_h=-1, op1_ti_m=-20, op1_ti_s=-10, &
+<     op2_ti_yy=0000, op2_ti_mm=00, op2_ti_dd=1, op2_ti_h=1, op2_ti_m=10, op2_ti_s=10, &
+<     res_ti_yy=0000, res_ti_mm=00, res_ti_dd=-2, res_ti_h=0, res_ti_m=-10, res_ti_s=00, &
+<     testname='AddTI_TI_TI2' )
+<   CALL test_arithmetic( add_op=.TRUE.,                                             &
+<     op1_ti_yy=0000, op1_ti_mm=00, op1_ti_dd=-3, op1_ti_h=-1, op1_ti_m=-20, op1_ti_s=-10, &
+<     op2_ti_yy=0000, op2_ti_mm=00, op2_ti_dd=-1, op2_ti_h=-1, op2_ti_m=-10, op2_ti_s=-10, &
+<     res_ti_yy=0000, res_ti_mm=00, res_ti_dd=-4, res_ti_h=-2, res_ti_m=-30, res_ti_s=-20, &
+<     testname='AddTI_TI_TI3' )
+< 
+<   ! Subtraction tests
+<   ! ESMF_Time = ESMF_Time - ESMF_TimeInterval
+<   CALL test_arithmetic( add_op=.FALSE.,                                            &
+<      op1_t_yy=2001,  op1_t_mm=12,  op1_t_dd=3,  op1_t_h=1,  op1_t_m=20,  op1_t_s=10, &
+<     op2_ti_yy=   0, op2_ti_mm= 0, op2_ti_dd=0, op2_ti_h=3, op2_ti_m=10, op2_ti_s=10, &
+<      res_t_yy=2001,  res_t_mm=12,  res_t_dd=2,  res_t_h=22, res_t_m=10,  res_t_s=0,  &
+<     testname='SubtractT_T_TI1' )
+<   CALL test_arithmetic( add_op=.FALSE.,                                            &
+<      op1_t_yy=2005,  op1_t_mm=1,   op1_t_dd=1,  op1_t_h=0,  op1_t_m=00,  op1_t_s=0,  &
+<     op2_ti_yy=   0, op2_ti_mm= 0, op2_ti_dd=0, op2_ti_h=0, op2_ti_m=00, op2_ti_s=10, &
+<      res_t_yy=2004,  res_t_mm=12,  res_t_dd=31, res_t_h=23, res_t_m=59,  res_t_s=50, &
+<     testname='SubtractT_T_TI2' )
+<   CALL test_arithmetic( add_op=.FALSE.,                                            &
+<      op1_t_yy=2004,  op1_t_mm=1,   op1_t_dd=1,  op1_t_h=0,  op1_t_m=00,  op1_t_s=0,  &
+<     op2_ti_yy=   0, op2_ti_mm= 0, op2_ti_dd=0, op2_ti_h=0, op2_ti_m=00, op2_ti_s=10, &
+<      res_t_yy=2003,  res_t_mm=12,  res_t_dd=31, res_t_h=23, res_t_m=59,  res_t_s=50, &
+<     testname='SubtractT_T_TI3' )
+<   CALL test_arithmetic( add_op=.FALSE.,                                            &
+<      op1_t_yy=2003,  op1_t_mm=1,   op1_t_dd=1,  op1_t_h=0,  op1_t_m=00,  op1_t_s=0,  &
+<     op2_ti_yy=   0, op2_ti_mm= 0, op2_ti_dd=0, op2_ti_h=0, op2_ti_m=00, op2_ti_s=10, &
+<      res_t_yy=2002,  res_t_mm=12,  res_t_dd=31, res_t_h=23, res_t_m=59,  res_t_s=50, &
+<     testname='SubtractT_T_TI4' )
+<   CALL test_arithmetic( add_op=.FALSE.,                                             &
+<      op1_t_yy=2005,  op1_t_mm=04,  op1_t_dd=01,  op1_t_h=2,  op1_t_m=40,  op1_t_s=10, &
+<     op2_ti_yy=   0, op2_ti_mm= 0, op2_ti_dd=366, op2_ti_h=22, op2_ti_m=10, op2_ti_s=10, &
+<      res_t_yy=2004,  res_t_mm=03,  res_t_dd=30,  res_t_h=4,  res_t_m=30,  res_t_s=00, &
+<     testname='SubtractT_T_TI5' )
+<   CALL test_arithmetic( add_op=.FALSE.,                                             &
+<      op1_t_yy=2006,  op1_t_mm=01,  op1_t_dd=01,  op1_t_h=8,  op1_t_m=40,  op1_t_s=10, &
+<     op2_ti_yy=   0, op2_ti_mm= 0, op2_ti_dd=367, op2_ti_h=4, op2_ti_m=10, op2_ti_s=10, &
+<      res_t_yy=2004,  res_t_mm=12,  res_t_dd=30,  res_t_h=4,  res_t_m=30,  res_t_s=00, &
+<     testname='SubtractT_T_TI6' )
+<   ! ESMF_Time = ESMF_Time - ESMF_TimeInterval with fractions
+<   CALL test_arithmetic( add_op=.FALSE.,                                             &
+<      op1_t_yy=2005,  op1_t_mm=01,  op1_t_dd=01,  op1_t_h=00,  op1_t_m=00,  op1_t_s=00, &
+<      op1_t_sn=00,  op1_t_sd=00, &
+<     op2_ti_yy=   0, op2_ti_mm= 0, op2_ti_dd=0, op2_ti_h=0, op2_ti_m=00, op2_ti_s=01, &
+<     op2_ti_sn=01, op2_ti_sd=03, &
+<      res_t_yy=2004,  res_t_mm=12,  res_t_dd=31,  res_t_h=23,  res_t_m=59,  res_t_s=58, &
+<      res_t_sn=02,  res_t_sd=03, &
+<     testname='SubtractT_T_TI_F1' )
+<   ! ESMF_TimeInterval = ESMF_Time - ESMF_Time
+<   CALL test_arithmetic( add_op=.FALSE.,                                            &
+<      op1_t_yy=2001,  op1_t_mm=12,  op1_t_dd=3,  op1_t_h=1,  op1_t_m=20,  op1_t_s=10, &
+<      op2_t_yy=2001,  op2_t_mm=12,  op2_t_dd=1,  op2_t_h=1,  op2_t_m=10,  op2_t_s=10, &
+<     res_ti_yy=0000, res_ti_mm=00, res_ti_dd=2, res_ti_h=0, res_ti_m=10, res_ti_s=0,  &
+<     testname='SubtractTI_T_T1' )
+<   CALL test_arithmetic( add_op=.FALSE.,                                            &
+<      op1_t_yy=2002,  op1_t_mm=1,   op1_t_dd=1,  op1_t_h=0,  op1_t_m=00,  op1_t_s=00, &
+<      op2_t_yy=2001,  op2_t_mm=12,  op2_t_dd=31, op2_t_h=23, op2_t_m=59,  op2_t_s=50, &
+<     res_ti_yy=0000, res_ti_mm=00, res_ti_dd=0, res_ti_h=0, res_ti_m=00, res_ti_s=10, &
+<     testname='SubtractTI_T_T2' )
+<   CALL test_arithmetic( add_op=.FALSE.,                                            &
+<      op1_t_yy=2005,  op1_t_mm=1,   op1_t_dd=1,  op1_t_h=0,  op1_t_m=00,  op1_t_s=00, &
+<      op2_t_yy=2004,  op2_t_mm=12,  op2_t_dd=31, op2_t_h=23, op2_t_m=59,  op2_t_s=50, &
+<     res_ti_yy=0000, res_ti_mm=00, res_ti_dd=0, res_ti_h=0, res_ti_m=00, res_ti_s=10, &
+<     testname='SubtractTI_T_T3' )
+<   CALL test_arithmetic( add_op=.FALSE.,                                            &
+<      op1_t_yy=2003,  op1_t_mm=03,  op1_t_dd=01, op1_t_h=00, op1_t_m=00,  op1_t_s=00, &
+<      op2_t_yy=2003,  op2_t_mm=02,  op2_t_dd=28, op2_t_h=23, op2_t_m=59,  op2_t_s=50, &
+<     res_ti_yy=0000, res_ti_mm=00, res_ti_dd=0, res_ti_h=0, res_ti_m=00, res_ti_s=10, &
+<     testname='SubtractTI_T_T4' )
+<   CALL test_arithmetic( add_op=.FALSE.,                                            &
+<      op1_t_yy=2004,  op1_t_mm=03,  op1_t_dd=01, op1_t_h=00, op1_t_m=00,  op1_t_s=00, &
+<      op2_t_yy=2004,  op2_t_mm=02,  op2_t_dd=28, op2_t_h=23, op2_t_m=59,  op2_t_s=50, &
+<     res_ti_yy=0000, res_ti_mm=00, res_ti_dd=1, res_ti_h=0, res_ti_m=00, res_ti_s=10, &
+<     testname='SubtractTI_T_T5' )
+<   CALL test_arithmetic( add_op=.FALSE.,                                            &
+<      op1_t_yy=2002,  op1_t_mm=02,  op1_t_dd=28, op1_t_h=00, op1_t_m=00,  op1_t_s=00, &
+<      op2_t_yy=2002,  op2_t_mm=02,  op2_t_dd=28, op2_t_h=00, op2_t_m=00,  op2_t_s=00, &
+<     res_ti_yy=0000, res_ti_mm=00, res_ti_dd=0, res_ti_h=0, res_ti_m=00, res_ti_s=00, &
+<     testname='SubtractTI_T_T6' )
+<   CALL test_arithmetic( add_op=.FALSE.,                                            &
+<      op1_t_yy=2003,  op1_t_mm=02,  op1_t_dd=28, op1_t_h=00, op1_t_m=00,  op1_t_s=00, &
+<      op2_t_yy=2002,  op2_t_mm=02,  op2_t_dd=28, op2_t_h=00, op2_t_m=00,  op2_t_s=00, &
+<     res_ti_yy=0000, res_ti_mm=00, res_ti_dd=365, res_ti_h=0, res_ti_m=00, res_ti_s=00, &
+<     testname='SubtractTI_T_T7' )
+<   CALL test_arithmetic( add_op=.FALSE.,                                            &
+<      op1_t_yy=2004,  op1_t_mm=02,  op1_t_dd=28, op1_t_h=00, op1_t_m=00,  op1_t_s=00, &
+<      op2_t_yy=2003,  op2_t_mm=02,  op2_t_dd=28, op2_t_h=00, op2_t_m=00,  op2_t_s=00, &
+<     res_ti_yy=0000, res_ti_mm=00, res_ti_dd=365, res_ti_h=0, res_ti_m=00, res_ti_s=00, &
+<     testname='SubtractTI_T_T8' )
+<   CALL test_arithmetic( add_op=.FALSE.,                                            &
+<      op1_t_yy=2005,  op1_t_mm=02,  op1_t_dd=28, op1_t_h=00, op1_t_m=00,  op1_t_s=00, &
+<      op2_t_yy=2004,  op2_t_mm=02,  op2_t_dd=28, op2_t_h=00, op2_t_m=00,  op2_t_s=00, &
+<     res_ti_yy=0000, res_ti_mm=00, res_ti_dd=366, res_ti_h=0, res_ti_m=00, res_ti_s=00, &
+<     testname='SubtractTI_T_T9' )
+<   CALL test_arithmetic( add_op=.FALSE.,                                            &
+<      op1_t_yy=2003,  op1_t_mm=03,  op1_t_dd=01, op1_t_h=00, op1_t_m=00,  op1_t_s=00, &
+<      op2_t_yy=2002,  op2_t_mm=02,  op2_t_dd=28, op2_t_h=00, op2_t_m=00,  op2_t_s=00, &
+<     res_ti_yy=0000, res_ti_mm=00, res_ti_dd=366, res_ti_h=0, res_ti_m=00, res_ti_s=00, &
+<     testname='SubtractTI_T_T10' )
+<   CALL test_arithmetic( add_op=.FALSE.,                                            &
+<      op1_t_yy=2005,  op1_t_mm=03,  op1_t_dd=01, op1_t_h=00, op1_t_m=00,  op1_t_s=00, &
+<      op2_t_yy=2004,  op2_t_mm=02,  op2_t_dd=28, op2_t_h=00, op2_t_m=00,  op2_t_s=00, &
+<     res_ti_yy=0000, res_ti_mm=00, res_ti_dd=367, res_ti_h=0, res_ti_m=00, res_ti_s=00, &
+<     testname='SubtractTI_T_T11' )
+<   CALL test_arithmetic( add_op=.FALSE.,                                            &
+<      op1_t_yy=2005,  op1_t_mm=03,  op1_t_dd=01, op1_t_h=00, op1_t_m=00,  op1_t_s=00, &
+<      op2_t_yy=2004,  op2_t_mm=02,  op2_t_dd=28, op2_t_h=23, op2_t_m=59,  op2_t_s=50, &
+<     res_ti_yy=0000, res_ti_mm=00, res_ti_dd=366, res_ti_h=0, res_ti_m=00, res_ti_s=10, &
+<     testname='SubtractTI_T_T12' )
+<   CALL test_arithmetic( add_op=.FALSE.,                                            &
+<      op1_t_yy=2004,  op1_t_mm=02,  op1_t_dd=28, op1_t_h=23, op1_t_m=59,  op1_t_s=50, &
+<      op2_t_yy=2005,  op2_t_mm=03,  op2_t_dd=01, op2_t_h=00, op2_t_m=00,  op2_t_s=00, &
+<     res_ti_yy=0000, res_ti_mm=00, res_ti_dd=-366, res_ti_h=0, res_ti_m=00, res_ti_s=-10, &
+<     testname='SubtractTI_T_T13' )
+<   CALL test_arithmetic( add_op=.FALSE.,                                            &
+<      op1_t_yy=-2002,  op1_t_mm=02,  op1_t_dd=28, op1_t_h=00, op1_t_m=00,  op1_t_s=00, &
+<      op2_t_yy=-2002,  op2_t_mm=02,  op2_t_dd=28, op2_t_h=00, op2_t_m=00,  op2_t_s=00, &
+<     res_ti_yy=0000, res_ti_mm=00, res_ti_dd=0, res_ti_h=0, res_ti_m=00, res_ti_s=00, &
+<     testname='SubtractTI_T_T14' )
+<   ! ESMF_TimeInterval = ESMF_TimeInterval - ESMF_TimeInterval
+<   CALL test_arithmetic( add_op=.FALSE.,                                            &
+<     op1_ti_yy=0000, op1_ti_mm=00, op1_ti_dd=3, op1_ti_h=1, op1_ti_m=20, op1_ti_s=10, &
+<     op2_ti_yy=0000, op2_ti_mm=00, op2_ti_dd=1, op2_ti_h=1, op2_ti_m=10, op2_ti_s=10, &
+<     res_ti_yy=0000, res_ti_mm=00, res_ti_dd=2, res_ti_h=0, res_ti_m=10, res_ti_s=0,  &
+<     testname='SubtractTI_TI_TI1' )
+<   CALL test_arithmetic( add_op=.FALSE.,                                            &
+<     op1_ti_yy=0000, op1_ti_mm=00, op1_ti_dd=3, op1_ti_h=1, op1_ti_m=20, op1_ti_s=10, &
+<     op2_ti_yy=0000, op2_ti_mm=00, op2_ti_dd=-1, op2_ti_h=-1, op2_ti_m=-10, op2_ti_s=-10, &
+<     res_ti_yy=0000, res_ti_mm=00, res_ti_dd=4, res_ti_h=2, res_ti_m=30, res_ti_s=20,  &
+<     testname='SubtractTI_TI_TI2' )
+<   CALL test_arithmetic( add_op=.FALSE.,                                            &
+<     op1_ti_yy=0000, op1_ti_mm=00, op1_ti_dd=-1, op1_ti_h=-1, op1_ti_m=-10, op1_ti_s=-10, &
+<     op2_ti_yy=0000, op2_ti_mm=00, op2_ti_dd=-3, op2_ti_h=-1, op2_ti_m=-20, op2_ti_s=-10, &
+<     res_ti_yy=0000, res_ti_mm=00, res_ti_dd=2, res_ti_h=0, res_ti_m=10, res_ti_s=00,  &
+<     testname='SubtractTI_TI_TI3' )
+<   ! Negative result ESMF_TimeInterval = ESMF_TimeInterval - ESMF_TimeInterval
+<   CALL test_arithmetic( add_op=.FALSE.,                                            &
+<     op1_ti_yy=0000, op1_ti_mm=00, op1_ti_dd=1, op1_ti_h=1, op1_ti_m=10, op1_ti_s=10, &
+<     op2_ti_yy=0000, op2_ti_mm=00, op2_ti_dd=3, op2_ti_h=1, op2_ti_m=20, op2_ti_s=10, &
+<     res_ti_yy=0000, res_ti_mm=00, res_ti_dd=-2, res_ti_h=0, res_ti_m=-10, res_ti_s=0,  &
+<     testname='SubtractTI_TI_TIN1' )
+<   CALL test_arithmetic( add_op=.FALSE.,                                            &
+<     op1_ti_yy=0000, op1_ti_mm=00, op1_ti_dd=-1, op1_ti_h=-1, op1_ti_m=-10, op1_ti_s=-10, &
+<     op2_ti_yy=0000, op2_ti_mm=00, op2_ti_dd=3, op2_ti_h=1, op2_ti_m=20, op2_ti_s=10, &
+<     res_ti_yy=0000, res_ti_mm=00, res_ti_dd=-4, res_ti_h=-2, res_ti_m=-30, res_ti_s=-20,  &
+<     testname='SubtractTI_TI_TIN2' )
+---
+> !     res_t_sn=02,  res_t_sd=03, &
+> !    testname='AddT_T_TI_F1' )
+> !  ! this should fail (and does)
+> !!  CALL test_arithmetic( add_op=.TRUE.,                                             &
+> !!     op1_t_yy=2004,  op1_t_mm=12,  op1_t_dd=31,  op1_t_h=22,  op1_t_m=30,  op1_t_s=00, &
+> !!     op1_t_sn=01,  op1_t_sd=03, &
+> !!    op2_ti_yy=   0, op2_ti_mm= 0, op2_ti_dd=0, op2_ti_h=4, op2_ti_m=10, op2_ti_s=10, &
+> !!    op2_ti_sn=01, op2_ti_sd=03, &
+> !!     res_t_yy=2005,  res_t_mm= 1,  res_t_dd=1,  res_t_h=2,  res_t_m=40,  res_t_s=10, &
+> !!     res_t_sn=01,  res_t_sd=03, &
+> !!    testname='AddT_T_TI_F2' )
+> !  ! ESMF_Time = ESMF_TimeInterval + ESMF_Time
+> !  CALL test_arithmetic( add_op=.TRUE.,                                             &
+> !    op1_ti_yy=   0, op1_ti_mm= 0, op1_ti_dd=0, op1_ti_h=3, op1_ti_m=10, op1_ti_s=10, &
+> !     op2_t_yy=2001,  op2_t_mm=12,  op2_t_dd=3,  op2_t_h=1,  op2_t_m=20,  op2_t_s=10, &
+> !     res_t_yy=2001,  res_t_mm=12,  res_t_dd=3,  res_t_h=4,  res_t_m=30,  res_t_s=20, &
+> !    testname='AddT_TI_T1' )
+> !  CALL test_arithmetic( add_op=.TRUE.,                                             &
+> !    op1_ti_yy=   0, op1_ti_mm= 0, op1_ti_dd=0, op1_ti_h=4, op1_ti_m=10, op1_ti_s=10, &
+> !     op2_t_yy=2001,  op2_t_mm=12,  op2_t_dd=31,  op2_t_h=22,  op2_t_m=30,  op2_t_s=00, &
+> !     res_t_yy=2002,  res_t_mm= 1,  res_t_dd=1,  res_t_h=2,  res_t_m=40,  res_t_s=10, &
+> !    testname='AddT_TI_T2' )
+> !  ! ESMF_TimeInterval = ESMF_TimeInterval + ESMF_TimeInterval
+> !  CALL test_arithmetic( add_op=.TRUE.,                                             &
+> !    op1_ti_yy=0000, op1_ti_mm=00, op1_ti_dd=3, op1_ti_h=1, op1_ti_m=20, op1_ti_s=10, &
+> !    op2_ti_yy=0000, op2_ti_mm=00, op2_ti_dd=1, op2_ti_h=1, op2_ti_m=10, op2_ti_s=10, &
+> !    res_ti_yy=0000, res_ti_mm=00, res_ti_dd=4, res_ti_h=2, res_ti_m=30, res_ti_s=20, &
+> !    testname='AddTI_TI_TI1' )
+> !  CALL test_arithmetic( add_op=.TRUE.,                                             &
+> !    op1_ti_yy=0000, op1_ti_mm=00, op1_ti_dd=-3, op1_ti_h=-1, op1_ti_m=-20, op1_ti_s=-10, &
+> !    op2_ti_yy=0000, op2_ti_mm=00, op2_ti_dd=1, op2_ti_h=1, op2_ti_m=10, op2_ti_s=10, &
+> !    res_ti_yy=0000, res_ti_mm=00, res_ti_dd=-2, res_ti_h=0, res_ti_m=-10, res_ti_s=00, &
+> !    testname='AddTI_TI_TI2' )
+> !  CALL test_arithmetic( add_op=.TRUE.,                                             &
+> !    op1_ti_yy=0000, op1_ti_mm=00, op1_ti_dd=-3, op1_ti_h=-1, op1_ti_m=-20, op1_ti_s=-10, &
+> !    op2_ti_yy=0000, op2_ti_mm=00, op2_ti_dd=-1, op2_ti_h=-1, op2_ti_m=-10, op2_ti_s=-10, &
+> !    res_ti_yy=0000, res_ti_mm=00, res_ti_dd=-4, res_ti_h=-2, res_ti_m=-30, res_ti_s=-20, &
+> !    testname='AddTI_TI_TI3' )
+> !
+1693,1694c1559,1560
+<   ! Un-normalized ESMF_TimeInterval = ESMF_TimeInterval - ESMF_TimeInterval
+<   ! this is an error
+---
+> !  ! Subtraction tests
+> !  ! ESMF_Time = ESMF_Time - ESMF_TimeInterval
+1696,1702d1561
+< !    op1_ti_yy=2001, op1_ti_mm=11, op1_ti_dd=3, op1_ti_h=1, op1_ti_m=20, op1_ti_s=10, &
+< !    op2_ti_yy=2001, op2_ti_mm=11, op2_ti_dd=1, op2_ti_h=1, op2_ti_m=10, op2_ti_s=10, &
+< !    res_ti_yy=0000, res_ti_mm=00, res_ti_dd=2, res_ti_h=0, res_ti_m=10, res_ti_s=0,  &
+< !    testname='SubtractTI_TI_TIU1', expect_error=.TRUE. )
+< 
+<   ! this one should FAIL, and does
+< !  CALL test_arithmetic( add_op=.TRUE.,                                             &
+1705,1755c1564,1756
+< !     res_t_yy=2002,  res_t_mm=12,  res_t_dd=3,  res_t_h=4,  res_t_m=30,  res_t_s=20, &
+< !    testname='AddTT1' )
+< 
+<   ! Multiplication tests
+<   ! ESMF_TimeInterval = ESMF_TimeInterval * INTEGER
+<   CALL test_arithmetic( multiply_op=.TRUE.,                &
+<     op1_ti_dd=3,  op1_ti_h=12,  op1_ti_m=18,  op1_ti_s=33, &
+<     op2_int=2,                                             &
+<     res_ti_dd=6,  res_ti_h=24, res_ti_m=37,  res_ti_s=06,  &
+<     testname='MultiplyTI_TI_INT1' )
+<   CALL test_arithmetic( multiply_op=.TRUE.,                &
+<     op1_ti_dd=350,  op1_ti_h=23,  op1_ti_m=50,  op1_ti_s=50, &
+<     op2_int=2,                                             &
+<     res_ti_dd=701,  res_ti_h=23, res_ti_m=41,  res_ti_s=40,&
+<     testname='MultiplyTI_TI_INT2' )
+<   CALL test_arithmetic( multiply_op=.TRUE.,                &
+<     op1_ti_s=01, op1_ti_sn=03, op1_ti_sd=04,               &
+<     op2_int=8,                                             &
+<     res_ti_s=14,                                           &
+<     testname='MultiplyTI_TI_INT3' )
+< 
+<   ! Division tests
+<   ! ESMF_TimeInterval = ESMF_TimeInterval / INTEGER
+<   CALL test_arithmetic( multiply_op=.FALSE.,               &
+<     op1_ti_dd=3,  op1_ti_h=12,  op1_ti_m=18,  op1_ti_s=33, &
+<     op2_int=3,                                             &
+<     res_ti_dd=1,  res_ti_h=04, res_ti_m=06,  res_ti_s=11,  &
+<     testname='DivideTI_TI_INT1' )
+<   CALL test_arithmetic( multiply_op=.FALSE.,               &
+<     op1_ti_dd=3,  op1_ti_h=12,  op1_ti_m=18,  op1_ti_s=33, &
+<     op2_int=4,                                             &
+<     res_ti_dd=0,  res_ti_h=21, res_ti_m=04,  res_ti_s=38,  &
+<     res_ti_sn=1,  res_ti_sd=4,                             &
+<     testname='DivideTI_TI_INT2' )
+<   CALL test_arithmetic( multiply_op=.FALSE.,               &
+<     op1_ti_s=01, op1_ti_sn=03, op1_ti_sd=04,               &
+<     op2_int=5,                                             &
+<     res_ti_s=0, res_ti_sn=7,  res_ti_sd=20,                &
+<     testname='DivideTI_TI_INT3' )
+< 
+<   ! Test adjust_io_timestr()
+< !     CT = 2000-01-26_00:00:00   (current time)
+< !     ST = 2000-01-24_12:00:00   (start time)
+< !     TI = 00000_03:00:00        (time interval)
+< ! the resulting time string should be:
+< !     2000-01-26_00:00:00
+<   CALL test_adjust_io_timestr( TI_h=3, TI_m=0, TI_s=0,          &
+<     CT_yy=2000,  CT_mm=1,  CT_dd=26,  CT_h=0,  CT_m=0,  CT_s=0, &
+<     ST_yy=2000,  ST_mm=1,  ST_dd=24,  ST_h=12, ST_m=0,  ST_s=0, &
+<     res_str='2000-01-26_00:00:00', testname='adjust_io_timestr_1' )
+< ! this should fail (and does)
+---
+> !     res_t_yy=2001,  res_t_mm=12,  res_t_dd=2,  res_t_h=22, res_t_m=10,  res_t_s=0,  &
+> !   testname='SubtractT_T_TI1' )
+> ! CALL test_arithmetic( add_op=.FALSE.,                                            &
+> !     op1_t_yy=2005,  op1_t_mm=1,   op1_t_dd=1,  op1_t_h=0,  op1_t_m=00,  op1_t_s=0,  &
+> !    op2_ti_yy=   0, op2_ti_mm= 0, op2_ti_dd=0, op2_ti_h=0, op2_ti_m=00, op2_ti_s=10, &
+> !     res_t_yy=2004,  res_t_mm=12,  res_t_dd=31, res_t_h=23, res_t_m=59,  res_t_s=50, &
+> !    testname='SubtractT_T_TI2' )
+> !  CALL test_arithmetic( add_op=.FALSE.,                                            &
+> !     op1_t_yy=2004,  op1_t_mm=1,   op1_t_dd=1,  op1_t_h=0,  op1_t_m=00,  op1_t_s=0,  &
+> !    op2_ti_yy=   0, op2_ti_mm= 0, op2_ti_dd=0, op2_ti_h=0, op2_ti_m=00, op2_ti_s=10, &
+> !     res_t_yy=2003,  res_t_mm=12,  res_t_dd=31, res_t_h=23, res_t_m=59,  res_t_s=50, &
+> !    testname='SubtractT_T_TI3' )
+> !  CALL test_arithmetic( add_op=.FALSE.,                                            &
+> !     op1_t_yy=2003,  op1_t_mm=1,   op1_t_dd=1,  op1_t_h=0,  op1_t_m=00,  op1_t_s=0,  &
+> !    op2_ti_yy=   0, op2_ti_mm= 0, op2_ti_dd=0, op2_ti_h=0, op2_ti_m=00, op2_ti_s=10, &
+> !     res_t_yy=2002,  res_t_mm=12,  res_t_dd=31, res_t_h=23, res_t_m=59,  res_t_s=50, &
+> !    testname='SubtractT_T_TI4' )
+> !  CALL test_arithmetic( add_op=.FALSE.,                                             &
+> !     op1_t_yy=2005,  op1_t_mm=04,  op1_t_dd=01,  op1_t_h=2,  op1_t_m=40,  op1_t_s=10, &
+> !    op2_ti_yy=   0, op2_ti_mm= 0, op2_ti_dd=366, op2_ti_h=22, op2_ti_m=10, op2_ti_s=10, &
+> !     res_t_yy=2004,  res_t_mm=03,  res_t_dd=30,  res_t_h=4,  res_t_m=30,  res_t_s=00, &
+> !    testname='SubtractT_T_TI5' )
+> !  CALL test_arithmetic( add_op=.FALSE.,                                             &
+> !     op1_t_yy=2006,  op1_t_mm=01,  op1_t_dd=01,  op1_t_h=8,  op1_t_m=40,  op1_t_s=10, &
+> !    op2_ti_yy=   0, op2_ti_mm= 0, op2_ti_dd=367, op2_ti_h=4, op2_ti_m=10, op2_ti_s=10, &
+> !     res_t_yy=2004,  res_t_mm=12,  res_t_dd=30,  res_t_h=4,  res_t_m=30,  res_t_s=00, &
+> !    testname='SubtractT_T_TI6' )
+> !  ! ESMF_Time = ESMF_Time - ESMF_TimeInterval with fractions
+> !  CALL test_arithmetic( add_op=.FALSE.,                                             &
+> !     op1_t_yy=2005,  op1_t_mm=01,  op1_t_dd=01,  op1_t_h=00,  op1_t_m=00,  op1_t_s=00, &
+> !     op1_t_sn=00,  op1_t_sd=00, &
+> !    op2_ti_yy=   0, op2_ti_mm= 0, op2_ti_dd=0, op2_ti_h=0, op2_ti_m=00, op2_ti_s=01, &
+> !    op2_ti_sn=01, op2_ti_sd=03, &
+> !     res_t_yy=2004,  res_t_mm=12,  res_t_dd=31,  res_t_h=23,  res_t_m=59,  res_t_s=58, &
+> !     res_t_sn=02,  res_t_sd=03, &
+> !    testname='SubtractT_T_TI_F1' )
+> !  ! ESMF_TimeInterval = ESMF_Time - ESMF_Time
+> !  CALL test_arithmetic( add_op=.FALSE.,                                            &
+> !     op1_t_yy=2001,  op1_t_mm=12,  op1_t_dd=3,  op1_t_h=1,  op1_t_m=20,  op1_t_s=10, &
+> !     op2_t_yy=2001,  op2_t_mm=12,  op2_t_dd=1,  op2_t_h=1,  op2_t_m=10,  op2_t_s=10, &
+> !    res_ti_yy=0000, res_ti_mm=00, res_ti_dd=2, res_ti_h=0, res_ti_m=10, res_ti_s=0,  &
+> !    testname='SubtractTI_T_T1' )
+> !  CALL test_arithmetic( add_op=.FALSE.,                                            &
+> !     op1_t_yy=2002,  op1_t_mm=1,   op1_t_dd=1,  op1_t_h=0,  op1_t_m=00,  op1_t_s=00, &
+> !     op2_t_yy=2001,  op2_t_mm=12,  op2_t_dd=31, op2_t_h=23, op2_t_m=59,  op2_t_s=50, &
+> !    res_ti_yy=0000, res_ti_mm=00, res_ti_dd=0, res_ti_h=0, res_ti_m=00, res_ti_s=10, &
+> !    testname='SubtractTI_T_T2' )
+> !  CALL test_arithmetic( add_op=.FALSE.,                                            &
+> !     op1_t_yy=2005,  op1_t_mm=1,   op1_t_dd=1,  op1_t_h=0,  op1_t_m=00,  op1_t_s=00, &
+> !     op2_t_yy=2004,  op2_t_mm=12,  op2_t_dd=31, op2_t_h=23, op2_t_m=59,  op2_t_s=50, &
+> !    res_ti_yy=0000, res_ti_mm=00, res_ti_dd=0, res_ti_h=0, res_ti_m=00, res_ti_s=10, &
+> !    testname='SubtractTI_T_T3' )
+> ! CALL test_arithmetic( add_op=.FALSE.,                                            &
+> !     op1_t_yy=2003,  op1_t_mm=03,  op1_t_dd=01, op1_t_h=00, op1_t_m=00,  op1_t_s=00, &
+> !     op2_t_yy=2003,  op2_t_mm=02,  op2_t_dd=28, op2_t_h=23, op2_t_m=59,  op2_t_s=50, &
+> !    res_ti_yy=0000, res_ti_mm=00, res_ti_dd=0, res_ti_h=0, res_ti_m=00, res_ti_s=10, &
+> !    testname='SubtractTI_T_T4' )
+> !  CALL test_arithmetic( add_op=.FALSE.,                                            &
+> !     op1_t_yy=2004,  op1_t_mm=03,  op1_t_dd=01, op1_t_h=00, op1_t_m=00,  op1_t_s=00, &
+> !     op2_t_yy=2004,  op2_t_mm=02,  op2_t_dd=28, op2_t_h=23, op2_t_m=59,  op2_t_s=50, &
+> !    res_ti_yy=0000, res_ti_mm=00, res_ti_dd=1, res_ti_h=0, res_ti_m=00, res_ti_s=10, &
+> !    testname='SubtractTI_T_T5' )
+> !  CALL test_arithmetic( add_op=.FALSE.,                                            &
+> !     op1_t_yy=2002,  op1_t_mm=02,  op1_t_dd=28, op1_t_h=00, op1_t_m=00,  op1_t_s=00, &
+> !     op2_t_yy=2002,  op2_t_mm=02,  op2_t_dd=28, op2_t_h=00, op2_t_m=00,  op2_t_s=00, &
+> !    res_ti_yy=0000, res_ti_mm=00, res_ti_dd=0, res_ti_h=0, res_ti_m=00, res_ti_s=00, &
+> !    testname='SubtractTI_T_T6' )
+> !  CALL test_arithmetic( add_op=.FALSE.,                                            &
+> !     op1_t_yy=2003,  op1_t_mm=02,  op1_t_dd=28, op1_t_h=00, op1_t_m=00,  op1_t_s=00, &
+> !     op2_t_yy=2002,  op2_t_mm=02,  op2_t_dd=28, op2_t_h=00, op2_t_m=00,  op2_t_s=00, &
+> !    res_ti_yy=0000, res_ti_mm=00, res_ti_dd=365, res_ti_h=0, res_ti_m=00, res_ti_s=00, &
+> !    testname='SubtractTI_T_T7' )
+> !  CALL test_arithmetic( add_op=.FALSE.,                                            &
+> !     op1_t_yy=2004,  op1_t_mm=02,  op1_t_dd=28, op1_t_h=00, op1_t_m=00,  op1_t_s=00, &
+> !     op2_t_yy=2003,  op2_t_mm=02,  op2_t_dd=28, op2_t_h=00, op2_t_m=00,  op2_t_s=00, &
+> !    res_ti_yy=0000, res_ti_mm=00, res_ti_dd=365, res_ti_h=0, res_ti_m=00, res_ti_s=00, &
+> !    testname='SubtractTI_T_T8' )
+> !  CALL test_arithmetic( add_op=.FALSE.,                                            &
+> !     op1_t_yy=2005,  op1_t_mm=02,  op1_t_dd=28, op1_t_h=00, op1_t_m=00,  op1_t_s=00, &
+> !     op2_t_yy=2004,  op2_t_mm=02,  op2_t_dd=28, op2_t_h=00, op2_t_m=00,  op2_t_s=00, &
+> !    res_ti_yy=0000, res_ti_mm=00, res_ti_dd=366, res_ti_h=0, res_ti_m=00, res_ti_s=00, &
+> !    testname='SubtractTI_T_T9' )
+> !  CALL test_arithmetic( add_op=.FALSE.,                                            &
+> !     op1_t_yy=2003,  op1_t_mm=03,  op1_t_dd=01, op1_t_h=00, op1_t_m=00,  op1_t_s=00, &
+> !     op2_t_yy=2002,  op2_t_mm=02,  op2_t_dd=28, op2_t_h=00, op2_t_m=00,  op2_t_s=00, &
+> !    res_ti_yy=0000, res_ti_mm=00, res_ti_dd=366, res_ti_h=0, res_ti_m=00, res_ti_s=00, &
+> !    testname='SubtractTI_T_T10' )
+> !  CALL test_arithmetic( add_op=.FALSE.,                                            &
+> !     op1_t_yy=2005,  op1_t_mm=03,  op1_t_dd=01, op1_t_h=00, op1_t_m=00,  op1_t_s=00, &
+> !     op2_t_yy=2004,  op2_t_mm=02,  op2_t_dd=28, op2_t_h=00, op2_t_m=00,  op2_t_s=00, &
+> !    res_ti_yy=0000, res_ti_mm=00, res_ti_dd=367, res_ti_h=0, res_ti_m=00, res_ti_s=00, &
+> !    testname='SubtractTI_T_T11' )
+> !  CALL test_arithmetic( add_op=.FALSE.,                                            &
+> !     op1_t_yy=2005,  op1_t_mm=03,  op1_t_dd=01, op1_t_h=00, op1_t_m=00,  op1_t_s=00, &
+> !     op2_t_yy=2004,  op2_t_mm=02,  op2_t_dd=28, op2_t_h=23, op2_t_m=59,  op2_t_s=50, &
+> !    res_ti_yy=0000, res_ti_mm=00, res_ti_dd=366, res_ti_h=0, res_ti_m=00, res_ti_s=10, &
+> !    testname='SubtractTI_T_T12' )
+> !  CALL test_arithmetic( add_op=.FALSE.,                                            &
+> !     op1_t_yy=2004,  op1_t_mm=02,  op1_t_dd=28, op1_t_h=23, op1_t_m=59,  op1_t_s=50, &
+> !     op2_t_yy=2005,  op2_t_mm=03,  op2_t_dd=01, op2_t_h=00, op2_t_m=00,  op2_t_s=00, &
+> !    res_ti_yy=0000, res_ti_mm=00, res_ti_dd=-366, res_ti_h=0, res_ti_m=00, res_ti_s=-10, &
+> !    testname='SubtractTI_T_T13' )
+> !  CALL test_arithmetic( add_op=.FALSE.,                                            &
+> !     op1_t_yy=-2002,  op1_t_mm=02,  op1_t_dd=28, op1_t_h=00, op1_t_m=00,  op1_t_s=00, &
+> !     op2_t_yy=-2002,  op2_t_mm=02,  op2_t_dd=28, op2_t_h=00, op2_t_m=00,  op2_t_s=00, &
+> !    res_ti_yy=0000, res_ti_mm=00, res_ti_dd=0, res_ti_h=0, res_ti_m=00, res_ti_s=00, &
+> !    testname='SubtractTI_T_T14' )
+> !  ! ESMF_TimeInterval = ESMF_TimeInterval - ESMF_TimeInterval
+> !  CALL test_arithmetic( add_op=.FALSE.,                                            &
+> !    op1_ti_yy=0000, op1_ti_mm=00, op1_ti_dd=3, op1_ti_h=1, op1_ti_m=20, op1_ti_s=10, &
+> !    op2_ti_yy=0000, op2_ti_mm=00, op2_ti_dd=1, op2_ti_h=1, op2_ti_m=10, op2_ti_s=10, &
+> !    res_ti_yy=0000, res_ti_mm=00, res_ti_dd=2, res_ti_h=0, res_ti_m=10, res_ti_s=0,  &
+> !    testname='SubtractTI_TI_TI1' )
+> !  CALL test_arithmetic( add_op=.FALSE.,                                            &
+> !    op1_ti_yy=0000, op1_ti_mm=00, op1_ti_dd=3, op1_ti_h=1, op1_ti_m=20, op1_ti_s=10, &
+> !    op2_ti_yy=0000, op2_ti_mm=00, op2_ti_dd=-1, op2_ti_h=-1, op2_ti_m=-10, op2_ti_s=-10, &
+> !    res_ti_yy=0000, res_ti_mm=00, res_ti_dd=4, res_ti_h=2, res_ti_m=30, res_ti_s=20,  &
+> !    testname='SubtractTI_TI_TI2' )
+> !  CALL test_arithmetic( add_op=.FALSE.,                                            &
+> !    op1_ti_yy=0000, op1_ti_mm=00, op1_ti_dd=-1, op1_ti_h=-1, op1_ti_m=-10, op1_ti_s=-10, &
+> !    op2_ti_yy=0000, op2_ti_mm=00, op2_ti_dd=-3, op2_ti_h=-1, op2_ti_m=-20, op2_ti_s=-10, &
+> !    res_ti_yy=0000, res_ti_mm=00, res_ti_dd=2, res_ti_h=0, res_ti_m=10, res_ti_s=00,  &
+> !    testname='SubtractTI_TI_TI3' )
+> !  ! Negative result ESMF_TimeInterval = ESMF_TimeInterval - ESMF_TimeInterval
+> !  CALL test_arithmetic( add_op=.FALSE.,                                            &
+> !   op1_ti_yy=0000, op1_ti_mm=00, op1_ti_dd=1, op1_ti_h=1, op1_ti_m=10, op1_ti_s=10, &
+> !    op2_ti_yy=0000, op2_ti_mm=00, op2_ti_dd=3, op2_ti_h=1, op2_ti_m=20, op2_ti_s=10, &
+> !    res_ti_yy=0000, res_ti_mm=00, res_ti_dd=-2, res_ti_h=0, res_ti_m=-10, res_ti_s=0,  &
+> !    testname='SubtractTI_TI_TIN1' )
+> !  CALL test_arithmetic( add_op=.FALSE.,                                            &
+> !    op1_ti_yy=0000, op1_ti_mm=00, op1_ti_dd=-1, op1_ti_h=-1, op1_ti_m=-10, op1_ti_s=-10, &
+> !    op2_ti_yy=0000, op2_ti_mm=00, op2_ti_dd=3, op2_ti_h=1, op2_ti_m=20, op2_ti_s=10, &
+> !    res_ti_yy=0000, res_ti_mm=00, res_ti_dd=-4, res_ti_h=-2, res_ti_m=-30, res_ti_s=-20,  &
+> !    testname='SubtractTI_TI_TIN2' )
+> !
+> !  ! Un-normalized ESMF_TimeInterval = ESMF_TimeInterval - ESMF_TimeInterval
+> !  ! this is an error
+> !!  CALL test_arithmetic( add_op=.FALSE.,                                            &
+> !!    op1_ti_yy=2001, op1_ti_mm=11, op1_ti_dd=3, op1_ti_h=1, op1_ti_m=20, op1_ti_s=10, &
+> !!    op2_ti_yy=2001, op2_ti_mm=11, op2_ti_dd=1, op2_ti_h=1, op2_ti_m=10, op2_ti_s=10, &
+> !!    res_ti_yy=0000, res_ti_mm=00, res_ti_dd=2, res_ti_h=0, res_ti_m=10, res_ti_s=0,  &
+> !!    testname='SubtractTI_TI_TIU1', expect_error=.TRUE. )
+> !
+> !  ! this one should FAIL, and does
+> !!  CALL test_arithmetic( add_op=.TRUE.,                                             &
+> !!     op1_t_yy=2001,  op1_t_mm=12,  op1_t_dd=3,  op1_t_h=1,  op1_t_m=20,  op1_t_s=10, &
+> !!    op2_ti_yy=   0, op2_ti_mm= 0, op2_ti_dd=0, op2_ti_h=3, op2_ti_m=10, op2_ti_s=10, &
+> !!     res_t_yy=2002,  res_t_mm=12,  res_t_dd=3,  res_t_h=4,  res_t_m=30,  res_t_s=20, &
+> !!    testname='AddTT1' )
+> !
+> !  ! Multiplication tests
+> !  ! ESMF_TimeInterval = ESMF_TimeInterval * INTEGER
+> !  CALL test_arithmetic( multiply_op=.TRUE.,                &
+> !    op1_ti_dd=3,  op1_ti_h=12,  op1_ti_m=18,  op1_ti_s=33, &
+> !    op2_int=2,                                             &
+> !    res_ti_dd=6,  res_ti_h=24, res_ti_m=37,  res_ti_s=06,  &
+> !    testname='MultiplyTI_TI_INT1' )
+> !  CALL test_arithmetic( multiply_op=.TRUE.,                &
+> !    op1_ti_dd=350,  op1_ti_h=23,  op1_ti_m=50,  op1_ti_s=50, &
+> !    op2_int=2,                                             &
+> !   res_ti_dd=701,  res_ti_h=23, res_ti_m=41,  res_ti_s=40,&
+> !    testname='MultiplyTI_TI_INT2' )
+> !  CALL test_arithmetic( multiply_op=.TRUE.,                &
+> !    op1_ti_s=01, op1_ti_sn=03, op1_ti_sd=04,               &
+> !    op2_int=8,                                             &
+> !    res_ti_s=14,                                           &
+> !   testname='MultiplyTI_TI_INT3' )
+> !
+> !  ! Division tests
+> !  ! ESMF_TimeInterval = ESMF_TimeInterval / INTEGER
+> !  CALL test_arithmetic( multiply_op=.FALSE.,               &
+> !    op1_ti_dd=3,  op1_ti_h=12,  op1_ti_m=18,  op1_ti_s=33, &
+> !    op2_int=3,                                             &
+> !    res_ti_dd=1,  res_ti_h=04, res_ti_m=06,  res_ti_s=11,  &
+> !    testname='DivideTI_TI_INT1' )
+> !  CALL test_arithmetic( multiply_op=.FALSE.,               &
+> !    op1_ti_dd=3,  op1_ti_h=12,  op1_ti_m=18,  op1_ti_s=33, &
+> !    op2_int=4,                                             &
+> !    res_ti_dd=0,  res_ti_h=21, res_ti_m=04,  res_ti_s=38,  &
+> !    res_ti_sn=1,  res_ti_sd=4,                             &
+> !    testname='DivideTI_TI_INT2' )
+> !  CALL test_arithmetic( multiply_op=.FALSE.,               &
+> !    op1_ti_s=01, op1_ti_sn=03, op1_ti_sd=04,               &
+> !    op2_int=5,                                             &
+> !    res_ti_s=0, res_ti_sn=7,  res_ti_sd=20,                &
+> !    testname='DivideTI_TI_INT3' )
+> !
+> !  ! Test adjust_io_timestr()
+> !!     CT = 2000-01-26_00:00:00   (current time)
+> !!     ST = 2000-01-24_12:00:00   (start time)
+> !!     TI = 00000_03:00:00        (time interval)
+> !! the resulting time string should be:
+> !!     2000-01-26_00:00:00
+1759,1760c1760,1766
+< !    res_str='2000-01-26_00:00:01', testname='adjust_io_timestr_FAIL1' )
+< 
+---
+> !    res_str='2000-01-26_00:00:00', testname='adjust_io_timestr_1' )
+> !! this should fail (and does)
+> !!  CALL test_adjust_io_timestr( TI_h=3, TI_m=0, TI_s=0,          &
+> !!    CT_yy=2000,  CT_mm=1,  CT_dd=26,  CT_h=0,  CT_m=0,  CT_s=0, &
+> !!    ST_yy=2000,  ST_mm=1,  ST_dd=24,  ST_h=12, ST_m=0,  ST_s=0, &
+> !!    res_str='2000-01-26_00:00:01', testname='adjust_io_timestr_FAIL1' )
+> !
+1763,1765c1769,1771
+<     start_yy=2002, start_mm=12, start_dd=27, start_h=3, start_m=0, start_s=0, &
+<      stop_yy=2002,  stop_mm=12,  stop_dd=28,  stop_h=8,  stop_m=0,  stop_s=0, &
+<     timestep_d=0, timestep_h=0, timestep_m=0, timestep_s=600,                 &
+---
+>     start_yy=2024, start_mm=01, start_dd=99, start_h=3, start_m=0, start_s=0, &
+>      stop_yy=2024,  stop_mm=02,  stop_dd=02,  stop_h=8,  stop_m=0,  stop_s=0, &
+>     timestep_d=0, timestep_h=0, timestep_m=0, timestep_s=100,                 &
+1768,1778c1774
+<   CALL test_clock_advance(                                                    &
+<     start_yy=2003, start_mm=12, start_dd=29, start_h=9, start_m=0, start_s=0, &
+<      stop_yy=2004,  stop_mm=1,   stop_dd=2,   stop_h=9,  stop_m=0,  stop_s=0, &
+<     timestep_d=0, timestep_h=0, timestep_m=0, timestep_s=3600,                &
+<     testname="StdYearClockAdvance", increment_S=10 )
+< 
+<   CALL test_clock_advance(                                                    &
+<     start_yy=2004, start_mm=12, start_dd=29, start_h=9, start_m=0, start_s=0, &
+<      stop_yy=2005,  stop_mm=1,   stop_dd=2,   stop_h=9,  stop_m=0,  stop_s=0, &
+<     timestep_d=0, timestep_h=0, timestep_m=0, timestep_s=3600,                &
+<     testname="LeapYearClockAdvance", increment_S=10 )
+---
+>   PRINT *,'END CLOCK ADVANCE'        
+1780,1781d1775
+<   ! NRCM domain 3 case:  120 seconds / 9 
+<   ! 18 timesteps through end of leap year
+1783,1789c1777,1797
+<     start_yy=2004, start_mm=12, start_dd=31, start_h=23, start_m=58, start_s=0,&
+<      stop_yy=2005,  stop_mm=1,   stop_dd=1,   stop_h=0,  stop_m=2,  stop_s=0, &
+<     timestep_d=0, timestep_h=0, timestep_m=0, timestep_s=13,                  &
+<     timestep_sn=1, timestep_sd=3,                                             &
+<     testname="LeapYearFractionClockAdvance",                                  &
+<     increment_S=1, increment_Sn=1, increment_Sd=3 )
+< 
+---
+>     start_yy=2024, start_mm=07, start_dd=74, start_h=23, start_m=00, start_s=0, &
+>      stop_yy=2025,  stop_mm=01,   stop_dd=07,   stop_h=9,  stop_m=0,  stop_s=0, &
+>     timestep_d=0, timestep_h=0, timestep_m=0, timestep_s=1850,                &
+>     testname="StdYearClockAdvance", increment_S=10 )
+> !
+> !  CALL test_clock_advance(                                                    &
+> !    start_yy=2004, start_mm=12, start_dd=29, start_h=9, start_m=0, start_s=0, &
+> !     stop_yy=2005,  stop_mm=1,   stop_dd=2,   stop_h=9,  stop_m=0,  stop_s=0, &
+> !    timestep_d=0, timestep_h=0, timestep_m=0, timestep_s=3600,                &
+> !    testname="LeapYearClockAdvance", increment_S=10 )
+> !
+> !  ! NRCM domain 3 case:  120 seconds / 9 
+> !  ! 18 timesteps through end of leap year
+> !  CALL test_clock_advance(                                                    &
+> !    start_yy=2004, start_mm=12, start_dd=31, start_h=23, start_m=58, start_s=0,&
+> !     stop_yy=2005,  stop_mm=1,   stop_dd=1,   stop_h=0,  stop_m=2,  stop_s=0, &
+> !    timestep_d=0, timestep_h=0, timestep_m=0, timestep_s=13,                  &
+> !    timestep_sn=1, timestep_sd=3,                                             &
+> !    testname="LeapYearFractionClockAdvance",                                  &
+> !    increment_S=1, increment_Sn=1, increment_Sd=3 )
+> !

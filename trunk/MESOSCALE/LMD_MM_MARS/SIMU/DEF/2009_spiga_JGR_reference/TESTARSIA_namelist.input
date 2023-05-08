@@ -1,0 +1,66 @@
+ &time_control
+ start_year       = 2024,
+ start_month      = 07, 
+ start_day        = 01,
+ start_hour       = 06,
+ end_year         = 2024,
+ end_month        = 07,
+ end_day          = 02, 
+ end_hour         = 06, 
+ history_interval    = 37,   ! *100s : 74 is each 2 MH, 37 is each MH  
+ frames_per_outfile  = 24, 
+ restart          = .false.
+ restart_interval = 8880,
+ io_form_history  = 2
+ io_form_restart  = 2
+ io_form_input    = 2
+ io_form_boundary = 2
+ debug_level      = 0
+ interval_seconds = 7400  !! OPT OPT
+ /
+
+ &domains
+ time_step   = 25,
+ dx = 20000,
+ dy = 20000,
+ e_we   = 51,                ! IF YOU CHANGE THIS YOU MUST RECOMPILE THE PHYSICS
+ e_sn   = 51,                ! IF YOU CHANGE THIS YOU MUST RECOMPILE THE PHYSICS
+ e_vert = 61,                ! IF YOU CHANGE THIS YOU MUST RECOMPILE THE PHYSICS
+ p_top_requested = 5
+ /
+
+ &physics
+ radt = 1,	! call each half hour with radt = 1850/dt
+ mars = 0,      ! IF YOU CHANGE THIS YOU MUST RECOMPILE THE PHYSICS (AND CHANGE CALLPHYS.DEF)
+ init_TI = 100.,	!! OPT OPT
+ init_AL = 0.27, 	!! OPT OPT
+ /
+
+ &fdda
+ /
+
+ &dynamics
+ diff_6th_opt = 2,         !! NECESSAIRE DANS LES ZONES DE VENT FAIBLES
+ diff_6th_factor = 0.2,    !! NECESSAIRE DANS LES ZONES DE VENT FAIBLES
+ diff_opt = 1,
+ km_opt = 4,
+ pd_scalar = F,		!! OPT OPT
+ non_hydrostatic = F	!! OPT OPT
+ !!time_step_sound = 10
+ /
+
+ &grib2
+ /
+
+ &bdy_control
+ spec_bdy_width                      = 3,     !! OPT OPT
+ spec_zone                           = 1,     !! OPT OPT  1+1 est instable
+ relax_zone                          = 2,     !! OPT OPT
+ /
+
+!! DO NOT MODIFY
+ &namelist_quilt
+ nio_tasks_per_group = 0,
+ nio_groups = 1,
+ /
+!! DO NOT MODIFY

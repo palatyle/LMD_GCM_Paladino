@@ -1,0 +1,359 @@
+\documentclass[a4paper,10pt]{article}
+%\usepackage{graphicx}
+\usepackage{natbib}  % si appel à bibtex
+%\usepackage[francais]{babel}
+%\usepackage[latin1]{inputenc}  % accents directs (é...), avec babel
+%\usepackage{rotating}
+
+\setlength{\hoffset}{-1.in}
+\setlength{\oddsidemargin}{3.cm}
+\setlength{\textwidth}{15.cm}
+\setlength{\marginparsep}{0.mm}
+\setlength{\marginparwidth}{0.mm}
+
+\setlength{\voffset}{-1.in}
+\setlength{\topmargin}{0.mm}
+\setlength{\headheight}{0.mm}
+\setlength{\headsep}{30.mm}
+\setlength{\textheight}{24.cm}
+\setlength{\footskip}{1.cm}
+
+\setlength{\parindent}{0.mm}
+\setlength{\parskip}{0 ex}
+\newcommand{\ten}[1]{$\times 10^{#1}$~} 
+\renewcommand{\baselinestretch}{1.}
+
+\begin{document}
+\pagestyle{plain}
+
+\begin{center}
+{\bf \LARGE 
+Documentation for LMDZ, Planets version
+
+\vspace{1cm}
+\Large
+Venus and Titan post-processing tools
+}
+
+\vspace{1cm}
+S\'ebastien Lebonnois
+
+\vspace{1cm}
+Latest version: \today
+\end{center}
+
+%=========================
+\section{Context}
+%=========================
+
+\subsection{Why these tools ?}
+
+Once you run the Venus or Titan LMDZ GCM, you'll get some variables in the output files that you may want to transform. These tools are meant to do some of this post-processing, to get angular momentum budget, meridional stream function, or to make an FFT analysis of $U$, $V$ or $T$, for example.
+
+Here, we present these tools and how to compile and use them.
+
+The computation of the mass in each cell is part of these tools. In the case of Titan, $g$ is considered as constant with altitude. When this changes in the GCM, we will need to adapt the tools.
+
+\subsection{Compiling}
+
+The script you can use is \textsf{compile\_pgf}. You need to adapt it so that it will find the \textsf{netcdf} libraries. It uses pgf95, but you can adapt it by changing the compiler. 
+The first argument is the tool you want to compile, the second argument is the planet you're working on:
+
+\textsf{compile\_pgf} $<$\textsf{tool}$>$ $<$\textsf{planet}$>$
+
+where $<$\textsf{tool}$>$ may be \textsf{angmom}, \textsf{psi}, etc, and $<$\textsf{planet}$>$ may be \textsf{venus} or \textsf{titan}.
+
+For the FFT decomposition, you need the \textsf{fftw3} library. 
+I leave it to you to find it ({em http://www.fftw.org/}; some linux packages can also be found on the web) and install it if you don't have it already.
+The script to use is then \textsf{compilefft\_pgf} and you need to adapt it so that it finds the \textsf{fftw3} library.
+
+The executable is named $<$\textsf{tool}$>$\textsf{-}$<$\textsf{planet}$>$\textsf{.e}.
+
+%=========================
+\section{Tools}
+%=========================
+
+When zonal averages are done, it is better to regrid the GCM outputs on a fixed pressure grid with \textsf{zrecast.F90}, so that averages are really done on pressure levels. The altitude above the aeroid $z_a$ is computed by \textsf{zrecast.F90} and may be used for Titan to get $g(r)$. For the moment, this is commented in all tools, so that $z_a$ is not in the required input files.
+
+%--------------------------------
+\subsection{\textsf{zrecast.F90}}
+%--------------------------------
+
+This tool was adapted from a version initially developed for the Martian GCM.
+It now takes as input the Venus and Titan LMDZ GCM output files.
+
+This program reads 4D (lon-lat-alt-time) fields from GCM output files (e.g. \textsf{histmth.nc} time series) and, by integrating the hydrostatic equation, recasts data along the vertical direction.
+
+The vertical coordinate can be either "pressure", "above areoid altitudes" or "above surface altitudes". Some interpolation along the vertical direction is also done, following instructions given by user. 
+
+The dataset must include the following data:
+\begin{itemize}
+\item surface pressure
+\item atmospheric temperature
+\item hybrid coordinates \textsf{aps()} and \textsf{bps()}, or \textsf{sigma} levels
+\item ground geopotential
+\item When integration the hydrostatic equation, we assume that $R$, the molecular Gas Constant, may not be constant, so it is computed as $R=P/(\rho\times T)$ ($P$=Pressure, $\rho$=density, $T$=temperature).
+If $\rho$ is not available, then we use a constant $R$.
+\end{itemize}
+
+The output file is labeled with \textsf{\_P} (just before \textsf{.nc}) when recast on fixed pressure levels, \textsf{\_A} when recast on fixed "above areoid" altitudes, or \textsf{\_S} when recast on fixed "above surface" altitudes. In \textsf{\_P} files, you'll find the variable \textsf{zareoid} while in \textsf{\_A} and \textsf{\_S} files, you'll find the variable \textsf{pressure}.
+
+In the Titan file, the solar longitude (\textsf{Ls}) is also present in the output file, as a 1D (time only) variable.
+
+You may find here some examples of \textsf{zrecast.input} that can be used (after changing the file name in the first line !) as direct input for \textsf{zrecast.e}:
+
+\textsf{zrecast.e} $<$ \textsf{zrecast.input} 
+
+%--------------------------------
+\subsection{\textsf{angmom.F90}}
+%--------------------------------
+
+This program reads 4D (lon-lat-alt-time) fields directly from LMD outputs
+\textsf{histmth.nc} (and \textsf{dynzon.nc} if this file is present), but also from files recast in $\log P$ coordinates (\textsf{histmth\_P.nc}).
+
+It computes:
+\begin{itemize}
+\item \textsf{dmass} -- 4D -- mass of each cell (kg)
+\item \textsf{osam}  -- 4D -- specific angular momentum (omega term)
+\item \textsf{rsam}  -- 4D -- specific angular momentum (zonal wind term)
+\item \textsf{oaam}  -- 1D -- integrated angular momentum (omega term)
+\item \textsf{raam}  -- 1D -- integrated angular momentum (zonal wind term)
+\item \textsf{tmou}  -- 1D -- Mountain torque
+\item \textsf{tbls}  -- 1D -- Surface friction torque if \textsf{duvdf} is present
+\item \textsf{tdyn}  -- 1D -- Dynamics torque if \textsf{dudyn} is present 
+\item \textsf{tgwo}  -- 1D -- Orographic GW torque if \textsf{dugwo} is present 
+\item \textsf{tgwno} -- 1D -- Non-Orographic GW torque if \textsf{dugwno} is present 
+\end{itemize}
+
+Specific angular momentum is in 10$^{25}$ m$^2$s$^{-1}$, integrated angular momentum is in 10$^{25}$ kg m$^2$s$^{-1}$, torques are in 10$^{18}$ kg m$^2$s$^{-2}$.
+
+If \textsf{dynzon.nc} is present, it also computes 
+\begin{itemize}
+\item \textsf{tdyndz} -- 1D -- Dynamics torque 
+\item \textsf{tdisdz} -- 1D -- Horizontal dissipation torque
+\item \textsf{tspgdz} -- 1D -- Sponge layer torque
+\item \textsf{tphydz} -- 1D -- Total physics torque
+\end{itemize}
+
+The dataset must include the following data:
+\begin{itemize}
+\item surface pressure and surface geopotential
+\item zonal wind
+\item Optional: \textsf{dudyn, duvdf, dugwo, dugwno} (acceleration terms from dycore and physiq parametrisations)
+\item Optional, in \textsf{dynzon.nc}: \textsf{dmcdyn, dmcdis, dmcspg, dmcphy} (angular momentum tendency terms from dycore, horizontal dissipation, sponge layer and physiq parametrisations)
+\end{itemize}
+
+The output file is labeled with \textsf{\_GAM} (just before \textsf{.nc}).
+
+The details about how these variables are computed can be found in \cite{lebonnois10,lebonnois13a}.
+
+%--------------------------------
+\subsection{\textsf{psi.F90}}
+%--------------------------------
+
+This program reads 4D (lon-lat-alt-time) fields directly from LMD outputs
+\textsf{histmth.nc}, but also from files recast in $\log P$ coordinates (\textsf{histmth\_P.nc}).
+
+It computes:
+\begin{itemize}
+\item \textsf{dmass} -- 4D -- mass of each cell (kg)
+\item \textsf{psi}   -- 3D -- Stream function   (kg/s)
+\end{itemize}
+
+The dataset must include the following data:
+\begin{itemize}
+\item surface pressure
+\item meridional wind
+\end{itemize}
+
+The output file is labeled with \textsf{\_PSI} (just before \textsf{.nc}).
+
+\paragraph{Computation of $\psi$} 
+The meridional mass flux is computed in each cell
+\[
+v_m = v \times \Delta m / (r \Delta lat)
+\] 
+then integrated over longitude, then downwards to compute $\psi$. 
+Given the longitudinal integration, it should be better to use the recast \textsf{\_P} files.
+
+%--------------------------------
+\subsection{\textsf{energy.F90}}
+%--------------------------------
+
+This program reads 4D (lon-lat-alt-time) fields directly from LMD outputs
+\textsf{histmth.nc}, but also from files recast in $\log P$ coordinates (\textsf{histmth\_P.nc}).
+
+It computes:
+\begin{itemize}
+\item \textsf{dmass} -- 4D -- mass of each cell (kg)
+\item \textsf{sek}   -- 4D -- Specific kinetic energy (note that vertical component of wind is neglected)
+\item \textsf{sep}   -- 4D -- Specific potential energy
+\item \textsf{ek}    -- 1D -- Integrated kinetic energy (note that vertical component of wind is neglected)
+\item \textsf{ep}    -- 1D -- Integrated potential energy
+\end{itemize}
+
+Specific energies are in J/kg, integrated energies are in J.
+ 
+The dataset must include the following data:
+\begin{itemize}
+\item surface pressure
+\item atmospheric temperature
+\item zonal and meridional winds
+\end{itemize}
+
+The output file is labeled with \textsf{\_NRG} (just before \textsf{.nc}).
+
+%--------------------------------
+\subsection{\textsf{stability.F90}}
+%--------------------------------
+
+This program reads 4D (lon-lat-alt-time) fields from LMD files recast in $\log P$ coordinates (\textsf{histmth\_P.nc}).
+
+It computes:
+\begin{itemize}
+\item \textsf{stab} -- 4D -- stability (K/km)
+\item \textsf{Ri}   -- 4D -- Richardson number
+\item \textsf{deqc} -- 3D -- distance to cyclostrophic equilibrium (\%)
+\end{itemize}
+
+The dataset must include the following data:
+\begin{itemize}
+\item surface pressure
+\item meridional wind
+\end{itemize}
+
+The output file is labeled with \textsf{\_STA} (just before \textsf{.nc}).
+
+%--------------------------------
+\subsection{\textsf{tem.F90}}
+%--------------------------------
+
+This program reads 4D (lon-lat-alt-time) fields from LMD files recast in $\log P$ coordinates (\textsf{histmth\_P.nc}).
+
+Developed from the tool built by Audrey Crespin during her PhD.
+
+It computes TransEulerianMean variables:
+\begin{itemize}
+\item \textsf{vtem}    -- 3D -- Residual meridional speed (m s$^{-1}$)
+\item \textsf{wtem}    -- 3D -- Residual   vertical speed (Pa s$^{-1}$)
+\item \textsf{psitem}  -- 3D -- Residual stream function (kg s$^{-1}$)
+\item \textsf{epfy}    -- 3D -- meridional component of Eliassen-Palm flux
+\item \textsf{epfz}    -- 3D -- vertical component of Eliassen-Palm flux
+\item \textsf{divepf}  -- 3D -- Divergence of Eliassen-Palm flux
+\item \textsf{ammctem} -- 3D -- Acc due to residual MMC
+\end{itemize}
+
+The dataset must include the following data:
+\begin{itemize}
+\item surface pressure
+\item atmospheric temperature
+\item zonal, meridional and vertical (Pa/s) winds
+\end{itemize}
+
+The computation is mostly done in the \textsf{epflux.F90} routine (I need to put additional details here... TBD...).
+
+The output file is labeled with \textsf{\_TEM} (just before \textsf{.nc}).
+
+%--------------------------------
+\subsection{\textsf{tmc.F90}}
+%--------------------------------
+
+This program reads 4D (lon-lat-alt-time) fields from LMD files recast in $\log P$ coordinates (\textsf{histmth\_P.nc}).
+
+It computes angular momentum transport from high-frequency outputs:
+\begin{itemize}
+\item \textsf{totvang} -- 2D -- Meridional transport of angular momentum, total (m$^3$ s$^{-2}$)
+\item \textsf{totwang} -- 2D --   Vertical transport of angular momentum, total (m$^3$ s$^{-2}$)
+\item \textsf{mmcvang} -- 2D -- Meridional transport of angular momentum, by MMC (m$^3$ s$^{-2}$)
+\item \textsf{mmcwang} -- 2D --   Vertical transport of angular momentum, by MMC (m$^3$ s$^{-2}$)
+\item \textsf{trsvang} -- 2D -- Meridional transport of angular momentum, transients (m$^3$ s$^{-2}$)
+\item \textsf{trswang} -- 2D --   Vertical transport of angular momentum, transients (m$^3$ s$^{-2}$)
+\item \textsf{stnvang} -- 2D -- Meridional transport of angular momentum, stationaries (m$^3$ s$^{-2}$)
+\item \textsf{stnwang} -- 2D --   Vertical transport of angular momentum, stationaries (m$^3$ s$^{-2}$)
+\item \textsf{dmass}   -- 2D -- Averaged mass in each cell
+\end{itemize}
+These variables in the meridional plane (latitude-pressure).
+
+The dataset must include the following data:
+\begin{itemize}
+\item surface pressure
+\item zonal, meridional and vertical (Pa/s) winds
+\end{itemize}
+
+Notations:
+\begin{itemize}
+\item $\overline{u}$: zonal average of $u$
+\item $u^*$ = $u-\overline{u}$
+\item $<u>$: time average of $u$
+\item $u'$ = $u-<u>$
+\item $m$: specific angular momentum
+\end{itemize}
+
+Computations (here with meridional wind $v$, same with vertical wind $w$):
+\begin{itemize}
+\item Total angular momentum transport: $\overline{<m v>}$
+\item MMC angular momentum transport: $\overline{<m>}$ $\overline{<v>}$
+\item Transients angular momentum transport: $<m' v'>$
+\item Stationaries angular momentum transport: $<m^*> <v^*>$
+\end{itemize}
+
+The output file is labeled with \textsf{\_TMC} (just before \textsf{.nc}).
+
+%--------------------------------
+\subsection{\textsf{fft.F90}}
+%--------------------------------
+
+This program reads 4D (lon-lat-alt-time) fields from LMD files recast in $\log P$ coordinates (\textsf{histmth\_P.nc}).
+
+It computes the FFT (on the time axis) of temperature, zonal and merid winds from high-frequency outputs, and it separates the variable in three different bands. You choose the frequencies for the filters and their bandwidth in the file \textsf{filter.h} before compiling. You can also choose what variables you want to analyse by tuning the {\em ok\_out} parameter.
+
+Choosing {\em ok\_out(1)=.true.}, you'll get in \textsf{\_UFFT} (see below) :
+\begin{itemize}
+\item \textsf{fftau} -- 4D -- FFT in amplitude of zonal wind (m s$^{-1}$)
+\item \textsf{ulf}   -- 4D -- low  freq part of zonal wind perturbation uprim (m s$^{-1}$)
+\item \textsf{ubf}   -- 4D -- band freq part of zonal wind perturbation uprim (m s$^{-1}$)
+\item \textsf{uhf}   -- 4D -- high freq part of zonal wind perturbation uprim (m s$^{-1}$)
+\end{itemize}
+
+Same for the other elements of {\em ok\_out}, for the meridional wind $v$ (m s$^{-1}$), the vertical wind $w$ (Pa s$^{-1}$), and the temperature $T$ (K).
+
+The dataset must include the following data:
+\begin{itemize}
+\item atmospheric temperature
+\item zonal, meridional and vertical (Pa/s) winds
+\end{itemize}
+
+We use a triangle window to improve spectral analysis.
+Once the FFT is done, we filter to get three different regions of the spectrum, then we use the reverse FFT to get the filtered variables (e.g. for $u$: $ulf$ for the frequencies below {\em fcoup1}, $uhf$ for the frequencies above {\em fcoup2} and  $ubf$ for the frequencies in between).
+
+The output files are labeled with \textsf{\_[U,V,W,F]FFT} (just before \textsf{.nc}). You get one file for each variable that you chose to analyse in filter.h (U,V,W and/or T).
+
+
+%--------------------------------
+% \subsection{\textsf{.F90}}
+%--------------------------------
+
+
+\begin{thebibliography}{2}
+\providecommand{\natexlab}[1]{#1}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi:\discretionary{}{}{}#1}\else
+  \providecommand{\doi}{doi:\discretionary{}{}{}\begingroup
+  \urlstyle{rm}\Url}\fi
+
+\bibitem[{\textit{Lebonnois et~al.}(2010)\textit{Lebonnois, Hourdin, Eymet,
+  Crespin, Fournier, and Forget}}]{lebonnois10}
+Lebonnois, S., F.~Hourdin, V.~Eymet, A.~Crespin, R.~Fournier, and F.~Forget
+  (2010), {Superrotation of Venus' atmosphere analysed with a full General
+  Circulation Model}, \textit{J. Geophys. Res.}, \textit{115}, E06006,
+  \doi{10.1029/2009JE003458}.
+
+\bibitem[{\textit{Lebonnois et~al.}(2013)\textit{Lebonnois, Covey, Grossman, 
+  Parish, Schubert, Walterscheid, Lauritzen, and Jablonowski}}]{lebonnois13a}
+Lebonnois, S., C.~Covey, A.~Grossman, H.~Parish, G.~Schubert, R.~Walterscheid, P.~Lauritzen, and C.~Jablonowski
+  (2013), {Angular Momentum Budget in General Circulation Models of Superrotating Atmospheres: A Critical Diagnostic}, \textit{J. Geophys. Res.}, {Submitted}.
+
+\end{thebibliography}
+
+
+\end{document}

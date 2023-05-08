@@ -1,0 +1,84 @@
+ &time_control
+ run_seconds      = 15000    !! IDEALIZED !!             
+ start_year       = 9999,    !! IDEALIZED !!
+ end_year         = 9999,    !! IDEALIZED !!
+ history_interval_s  = 300
+ frames_per_outfile  = 100,  !! Size of time dimension in files 
+ restart          = .false.  !! (*) Output restart files ?
+ restart_interval = 8880     !! (*) Frequency of output restart files ?
+ io_form_history  = 2        !! (*) Choice of NETCDF for ouputs
+ io_form_restart  = 2        !! (*) Choice of NETCDF for ouputs     
+ io_form_input    = 2        !! (*) Choice of NETCDF for ouputs
+ io_form_boundary = 2        !! (*) Choice of NETCDF for ouputs
+ debug_level      = 0        !! (*) Verbose level
+ !!
+ !! OPTIONAL
+ !!
+ input_from_file = F,        !! (n)(p2) Initialize a given domain with an input file
+ /
+
+ &domains
+ time_step   = 5             !! Dynamical timestep
+ dx = 5000,                  !! (p2) Horizontal resolution
+ dy = 5000,                  !! (p2) Horizontal resolution (should be equal to dx)
+ e_we   = 121,               !! (r)(p2) Number of longitude grid points
+ e_sn   = 121,               !! (r)(p2) Number of latitude grid points
+ e_vert = 181,               !! (r)(p2) Number of vertical levels
+ !!
+ !! OPTIONAL
+ !!
+ ztop = 180000.              !! (p3) Altitude of model top: Specific to idealized cases
+ /
+
+ &physics
+ !!
+ !! OPTIONAL
+ !!
+ radt = 1,                   !! Ratio between physical and dynamical time step
+ init_TI = 250.,             !! Define constant thermal inertia value
+ init_AL = 0.25,             !! Define constant albedo value
+ init_MU = 0.00001,
+ init_MV = 0.00001,
+ init_U = 30. 
+ init_V = 0.
+ /
+
+ &dynamics
+ damp_opt = 2,        ! upper level damping flag
+                      !              0 = without damping
+                      !              1 = with diffusive damping, maybe used for real-data cases
+                      !                          (dampcoef nondimensional ~0.01-0.1)
+                      !              2 = with Rayleigh  damping (dampcoef inverse time scale [1/s] e.g. .003;
+                      !                        not for real-data cases)
+ dampcoef  = 0.1,     ! damping coefficient (see above) 0.01  0.1trop fort?parfoisdespicots
+ zdamp     = 50000.,  ! damping depth (m) from model top 
+ tiso = 130.
+ !!
+ !! OPTIONAL
+ !!
+ epssm = 1.0                  !! (*d) Time off-centering for vertical sound waves
+ epssm = 2.0 
+ epssm = 5.0
+ /
+
+ &bdy_control
+ !!
+ !! OPTIONAL
+ !!
+ specified = F,              !! (n)(p3) Boundary conditions specified by GCM
+ open_xs = T,                !! (p3) Open boundary conditions @ western boundary
+ open_xe = T,                !! (p3) Open boundary conditions @ eastern boundary
+ open_ys = T,
+ open_ye = T,
+ /
+
+ &grib2
+ /
+
+ &fdda
+ /
+
+ &namelist_quilt              !! (*)
+ nio_tasks_per_group = 0,     !! (*)
+ nio_groups = 1,              !! (*)
+ /                            !! (*)

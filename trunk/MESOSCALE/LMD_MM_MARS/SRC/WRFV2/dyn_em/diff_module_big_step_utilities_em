@@ -1,0 +1,14 @@
+4265c4265,4270
+<    IF (config_flags%bl_pbl_physics .gt. 0) THEN
+---
+> !   IF (config_flags%bl_pbl_physics .gt. 0) THEN
+> !****MARS
+> !****TODO:
+> !utiliser d'autres variables que les BL, afin de pouvoir utiliser
+> !un schéma de couche limite alternatif à la physique EuroMars ?
+> !****TODO:
+4307c4312,4313
+<     ENDIF
+---
+> !    ENDIF
+> !****MARS

@@ -1,0 +1,33 @@
+dset statsa2m4.dat
+title Run    0.000, day     0 to     0
+undef -9.99E33
+options yrev
+xdef    64 linear -180.0000   5.6250
+ydef    49 linear  -88.1633   3.6735
+zdef    25 levels
+ 0.9996389 0.9983609 0.9960319 0.9918210 0.9842223
+ 0.9706507 0.9467649 0.9058902 0.8391817 0.7385885
+ 0.6042400 0.4522929 0.3100970 0.1979461 0.1201197
+ 0.0704957 0.0404525 0.0228180 0.0126525 0.0068702
+ 0.0036093 0.0018078 0.0008212 0.0003282 0.0000653
+tdef    12 linear          0z1jan0001  2hr
+vars         18
+co2ice         0 99  mean CO2 ice cover (kg/m2)
+sdco2ice       0 99  stdv CO2 ice cover (kg/m2)
+emis           0 99  mean emissivity
+sdemis         0 99  stdv emissivity
+tsurf          0 99  mean surface temperature (K)
+sdtsurf        0 99  stdv surface temperature (K)
+ps             0 99  mean surface pressure (Pa)
+sdps           0 99  stdv surface pressure (Pa)
+t             25 99  mean temperature (K)
+sdt           25 99  stdv temperature (K)
+u             25 99  mean zonal velocity (m/s)
+sdu           25 99  stdv zonal velocity (m/s)
+v             25 99  mean meridional velocity (m/s)
+sdv           25 99  stdv meridional velocity (m/s)
+rho           25 99  mean density (kg/m3)
+sdrho         25 99  stdv density (kg/m3)
+q2            25 99  mean b/layer eddy ke (m2/s2)
+sdq2          25 99  stdv b/layer eddy ke (m2/s2)
+endvars

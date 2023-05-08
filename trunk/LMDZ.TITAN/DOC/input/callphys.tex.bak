@@ -1,0 +1,115 @@
+{\footnotesize
+\begin{verbatim}
+
+##General options
+##~~~~~~~~~~~~~~~
+#Run with or without tracer transport ?
+tracer=.false.
+
+#Diurnal cycle ?  if diurnal=False, diurnal averaged solar heating
+diurnal=.true.
+
+#Seasonal cycle ? if season=False, Ls stays constant, to value set in "start"
+season = .true.   
+
+#write some more output on the screen ?
+lwrite = .false.    
+
+#Save statistics in file "stats.nc" ?
+stats =.true.
+
+#Save EOF profiles in file "profiles" for Climate Database?
+calleofdump = .false.
+
+## Dust scenario. Used if the dust is prescribed (i.e. if tracer=F or active=F)
+## ~~~~~~~~~~~~~
+#  =1 Dust opt.deph read in startfi; =2 Viking scenario; =3 MGS scenario,
+#  =4 Mars Year 24 from TES assimilation (same as =24 for now)
+#  =24 Mars Year 24 from TES assimilation (ie: MCD reference case)
+#  =25 Mars Year 25 from TES assimilation (ie: a year with a global dust storm)
+#  =26 Mars Year 26 from TES assimilation
+iaervar = 24 
+# Dust vertical distribution: 
+# (=0: old distrib. (Pollack90), =1: top set by "topdustref",
+#  =2: Viking scenario; =3 MGS scenario)
+iddist  = 3
+# Dust top altitude (km). (Matters only if iddist=1)
+topdustref = 55.
+
+## Physical Parameterizations :
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~
+# call radiative transfer ?
+callrad   = .true.
+# call NLTE radiative schemes ?   matters only if callrad=T
+callnlte = .true.
+# call CO2 NIR absorption ?   matters only if callrad=T
+callnirco2 = .true.
+# call turbulent vertical diffusion ?
+calldifv  = .true.
+# call convective adjustment ?
+calladj  = .true.
+# call CO2 condensation ?
+callcond =.true.
+# call thermal conduction in the soil ?
+callsoil = .true.
+# call Lott's gravity wave/subgrid topography scheme ?
+calllott  = .true.
+
+## Radiative transfer options :
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~
+# the rad.transfer is computed every "iradia" physical timestep
+iradia    = 1
+# Output of the exchange coefficient mattrix ? for diagnostic only
+callg2d  = .false.
+# Rayleigh scattering : (should be .false. for now)
+rayleigh  = .false.
+
+## Tracer (dust water, ice and/or chemical species) options (used if tracer=T):
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# DUST: Transported dust ? (if >0, use 'dustbin' dust bins)
+dustbin    = 0
+# DUST: Radiatively active dust ? (matters if dustbin>0)
+active  = .false.
+# DUST: use mass and number mixing ratios to predict dust size ?
+# (must also have dustbin=1)
+doubleq   = .false.
+# DUST: lifted by GCM surface winds ?
+lifting = .false.
+# DUST: lifted by dust devils ?
+callddevil = .false.
+# DUST: Scavenging by CO2 snowfall ?
+scavenging = .false.
+# DUST/WATERICE: Gravitationnal sedimentation ?
+sedimentation = .false.
+# WATERICE: Radiatively active transported atmospheric water ice ?
+activice   = .false.
+# WATER: Compute water cycle
+water = .false.
+# WATER: current permanent caps at both poles. True IS RECOMMENDED
+#        (with .true., North cap is a source of water and South pole
+#         is a cold trap)
+caps  = .true.
+# PHOTOCHEMISTRY: include chemical species 
+photochem  = .false.
+
+## Thermospheric options (relevant if tracer=T) :
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# call thermosphere ?
+callthermos = .false.
+# WATER: included without cycle (only if water=.false.)
+thermoswater = .false.
+# call thermal conduction ? (only if callthermos=.true.)
+callconduct = .false.
+# call EUV heating ? (only if callthermos=.true.)
+calleuv=.false.
+# call molecular viscosity ? (only if callthermos=.true.)
+callmolvis = .false.
+# call molecular diffusion ? (only if callthermos=.true.)
+callmoldiff = .false.
+# call thermospheric photochemistry ? (only if callthermos=.true.)
+thermochem = .false.
+# date for solar flux calculation: (1985 < date < 2002)
+## (Solar min=1996.4 ave=1993.4 max=1990.6)
+solarcondate = 1993.4
+\end{verbatim}
+}

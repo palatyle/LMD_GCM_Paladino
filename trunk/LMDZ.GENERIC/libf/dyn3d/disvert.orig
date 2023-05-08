@@ -1,0 +1,341 @@
+      SUBROUTINE disvert 
+
+c    Auteur :  P. Le Van . F. Forget Y. Wanherdrick
+c    Many modif special mars !!
+
+      IMPLICIT NONE
+
+#include "dimensions.h"
+#include "paramet.h"
+#include "comvert.h"
+#include "comconst.h"
+#include "hybrid.h"
+c
+c=======================================================================
+c    Discretisation verticale en coordonnée hybride
+c
+c=======================================================================
+c
+c   declarations:
+c   -------------
+c
+c
+      INTEGER l,ll
+      REAL snorm
+      REAL alpha,beta,gama,delta,deltaz,h,zsig,quoi,quand
+      INTEGER np,ierr
+      integer :: ierr1,ierr2,ierr3,ierr4
+      REAL x
+
+      REAL SSUM
+      EXTERNAL SSUM
+      real newsig 
+      REAL dz0,dz1,nhaut,sig1,esig,csig,zz
+      real tt,rr,gg, prevz
+      real s(llm),dsig(llm) 
+
+c
+c-----------------------------------------------------------------------
+c
+      pi=2.*ASIN(1.)
+
+      open(99,file="sigma.def",status='old',form='formatted',
+     s   iostat=ierr1)
+! Ouverture possible de fichiers typiquement E.T.
+
+      if(ierr1.ne.0) then
+         close(99)
+         open(99,file="esasig.def",status='old',form='formatted',
+     s   iostat=ierr2)
+         if(ierr2.ne.0) then
+            close(99)
+            open(99,file="tritonsig.def",status='old',form='formatted',
+     s      iostat=ierr3)
+            if(ierr3.ne.0) then
+              close(99)
+              open(99,file="z2sig.def",status='old',form='formatted',
+     s        iostat=ierr4)
+            endif
+         endif
+      endif
+
+c-----------------------------------------------------------------------
+c   cas 1 on lit les options dans sigma.def:
+c   ----------------------------------------
+
+      IF (ierr1.eq.0) THEN
+
+         PRINT*,'*****************************'
+         PRINT*,'WARNING Lecture de sigma.def'
+         PRINT*,'*****************************'
+      READ(99,*) deltaz
+      READ(99,*) h
+      READ(99,*) beta
+      READ(99,*) gama
+      READ(99,*) delta
+      READ(99,*) np
+      CLOSE(99)
+      alpha=deltaz/(llm*h)
+c
+
+       DO l = 1, llm
+          dsig(l) = (alpha+(1.-alpha)*exp(-beta*(llm-l)))*
+     $          ( (tanh(gama*l)/tanh(gama*llm))**np +
+     $            (1.-l/FLOAT(llm))*delta )
+       ENDDO
+
+       sig(1)=1.
+       DO l=1,llm-1
+          sig(l+1)=sig(l)*(1.-dsig(l))/(1.+dsig(l))
+       ENDDO
+       sig(llm+1)=0.
+
+c
+
+! Debut de la partie martienne pour lecture de esasig.def
+c=========================================================
+
+      ELSE IF(ierr2.eq.0) then
+
+         PRINT*,'*****************************'
+         PRINT*,'WARNING Lecture de esasig.def'
+         PRINT*,'*****************************'
+         READ(99,*) h
+         READ(99,*) dz0
+         READ(99,*) dz1
+         READ(99,*) nhaut
+         CLOSE(99)
+
+         dz0=dz0/h
+         dz1=dz1/h
+
+         sig1=(1.-dz1)/tanh(.5*(llm-1)/nhaut)
+
+         esig=1.
+
+         PRINT*
+         do l=1,20
+            esig=-log((1./sig1-1.)*exp(-dz0)/esig)/(llm-1.)
+         enddo
+         print*,'esig=',esig
+         PRINT*
+         csig=(1./sig1-1.)/(exp(esig)-1.)
+
+         DO L = 2, llm
+            zz=csig*(exp(esig*(l-1.))-1.)
+            sig(l) =1./(1.+zz)
+     &      * tanh(.5*(llm+1-l)/nhaut)
+         ENDDO
+         sig(1)=1.
+         sig(llm+1)=0.
+
+c Fin de la partie martienne
+c ==========================
+
+      ELSE IF(ierr3.eq.0) then
+
+         PRINT*,'********************************'
+         PRINT*,'WARNING Lecture de tritonsig.def'
+         PRINT*,'********************************'
+         PRINT*,'kappa=', kappa
+         READ(99,*) gg
+         READ(99,*) rr
+         sig(1)=1.
+         prevz=0.
+         do l=1,llm-1
+           read(99,*) zz, tt
+           sig(l+1) = sig(l)* exp(-(zz-prevz)*gg/(rr*tt))
+           prevz=zz
+           if(l.eq.llm/2)h =1.e-3* rr*tt/gg
+         end do
+         sig(llm+1)=0.
+         CLOSE(99)
+
+      ELSE IF(ierr4.eq.0) then
+         PRINT*,'****************************'
+         PRINT*,'WARNING Lecture de z2sig.def'
+         PRINT*,'****************************'
+
+
+         READ(99,*) h
+         do l=1,llm
+            read(99,*) zsig
+            s(l) = exp(-kappa*zsig/h)
+         end do
+         CLOSE(99)
+
+         sig(1) =1
+         do l=2,llm
+           sig(l) = 0.5 * (s(l)**(1/kappa)+s(l-1)**(1/kappa))
+         end do
+         sig(llm+1) =0
+
+      ELSE
+c-----------------------------------------------------------------------
+c   cas 2 ancienne discretisation (LMD5...):
+c   ----------------------------------------
+
+      PRINT*,'********************************************'
+      PRINT*,'WARNING!!! Ancienne discretisation verticale'
+      PRINT*,'********************************************'
+      stop ! interdit sur MARS
+      h=7.
+      snorm  = 0.
+      DO l = 1, llm
+         x = 2.*asin(1.) * (FLOAT(l)-0.5) / float(llm+1)
+         dsig(l) = 1.0 + 7.0 * SIN(x)**2
+         snorm = snorm + dsig(l)
+      ENDDO
+      snorm = 1./snorm
+      DO l = 1, llm
+         dsig(l) = dsig(l)*snorm
+      ENDDO
+      sig(llm+1) = 0.
+      DO l = llm, 1, -1
+         sig(l) = sig(l+1) + dsig(l)
+      ENDDO
+
+      ENDIF
+c-----------------------------------------------------------------------
+
+      DO l=1,llm
+        nivsigs(l) = FLOAT(l)
+      ENDDO
+
+      DO l=1,llmp1
+        nivsig(l)= FLOAT(l)
+      ENDDO
+
+c    On ne recalcule s que dans les cas "classique"
+c    (esasig.def, sigma.def, ou ancienne discretisation sans fichier)
+      IF( (ierr1.eq.0) .or. (ierr2.eq.0)
+     &   .or. ((ierr3.ne.0).and.(ierr4.ne.0)) ) then
+         quoi      = 1. + 2.* kappa
+         s( llm )  = 1.
+         s(llm-1) = quoi
+         IF( llm.gt.2 )  THEN
+            DO  ll = 2, llm-1
+               l         = llm+1 - ll
+               quand     = sig(l+1)/ sig(l)
+               s(l-1)    = quoi * (1.-quand) * s(l)  + quand * s(l+1)
+            ENDDO
+         END IF
+c
+         snorm=(1.-.5*sig(2)+kappa*(1.-sig(2)))*s(1)+.5*sig(2)*s(2)
+         DO l = 1, llm
+            s(l)    = s(l)/ snorm
+         ENDDO
+      END IF
+
+c
+c    ....  Calculs  de ap(l) et de bp(l)  ....
+c    .........................................
+c
+c
+c   .....  pa et preff sont lus  sur les fichiers start par dynetat0 .....
+c
+
+
+      if (hybrid) then
+         write(*,*) "*******************************"
+         write(*,*) "Systeme en coordonnees hybrides"
+         write(*,*) 
+c        Coordonnees hybrides avec mod
+         write(*,*) "sig disvert",sig
+         DO l = 1, llm
+            call sig_hybrid(sig(l),pa,preff,1.e-6,newsig)
+            bp(l) = EXP( 1. -1./( newsig*newsig) )
+            ap(l) = pa * (newsig - bp(l) )
+         enddo
+         call sig_hybrid(sig(llmp1),pa,preff,1.e-6,newsig)
+         ap(llmp1) = pa * ( newsig - bp(llmp1) )
+      else
+         write(*,*) "****************************"
+         write(*,*) "Systeme en coordonnees sigma"
+         write(*,*) 
+c        Pour ne pas passer en coordonnees hybrides
+         DO l = 1, llm
+            ap(l) = 0.
+            bp(l) = sig(l)
+         ENDDO
+         ap(llmp1) = 0.
+      endif
+
+      bp(llmp1) =   0.
+
+      PRINT *,' BP '
+      PRINT *,  bp
+      PRINT *,' AP '
+      PRINT *,  ap
+
+c     Calcul au milieu des couches :
+c     WARNING : le choix de placer le milieu des couches au niveau de
+c     pression intermédiaire est arbitraire et pourrait etre modifié.
+c     Le calcul du niveau pour la derniere couche 
+c     (on met la meme distance (en log pression)  entre P(llm)
+c     et P(llm -1) qu'entre P(llm-1) et P(llm-2) ) est
+c     Specifique.  Ce choix est spécifié ici ET dans exner_hyb.F
+
+      DO l = 1, llm-1
+       aps(l) =  0.5 *( ap(l) +ap(l+1)) 
+       bps(l) =  0.5 *( bp(l) +bp(l+1)) 
+      ENDDO
+     
+      if (hybrid) then
+         aps(llm) = ap(llm-1)**2 / ap(llm-2) 
+         bps(llm) = 0.5*(bp(llm) + bp(llm+1))
+      else
+         bps(llm) = bp(llm-1)**2 / bp(llm-2) 
+         aps(llm) = 0.
+      end if
+
+      PRINT *,' BPs '
+      PRINT *,  bps
+      PRINT *,' APs'
+      PRINT *,  aps
+
+      DO l = 1, llm
+       presnivs(l) = aps(l)+bps(l)*preff
+       pseudoalt(l) = -10.*log(presnivs(l)/preff)
+      ENDDO
+
+      PRINT *,' PRESNIVS' 
+      PRINT *,presnivs 
+      PRINT *,'Pseudo altitude des Presnivs : ' 
+      PRINT *,pseudoalt
+
+      RETURN
+      END
+
+c ************************************************************
+      subroutine sig_hybrid(sig,pa,preff,xacc,newsig)
+c     ----------------------------------------------
+c     Subroutine utilisee pour calculer des valeurs de sigma modifie
+c     pour conserver les coordonnees verticales decrites dans
+c     esasig.def/z2sig.def lors du passage en coordonnees hybrides
+c     F. Forget 2002
+c     ----------------------------------------------
+      implicit none
+      real x1, x2, xacc, sig,pa,preff, newsig, F
+      integer j
+
+      newsig = sig
+      x1=0
+      x2=1
+      if ((sig.ne.0).and.(sig.ne.1)) then
+        DO J=1,9999  ! nombre d''iteration max
+          F=(1 -pa/preff)*exp(1-1./newsig**2)+(pa/preff)*newsig -sig
+          if (F.gt.0) then
+              X2 = newsig
+              newsig=(X1+newsig)*0.5
+          else
+              X1 = newsig
+              newsig=(X2+newsig)*0.5
+          end if
+c       write(0,*) J, ' newsig =', newsig, ' F= ', F
+
+        IF(X2-X1.LT.XACC) RETURN
+        END DO
+       end if
+       Return
+      END

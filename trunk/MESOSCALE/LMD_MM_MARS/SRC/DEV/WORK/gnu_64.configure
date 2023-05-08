@@ -1,0 +1,4 @@
+  14.  PC Linux x86_64 (IA64 and AMD Opteron), GNU Fortran compiler, DM-Parallel  (RSL, MPICH, Allows nesting)
+  15.  PC Linux x86_64 (IA64 and Opteron), GNU Fortran compiler   (Single-threaded, RSL, Allows nesting)
+  16.  PC Linux x86_64 (IA64 and Opteron), GNU Fortran compiler  DM-Parallel (RSL_LITE, OpenMPI, Allows nesting)
+

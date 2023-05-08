@@ -1,0 +1,27 @@
+Pour la compilation:
+
+Il faudrait aboutir a un outil commun souple.
+C'est comment, fcm ? viable ?
+
+Particularite de Titan: il faut une option -chim titan qui permettre
+de compiler les routines de chimtitan en C...
+
+J'ai ajoute les makegcm et create_make_gcm de venus et titan tels qu'ils 
+sont sur gnome (compilateur: ifort)
+
+Ehouarn (27/01/2011):
+-Pour la compilation, pour l'instant j'utilise makelmdz_fcm
+   (penser à importer plus tard le script Bash makelmdz au besoin)
+-Ajout des 'arch' arch-linux-64bit.fcm et arch-linux-64bit.path
+   (qui me permettent de travailler sur Bellonzi avec IOIPSL  et NETCDF
+    déjà là)
+
+Seb (02/05/2011):
+L'outil makelmdz marche, adapte egalement pour Titan.
+Compils ok.
+
+Ehouarn (22/11/2012):
+- OK pour faire qu'on puisse compiler des exécutables situés dans phy*
+- On est d'accord pour n'utiliser plus que "makelmdz" et "makelmdz_fcm"
+- reste à faire que makelmdz_fcm soit capable de compiler des sources
+  Fortran et C (pour Titan)

@@ -1,0 +1,79 @@
+
+pour le debug
+pour le 1
+mpirun -machinefile ./machinefile -np 4 wrf.exe < /dev/null &
+et utiliser le script
+pour le 2
+pgdbg -mpi:/donnees/aslmd/MPI/mpich2-1.3.1_normal/bin/mpirun -np 4 wrf.exe
+
+
+mpich2-1.3.1 avec pgf 2011
+---------------------------
+la source est la
+http://www.mcs.anl.gov/research/projects/mpich2/downloads/tarballs/1.3.1/mpich2-1.3.1.tar.gz
+la methode est expliquee la
+http://www.pgroup.com/resources/mpich/mpich2_131_pgi2011.htm
+
+semble fonctionner
+attention mpd n'existe plus, il faut preciser -hosts sur mpirun [plus pratique finalement ?]
+OK mpirun direct et ca marche sur une machine
+
+il faudrait compiler
+- avec fastsse
+- avec --with-device=ch3:nemesis comme avant
+
+ou alors
+--disable-fast --enable-g=dbg
+
+
+
+mpich2-1.4.1p1 avec pgf 2011
+----------------------------
+http://www.mcs.anl.gov/research/projects/mpich2/downloads/tarballs/1.4.1p1/mpich2-1.4.1p1.tar.gz
+./configure --prefix=$PWD  --with-device=ch3:nemesis
+make 
+
+OK mais pas mpd mpboot etc... !!!
+
+
+mpich2-1.2.1p1
+-------------------------
+
+http://www.mcs.anl.gov/research/projects/mpich2/downloads/tarballs/1.2.1p1/mpich2-1.2.1p1.tar.gz
+
+./configure --prefix=$PWD  --with-device=ch3:nemesis
+--> OK avec pgf90 v7
+
+test avec gfortran
+voir script install_gfortran
+parait avoir compile...
+--------------
+pb rencontre
+--------------
+You have another version of autoconf.  It may work, but is not guaranteed to.
+If you have problems, you may need to regenerate the build system entirely.
+To do so, use the procedure documented by the package, typically `autoreconf'.
+configure.in:1: error: Autoconf version 2.63 or higher is required
+configure.in:1: the top level
+autom4te: /usr/bin/m4 failed with exit status: 63
+WARNING: `autoconf' is probably too old.  You should only need it if
+         you modified `configure.in'.  You might want to install the
+         `Autoconf' and `GNU m4' packages.  Grab them from any GNU
+         archive site.
+
+
+mpich2-1.0.8
+------------
+
+http://www.mcs.anl.gov/research/projects/mpich2/downloads/tarballs/1.0.8/mpich2-1.0.8.tar.gz
+
+./configure --prefix=$PWD  --with-device=ch3:nemesis
+make
+
+PS: no make install, possible problems with Python version
+better to define a WHERE_MPI environment variable
+
+
+TEST TEST TEST TEST
+--enable-sharedlibs=gcc
+./configure --prefix=$PWD --enable-sharedlibs=gcc --with-device=ch3:nemesis --enable-fast

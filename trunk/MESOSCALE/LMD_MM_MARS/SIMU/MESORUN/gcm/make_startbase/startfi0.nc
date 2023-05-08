@@ -1,0 +1,1 @@
+../newstart/startbase_clim_mini/startfi0.nc

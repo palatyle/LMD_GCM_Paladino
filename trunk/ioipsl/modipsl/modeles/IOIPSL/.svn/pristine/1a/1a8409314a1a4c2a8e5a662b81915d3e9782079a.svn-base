@@ -1,0 +1,40 @@
+# ----------------------- FCM extract configuration file -----------------------
+cfg::type                           bld
+cfg::version                        1.0
+
+
+# ------------------------------------------------------------------------------
+# Build information
+# ------------------------------------------------------------------------------
+
+inc arch.fcm
+inc config.fcm
+
+%FFLAGS              %BASE_FFLAGS %COMPIL_FFLAGS
+%ROOT_PATH           $PWD
+%SRC_PATH            %ROOT_PATH
+
+dir::root            %ROOT_PATH/build
+
+src::src             %SRC_PATH/src
+src::rebuild         %SRC_PATH/rebuild
+search_src           false
+bld::lib ioipsl
+bld::target libioipsl.a
+bld::target flio_rbld.exe rebuild
+bld::exe_dep             
+
+bld::tool::fc        %COMPILER
+bld::tool::ld        %LINK  
+bld::tool::ldflags   %LD_FLAGS %LIB 
+bld::tool::fflags    %FFLAGS  
+bld::tool::fppkeys   %CPP_KEY %FPP_DEF
+bld::tool::fpp       %FPP
+bld::tool::fppflags  %FPP_FLAGS
+
+# Pre-process code before analysing dependencies
+bld::pp              false
+
+bld::excl_dep        use::netcdf
+bld::excl_dep        use::iso_fortran_env
+bld::tool::SHELL   /bin/bash

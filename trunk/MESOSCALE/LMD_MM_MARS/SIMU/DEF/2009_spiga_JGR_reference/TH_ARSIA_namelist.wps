@@ -1,0 +1,36 @@
+&share
+ wrf_core = 'ARW',
+ max_dom = 2,
+ start_date = '2024-05-01_06:00:00','2024-05-01_06:00:00'
+ end_date   = '2024-05-05_06:00:00','2024-05-01_06:00:00'  
+ interval_seconds = 3700
+ io_form_geogrid = 2,
+ debug_level = 0,
+ opt_output_from_geogrid_path='./'
+/
+
+
+&geogrid
+ parent_id         =   1,    1
+ parent_grid_ratio =   0,    4  
+ i_parent_start    =   0,   75    
+ j_parent_start    =   0,   33    
+ e_we              =  205, 209   !!! ATTENTION
+ e_sn              =  205, 209   !!! ATTENTION
+ geog_data_res     = '32ppd_HRalb','32ppd_HRalb'
+ dx = 20000,
+ dy = 20000,
+ map_proj = 'mercator',
+ ref_lat   =  5.00,
+ ref_lon   =  -120.00,
+ truelat1  =  0.0,
+ truelat2  =  0.0,
+ stand_lon =  0.0,
+ geog_data_path = './WPS_GEOG',
+/
+
+&metgrid
+ fg_name = './WPSFEED/LMD'
+ io_form_metgrid = 2,
+ opt_output_from_metgrid_path='./WRFFEED/current'
+/

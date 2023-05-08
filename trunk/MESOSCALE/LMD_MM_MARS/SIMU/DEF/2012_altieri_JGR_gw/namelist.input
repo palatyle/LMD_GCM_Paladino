@@ -1,0 +1,64 @@
+ &time_control
+ start_year       = 2024,    !! (p1) Start Martian Year (20XX for MY XX)
+ start_month      = 07,      !! (p1) Start Martian Month
+ start_day        = 01,      !! (p1) Start Martian Day
+ start_hour       = 06,      !! (p1) Start Martian Hour (at longitude 0)
+ end_year         = 2024,    !! (p1) End Martian Year (20XX for MY XX)
+ end_month        = 07,      !! (p1) End Martian Month
+ end_day          = 04,      !! (p1) End Martian Day
+ end_hour         = 06,      !! (p1) End Martian Hour (at longitude 0)
+ history_interval    = 37,     
+ frames_per_outfile  = 24, 
+ restart          = .false.
+ restart_interval = 8880,
+ io_form_history  = 2
+ io_form_restart  = 2
+ io_form_input    = 2
+ io_form_boundary = 2
+ debug_level      = 0
+ /
+
+ &domains
+ time_step   = 37, !!50, 
+ dx = 20000,
+ dy = 20000,
+ e_we   = 301,               
+ e_sn   = 301,              
+ e_vert = 101,               !! (r)(p2) Number of vertical levels
+ p_top_requested = 0.1       !! (p3) Chosen value of pressure at the top of the model
+ eta_levels =     1.000000,   
+    0.000000    
+ num_metgrid_levels = 33
+ /
+
+ &physics
+ /
+
+ &fdda
+ /
+
+ &dynamics
+ damp_opt = 1,        ! upper level damping flag
+                      !              0 = without damping
+                      !              1 = with diffusive damping, maybe used for real-data cases
+                      !                          (dampcoef nondimensional ~0.01-0.1)
+                      !             2 = with Rayleigh  damping (dampcoef inverse time scale [1/s] e.g. .003;
+                      !                        not for real-data cases)
+! dampcoef  = 0.05,    ! damping coefficient (see above) 0.01
+ dampcoef  = 0.01,
+ zdamp     = 15000.,  ! damping depth (m) from model top 5000.
+ tiso = 130. 
+ /
+
+ &grib2
+ /
+
+ &bdy_control
+ /
+
+!! DO NOT MODIFY
+ &namelist_quilt
+ nio_tasks_per_group = 0,
+ nio_groups = 1,
+ /
+!! DO NOT MODIFY

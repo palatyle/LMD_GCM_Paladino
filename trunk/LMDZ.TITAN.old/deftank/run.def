@@ -1,0 +1,31 @@
+#
+# $Header: /users/lmdz/cvsroot/LMDZ.3.3/run.def,v 1.2.2.3 2002/07/12 14:11:18 lmdzadmin Exp $
+#
+INCLUDEDEF=physiq.def
+INCLUDEDEF=gcm.def
+## Calendrier
+## calend=titan
+## Jour de l'etat initial ( = 350  si 20 Decembre ,par expl. ,comme ici )
+dayref=1
+##  Annee de l'etat  initial (   avec  4  chiffres   )
+anneeref=1111
+## Remise a zero de la date initiale
+raz_date=0
+## Reinit des variables de controle
+resetvarc=n
+## Nombre de jours d'integration
+nday=11
+## periode de sortie des variables de controle (en pas)
+iconser=500
+#
+## sorties instantanees dans la dynamique (fichiers dyn_hist.nc and co.)
+ok_dyn_ins=n
+## periode d'ecriture des sorties instantanees dans la dynamique
+## (en pas dynamiques)
+iecri= 500
+## sorties de valeurs moyennes dans la dynamique (fichiers dyn_hist_ave.nc and co.)
+ok_dyn_ave=n
+## periode de stockage des moyennes dans la dynamique et dans dynzon (en jour)
+periodav= 10.
+## flag de sortie dynzon
+ok_dynzon=n

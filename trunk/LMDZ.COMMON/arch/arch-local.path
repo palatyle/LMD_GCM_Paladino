@@ -1,0 +1,12 @@
+NETCDF_LIBDIR="-L/apps/local/easybuild/software/netCDF-Fortran/4.4.2-gmvolf-5.5.4/lib -lnetcdf -lnetcdff"
+NETCDF_INCDIR=-I/apps/local/easybuild/software/netCDF-Fortran/4.4.2-gmvolf-5.5.4/include
+IOIPSL_INCDIR=-I/home/palatyle/LMD_gen/trunk/LMDZ.COMMON/ioipsl/modipsl/lib
+IOIPSL_LIBDIR="-L/home/palatyle/LMD_gen/trunk/LMDZ.COMMON/ioipsl/modipsl/lib -lioipsl"
+ORCH_INCDIR=$LMDGCM/../../lib
+ORCH_LIBDIR=$LMDGCM/../../lib
+OASIS_INCDIR=$LMDGCM/../../prism/SX/build/lib/psmile.$couple
+OASIS_LIBDIR=$LMDGCM/../../prism/SX/lib
+INCA_LIBDIR=$LMDGCM/../INCA/config/lib
+INCA_INCDIR=$LMDGCM/../INCA/config/lib
+XIOS_INCDIR=$LMDGCM/../XIOS/inc
+XIOS_LIBDIR=$LMDGCM/../XIOS/lib

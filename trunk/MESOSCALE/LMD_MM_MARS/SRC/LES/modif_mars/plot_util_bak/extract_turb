@@ -1,0 +1,24 @@
+#! /bin/bash
+
+
+ycoord=20
+
+
+#echo coord
+#ncrcat -O -v HGT,XLAT,XLONG 	-d Time,0,0,1 		     ../wrfout*   coord.nc
+
+echo v
+ncrcat -O -v V     -d south_north_stag,${ycoord},${ycoord},1 ./wrfout*   v${ycoord}.nc
+
+echo u
+ncrcat -O -v U     -d south_north,${ycoord},${ycoord},1      ./wrfout*   u${ycoord}.nc
+echo w
+ncrcat -O -v W     -d south_north,${ycoord},${ycoord},1      ./wrfout*   w${ycoord}.nc
+echo p
+ncrcat -O -v PTOT  -d south_north,${ycoord},${ycoord},1      ./wrfout*   p${ycoord}.nc
+echo ph
+ncrcat -O -v PHTOT -d south_north,${ycoord},${ycoord},1      ./wrfout*  ph${ycoord}.nc
+echo t
+ncrcat -O -v T     -d south_north,${ycoord},${ycoord},1      ./wrfout*   t${ycoord}.nc
+
+

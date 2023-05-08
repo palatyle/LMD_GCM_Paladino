@@ -1,0 +1,38 @@
+&share				      	
+ wrf_core = 'ARW',                    !!   [do not modify: choice of dynamical core]
+ max_dom = 1,                         !! number of simulation domains 
+ start_date = '0000-00-00_00:00:00'   !! YYYY-MM-DD_HH:mm:ss start date
+ end_date   = '1111-11-11_11:11:11'   !! YYYY-MM-DD_HH:mm:ss end date
+ interval_seconds = 7400  !3700            !! frequency of GCM updates [1 Mars hour = 3700 s]
+ io_form_geogrid = 2,                 !!   [do not modify: choice of NETCDF outputs]	
+ debug_level = 0,                     !! verbose level of the programs 
+ opt_output_from_geogrid_path='./'    !! location of the geogrid outputs
+/
+
+
+&geogrid
+ parent_id         =   1,         !! number identifying the related parent domain
+ parent_grid_ratio =   1,         !! ratio between parent and nested domains
+ i_parent_start    =   1,         !! x-position of the southwest corner of nest
+ j_parent_start    =   1,         !! y-position of the southwest corner of nest
+ e_we              =  101 !!201,        !! number of longitude grid points
+ e_sn              =  101 !!201,        !! number of latitude grid points
+ geog_data_res     = 'gcm', !'64ppd',     !! choice of static data sources
+                                  !! NB: possible: '64ppd', '32ppd', ...
+                                  !! NB: please glance at geogrid/GEOGRID.TBL
+ dx = 60000, !30000,                      !! resolution (meters) in the x-dimension	
+ dy = 60000, !30000,                      !! resolution (meters) in the y-dimension	
+ map_proj = 'mercator',           !! map projection: 'mercator', 'lambert' or 'polar'
+ ref_lat   =  -15.,               !! north latitude of the center of the domain 
+ ref_lon   =  90.,                !! east longitude of the center of the domain
+ truelat1  =  0.0,                !! (lambert or polar) lat position of projection cone
+ truelat2  =  0.0,                !!   [do not modify]
+ stand_lon =  0.0,                !! (lambert or polar) lon position of projection cone
+ geog_data_path = './WPS_GEOG',   !!   [do not modify: symbolic link in the WPS folder]
+/
+
+&metgrid
+ fg_name = './WPSFEED/OXF'  !LMD      !!   [do not modify: symbolic link in the WPS folder]
+ io_form_metgrid = 2,             !!   [do not modify: choice of NETCDF outputs]
+ opt_output_from_metgrid_path='./WRFFEED/current'  !!   [do not modify: symbolic link]
+/

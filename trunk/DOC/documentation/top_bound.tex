@@ -1,0 +1,110 @@
+\documentclass[a4paper,10pt]{article}
+%\usepackage{graphicx}
+\usepackage{natbib}  % si appel à bibtex
+%\usepackage[francais]{babel}
+%\usepackage[latin1]{inputenc}  % accents directs (é...), avec babel
+%\usepackage{rotating}
+
+\setlength{\hoffset}{-1.in}
+\setlength{\oddsidemargin}{3.cm}
+\setlength{\textwidth}{15.cm}
+\setlength{\marginparsep}{0.mm}
+\setlength{\marginparwidth}{0.mm}
+
+\setlength{\voffset}{-1.in}
+\setlength{\topmargin}{0.mm}
+\setlength{\headheight}{0.mm}
+\setlength{\headsep}{30.mm}
+\setlength{\textheight}{24.cm}
+\setlength{\footskip}{1.cm}
+
+\setlength{\parindent}{0.mm}
+\setlength{\parskip}{1 em}
+\newcommand{\ten}[1]{$\times 10^{#1}$~} 
+\renewcommand{\baselinestretch}{1.}
+
+\begin{document}
+\pagestyle{plain}
+
+\begin{center}
+{\bf \LARGE 
+Documentation for LMDZ, Planets version
+
+\vspace{1cm}
+\Large
+The upper boundary sponge layer
+}
+
+\vspace{1cm}
+S\'ebastien Lebonnois , Ehouarn Millour
+
+\vspace{1cm}
+Latest version: \today
+\end{center}
+
+\section{Theoretical aspects}
+Because of the inevitable numerical boundary at the top of the model,
+upward travelling waves are found to non-physically reflect down into the
+atmosphere.
+A common remedy to this unwanted behaviour is to apply a sponge layer near
+the top of the model in order to quench these waves and avoid significant
+reflection thereof.
+In practice such quenching is done by adding a dissipative term which forces
+a relaxation of potential temperature and/or winds of the form:
+\[
+ A(t)=A_m+A_0 \exp(-\lambda t )
+\]
+Where $A_m$ is the value towards which $A$ is to asymptotically relax, and
+$\lambda$ is the inverse of the characteristic relaxation time scale.
+As there is no obvious value of $A_m$ towards which to relax, in practice
+it is often chosen to be either the zonal average of $A$ (evaluated at time $t$,
+i.e. conveniently ignoring that $A_m$ then is in fact not time-independent),
+or zero (at least for winds, since this would have little physical meaning for
+potential temperature).
+
+\section{Pratical aspects in the code}
+
+%The sponge layer is applied at the upper boundary when the \textsf{ok\_strato}
+%flag is set to {\em True} in \textsf{gcm.def} 
+%(this parameter also controls the application of a second step in the 
+%determination of vertical variation of coefficients for
+%the horizontal dissipation, see \textsf{inidissip.F} and
+%\textsf{disspi\_horiz.pdf} document).
+
+The tendencies for the upper boundary sponge layer are computed separately in
+the \textsf{top\_bound.F} routine (called from \textsf{leapfrog.F}) and
+added in place. 
+The resulting sponge tendency \textsf{dutop}, in m/s, is also given as an output for
+diagnostics.
+
+Three parameters may be adjusted in the \textsf{gcm.def} file: 
+\begin{itemize}
+\item \textsf{iflag\_top\_bound}: selects the affected layers. 
+  \begin{itemize}
+  \item 1: only the top 4 layers are affected. In this case, the damping rate 
+  is divided by 2 in the second layer, 4 in the third and 8 in the fourth. 
+  \item 2: layers with pressure lower than 100 times the top pressure. 
+  In this case, the damping rate depends linearly on the pressure.
+  \end{itemize}
+\item \textsf{mode\_top\_bound}: selects how the fields are affected.
+  \begin{itemize}
+  \item 0: No sponge layer is applied.
+  \item 1: Zonal and meridional winds are damped to zero.
+  \item 2: Zonal and meridional winds are damped to their zonally averaged value.
+  \item 3: Temperature, zonal and meridional winds are damped to their zonally 
+  averaged value.
+  \end{itemize}
+\item \textsf{tau\_top\_bound}: damping rate ($\lambda$ in equation above,
+expressed in Hz) in the topmost layer.
+\end{itemize}
+
+%\begin{thebibliography}{2}
+%\providecommand{\natexlab}[1]{#1}
+%\expandafter\ifx\csname urlstyle\endcsname\relax
+%  \providecommand{\doi}[1]{doi:\discretionary{}{}{}#1}\else
+%  \providecommand{\doi}{doi:\discretionary{}{}{}\begingroup
+%  \urlstyle{rm}\Url}\fi
+
+%\end{thebibliography}
+
+\end{document}

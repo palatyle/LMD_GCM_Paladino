@@ -1,0 +1,16 @@
+%COMPILER            mpif90
+%LINK                mpif90
+%AR                  ar
+%ARFLAGS             rs
+%MAKE                gmake
+%FPP_FLAGS           -P -traditional
+%FPP_DEF             NC_DOUBLE 
+%BASE_FFLAGS         -c -fdefault-real-8 -fdefault-double-8 -fcray-pointer -frecursive -ffree-line-length-0 -fno-align-commons
+%PROD_FFLAGS         -g
+%DEV_FFLAGS          -O -Wall -fbounds-check
+%DEBUG_FFLAGS        -ffpe-trap=invalid,zero,overflow -Wall -fbounds-check -g3 -O0 -fstack-protector-all -fcheck=all -finit-real=snan -fbacktrace
+%MPI_FFLAGS
+%OMP_FFLAGS          -fopenmp
+%BASE_LD             -Wl,-rpath=/apps/local/netcdf/netcdff/lib
+%MPI_LD
+%OMP_LD              -fopenmp

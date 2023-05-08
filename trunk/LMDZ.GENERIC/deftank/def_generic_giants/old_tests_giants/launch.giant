@@ -1,0 +1,20 @@
+# @ job_name=JUPITER
+# @ output = $(job_name).$(jobid)
+# @ error = $(output)
+# @ job_type = MPICH
+# @ total_tasks =32
+# @ blocking = unlimited
+# @ class =AP
+# @ environment=tmpdir=$(home)/$(job_name).$(jobid).results
+# @ queue
+grep "^# @" $0
+set -vx
+####################################################################
+mkdir ${tmpdir}
+cp /san/home/spiga/trunk/deftanks/giant/* ${tmpdir} 
+#cp /san/home/spiga/trunk/bin/gcm_80x120x15_phylmd_para.e ${tmpdir}/gcm.e
+cp /san/home/spiga/trunk/bin/gcm_180x360x10_phylmd_para.e ${tmpdir}/gcm.e
+####################################################################
+cd ${tmpdir}
+mpirun gcm.e
+####################################################################

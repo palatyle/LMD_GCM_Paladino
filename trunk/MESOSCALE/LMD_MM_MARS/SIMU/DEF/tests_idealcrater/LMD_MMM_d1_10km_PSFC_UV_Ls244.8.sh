@@ -1,0 +1,1 @@
+/donnees/aslmd/MODELES//MESOSCALE//LMD_MM_MARS//SRC/PYTHON/pp.py -f wrfout_d01_9999-09-09_09:36:00 -v PSFC -W -s 2 -i 4 -l 1. --div 25 -z 33 -m 300. -M 500. -S png 

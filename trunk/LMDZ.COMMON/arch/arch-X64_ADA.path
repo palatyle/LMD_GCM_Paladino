@@ -1,0 +1,33 @@
+ROOT=$PWD
+NETCDF_INCDIR="-I $NETCDF_INC_DIR"
+#NETCDF_LIBDIR="-L $NETCDF_LIB_DIR"
+#NETCDF_LIB="-lnetcdff -lnetcdf"
+
+MPI_INCDIR=""
+MPI_LIBDIR=""
+MPI_LIB=""
+
+#HDF5_INCDIR="-I $HDF5_INC_DIR"
+#HDF5_LIBDIR="-L $HDF5_LIB_DIR"
+#HDF5_LIB="-lhdf5_hl -lhdf5 -lhdf5 -lz"
+
+IOIPSL_INCDIR="-I/smphome/rech/psl/rpsl035/IOIPSL_PLUS/modipsl/lib"
+IOIPSL_LIBDIR="-L/smphome/rech/psl/rpsl035/IOIPSL_PLUS/modipsl/lib"
+IOIPSL_LIB="-lioipsl"
+
+XIOS_INCDIR="-I$ROOT/../XIOS/inc"
+XIOS_LIBDIR="-L$ROOT/../XIOS/lib"
+XIOS_LIB="-lxios -lstdc++"
+
+ORCHIDEE_INCDIR="-I$ROOT/../ORCHIDEE/lib"
+ORCHIDEE_LIBDIR="-L$ROOT/../ORCHIDEE/lib"
+ORCHIDEE_LIB="-lorchidee "
+
+OASIS_INCDIR="-I$ROOT/../oasis3-mct/BLD/build/lib/psmile.MPI1"
+OASIS_LIBDIR="-L$ROOT/../oasis3-mct/BLD/lib"
+OASIS_LIB="-lpsmile.MPI1 -lscrip -lmct -lmpeu"
+
+INCA_INCDIR="-I$ROOT/../INCA/config/lib"
+INCA_LIBDIR="-I$ROOT/../INCA/config/lib"
+INCA_LIB="-lchimie"
+

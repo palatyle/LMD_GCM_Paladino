@@ -1,0 +1,170 @@
+%
+%\documentclass{book}
+%\documentclass[10pt,a4paper,twoside,openright]{report}
+%\documentclass[12pt,a4paper,twoside]{report}
+%
+\documentclass[10pt,a4paper,twoside,openright,titlepage]{book}
+%\documentclass[10pt,a4paper,twoside]{report}
+%\documentclass[10pt,a4paper,twoside]{book}
+%\documentclass[12pt,a4paper,twoside]{book}
+%%
+%%
+%% PACKAGES
+%%
+%\usepackage[utf8]{inputenc}
+%\usepackage[french]{babel}
+%%
+%
+% FROM annales.sty (c) H&K
+%
+%\input{annales.sty}
+\usepackage{annales}
+%
+% END FROM annales.sty (c) H&K
+%
+\usepackage{srcltx}
+%\usepackage{pslatex}
+%\usepackage{pdflatex}
+
+\usepackage{setspace}
+
+%\pdfadjustspacing=1
+
+\usepackage{hyperref} 
+
+\usepackage{pdfpages}
+
+
+%\usepackage{pslatex}
+\usepackage{sectsty}
+%%\chapterfont{\large\sc\centering}
+%\chapterfont{\sc\centering}
+%\chaptertitlefont{\sc\centering}
+%\sectionfont{\sc\centering}
+%\subsectionfont{\sc\centering}
+%\subsubsectionfont{\sc\centering}
+\allsectionsfont{\sc\centering}
+
+\usepackage[english]{minitoc}
+
+\usepackage{wasysym}
+%\usepackage[pdftex]{graphicx}
+
+%\Roman
+\def\thechapter       {\arabic{chapter}}
+\def\thesection       {\thechapter.\arabic{section}}
+\def\thesubsection    {\thesection.\arabic{subsection}}
+\def\thesubsubsection {\thesubsection.\arabic{subsubsection}}
+%\def\thechapter       {\arabic{chapter}}
+%\def\thesection       {\arabic{section}}
+%\def\thesubsection    {\thesection.\arabic{subsection}}
+%\def\thesubsubsection {\thesubsection.\arabic{subsubsection}}
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{3}
+
+\setcounter{minitocdepth}{1}
+
+%\renewcommand{\labelitemi}{$\star$}
+
+%\newcommand{\clearemptydoublepage}{\newpage{\pagestyle{empty}\cleardoublepage}}
+
+%%% figures
+%%\makeatletter
+%%\renewcommand{\fnum@figure}{\figurename~\thefigure\sffamily\small\bfseries}
+%%\makeatother
+%\makeatletter
+%\renewcommand{\fnum@figure}{\figurename~\thefigure\bfseries}
+%\makeatother
+
+
+%\usepackage{amsmath}
+%\usepackage{amsfonts}
+%\usepackage{amssymb}
+%%
+%\usepackage{epsfig}
+%\usepackage{graphics}
+%%
+%%\usepackage{fancybox}		% Boîtes avec une ombre pour les parties.
+%%
+% FIN PACKAGES
+%
+%
+% RACCOURCIS TEXTE
+% NB: utiliser un espace insécable si 
+% un mot ou un autre raccourci suivent
+% NB: pour ajouter un s, juste un espace
+% par exemple: \mn s == martiens
+%
+\newcommand{\Ma}{Mars}
+\newcommand{\mn}{martien}
+\newcommand{\mne}{martienne}
+\newcommand{\lM}{la planète \Ma}
+\newcommand{\LM}{La planète \Ma}
+\newcommand{\lR}{la planète rouge}
+\newcommand{\LR}{La planète rouge}
+%
+\newcommand{\met}{météorologie}
+\newcommand{\Te}{Terre}
+\newcommand{\te}{terrestre}
+\newcommand{\lT}{la \Te}
+\newcommand{\LT}{La \Te}
+\newcommand{\lpT}{la planète \Te}
+\newcommand{\LpT}{La planète \Te}
+%
+\newcommand{\atq}{atmosphérique}
+\newcommand{\lat}{l'atmosphère}
+\newcommand{\Lat}{L'atmosphère}
+\newcommand{\lam}{\lat~\mne}
+\newcommand{\Lam}{\Lat~\mne}
+%
+\newcommand{\OM}{OMEGA}
+\newcommand{\ME}{Mars Express}
+\newcommand{\IR}{infra-rouge}
+\newcommand{\lo}{longueur d'onde}
+\newcommand{\los}{longueurs d'onde}
+\newcommand{\mi}{\U{\mu m}}
+\newcommand{\spe}{spectre}
+\newcommand{\carb}{CO$_2$}
+\newcommand{\eau}{H$_2$O}
+\newcommand{\tele}{télédétection}
+\newcommand{\p}{pression}
+\newcommand{\ps}{pression de surface}
+\newcommand{\bande}{bande d'absorption à $2$\mi~du \carb}
+%
+\newcommand{\Vi}{Viking}
+%
+\newcommand{\temp}{température}
+\newcommand{\baw}{ondes baroclines}
+\newcommand{\thw}{ondes de marée thermique}
+%
+\newcommand{\m}{modèle}
+\newcommand{\W}{WRF}
+\newcommand{\mec}{méso-échelle}
+\newcommand{\mmec}{\m~\mec}
+\newcommand{\gcm}{\m~de circulation générale}
+\newcommand{\gcms}{\m s de circulation générale}
+\newcommand{\nh}{non-hydrostatique}
+\newcommand{\h}{hydrostatique}
+%
+\newcommand{\chef}{\textit{Forget et al.}}
+\newcommand{\LMD}{Laboratoire de Météorologie Dynamique}
+%%
+%\newenvironment{citemize}[1]{\begin{itemize}\addtolength{\itemsep}{-0.5\baselineskip}}{\end{list}}
+\newenvironment{citemize}%
+{ \begin{list}%
+	{$\circ$}%\bullet\star
+ 	{%\setlength{\labelwidth}{30pt}%
+	 %\setlength{\leftmargin}{35pt}%
+         %\setlength{\topsep}{2pt}%
+	 \setlength{\itemsep}{-0.2\baselineskip}}}%
+{ \end{list} }
+\newenvironment{finger}%
+{ \begin{dinglist}%
+	{43}%
+	{
+	}}%
+{ \end{dinglist} }
+%%
+%% FIN RACCOURCIS TEXTE
+%%
+

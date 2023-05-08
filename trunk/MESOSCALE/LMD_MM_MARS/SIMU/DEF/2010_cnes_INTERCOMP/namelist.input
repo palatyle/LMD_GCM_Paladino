@@ -1,0 +1,92 @@
+ &time_control
+ start_year       = 2024, 2024, 2024, 2024    !! (p1) Start Martian Year (20XX for MY XX)
+ start_month      =   05,   05,   05,   05    !! (p1) Start Martian Month
+ start_day        =   55,   55,   55,   55    !! (p1) Start Martian Day
+ start_hour       =   06,   06,   06,   06    !! (p1) Start Martian Hour (at longitude 0)
+ end_year       = 2024, 2024, 2024, 2024    !! (p1) Start Martian Year (20XX for MY XX)
+ end_month      =   06,   06,   06,   06    !! (p1) Start Martian Month
+ end_day        =   21,   21,   21,   21    !! (p1) Start Martian Day
+ end_hour       =   06,   06,   06,   06    !! (p1) Start Martian Hour (at longitude 0)
+ history_interval   = 37,   37,   37,   37,     
+ frames_per_outfile = 24,   24,   24,   24
+ restart          = .false.
+ restart_interval = 8880,
+ io_form_history  = 2
+ io_form_restart  = 2
+ io_form_input    = 2
+ io_form_boundary = 2
+ debug_level      = 0
+ input_from_file  =    T,    T,    T,    T     ! F en second pour que d1 init. d2 (smoother) -- T par defaut
+ /
+
+ &domains
+ time_step         = 40   !! grand nest INSTABLE
+ time_step         = 30   !! grand nest STABLE (aux hautes latitudes nord: grille resserree) 
+ p_top_requested   = 5.     
+ max_dom           =        4    !!!! PLEASE DO NOT FORGET callphysd*_.def 
+ grid_id           =        1,           2,          3,          4,     
+ parent_id         =        0,           1,          2,          3,    
+ parent_grid_ratio =        1,           3,          3,          3,         !!! parent_grid_ratio divides (e_we-s_we+1)
+ parent_time_step_ratio =   1,           1,          2,          2,
+ i_parent_start    =        0,          24,         32,         23,
+ j_parent_start    =        0,          49,         25,         32,
+ e_we              =       93,          97,         97,         97,             !!! nproc divides e_we-1
+ e_sn              =       93,          97,         97,         97,             !!! nproc divides e_we-1
+ e_vert            =       61,          61,         61,         61,       
+ dx                =   240000,       80000,  26666.667,   8888.889,  
+ dy                =   240000,       80000,  26666.667,   8888.889,
+ feedback          = 0
+ smooth_option     = 2    !! 0: no smoothing; 1: 1-2-1 smoothing; 2: smoothing-desmoothing
+ blend_width       = 5
+ !!
+ !! OPTIONAL
+ !!
+ force_sfc_in_vinterp = 6    !! (p3) Number of levels hardwired in the PBL
+                             !!         NB: decrease this parameter when low model top
+ /
+
+ &physics
+ /
+
+ &fdda
+ /
+
+ &dynamics
+ !!
+ !! OPTIONAL
+ !!
+ tiso = 100. 
+ !!non_hydrostatic = F, F, T, T    !!! CRASH (mm si dt faible ou dt_sound faible)
+ non_hydrostatic = F, F, F, F    !!! OK
+   !damp_opt = 1   ! upper level damping flag
+   !               !       0 = without damping
+   !               !       1 = with diffusive damping, maybe used for real-data cases
+   !               !           (dampcoef nondimensional ~0.01-0.1)
+   !               !       2 = with Rayleigh  damping (dampcoef inverse time scale [1/s] e.g. .003;
+   !               !           not for real-data cases)
+   !dampcoef  =   0.01,  0.01,   0.001,  0.001    ! CRASH
+   !dampcoef  =   0.001,  0.001,  0.001,  0.001    ! damping coefficient (see above) 0.01
+   !!!NON NON !dampcoef  =   0.1,  0.01,  0.001,  0.0001    ! damping coefficient (see above) 0.01
+   !zdamp     = 10000., 10000., 10000., 10000.    ! damping depth (m) from model top 5000.
+ smdiv = 0.00, 0.10, 0.10, 0.10,            !! (*d) Divergence damping
+ emdiv = 0.00, 0.01, 0.01, 0.01,            !! (*d) External-mode filter for mass coord. model
+ epssm = 0.00, 0.10, 0.10, 0.10,            !! (*d) Time off-centering for vertical sound waves
+ !!! necessaire =0 pour grand nest
+ !!! necessaire H pour grand nest
+ !!! necessaire H pour nest 2
+ /
+
+ &grib2
+ /
+
+ &bdy_control
+ specified = T, F, F, F
+ nested    = F, T, T, T
+ /
+
+!! DO NOT MODIFY
+ &namelist_quilt
+ nio_tasks_per_group = 0,
+ nio_groups = 1,
+ /
+!! DO NOT MODIFY

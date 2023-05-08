@@ -1,0 +1,23 @@
+#PBS -S  /bin/bash
+#PBS -j  oe
+#PBS -q  infini
+#PBS -N  prep_gcm 
+#PBS -l "nodes=1:ppn=1"
+##PBS -l "mem=64gb"
+
+####### prep run
+cd $PBS_O_WORKDIR
+ulimit -s unlimited
+
+###############################
+### MUST LINK NAMELIST.INPUT !!
+###############################
+
+year=$(more namelist.input | grep start_year | awk '{print $3}' | sed s+','+''+g)
+month=$(more namelist.input | grep start_month | awk '{print $3}' | sed s+','+''+g)
+day=$(more namelist.input | grep start_day | awk '{print $3}' | sed s+','+''+g)
+hour=$(more namelist.input | grep start_hour | awk '{print $3}' | sed s+','+''+g)
+wrf_date=${year}'-'${month}'-'${day}'_00:00:00'
+daygcm=$(more calendar | grep ${wrf_date} | awk '{print $2}')
+echo ${daygcm} | ./launch_gcm
+

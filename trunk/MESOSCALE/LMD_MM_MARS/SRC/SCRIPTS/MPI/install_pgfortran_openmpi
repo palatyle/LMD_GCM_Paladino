@@ -1,0 +1,28 @@
+#! /bin/bash
+
+name=pgfortran_openmpi-1.4.4
+###########################
+
+wget http://www.open-mpi.org/software/ompi/v1.4/downloads/openmpi-1.4.4.tar.gz
+tar xzvf openmpi-1.4.4.tar.gz
+\rm openmpi-1.4.4.tar.gz
+
+export CC=pgcc 
+export FC=pgfortran 
+export F77=pgfortran 
+export CXX=pgcpp 
+export CFLAGS=-fast 
+export FCFLAGS=-fast 
+export FFLAGS=-fast 
+export CXXFLAGS=-fast 
+
+ici=$PWD/$name
+cd openmpi-1.4.4
+./configure --prefix=$ici 
+make
+make check
+make install
+cd ..
+\rm -rf openmpi-1.4.4
+
+

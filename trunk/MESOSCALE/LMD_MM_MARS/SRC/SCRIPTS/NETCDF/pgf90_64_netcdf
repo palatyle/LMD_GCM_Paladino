@@ -1,0 +1,32 @@
+#! /bin/bash
+
+# netcdf  v3.6.1
+# pgi     v6.2-5
+# ehouarn v2.0
+
+tar xvf netcdf-3.6.1.tar
+
+cd netcdf-3.6.1
+
+export CC=pgcc
+export CXX=pgCC
+#export CPP='pgcc -E'
+#export FC=pgf90
+export F77=pgf90
+export F90=pgf90
+export CFLAGS="-fast -tp=x64 -Msignextend"
+export CXXFLAGS="-fast -tp=x64 -Msignextend"
+export CPPFLAGS="-DNDEBUG -DpgiFortran"
+export FFLAGS="-fast -tp=x64"
+#export FCFLAGS="-fast -tp=x64"
+export F90FLAGS="-fast -tp=x64"
+
+PREFIX=$PWD
+
+cd src
+
+./configure --prefix=${PREFIX} 
+make
+make test
+make install
+

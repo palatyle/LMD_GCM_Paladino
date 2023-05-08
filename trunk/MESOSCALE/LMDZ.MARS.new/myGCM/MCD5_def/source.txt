@@ -1,0 +1,6 @@
+Tu peux prendre les .def dans LMDZ.MARS/deftank
+Le plus complet est callphys.def.MCD5
+
+Pour le cycle de l'eau, les starts sont
+/planeto/tnalmd/runs/finalarticle/refrun/start0.nc
+/planeto/tnalmd/runs/finalarticle/refrun/startfi0.nc 

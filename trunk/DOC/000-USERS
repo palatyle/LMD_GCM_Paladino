@@ -1,0 +1,41 @@
+------------------------------------------------------------------------------------------------------------------------
+CONTRIBUTORS [are allowed to commit]
+------------------------------------------------------------------------------------------------------------------------
+
+**** Name ****      **** Institute ****		**** Admitted ****		**** Use ****
+Ehouarn Millour 		LMD [CNRS]			start				All GCMs
+Sebastien Lebonnois		LMD [CNRS]			start				Venus and Titan GCMs
+Aymeric Spiga			LMD [UPMC]			17 - 11 - 2010	 	Mars GCM, MMM and LES
+Arnaud Colaitis         LMD [CNRS]          23 - 05 - 2011      Mars GCM, MMM and LES
+
+------------------------------------------------------------------------------------------------------------------------
+USERS [are allowed to synchronize and use models]
+------------------------------------------------------------------------------------------------------------------------
+Anyone who is given the svn link must have her/his name reported here
+
+**** Name ****                  **** Institute ****             **** Admitted ****		**** Use ****
+Arnaud Colaitis					LMD [CNRS]						26 - 01 - 2011			Mars GCM, MMM and LES
+Franck Lefevre                  LATMOS [CNRS]                   25 - 02 - 2011          Mars GCM
+Francisco Gonzalez-Galindo      IAA [CSIC, Spain]               28 - 02 - 2011          Mars GCM
+Francois Forget                 LMD [CNRS]                      03 - 03 - 2011          All GCMs
+Jean-Baptiste Madeleine         LMD [CNRS]                      03 - 03 - 2011          Mars GCM
+Julien Faure                    LMD [CNRS/UPMC]                 07 - 03 - 2011          Mars GCM, MMM and LES  
+Anni Maattanen					LATMOS [CNRS]					25 - 05 - 2011			Mars GCM, MMM and LES
+Benjamin Charnay				LESIA [Obs Paris]				25 - 05 - 2011			All GCMs
+Robin Wordworth					LMD [CNRS]						25 - 05 - 2011			Generic GCMs
+Jean-Yves Chauffray				LMD [CNRS]						25 - 05 - 2011			Mars GCM
+Luca Montabone					LMD [CNRS]						25 - 05 - 2011			Mars GCM
+Jeremie Burgalat				GSMA [URCA]						01 - 06 - 2011			Titan GCM
+Pascal Rannou   				GSMA [URCA]						01 - 06 - 2011			Titan GCM
+Helen Parish					UCLA							01 - 10 - 2011			Venus GCM
+David Luz						CAAUL [Obs. Lisbonne]			01 - 01 - 2012			Venus GCM
+Sarah Chamberlain				CAAUL [Obs. Lisbonne]			01 - 01 - 2012			Venus GCM
+Jeremy Leconte					LAB [CNRS]						2013					Generic GCMs
+Maxence Lefevre					LMD [CNRS]						09 - 2015				Venus GCM, MMM and LES
+Jan Vatant d'Ollone				LMD [CNRS]						09 - 2016				Titan and Generic GCMs
+Gabriella Gilli         		IA [Obs. Lisbonne] 				01 - 2016				Venus GCM
+Itziar Garate-Lopez				UPV/EHU [Bilbao]				09 - 2018				Venus GCM
+Thomas Navarro					UCLA							09 - 2017				Venus GCM
+Prashant Kumar          		ISRO							09 - 2018				Venus GCM
+Maria Antonina          		ISRO							07 - 2019				Venus GCM
+

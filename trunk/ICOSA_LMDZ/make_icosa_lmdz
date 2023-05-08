@@ -1,0 +1,231 @@
+#!/bin/bash
+export PATH=$PWD/tools/FCM/bin:$PATH
+
+export ROOT=$PWD
+set -x
+echo $0 $* > rebuild_all
+chmod a+x rebuild_all
+
+compil_mode_defined="FALSE"
+compil_mode="prod"
+
+job=1
+full_defined="FALSE"
+with_xios_defined="TRUE"
+with_orchidee_defined="FALSE"
+arch_defined="FALSE"
+parallel_defined="FALSE"
+arch_path="../ARCH"
+arch_default_path="arch"
+parallel="none"
+physics="none"
+build_deps="TRUE"
+CPP_KEY="CPP_NONE" 
+ICOSA_LIB=""
+
+while (($# > 0))
+  do
+  case $1 in
+      "-h") cat <<fin
+Usage :
+makegcm [options] -m arch -p phys exec
+[-h]                       : help
+[-prod / -dev / -debug]    : compilation mode: production (default) / developpement / debug .
+[-nodeps]                  : do not build dependencies (XIOS, IOIPSL, LMDZ5, ICOSAGCM)
+ -arch nom_arch            : target architecture
+ -p phys                   : physics package (e.g. std , venus , ...)
+[-p_opt "options"]         : additional options for physics package
+fin
+	  exit;;
+
+      "-p")
+          phys=$2 ; shift ; shift ;;
+      
+      "-p_opt")
+          phys_opt=$2 ; shift ; shift ;;
+          
+      "-prod")
+	  compil_mode="prod" ; shift ;;
+
+      "-dev")
+	  compil_mode="dev" ; shift ;;
+
+      "-debug")
+	  compil_mode="debug" ; shift ;;
+
+      "-arch")
+	  arch=$2 ; arch_defined="TRUE"; shift ; shift ;;
+ 
+      "-arch_path")
+	  arch_path=$2 ; arch_path_defined="TRUE"; shift ; shift ;;
+
+      "-parallel")
+	  parallel=$2 ; parallel_defined="TRUE"; shift ; shift ;;
+
+      "-job")
+	  job=$2 ; shift ; shift;;
+
+      "-full")
+	  full_defined="TRUE" ; shift ;;
+
+      "-nodeps")
+	  build_deps="FALSE" ; shift ;;
+
+      "-with_xios")
+	  with_xios_defined="TRUE" ; shift ;;
+
+      "-with_orchidee")
+	  with_orchidee_defined="TRUE" ; shift ;;
+
+      *)
+	  code="$1" ; shift ;;
+  esac
+done
+
+rm -f .void_file
+echo > .void_file
+rm -rf .void_dir
+mkdir .void_dir
+
+if [[ "$arch_defined" == "TRUE" ]]
+then
+  rm -f arch.path
+  rm -f arch.fcm
+  rm -f arch.env
+
+  if test -f $arch_path/arch-${arch}.path
+  then
+    ln -s $arch_path/arch-${arch}.path arch.path
+  elif test -f $arch_default_path/arch-${arch}.path
+  then
+    ln -s $arch_default_path/arch-${arch}.path arch.path
+  fi
+        
+  if test -f $arch_path/arch-${arch}.fcm
+  then
+    ln -s $arch_path/arch-${arch}.fcm arch.fcm
+  elif test -f $arch_default_path/arch-${arch}.fcm
+  then
+    ln -s $arch_default_path/arch-${arch}.fcm arch.fcm
+  fi
+
+  if test -f $arch_path/arch-${arch}.env
+  then
+    ln -s $arch_path/arch-${arch}.env arch.env
+  elif test -f $arch_default_path/arch-${arch}.env
+  then
+    ln -s $arch_default_path/arch-${arch}.env arch.env
+  else
+    ln -s .void_file arch.env
+  fi
+  source arch.env
+  source arch.path
+else
+  echo "Please define a target architecture"
+  exit 1
+fi
+
+LD_FLAGS="%BASE_LD"
+
+if [[ "$compil_mode" == "prod" ]]
+then
+  COMPIL_FFLAGS="%PROD_FFLAGS"
+elif [[ "$compil_mode" == "dev" ]]
+then
+  COMPIL_FFLAGS="%DEV_FFLAGS"
+elif [[ "$compil_mode" == "debug" ]]
+then
+  COMPIL_FFLAGS="%DEBUG_FFLAGS"
+fi
+
+if [[ "$parallel" == "mpi" ]]
+then
+  CPP_KEY="$CPP_KEY CPP_USING_MPI"
+elif [[ "$parallel" == "omp" ]]
+then
+  CPP_KEY="$CPP_KEY CPP_USING_OMP"
+  COMPIL_FFLAGS="$COMPIL_FFLAGS %OMP_FFLAGS"
+  LD_FLAGS="$LD_FLAGS %OMP_LD"
+elif [[ "$parallel" == "mpi_omp" ]]
+then
+  CPP_KEY="$CPP_KEY CPP_USING_MPI CPP_USING_OMP"
+  COMPIL_FFLAGS="$COMPIL_FFLAGS %OMP_FFLAGS"
+  LD_FLAGS="$LD_FLAGS %OMP_LD"
+elif [[ "$parallel" == "none" ]]
+then
+  parallel="none"
+else 
+  echo "-parallel value $parallel is invalid, only permited <none>, <mpi>, <omp> or <mpi_omp>"
+  exit 1
+fi
+
+if [[ "$with_orchidee_defined" == "TRUE" ]]
+then
+  ICOSA_LIB="$ICOSA_LIB $ORCHIDEE_LIBDIR $ORCHIDEE_LIB"
+fi  
+
+if [[ "$with_xios_defined" == "TRUE" ]]
+then
+  CPP_KEY="$CPP_KEY CPP_USING_XIOS"
+  COMPIL_FFLAGS="$COMPIL_FFLAGS $XIOS_INCDIR"
+  ICOSA_LIB="$ICOSA_LIB $XIOS_LIBDIR $XIOS_LIB"
+fi  
+
+ICOSA_LIB="$ICOSA_LIB $IOIPSL_LIBDIR $IOIPSL_LIB $NETCDF_LIBDIR $NETCDF_LIB $HDF5_LIBDIR $HDF5_LIB"
+
+rm bin/*
+
+if [[ "$full_defined" == "TRUE" ]]
+then
+  full_flag="-full"
+  full_flag2="--full"
+else 
+  full_flag=""
+  full_flag2=""
+fi
+
+rm -f config.fcm
+
+echo "%COMPIL_FFLAGS $COMPIL_FFLAGS $NETCDF_INCDIR" >> config.fcm
+echo "%LD_FLAGS $LD_FLAGS" >> config.fcm
+echo "%CPP_KEY $CPP_KEY" >> config.fcm
+echo "%PHYS phy$phys" >> config.fcm
+echo "%LIB $ICOSA_LIB">> config.fcm
+
+if [[ "$build_deps" == "TRUE" ]]
+then
+
+    cd ../IOIPSL
+    ./makeioipsl_fcm -$compil_mode -parallel -arch $arch -arch_path $arch_path -j $job $full_flag  || exit 1
+    cd -
+
+    cd ../XIOS
+    ./make_xios --$compil_mode --arch $arch --arch_path $arch_path --job $job $full_flag2 || exit 1
+    cd -
+
+    if [[ "$with_orchidee_defined" == "TRUE" ]]
+    then
+	cd ../ORCHIDEE
+	./makeorchidee_fcm -$compil_mode -parallel $parallel -xios2 -arch $arch -arch_path $arch_path -j $job $full_flag  || exit 1
+	cd -
+    fi
+
+#    cd ../LMDZ5
+#    lmdz_veget="false"
+#    if [[ "$with_orchidee_defined" == "TRUE" ]]
+#    then
+#	lmdz_veget="orchidee2.0"
+#    fi
+#    ./makelmdz_fcm gcm -$compil_mode -mem -parallel $parallel -nodyn -io xios -v $lmdz_veget -arch $arch -arch_path $arch_path -j $job $full_flag || exit 1
+#    cd -
+
+    cd ../LMDZ.COMMON
+    ./makelmdz_fcm -p $phys $phys_opt -$compil_mode -parallel $parallel -libphy -io xios -arch $arch -arch_path $arch_path -j $job $full_flag || exit 1
+    cd -
+
+    cd ../ICOSAGCM
+    ./make_icosa -$compil_mode -parallel $parallel -external_ioipsl -with_xios -arch $arch -arch_path $arch_path -job $job $full_flag || exit 1
+    cd -
+fi
+
+./build --job $job $full_flag2

@@ -1,0 +1,38 @@
+&share
+ wrf_core = 'ARW',
+ max_dom = 3
+ start_date = '2024-01-60_06:00:00','2024-01-60_06:00:00','2024-01-60_06:00:00'
+ end_date   = '2024-02-03_06:00:00','2024-01-60_06:00:00','2024-01-60_06:00:00'
+ interval_seconds = 3700
+ io_form_geogrid = 2,
+ debug_level = 0,
+ opt_output_from_geogrid_path='../geogrid/'
+/
+
+&geogrid
+ parent_id         =        0,      1,      2
+ parent_grid_ratio =        1,      3,      3
+ i_parent_start    =        0,     59,     60
+ j_parent_start    =        0,     58,     54
+ e_we              =      177,    181,    181
+ e_sn              =      177,    181,    181
+ !geog_data_res     =  'tyler','tyler','tyler'
+ geog_data_res     =  'gcm','gcm','gcm'
+ dx = 54000,
+ dy = 54000,
+ map_proj = 'polar',      !! map projection: 'mercator', 'lambert' or 'polar'
+ ref_lat   =  89.5,       !! north latitude of the center of the domain
+ ref_lon   =  0.1,        !! east longitude of the center of the domain
+ truelat1  =  89.5,       !! (lambert or polar) lat position of projection cone
+ truelat2  =  0.0,        !!   [do not modify]
+ stand_lon =  0.1,        !! (lambert or polar) lon position of projection cone
+ geog_data_path = '../data_static/',
+ OPT_GEOGRID_TBL_PATH = '../geogrid/'
+/
+
+&metgrid
+ fg_name = '../prep/WPSFEED/LMD'
+ io_form_metgrid = 2,
+ opt_output_from_metgrid_path='../metgrid/'
+ OPT_METGRID_TBL_PATH = "../metgrid/"
+/

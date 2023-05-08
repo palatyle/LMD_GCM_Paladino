@@ -1,0 +1,11 @@
+aire: Aires des mailles
+cv: Coefficients de passage cov <--> naturel
+cu: Coefficients de passage cov <--> naturel
+sig_s: sigmas aux niveaux s
+s: Niveaux s
+sig: Niveaux sigmas
+rlatv: Latitudes aux points v
+rlonv: Longitudes aux points v
+rlatu: Latitudes aux points u
+rlonu: Longitudes aux points u
+controle: Tableau des parametres du run

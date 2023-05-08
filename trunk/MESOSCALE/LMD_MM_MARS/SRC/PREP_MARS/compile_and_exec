@@ -1,0 +1,9 @@
+#! /bin/bash
+
+./compile
+
+echo I assume input_diagfi is correctly linked
+echo I assume WPSFEED folder exists or is linked 
+
+echo 1 | create_readmeteo.exe 
+readmeteo.exe < readmeteo.def 

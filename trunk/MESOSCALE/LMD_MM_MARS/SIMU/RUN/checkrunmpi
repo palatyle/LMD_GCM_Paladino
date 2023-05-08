@@ -1,0 +1,12 @@
+#! /bin/bash
+
+echo Machines
+$WHERE_MPI/mpiexec -l -n 4 hostname
+echo GCM processes
+$WHERE_MPI/mpiexec -l -n 4 ps -e -o '%u %p %C %x %c' | grep gcm 
+echo Mesoscale processes
+$WHERE_MPI/mpiexec -l -n 4 ps -e -o '%u %p %C %x %c' | grep wrf
+
+
+
+

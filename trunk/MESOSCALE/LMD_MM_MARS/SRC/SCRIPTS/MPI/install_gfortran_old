@@ -1,0 +1,6 @@
+#! /bin/bash
+
+make clean
+export F90=gfortran
+./configure --prefix=$PWD  --with-device=ch3:nemesis
+make

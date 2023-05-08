@@ -1,0 +1,535 @@
+<context id="LMDZ">
+
+    <!-- Definition of a calendar is done in code via wxios_set_cal -->
+    
+    <!-- Definition of domains and groups of domains -->
+    <domain_definition>
+        <domain id="dom_glo" data_dim="2" />
+    </domain_definition>
+        
+    <!-- Definition of vertical axes 
+         NB: these must be defined and set in code via
+         wxios_add_vaxis -->
+    <axis_definition>
+        <axis id="presnivs" 
+              standard_name="Pseudo-pressure of model vertical levels" 
+              unit="Pa">
+        </axis>
+        <axis id="altitude" 
+              standard_name="Pseudo-altitude of model vertical levels" 
+              unit="km">
+        </axis>
+    </axis_definition>
+    
+    <grid_definition>
+        <!-- toggle axis id below to change output vertical axis -->
+        <grid id="grid_3d">
+            <domain id="dom_glo" />
+                <axis id="presnivs" />
+                <!-- <axis id="altitude" /> -->
+        </grid>
+        <!-- to output scalars -->
+        <grid id="scalarpoint" >
+            <scalar />
+        </grid>
+    </grid_definition>
+    
+    <!-- Definition of model variables -->
+    <field_definition prec="4" 
+                      freq_op="1ts"
+                      enabled=".TRUE.">
+        
+        <!-- 0D variables 
+        <field_group id="fields_0D" grid_ref="scalarpoint">
+            <field id="ls"
+                   long_name="Solar longitude"
+                   unit="degrees" />
+        </field_group>    -->
+        
+        <!-- 2D variables -->
+        <field_group id="fields_2D" domain_ref="dom_glo">
+            <field id="phis"
+                   long_name="Surface geopotential (gz)" 
+                   unit="m2/s2" />
+            <field id="aire"
+                   long_name="Mesh area"
+                   unit="m2" />
+            <field id="tsol"
+                   long_name="Surface Temperature" 
+                   unit="K" />
+            <field id="psol"
+                   long_name="Surface Pressure" 
+                   unit="Pa" />
+            <field id="cdragh"
+                   long_name="Drag coef on T" 
+                   unit="-" />
+            <field id="cdragm"
+                   long_name="Drag coef on U" 
+                   unit="-" />
+            <field id="tops"
+                   long_name="Solar rad. at TOA" 
+                   unit="W/m2" />
+            <field id="topl"
+                   long_name="IR rad. at TOA" 
+                   unit="W/m2" />
+            <field id="sols"
+                   long_name="Solar rad. at surface" 
+                   unit="W/m2" />
+            <field id="soll"
+                   long_name="IR rad. at surface" 
+                   unit="W/m2" />
+        </field_group>
+
+        <!-- 3D variables -->
+        <field_group id="fields_3D" grid_ref="grid_3d">
+            <field id="temp"
+                   long_name="Atmospheric temperature"
+                   unit="K" />
+            <field id="pres"
+                   long_name="Atmospheric pressure" 
+                   unit="Pa" />
+            <field id="geop"
+                   long_name="Geopotential (gz)" 
+                   unit="m2/s2" />
+            <field id="vitu"
+                   long_name="Westward Zonal Wind"
+                   unit="m/s" />
+            <field id="vitv" 
+                   long_name="Northward Meridional Wind" 
+                   unit="m/s" />
+            <field id="vitw"
+                   long_name="Vertical wind" 
+                   unit="Pa/s" />
+            <field id="Kz"
+                   long_name="vertical diffusion coef" 
+                   unit="m2/s" />
+            <field id="mmean"
+                   long_name="Mean molecular mass" 
+                   unit="g/mol" />
+            <field id="rho"
+                   long_name="Atmospheric density" 
+                   unit="kg/m3" />
+            <field id="dudyn"
+                   long_name="Dynamics du" 
+                   unit="m/s2" />
+            <field id="duvdf"
+                   long_name="Boundary layer du" 
+                   unit="m/s2" />
+            <field id="dvvdf"
+                   long_name="Boundary layer dv" 
+                   unit="m/s2" />
+            <field id="duajs"
+                   long_name="Dry adj. du" 
+                   unit="m/s2" />
+            <field id="dugwo"
+                   long_name="GW oro du" 
+                   unit="m/s2" />
+            <field id="dugwno"
+                   long_name="GW non-oro du" 
+                   unit="m/s2" />
+            <field id="dumolvis"
+                   long_name="molec viscosity (u)" 
+                   unit="m/s2" />
+            <field id="dvmolvis"
+                   long_name="molec viscosity (v)" 
+                   unit="m/s2" />
+            <field id="dtdyn"
+                   long_name="Dynamics dT" 
+                   unit="K/s" />
+            <field id="dtphy"
+                   long_name="Physics dT" 
+                   unit="K/s" />
+            <field id="dtvdf"
+                   long_name="Boundary layer dT" 
+                   unit="K/s" />
+            <field id="dtajs"
+                   long_name="Dry adj. dT" 
+                   unit="K/s" />
+            <field id="dtswr"
+                   long_name="SW radiation dT" 
+                   unit="K/s" />
+            <field id="dtswrNLTE"
+                   long_name="SW radiation (NLTE) dT" 
+                   unit="K/s" />
+            <field id="dtswrLTE"
+                   long_name="SW radiation (LTE) dT" 
+                   unit="K/s" />
+            <field id="dtlwr"
+                   long_name="LW radiation dT" 
+                   unit="K/s" />
+            <field id="dtlwrNLTE"
+                   long_name="LW radiation (NLTE) dT" 
+                   unit="K/s" />
+            <field id="dtlwrLTE"
+                   long_name="LW radiation (LTE) dT" 
+                   unit="K/s" />
+            <field id="dteuv"
+                   long_name="EUV radiation dT" 
+                   unit="K/s" />
+            <field id="dtcond"
+                   long_name="Thermal conduction dT" 
+                   unit="K/s" />
+            <field id="dtec"
+                   long_name="Kinetic dissip dT" 
+                   unit="K/s" />
+            <field id="SWnet"
+                   long_name="Net SW flux" 
+                   unit="W/m2" />
+            <field id="LWnet"
+                   long_name="Net LW flux" 
+                   unit="W/m2" />
+            <field id="fluxvdf"
+                   long_name="PBL net flux" 
+                   unit="W/m2" />
+            <field id="fluxdyn"
+                   long_name="Dyn net flux" 
+                   unit="W/m2" />
+            <field id="fluxajs"
+                   long_name="Dry adj. net flux" 
+                   unit="W/m2" />
+            <field id="fluxec"
+                   long_name="Kinetic Energy net flux" 
+                   unit="W/m2" />
+            <field id="co2"
+                   long_name="CO2" 
+                   unit="mol/mol" />
+            <field id="co"
+                   long_name="CO" 
+                   unit="mol/mol" />
+            <field id="h2"
+                   long_name="H2" 
+                   unit="mol/mol" />
+            <field id="h2o"
+                   long_name="H2O" 
+                   unit="mol/mol" />
+            <field id="o1d"
+                   long_name="O(1D)" 
+                   unit="mol/mol" />
+            <field id="o"
+                   long_name="O" 
+                   unit="mol/mol" />
+            <field id="o2"
+                   long_name="O2" 
+                   unit="mol/mol" />
+            <field id="o2dg"
+                   long_name="O2(DG)" 
+                   unit="mol/mol" />
+            <field id="o3"
+                   long_name="O3" 
+                   unit="mol/mol" />
+            <field id="h"
+                   long_name="H" 
+                   unit="mol/mol" />
+            <field id="oh"
+                   long_name="OH" 
+                   unit="mol/mol" />
+            <field id="ho2"
+                   long_name="HO2" 
+                   unit="mol/mol" />
+            <field id="h2o2"
+                   long_name="H2O2" 
+                   unit="mol/mol" />
+            <field id="cl"
+                   long_name="Cl" 
+                   unit="mol/mol" />
+            <field id="clo"
+                   long_name="ClO" 
+                   unit="mol/mol" />
+            <field id="cl2"
+                   long_name="Cl2" 
+                   unit="mol/mol" />
+            <field id="hcl"
+                   long_name="HCl" 
+                   unit="mol/mol" />
+            <field id="hocl"
+                   long_name="HOCl" 
+                   unit="mol/mol" />
+            <field id="clco"
+                   long_name="ClCO" 
+                   unit="mol/mol" />
+            <field id="clco3"
+                   long_name="ClCO3" 
+                   unit="mol/mol" />
+            <field id="cocl2"
+                   long_name="COCl2" 
+                   unit="mol/mol" />
+            <field id="s"
+                   long_name="S" 
+                   unit="mol/mol" />
+            <field id="so"
+                   long_name="SO" 
+                   unit="mol/mol" />
+            <field id="so2"
+                   long_name="SO2" 
+                   unit="mol/mol" />
+            <field id="so3"
+                   long_name="SO3" 
+                   unit="mol/mol" />
+            <field id="s2o2"
+                   long_name="S2O2" 
+                   unit="mol/mol" />
+            <field id="ocs"
+                   long_name="OCS" 
+                   unit="mol/mol" />
+            <field id="hso3"
+                   long_name="HSO3" 
+                   unit="mol/mol" />
+            <field id="h2so4"
+                   long_name="H2SO4" 
+                   unit="mol/mol" />
+            <field id="s2"
+                   long_name="S2" 
+                   unit="mol/mol" />
+            <field id="clso2"
+                   long_name="ClSO2" 
+                   unit="mol/mol" />
+            <field id="oscl"
+                   long_name="OSCl" 
+                   unit="mol/mol" />
+            <field id="n2"
+                   long_name="N2" 
+                   unit="mol/mol" />
+            <field id="h2oliq"
+                   long_name="H2Oliq" 
+                   unit="mol/mol" />
+            <field id="h2so4liq"
+                   long_name="H2SO4liq" 
+                   unit="mol/mol" />
+            <field id="d_qmoldifCO2"
+                   long_name="Diff molec CO2" 
+                   unit="kg/kg" />
+            <field id="d_qmoldifO3p"
+                   long_name="Diff molec 0" 
+                   unit="kg/kg" />
+            <field id="d_qmoldifN2"
+                   long_name="Diff molec N2" 
+                   unit="kg/kg" />
+            <field id="BV2"
+		           long_name="Freq Brunt Väisälä"
+		           unit="Hz^2" />
+       </field_group>
+
+    </field_definition>
+    
+    <!-- Definition of output files
+   output_freq: ts is physics time steps, d is day
+   enabled=".true." to output a file
+      -->
+
+    <file_definition>
+        <!-- Instantaneous outputs; every physics time steps -->
+        <file id="ins"
+              name="Xins"
+              output_freq="1ts" 
+              type="one_file"
+              enabled=".false.">
+                    
+            <!-- VARS 0D
+            <field_group operation="instant"
+                         freq_op="1ts">
+                <field field_ref="ls" />
+            </field_group> -->
+
+            <!-- VARS 2D -->
+            <field_group operation="instant"
+                         freq_op="1ts">
+                <field field_ref="phis" operation="once" />
+                <field field_ref="aire" operation="once" />
+                <field field_ref="tops" />
+                <field field_ref="tsol" />
+                <field field_ref="psol" />
+            </field_group>
+
+            <!-- VARS 3D -->
+            <field_group operation="instant"
+                         freq_op="1ts">
+                <field field_ref="temp" />
+                <field field_ref="pres" />
+                <field field_ref="geop" />
+                <field field_ref="vitu" />
+                <field field_ref="vitv" />
+                <field field_ref="vitw" />
+            </field_group>
+        </file>
+
+        <!-- Instantaneous outputs; 2000/Vd (if day_step=240000) -->
+        <file id="ins-2kperVd"
+              name="Xins-2kperVd"
+              output_freq="24ts" 
+              type="one_file"
+              enabled=".false.">
+                    
+            <!-- VARS 2D -->
+            <field_group operation="instant"
+                         freq_op="1ts">
+                <field field_ref="phis" operation="once" />
+                <field field_ref="aire" operation="once" />
+                <field field_ref="tops" />
+                <field field_ref="tsol" />
+                <field field_ref="psol" />
+            </field_group>
+
+            <!-- VARS 3D -->
+            <field_group operation="instant"
+                         freq_op="1ts">
+                <field field_ref="temp" />
+                <field field_ref="pres" />
+                <field field_ref="geop" />
+                <field field_ref="vitu" />
+                <field field_ref="vitv" />
+                <field field_ref="vitw" />
+            </field_group>
+        </file>
+
+        <!-- averages outputs; every Vday -->
+        <file id="diurnalave"
+              name="Xdiurnalave"
+              output_freq="1d" 
+              type="one_file"
+              output_level="1"
+              enabled=".false.">
+                    
+            <!-- VARS 2D -->
+            <field_group operation="average"
+                         freq_op="1ts">
+                <field field_ref="phis" level="1" operation="once" />
+                <field field_ref="aire" level="1" operation="once" />
+                <field field_ref="tops" level="1" />
+                <field field_ref="tsol" level="1" />
+                <field field_ref="psol" level="1" />
+            </field_group>
+
+            <!-- VARS 3D -->
+            <field_group operation="average"
+                         freq_op="1ts">
+                <field field_ref="temp" level="1" />
+                <field field_ref="pres" level="1" />
+                <field field_ref="geop" level="1" />
+                <field field_ref="vitu" level="1" />
+                <field field_ref="vitv" level="1" />
+                <field field_ref="vitw" level="2" />
+                <field field_ref="rho"  level="3" />
+            </field_group>
+        </file>
+
+        <!-- averages outputs; 1000/Vd (if day_step=240000) -->
+        <file id="ave-1kperVd"
+              name="Xave-1kperVd"
+              output_freq="48ts" 
+              type="one_file"
+              output_level="1"
+              enabled=".false.">
+                    
+            <!-- VARS 2D -->
+            <field_group operation="average"
+                         freq_op="1ts">
+                <field field_ref="phis" level="1" operation="once" />
+                <field field_ref="aire" level="1" operation="once" />
+                <field field_ref="tops" level="1" />
+                <field field_ref="tsol" level="1" />
+                <field field_ref="psol" level="1" />
+            </field_group>
+
+            <!-- VARS 3D -->
+            <field_group operation="average"
+                         freq_op="1ts">
+                <field field_ref="temp" level="1" />
+                <field field_ref="pres" level="1" />
+                <field field_ref="geop" level="1" />
+                <field field_ref="vitu" level="1" />
+                <field field_ref="vitv" level="1" />
+                <field field_ref="vitw" level="2" />
+                <field field_ref="rho"  level="3" />
+            </field_group>
+        </file>
+
+        <!-- averages outputs; 100/Vd (if day_step=240000) -->
+        <file id="ave-100perVd"
+              name="Xave-100perVd"
+              output_freq="480ts" 
+              type="one_file"
+              output_level="1"
+              enabled=".false.">
+                    
+            <!-- VARS 2D -->
+            <field_group operation="average"
+                         freq_op="1ts">
+                <field field_ref="phis" level="1" operation="once" />
+                <field field_ref="aire" level="1" operation="once" />
+                <field field_ref="tops" level="1" />
+                <field field_ref="tsol" level="1" />
+                <field field_ref="psol" level="1" />
+            </field_group>
+
+            <!-- VARS 3D -->
+            <field_group operation="average"
+                         freq_op="1ts">
+                <field field_ref="temp"  level="1" />
+                <field field_ref="pres"  level="1" />
+                <field field_ref="geop"  level="1" />
+                <field field_ref="vitu"  level="1" />
+                <field field_ref="vitv"  level="1" />
+                <field field_ref="BV2"   level="2" />
+                <field field_ref="vitw"  level="2" />
+                <field field_ref="dudyn" level="2" />
+                <field field_ref="duvdf" level="2" />
+                <field field_ref="duajs" level="2" />
+                <field field_ref="dtdyn" level="2" />
+                <field field_ref="dtvdf" level="2" />
+                <field field_ref="dtajs" level="2" />
+                <field field_ref="dtswr" level="2" />
+                <field field_ref="dtlwr" level="2" />
+                <field field_ref="rho"   level="3" />
+                <field field_ref="mmean" level="3" />
+            </field_group>
+        </file>
+
+        <!-- averages outputs; 24/Vd (if day_step=240000) -->
+        <file id="ave-24perVd"
+              name="Xave-24perVd"
+              output_freq="2000ts" 
+              type="one_file"
+              output_level="2"
+              enabled=".true.">
+                    
+            <!-- VARS 2D -->
+            <field_group operation="average"
+                         freq_op="1ts">
+                <field field_ref="phis" level="1" operation="once" />
+                <field field_ref="aire" level="1" operation="once" />
+                <field field_ref="tops" level="1" />
+                <field field_ref="tsol" level="1" />
+                <field field_ref="psol" level="1" />
+            </field_group>
+
+            <!-- VARS 3D -->
+            <field_group operation="average"
+                         freq_op="1ts">
+                <field field_ref="temp"  level="1" />
+                <field field_ref="pres"  level="1" />
+                <field field_ref="geop"  level="1" />
+                <field field_ref="vitu"  level="1" />
+                <field field_ref="vitv"  level="1" />
+                <field field_ref="BV2"   level="1" />
+                <field field_ref="vitw"  level="2" />
+                <field field_ref="dudyn" level="2" />
+                <field field_ref="duvdf" level="2" />
+                <field field_ref="duajs" level="2" />
+                <field field_ref="dtdyn" level="2" />
+                <field field_ref="dtvdf" level="2" />
+                <field field_ref="dtajs" level="2" />
+                <field field_ref="dtswr" level="2" />
+                <field field_ref="dtlwr" level="2" />
+                <field field_ref="rho"   level="3" />
+                <field field_ref="mmean" level="3" />
+                <field field_ref="LWnet" level="4" />
+                <field field_ref="SWnet" level="4" />
+                <field field_ref="fluxvdf" level="4" />
+                <field field_ref="fluxajs" level="4" />
+                <field field_ref="Kz"    level="4" />
+            </field_group>
+        </file>
+
+    </file_definition>
+
+</context>

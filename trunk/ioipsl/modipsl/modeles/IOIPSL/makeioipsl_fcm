@@ -1,0 +1,148 @@
+#!/bin/bash
+export ROOT=$PWD
+export PATH=$ROOT/tools/FCM_V1.2/bin:${PATH}
+
+compil_mode="prod"
+
+job=1
+full_defined="FALSE"
+arch_defined="FALSE"
+arch_path="arch"
+arch_default_path="arch"
+arch_path_defined="FALSE"
+CPP_KEY="CPP_NONE" 
+
+while (($# > 0)) ; do
+  case $1 in
+      "-h") cat <<end_help
+########################################################################
+# Usage of the script makeioipsl_fcm
+#
+# makeioipsl_fcm compiles IOIPSL using the Fcm software developed
+# by the Hadley Centre. Fcm is stored in tools directory. 
+# Platform specific compile options are found in the arch directory. 
+########################################################################
+
+Usage:
+
+./makeioipsl_fcm -arch XXX [Options] 
+
+
+Mandatory argument:
+
+-arch XXX  : name of the archicture file containg platform dependent compile options. 
+             The files arch/arch-XXX.fcm and arch/arch-XXX.path must exist. If the 
+             file arch/arch-XXX.env exist, it'll be sourced before compilation starts.
+
+Main options:
+[-h]             : show this help
+[ -full ]        : activate full recompiling 
+[ -arch_path XXX ] : directory of the archicture file containg platform dependent compile options. 
+                     Default is ./arch directory. If the files are not found in the folder given by arch_path, 
+                     the default ./arch folder will be used. 
+
+Options for optimization, choose only one of the following
+[ -prod ]        : compilation for production (all optimization)
+[ -dev ]         : compilation for development (low optimization and -g)
+[ -debug ]       : compilation for debugging (no optmization and all debug options)
+
+[ -job x ]       : activate parallel compiling on x task, default is 1 task
+
+
+end_help
+	  exit;;
+      "-prod") 	      compil_mode="prod" ; shift ;;
+      "-dev") 	      compil_mode="dev" ; shift ;;
+      "-debug")       compil_mode="debug" ; shift ;;
+      "-arch") 	      arch=$2 ; arch_defined="TRUE"; shift ; shift ;;
+      "-arch_path")   arch_path=$2 ; arch_path_defined="TRUE"; shift ; shift ;;
+      "-job") 	      job=$2 ; shift ; shift;;
+      "-full") 	      full_defined="TRUE" ; shift ;;
+      *)
+	  code="$1" ; shift ;;
+  esac
+done
+
+# Create module defprec.90 using def.prec
+# Double precision is used (default mode)
+./ins_m_prec
+
+# Define arch files
+rm -f .void_file
+echo > .void_file
+rm -rf .void_dir
+mkdir .void_dir
+
+if [[ "$arch_defined" == "TRUE" ]] ; then
+  rm -f arch.path
+  rm -f arch.fcm
+  rm -f arch.env
+
+  if [ -f $arch_path/arch-${arch}.path ] ;   then
+    ln -s $arch_path/arch-${arch}.path arch.path
+  elif [ -f $arch_default_path/arch-${arch}.path ] ;  then
+    ln -s $arch_default_path/arch-${arch}.path arch.path
+  else
+    echo No arch.path is found. Exit now.
+    exit 1
+  fi
+        
+  if [ -f $arch_path/arch-${arch}.fcm ] ; then
+    ln -s $arch_path/arch-${arch}.fcm arch.fcm
+  elif [ -f $arch_default_path/arch-${arch}.fcm ] ; then
+    ln -s $arch_default_path/arch-${arch}.fcm arch.fcm
+  fi
+
+  if [ -f $arch_path/arch-${arch}.env ] ; then
+    ln -s $arch_path/arch-${arch}.env arch.env
+  elif [ -f $arch_default_path/arch-${arch}.env ] ; then
+    ln -s $arch_default_path/arch-${arch}.env arch.env
+  else
+    ln -s .void_file arch.env
+  fi
+  source arch.env
+  source arch.path
+else
+  echo "You must define the architecture files using makeioipsl_fcm -arch XXX"
+  echo "Show help using: ./makeioipsl_fcm -h"
+  exit 1
+fi
+LD_FLAGS="%BASE_LD"
+
+if [[ "$compil_mode" == "prod" ]] ; then
+  COMPIL_FFLAGS="%PROD_FFLAGS"
+elif [[ "$compil_mode" == "dev" ]] ; then
+  COMPIL_FFLAGS="%DEV_FFLAGS"
+elif [[ "$compil_mode" == "debug" ]] ; then
+  COMPIL_FFLAGS="%DEBUG_FFLAGS"
+fi
+
+
+IOIPSL_LIB="$NETCDF_LIBDIR $NETCDF_LIB $HDF5_LIBDIR $HDF5_LIB"
+
+rm -f config.fcm
+
+echo "%COMPIL_FFLAGS $COMPIL_FFLAGS $NETCDF_INCDIR" >> config.fcm
+echo "%LD_FLAGS $LD_FLAGS" >> config.fcm
+echo "%CPP_KEY $CPP_KEY" >> config.fcm
+echo "%LIB $IOIPSL_LIB">> config.fcm
+
+if [[ "$full_defined" == "TRUE" ]] ; then
+  ./build.sh --job $job --full
+else
+  ./build.sh --job $job
+fi
+err=$?
+
+# Check error message from fcm build
+if [ $err != 0 ] ; then
+  # Error found
+  echo makeioipsl_fcm: Error in compiling IOIPSL : $err  
+  exit 1
+fi
+
+## Link folders created during compilation to the base directory
+rm -rf bin lib inc
+ln -s build/lib lib
+ln -s build/inc inc
+mkdir bin ; ln -s ../build/bin/rebuild bin/rebuild ; ln -s ../build/bin/flio_rbld.exe bin/flio_rbld

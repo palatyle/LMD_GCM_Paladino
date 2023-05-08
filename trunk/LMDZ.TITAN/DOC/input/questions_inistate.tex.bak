@@ -1,0 +1,55 @@
+{\footnotesize
+\begin{verbatim}
+ First set of questions:
+ Change values in tab_cntrl ? :
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ (Current values given above)
+
+ (3)          day_ini : Initial day (=0 at Ls=0)
+ (19)              z0 :  surface roughness (m)
+ (21)       emin_turb :  minimal energy (PBL)
+ (20)         lmixmin : mixing length (PBL)
+ (26)         emissiv : ground emissivity
+ (24 et 25)   emisice : CO2 ice max emissivity
+ (22 et 23)  albedice : CO2 ice cap albedos
+ (31 et 32) iceradius : mean scat radius of CO2 snow
+ (33 et 34) dtemisice : time scale for snow metamorphism
+ (27)        tauvis : mean dust vis. reference opacity
+ (35)      volcapa : soil volumetric heat capacity
+ (18)     obliquit : planet obliquity (deg)
+ (17)     peri_day : periastron date (sols since Ls=0)
+ (15)     periastr : min. star-planet dist (Mkm)
+ (16)     apoastr  : max. star-planet (Mkm)
+ (14)     year_day : length of year (in sols)
+ (5) rad : radius of the planet (m)
+ (6) omeg : planet rotation rate (rad/s)
+ (7) g : gravity (m/s2)
+ (8) mugaz : molecular mass of the atmosphere (g/mol)
+ (9) rcp : r/Cp
+ (10) daysec : length of a sol (s)
+
+ Second set of questions :
+ flat : no topography ("aquaplanet")
+ bilball : uniform albedo and thermal inertia
+ coldspole : cold subsurface and high albedo at S.pole
+ qname : change tracer name
+ q=0 : ALL tracer =zero
+ q=x : give a specific uniform value to one tracer
+ ini_q : tracers initialisation for chemistry, water and ice
+ ini_q-H2O : tracers initialisation for chemistry and ice
+ ini_q-iceH2O : tracers initialisation for chemistry only
+ noglacier : Remove tropical H2O ice if |lat|<45
+ watercapn : H20 ice on permanent N polar cap
+ watercaps : H20 ice on permanent S polar cap
+ oborealis : H2O ice across Vastitas Borealis
+ iceball   : Thick ice layer all over surface
+ wetstart  : start with a wet atmosphere
+ isotherm  : Isothermal Temperatures, wind set to zero
+ radequi   : Earth-like radiative equilibrium temperatu profile (lat-alt) and winds set to zero
+ coldstart : Start X K above the CO2 frost point and set wind to zero (assumes 100% CO2)
+ co2ice=0 : remove CO2 polar cap
+ ptot : change total pressure
+ emis : change surface emissivity
+ therm_ini_s : Set soil thermal inertia to reference suface values
+\end{verbatim}
+}

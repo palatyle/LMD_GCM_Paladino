@@ -1,0 +1,46 @@
+#######################################################################
+####################################################################### nom
+# @ job_name		=	PREP_LES
+####################################################################### real ou ideal ???
+# @ environment         =       real=0 ; tmpdir=$(job_name).$(jobid)
+####################################################################### MPICH / serial 
+# @ job_type            =       serial
+####################################################################### A / B / C / AP / BP / CP
+# @ class               =       A		
+####################################################################### 16gb OK jusque 281 (non teste plus loin)
+# @ resources 		= 	ConsumableCpus(1)ConsumableMemory(64gb)  
+#######################################################################
+
+
+#######################################################################
+#######################################################################
+# @ output 		= 	$(job_name).$(jobid)/LOG
+# @ error 		= 	$(output)
+# @ notification 	= 	never
+# @ queue
+grep "^# @" $0
+set -vx
+#######################################################################
+mkdir $LOADL_STEP_INITDIR/${tmpdir}
+cd $LOADL_STEP_INITDIR
+\rm zeLAST
+ln -sf ${tmpdir} zeLAST
+cd zeLAST 
+#######################################################################
+cp	$LOADL_STEP_INITDIR/*.def	.
+cp	$LOADL_STEP_INITDIR/*.exe	.
+cp	$LOADL_STEP_INITDIR/namelist*	.
+cp	$LOADL_STEP_INITDIR/wrfi*	.	### executer sur la frontale
+						### au prealable !!!
+#######################################################################
+if [[ "${real}" == "0" ]]
+then
+  cp	$LOADL_STEP_INITDIR/input_* 	.
+  cp	$LOADL_STEP_INITDIR/ze_hill	.       ## topo
+  cp	$LOADL_STEP_INITDIR/levels	.	## custom vert levels
+else
+  ln -sf $LOADL_STEP_INITDIR/wrfb* .
+fi
+#######################################################################
+ideal.exe    ### marche pas en parallele, pb avec execution ensuite
+#######################################################################

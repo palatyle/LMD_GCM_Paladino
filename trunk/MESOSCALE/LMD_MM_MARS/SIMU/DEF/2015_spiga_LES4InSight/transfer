@@ -1,0 +1,1 @@
+find wrfout_d01_9999-01-01_* -exec mfput -v {} \;

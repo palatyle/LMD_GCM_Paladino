@@ -1,0 +1,55 @@
+\chapter{Water Cycle Simulation}
+
+\label{sc:water}
+
+In order to simulate the water cycle with the LMD GCM:
+
+\begin{itemize}
+\item In {\tt callphys.def}, set tracer to true: {\tt tracer=.true.}.
+
+\item It is best to run with a semi-interactive dust (in order to
+better represent the evolution available condensation nuclei) and thus set
+{\tt dustbin = 2}, and use corresponding additional tracers ({\tt dust\_mass}
+and {\tt dust\_number} which correspond to the first two moments of the dust
+distribution).
+
+\item Use the same options as given in the sample {\tt callphys.def.watercycle}
+file provided in {\tt LMDZ.MARS/deftank}.
+
+\item {\bf Settings}
+You need to run with at least 4 tracers (if you don't have dust
+({\tt dustbin=0}) or other chemical species ({\tt photochem=F}),
+but 7 is recommended, and an appropriate {\tt traceur.def} for running with
+combined CO22, dust and water cycle should be:
+\begin{verbatim}
+7
+co2
+dust_mass
+dust_number
+h2o_vap
+h2o_ice
+ccn_mass
+ccn_number
+\end{verbatim}
+Note that the order in which tracers are set in the {\tt tracer.def} file
+is not important.
+
+\item {\bf Run} \\ \\
+Same as usual. Just make sure that your start files contains
+the initial states for all the tracers you use (or else compile
+and run {\bf newstart.e} to initialize them).
+
+\end {itemize}
+
+
+
+
+
+
+
+
+
+ 
+
+
+

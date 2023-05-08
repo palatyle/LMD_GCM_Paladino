@@ -1,0 +1,50 @@
+ &time_control
+ start_year       = 2024,    
+ start_month      = 07,      
+ start_day        = 01,    
+ start_hour       = 06,      
+ end_year         = 2024,    
+ end_month        = 07,     
+ end_day          = 02,     
+ end_hour         = 06,     
+ history_interval    = 37,   
+ frames_per_outfile  = 24,  
+ restart          = .false. 
+ restart_interval = 8880     
+ io_form_history  = 2      
+ io_form_restart  = 2          
+ io_form_input    = 2      
+ io_form_boundary = 2       
+ debug_level      = 0       
+ /
+
+ &domains
+ time_step   = 30          
+ dx = 20000,               
+ dy = 20000,               
+ e_we   = 61,              
+ e_sn   = 61,             
+ e_vert = 61,             
+ p_top_requested = 5      
+ num_metgrid_levels = 33
+ /
+
+ &physics
+ /
+
+ &dynamics
+ /
+
+ &bdy_control
+ /
+
+ &grib2
+ /
+
+ &fdda
+ /
+
+ &namelist_quilt              
+ nio_tasks_per_group = 0,     
+ nio_groups = 1,              
+ /                            

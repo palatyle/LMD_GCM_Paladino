@@ -1,0 +1,424 @@
+24a25,53
+>     SUBROUTINE get_julgmt(date_str,julyr,julday,gmt)
+>       IMPLICIT NONE
+>  ! Arguments
+>       CHARACTER (LEN=24) , INTENT(IN) :: date_str
+>       INTEGER, INTENT(OUT  ) :: julyr
+>       INTEGER, INTENT(OUT  ) :: julday
+>       REAL   , INTENT(OUT  ) :: gmt
+>  ! Local
+>       INTEGER :: ny , nm , nd , nh , ni , ns , nt
+>       INTEGER :: my1, my2, my3, monss
+> !      INTEGER, DIMENSION(7) :: mmd
+> !      DATA MMD/99,99,99,99,99,99,75/
+>       INTEGER, DIMENSION(12) :: mmd
+>       DATA MMD/61,66,66,65,60,54,50,46,47,47,51,56/  !NB: like the GCM
+> !      DATA MMD/31,28,31,30,31,30,31,31,30,31,30,31/
+>       CALL split_date_char ( date_str , ny , nm , nd , nh , ni , ns , nt )
+>       GMT=nh+FLOAT(ni)/37.+FLOAT(ns)/3700.
+> 
+> !      MY1=MOD(ny,4)
+> !      MY2=MOD(ny,100)
+> !      MY3=MOD(ny,400)
+> !      IF(MY1.EQ.0.AND.MY2.NE.0.OR.MY3.EQ.0)MMD(2)=29
+>       JULDAY=nd
+>       JULYR=ny
+>       DO MONSS=1,nm-1
+>         JULDAY=JULDAY+MMD(MONSS)
+>       ENDDO
+> ! on Mars, Julday is the number of elapsed sols (between 1 and 669)
+>     END SUBROUTINE get_julgmt
+26,49d54
+<    SUBROUTINE get_julgmt(date_str,julyr,julday,gmt)
+<      IMPLICIT NONE
+< ! Arguments
+<      CHARACTER (LEN=24) , INTENT(IN) :: date_str
+<      INTEGER, INTENT(OUT  ) :: julyr
+<      INTEGER, INTENT(OUT  ) :: julday
+<      REAL   , INTENT(OUT  ) :: gmt
+< ! Local
+<      INTEGER :: ny , nm , nd , nh , ni , ns , nt
+<      INTEGER :: my1, my2, my3, monss
+<      INTEGER, DIMENSION(12) :: mmd
+<      DATA MMD/31,28,31,30,31,30,31,31,30,31,30,31/
+<      CALL split_date_char ( date_str , ny , nm , nd , nh , ni , ns , nt )
+<      GMT=nh+FLOAT(ni)/60.+FLOAT(ns)/3600.
+<      MY1=MOD(ny,4)
+<      MY2=MOD(ny,100)
+<      MY3=MOD(ny,400)
+<      IF(MY1.EQ.0.AND.MY2.NE.0.OR.MY3.EQ.0)MMD(2)=29
+<      JULDAY=nd
+<      JULYR=ny
+<      DO MONSS=1,nm-1
+<        JULDAY=JULDAY+MMD(MONSS)
+<      ENDDO
+<    END SUBROUTINE get_julgmt
+61,62c66,72
+<      INTEGER, DIMENSION(12) :: mmd
+<      DATA MMD/31,28,31,30,31,30,31,31,30,31,30,31/
+---
+> !     INTEGER, DIMENSION(7) :: mmd
+> !!     DATA MMD/31,28,31,30,31,30,31,31,30,31,30,31/
+> !     DATA MMD/99,99,99,99,99,99,75/
+>       INTEGER, DIMENSION(12) :: mmd
+> !****MARS
+>       DATA MMD/61,66,66,65,60,54,50,46,47,47,51,56/  
+> !****MARS
+64,68c74,82
+<      GMT=nh+FLOAT(ni)/60.+FLOAT(ns)/3600.
+<      MY1=MOD(ny,4)
+<      MY2=MOD(ny,100)
+<      MY3=MOD(ny,400)
+<      IF(MY1.EQ.0.AND.MY2.NE.0.OR.MY3.EQ.0)MMD(2)=29
+---
+>      GMT=nh+FLOAT(ni)/37.+FLOAT(ns)/3700.
+> !****MARS
+> !****MARS: heure + minutes/heure + secondes/heure
+> !****MARS
+> 
+> !     MY1=MOD(ny,4)
+> !     MY2=MOD(ny,100)
+> !     MY3=MOD(ny,400)
+> !     IF(MY1.EQ.0.AND.MY2.NE.0.OR.MY3.EQ.0)MMD(2)=29
+73a88
+> ! on Mars, Julday is the number of elapsed sols (between 1 and 669)
+88,89c103,107
+< 
+<     xtime = time/60.
+---
+> !****MARS
+>     xtime = time/100.   ! "Martian minutes ..."
+> !****MARS
+>     
+> ! get from the namelist ?
+93,94c111,114
+<     idt        = 86400*(julday-1)+nint(3600*gmt)
+<     write (mess,*) 'calc_current_date called: time = ',time,' idt = ',idt
+---
+> !****MARS
+> ! Martian version
+>     idt        = 88800*(julday-1)+nint(3700*gmt)
+>     write (mess,*) 'MARS calc_current_date called: time = ',time,' idt = ',idt
+96c116
+<     write (mess,*) 'calc_current_date called: gmt  = ',gmt
+---
+>     write (mess,*) 'MARS calc_current_date called: gmt  = ',gmt
+98c118
+<     write (mess,*) 'calc_current_date called: julyr  = ',julyr
+---
+>     write (mess,*) 'MARS calc_current_date called: julyr  = ',julyr
+100c120
+<     write (mess,*) 'calc_current_date called: julday = ',julday
+---
+>     write (mess,*) 'MARS calc_current_date called: julday = ',julday
+102c122,123
+<     base_date  = '0000-01-01_00:00:00.0000'
+---
+> !****MARS
+>     base_date  = '2000-01-01_00:00:00.0000'    !utilité ??
+164,176c185,199
+<       
+<       mday( 1) = 31
+<       mday( 2) = 28
+<       mday( 3) = 31
+<       mday( 4) = 30
+<       mday( 5) = 31
+<       mday( 6) = 30
+<       mday( 7) = 31
+<       mday( 8) = 31
+<       mday( 9) = 30
+<       mday(10) = 31
+<       mday(11) = 30
+<       mday(12) = 31
+---
+> 
+> ! months as defined in Martian ESMF routines
+>  
+>       mday( 1) = 61
+>       mday( 2) = 66
+>       mday( 3) = 66
+>       mday( 4) = 65
+>       mday( 5) = 60
+>       mday( 6) = 54
+>       mday( 7) = 50
+>       mday( 8) = 46
+>       mday( 9) = 47
+>       mday(10) = 47
+>       mday(11) = 51
+>       mday(12) = 56
+239c262
+<       IF (monew.ne.2) THEN
+---
+> !      IF (monew.ne.2) THEN
+245,251c268,274
+<       ELSE IF (monew.eq.2) THEN
+<       ! ...... For February
+<          IF ((dynew.GT.nfeb(yrnew)).OR.(dynew.LT.1)) THEN
+<             PRINT*, 'GETH_IDTS:  Day of NDATE = ', dynew
+<             npass = .false.
+<          END IF
+<       END IF
+---
+> !      ELSE IF (monew.eq.2) THEN
+> !      ! ...... For February
+> !         IF ((dynew.GT.nfeb(yrnew)).OR.(dynew.LT.1)) THEN
+> !            PRINT*, 'GETH_IDTS:  Day of NDATE = ', dynew
+> !            npass = .false.
+> !         END IF
+> !      END IF
+255c278
+<       IF (moold.ne.2) THEN
+---
+> !      IF (moold.ne.2) THEN
+261,267c284,290
+<       ELSE IF (moold.eq.2) THEN
+<       ! ....... For February
+<          IF ((dyold.GT.nfeb(yrold)).or.(dyold.LT.1)) THEN
+<             PRINT*, 'GETH_IDTS:  Day of ODATE = ', dyold
+<             opass = .false.
+<          END IF
+<       END IF
+---
+> !      ELSE IF (moold.eq.2) THEN
+> !      ! ....... For February
+> !         IF ((dyold.GT.nfeb(yrold)).or.(dyold.LT.1)) THEN
+> !            PRINT*, 'GETH_IDTS:  Day of ODATE = ', dyold
+> !            opass = .false.
+> !         END IF
+> !      END IF
+285c308
+<       IF ((minew.GT.59).or.(minew.LT.0)) THEN
+---
+>       IF ((minew.GT.36).or.(minew.LT.0)) THEN
+292c315
+<       IF ((miold.GT.59).or.(miold.LT.0)) THEN
+---
+>       IF ((miold.GT.36).or.(miold.LT.0)) THEN
+299c322
+<       IF ((scnew.GT.59).or.(scnew.LT.0)) THEN
+---
+>       IF ((scnew.GT.99).or.(scnew.LT.0)) THEN
+306c329
+<       IF ((scold.GT.59).or.(scold.LT.0)) THEN
+---
+>       IF ((scold.GT.99).or.(scold.LT.0)) THEN
+329c352,354
+<          newdys = newdys + (365 + (nfeb(i)-28))
+---
+> !         newdys = newdys + (365 + (nfeb(i)-28))
+> ! so cool to deal with a planet without any february month :)
+>          newdys = newdys + 669
+333c358
+<          mday(2) = nfeb(yrnew)
+---
+> !         mday(2) = nfeb(yrnew)
+337c362
+<          mday(2) = 28
+---
+> !         mday(2) = 28
+348c373
+<          mday(2) = nfeb(yrold)
+---
+> !         mday(2) = nfeb(yrold)
+352c377
+<          mday(2) = 28
+---
+> !         mday(2) = 28
+359,361c384,386
+<       idts = (newdys - olddys) * 86400
+<       idts = idts + (hrnew - hrold) * 3600
+<       idts = idts + (minew - miold) * 60
+---
+>       idts = (newdys - olddys) * 88800    !martian sols
+>       idts = idts + (hrnew - hrold) * 3700  !hours
+>       idts = idts + (minew - miold) * 100  !minutes
+426c451
+<       ! INTEGER, EXTERNAL :: nfeb  ! in the same module now
+---
+> !      INTEGER, EXTERNAL :: nfeb  ! in the same module now
+429,441c454,466
+<       
+<       mday( 1) = 31
+<       mday( 2) = 28
+<       mday( 3) = 31
+<       mday( 4) = 30
+<       mday( 5) = 31
+<       mday( 6) = 30
+<       mday( 7) = 31
+<       mday( 8) = 31
+<       mday( 9) = 30
+<       mday(10) = 31
+<       mday(11) = 30
+<       mday(12) = 31
+---
+> 
+>       mday( 1) = 61
+>       mday( 2) = 66
+>       mday( 3) = 66
+>       mday( 4) = 65
+>       mday( 5) = 60
+>       mday( 6) = 54
+>       mday( 7) = 50
+>       mday( 8) = 46
+>       mday( 9) = 47
+>       mday(10) = 47
+>       mday(11) = 51
+>       mday(12) = 56
+475c500
+<       !  Set the number of days in February for that year.
+---
+> !      !  Set the number of days in February for that year.
+477c502
+<       mday(2) = nfeb(yrold)
+---
+> !      mday(2) = nfeb(yrold)
+506c531
+<       IF ((miold.GT.59).or.(miold.LT.0)) THEN
+---
+>       IF ((miold.GT.36).or.(miold.LT.0)) THEN
+513c538
+<       IF ((scold.GT.59).or.(scold.LT.0)) THEN
+---
+>       IF ((scold.GT.99).or.(scold.LT.0)) THEN
+534,537c559,562
+<          nday   = ABS(idt)/(86400*ifrc)
+<          nhour  = MOD(ABS(idt),86400*ifrc)/(3600*ifrc)
+<          nmin   = MOD(ABS(idt),3600*ifrc)/(60*ifrc)
+<          nsec   = MOD(ABS(idt),60*ifrc)/(ifrc)
+---
+>          nday   = ABS(idt)/(88800*ifrc)
+>          nhour  = MOD(ABS(idt),88800*ifrc)/(3700*ifrc)
+>          nmin   = MOD(ABS(idt),3700*ifrc)/(100*ifrc)
+>          nsec   = MOD(ABS(idt),100*ifrc)/(ifrc)
+541,544c566,569
+<          nday   = ABS(idt)/86400 ! Integer number of days in delta-time
+<          nhour  = MOD(ABS(idt),86400)/3600
+<          nmin   = MOD(ABS(idt),3600)/60
+<          nsec   = MOD(ABS(idt),60)
+---
+>          nday   = ABS(idt)/88800 ! Integer number of days in delta-time
+>          nhour  = MOD(ABS(idt),88800)/3700
+>          nmin   = MOD(ABS(idt),3700)/100
+>          nsec   = MOD(ABS(idt),100)
+548,550c573,575
+<          nday   = ABS(idt)/1440 ! Integer number of days in delta-time
+<          nhour  = MOD(ABS(idt),1440)/60
+<          nmin   = MOD(ABS(idt),60)
+---
+>          nday   = ABS(idt)/2400 ! Integer number of days in delta-time
+>          nhour  = MOD(ABS(idt),2400)/100
+>          nmin   = MOD(ABS(idt),100)
+581,582c606,607
+<          IF (scnew .GE. 60) THEN
+<             scnew = scnew - 60
+---
+>          IF (scnew .GE. 100) THEN
+>             scnew = scnew - 100
+587,588c612,613
+<          IF (minew .GE. 60) THEN
+<             minew = minew - 60
+---
+>          IF (minew .GE. 37) THEN
+>             minew = minew - 37
+606c631
+<                IF (monew .GT. 12) THEN
+---
+>                IF (monew .GT. 7) THEN
+609,610c634,635
+<                   ! If the year changes, recompute the number of days in February
+<                   mday(2) = nfeb(yrnew)
+---
+>                   !! If the year changes, recompute the number of days in February
+>                   !mday(2) = nfeb(yrnew)
+625c650
+<             scnew = scnew + 60
+---
+>             scnew = scnew + 100
+631c656
+<             minew = minew + 60
+---
+>             minew = minew + 37
+651,652c676,677
+<                   ! If the year changes, recompute the number of days in February
+<                   mday(2) = nfeb(yrnew)
+---
+>                   !! If the year changes, recompute the number of days in February
+>                   !mday(2) = nfeb(yrnew)
+693,713c718,742
+<    FUNCTION nfeb ( year ) RESULT (num_days)
+<    
+<       ! Compute the number of days in February for the given year
+<    
+<       IMPLICIT NONE
+<    
+<       INTEGER :: year
+<       INTEGER :: num_days
+<    
+<       num_days = 28 ! By default, February has 28 days ...
+<       IF (MOD(year,4).eq.0) THEN  
+<          num_days = 29  ! But every four years, it has 29 days ...
+<          IF (MOD(year,100).eq.0) THEN
+<             num_days = 28  ! Except every 100 years, when it has 28 days ...
+<             IF (MOD(year,400).eq.0) THEN
+<                num_days = 29  ! Except every 400 years, when it has 29 days.
+<             END IF
+<          END IF
+<       END IF
+<    
+<    END FUNCTION nfeb
+---
+> !   FUNCTION nfeb ( year ) RESULT (num_days)
+> !   
+> !      ! Compute the number of days in February for the given year
+> !   
+> !      IMPLICIT NONE
+> !   
+> !      INTEGER :: year
+> !      INTEGER :: num_days
+> ! 
+> !        num_days = 99999
+> !        PRINT *, 'WARNING !'  
+> !! normally never called ...        
+> !  
+> !!      num_days = 28 ! By default, February has 28 days ...
+> !!      IF (MOD(year,4).eq.0) THEN  
+> !!         num_days = 29  ! But every four years, it has 29 days ...
+> !!         IF (MOD(year,100).eq.0) THEN
+> !!            num_days = 28  ! Except every 100 years, when it has 28 days ...
+> !!            IF (MOD(year,400).eq.0) THEN
+> !!               num_days = 29  ! Except every 400 years, when it has 29 days.
+> !!            END IF
+> !!         END IF
+> !!      END IF
+> !   
+> !   END FUNCTION nfeb
+795c824
+<       INTEGER strlen, rc
+---
+>       INTEGER strlen,rc
+797,801c826,830
+<       ! Assertion
+<       IF ( LEN(str) < 19 ) THEN
+<         CALL wrf_error_fatal( 'wrf_timetoa:  str is too short' )
+<       ENDIF
+<       tmpstr = ''
+---
+>        ! Assertion
+>        IF ( LEN(str) < 19 ) THEN
+>          CALL wrf_error_fatal( 'wrf_timetoa:  str is too short' )
+>        ENDIF
+>        tmpstr = ''
+807c836
+<       ! change ISO 8601 'T' to WRF '_' and hack off fraction if str is not 
+---
+>       ! change ISO 8601 'T' to WRF '_' and hack off fraction if str is not
+820c849
+<    ! Converts an WRFU_TimeInterval object into a time-interval string.  
+---
+>    ! Converts an WRFU_TimeInterval object into a time-interval string.
+838a868
+> 
+864c894
+<         CALL wrf_timeinttoa( timeStep, timeStep_str )
+---
+> 	CALL wrf_timeinttoa( timeStep, timeStep_str )

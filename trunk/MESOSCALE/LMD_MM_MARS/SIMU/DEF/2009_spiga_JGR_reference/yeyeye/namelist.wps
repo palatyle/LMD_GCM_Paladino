@@ -1,0 +1,35 @@
+&share
+ wrf_core = 'ARW',
+ max_dom = 3,
+ start_date = '2024-01-49_06:00:00', '2024-01-49_06:00:00', '2024-01-49_06:00:00'
+ end_date   = '2024-01-54_06:00:00', '2024-01-49_06:00:00', '2024-01-49_06:00:00'
+ interval_seconds = 3700
+ io_form_geogrid = 2,
+ debug_level = 0,
+ opt_output_from_geogrid_path='./'
+/
+
+&geogrid
+ parent_id         =        0,           1,          2  
+ parent_grid_ratio =        1,           4,          4
+ i_parent_start    =        0,          57,         57 
+ j_parent_start    =        0,          57,         57
+ e_we              =      153,         157,        157      !!! ATTENTION
+ e_sn              =      153,         157,        157      !!! ATTENTION
+ geog_data_res     =  '64ppd',     '64ppd',    '64ppd'      
+ dx = 36000
+ dy = 36000
+ map_proj = 'mercator',
+ ref_lat   =  11.5,
+ ref_lon   =  15.5,
+ truelat1  =  0.0,
+ truelat2  =  0.0,
+ stand_lon =  00.00,
+ geog_data_path = './WPS_GEOG',
+/
+
+&metgrid
+ fg_name = './WPSFEED/LMD'
+ io_form_metgrid = 2,
+ opt_output_from_metgrid_path='./WRFFEED/current'
+/

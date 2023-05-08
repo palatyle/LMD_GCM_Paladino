@@ -1,0 +1,55 @@
+taskid: 0 hostname: auric
+ Quilting with   1 groups of   0 I/O tasks.
+ Namelist dfi_control not found in namelist.input. Using registry defaults for variables in dfi_control
+  Ntasks in X             3 , ntasks in Y             4
+ WRF V3.0.1.1 MODEL
+  *************************************
+  Parent domain
+  ids,ide,jds,jde             1          157            1          157
+  ims,ime,jms,jme            -4           59           -4           46
+  ips,ipe,jps,jpe             1           52            1           39
+  *************************************
+ DYNAMICS OPTION: Eulerian Mass Coordinate
+   med_initialdata_input: calling input_model_input
+  STEPRA,STEPCU,STEPBL        17760            1            1
+Timing for Writing wrfout_d01_2024-01-01_00:00:00 for domain        1:    1.38000 elapsed seconds.
+ WRF NUMBER OF TILES =   1
+Timing for main: time 2024-01-01_00:00:00 on domain   1:    8.88800 elapsed seconds.
+Timing for main: time 2024-01-01_00:00:01 on domain   1:    2.27500 elapsed seconds.
+Timing for main: time 2024-01-01_00:00:01 on domain   1:    2.21200 elapsed seconds.
+Timing for main: time 2024-01-01_00:00:02 on domain   1:    2.39500 elapsed seconds.
+Timing for main: time 2024-01-01_00:00:02 on domain   1:    2.23700 elapsed seconds.
+Timing for main: time 2024-01-01_00:00:03 on domain   1:    2.23500 elapsed seconds.
+Timing for main: time 2024-01-01_00:00:03 on domain   1:    2.21800 elapsed seconds.
+Timing for main: time 2024-01-01_00:00:04 on domain   1:    2.17900 elapsed seconds.
+Timing for main: time 2024-01-01_00:00:04 on domain   1:    2.30400 elapsed seconds.
+Timing for main: time 2024-01-01_00:00:05 on domain   1:    2.27200 elapsed seconds.
+Timing for main: time 2024-01-01_00:00:05 on domain   1:    2.46300 elapsed seconds.
+Timing for main: time 2024-01-01_00:00:06 on domain   1:    2.20900 elapsed seconds.
+Timing for main: time 2024-01-01_00:00:06 on domain   1:    2.17900 elapsed seconds.
+Timing for main: time 2024-01-01_00:00:07 on domain   1:    2.14500 elapsed seconds.
+Timing for main: time 2024-01-01_00:00:07 on domain   1:    2.22500 elapsed seconds.
+Timing for main: time 2024-01-01_00:00:08 on domain   1:    2.11900 elapsed seconds.
+Timing for main: time 2024-01-01_00:00:08 on domain   1:    2.23100 elapsed seconds.
+Timing for main: time 2024-01-01_00:00:09 on domain   1:    2.20200 elapsed seconds.
+Timing for main: time 2024-01-01_00:00:09 on domain   1:    2.30900 elapsed seconds.
+Timing for main: time 2024-01-01_00:00:10 on domain   1:    2.16000 elapsed seconds.
+Timing for main: time 2024-01-01_00:00:10 on domain   1:    2.17100 elapsed seconds.
+Timing for main: time 2024-01-01_00:00:11 on domain   1:    2.28300 elapsed seconds.
+Timing for main: time 2024-01-01_00:00:11 on domain   1:    2.24600 elapsed seconds.
+Timing for main: time 2024-01-01_00:00:12 on domain   1:    2.11400 elapsed seconds.
+Timing for main: time 2024-01-01_00:00:12 on domain   1:    2.10000 elapsed seconds.
+Timing for main: time 2024-01-01_00:00:13 on domain   1:    2.20000 elapsed seconds.
+Timing for main: time 2024-01-01_00:00:13 on domain   1:    2.24700 elapsed seconds.
+Timing for main: time 2024-01-01_00:00:14 on domain   1:    2.24400 elapsed seconds.
+Timing for main: time 2024-01-01_00:00:14 on domain   1:    2.14500 elapsed seconds.
+Timing for main: time 2024-01-01_00:00:15 on domain   1:    2.21400 elapsed seconds.
+Timing for main: time 2024-01-01_00:00:15 on domain   1:    2.73700 elapsed seconds.
+Timing for main: time 2024-01-01_00:00:16 on domain   1:    2.13500 elapsed seconds.
+Timing for main: time 2024-01-01_00:00:16 on domain   1:    2.18700 elapsed seconds.
+Timing for main: time 2024-01-01_00:00:17 on domain   1:    2.45800 elapsed seconds.
+Timing for main: time 2024-01-01_00:00:17 on domain   1:    2.21000 elapsed seconds.
+Timing for main: time 2024-01-01_00:00:18 on domain   1:    2.19400 elapsed seconds.
+Timing for main: time 2024-01-01_00:00:18 on domain   1:    2.41900 elapsed seconds.
+Timing for main: time 2024-01-01_00:00:19 on domain   1:    2.27700 elapsed seconds.
+Timing for main: time 2024-01-01_00:00:19 on domain   1:    2.19700 elapsed seconds.

@@ -1,0 +1,94 @@
+General options
+~~~~~~~~~~~~~~~
+tracer    (Run with or without tracer transport ?)
+F T
+diurnal   (Diurnal cycle ?  if diurnal=F, diurnal averaged solar heating)
+T
+season    (Seasonal cycle ? if season=F, Ls stays constant like in "start")
+T
+lwrite    (want some more output on the screen ?) 
+F
+stats     (Saving statistics in file "cumul" ?) -- noWRF
+F
+calleofdump (Saving EOF profiles in file "profiles" for Climate Database ?) -- noWRF
+F
+Dust scenario. Used if the dust is prescribed (i.e. if tracer=F or active=F)
+~~~~~~~~~~~~~
+iaervar  (=1 Dust opt.deph read in startfi; =2 Viking scenario; =3 MGS scenario 
+4        (=4 Mars Year 24 from TES assimilation)
+iddist  (Dust vertical distribution: =0: old distrib. (Pollack90) 
+3       (=1: top set by "topdustref"; =2: Viking scenario; =3 MGS scenario )
+topdustref (Dust top altitude (km). Matter only if iddist=1)
+55.
+Physical Parameterizations :
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+callrad   (call radiative transfer ?)
+T
+callnlte (call NLTE radiative schemes ?   matter only if callrad=T)
+F
+callnirco2 (call CO2 NIR absorption ?   matter only if callrad=T)
+T
+calldifv  (call turbulent vertical diffusion ?)
+T
+calladj   (call convective adjustment ?)
+T
+callcond  (call CO2 condensation ?)
+T
+callsoil  (call thermal conduction in the soil ?)
+T
+calllott  (call Lott's gravity wave/subgrid topography scheme ?) -- noWRF
+F
+Radiative transfer options :
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+iradia    (the rad.transfer is computed every "iradia" physical timestep)
+5 
+callg2d   (Output of the exchange coefficient mattrix ? for diagnostic only)
+F
+rayleigh  (Rayleigh scattering : should be =F for now)
+F
+Tracer (dust water, ice and/or chemical species) options (use if tracer=T) :
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+dustbin    (DUST: Transported dust ? (if >0, uses q(1) to q(dustbin))
+0
+active     (DUST: Radiatively active dust ? (uses q(1) to q(dustbin))
+F
+doubleq    (DUST: needs dustbin=1, use mass (q(1)) and number (q(2)) mixing ratio to predict dust size ?)
+F
+lifting    (DUST: lifted by GCM surface winds ?)
+F
+dustdevil  (DUST: lifted by dust devils ?)
+F
+scavenging (DUST: Scavenging by CO2 snowfall ?)
+F
+sedimentation (DUST/WATERICE: Gravitationnal sedimentation ?)
+F T
+iceparty   (WATERICE: Water cycle includes water ice mixing ratio q(nqmx-1))
+F T
+activice   (WATERICE: Radiatively active transported atmospheric water ice ?)
+F
+water      (WATER: Compute water cycle using q(nqmx) )
+F T
+caps       (WATER: put the current permanent caps at both poles)
+F
+photochem  (PHOTOCHEMISTRY: chemical species included)
+F
+Thermospheric options (relevant if tracer=T) :
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+callthermos  (call thermosphere ?)
+F
+thermoswater  (WATER: included without cycle	only if water=F)
+F
+callconduct  (call thermal conduction ?     matter only if callthermos=T)
+F
+calleuv  (call EUV heating ?                matter only if callthermos=T)
+F
+callmolvis  (call molecular viscosity ?     matter only if callthermos=T)
+F
+callmoldiff  (call molecular diffusion ?    matter only if callthermos=T)
+F
+thermochem  (call thermospheric photochemistry ?  matter only if callthermos=T)
+F
+solarcondate (date for solar flux calculation: 1985 < date < 2002))
+1993.4       (Solar min=1996.4 ave=1993.4 max=1990.6)
+
+

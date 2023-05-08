@@ -1,0 +1,116 @@
+************ Usage **************
+
+visu-ncl -f infilename.nc [options] 
+
+ -f infilename.nc   : Input file, mandatory
+
+  This script is designed for longitude/latitude/pressure/time nc files.
+  Required dimension names are: 
+    Time indexes   : Time, time, time_counter
+    Vertical levels: lev, presnivs
+    Latitudes      : lat, latitude
+    Longitudes     : lon, longitudes
+    
+== Options ==
+
+[-h]                : This user manual
+
+[-med media]        : media for output
+
+  Default: x11
+  Possible values:
+     x11        => Display graph on screen
+     ps,eps,pdf => Display graph in a ps,eps or pdf file
+
+[-oname outputname] : name for the output
+
+  Default: quickview (will be the name of the X11 window)
+  The name extension (.ps, .eps, .pdf) is added automatically.
+
+[-type typeplot]    : type of plot
+
+  Default: coupe
+  Possible values:
+     coupe  => Display 1D graph or 2D contour plot
+               You need to give at least 1 varying dimension, 
+               otherwise default give only one point.
+     ortho  => Display 2D orthographic projection
+               You will be defaulted to a full lat/lon map.
+     stereo => Display 2D stereographic projection
+               You will be defaulted to a full lon map.
+
+Options to define the plotted variable:
+---------------------------------------
+
+[-v varname]                     : Variable name for plot
+
+  Default: liste => list the variables in file
+
+  If varname = customvar then a user-defined variable can be plotted
+  with -v customvar,labelvar
+  This labelvar must be defined in the customVar routine in visu-utils.ncl
+
+[-v2 varname]                    : Variable name to be overplotted
+
+  Default: no second variable
+
+[-tc ntcutmin[,ntcutmax[,tavg]]] : INDEXES for time slice (0 to <numberoftimepoints>-1)
+
+  Default: ntcutmin=0 / ntcutmax=ntcutmin / tavg=ntcutmax
+  ntcutmin=-999: average over all times
+  tavg=-999    : average between ntcutmin and ntcutmax
+  Known problem: on given files, the default has a problem. 
+  In this case, try a time point different from 0, it should work.
+  
+[-pc pcutmin[,pcutmax[,pavg]]]   : VALUES for pressure slice
+
+  Default: pcutmin=1.e4 / pcutmax=pcutmin / pavg=pcutmax
+  pcutmin=-999 : average over all pressures
+  pavg=-999    : average between pcutmin and pcutmax
+
+[-lc lcutmin[,lcutmax[,lavg]]]   : VALUES for latitudinal slice
+
+  Default: lcutmin=0 / lcutmax=lcutmin / lavg=lcutmax
+  lcutmin=-999 : average over all latitudes
+  lavg=-999    : average between lcutmin and lcutmax
+
+[-Lc Lcutmin[,Lcutmax[,Lavg]]]   : VALUES for longitudinal slice
+
+  Default: Lcutmin=0 / Lcutmax=Lcutmin / Lavg=Lcutmax
+  Lcutmin=-999 : average over all longitudes
+  Lavg=-999    : average between Lcutmin and Lcutmax
+
+Cosmetic options for figure:
+----------------------------
+
+[-lim min,max[,step]] : limits for variable values
+
+  Default: automatic
+  1d     : min and max values for axis (step unused)
+  2d     : min, max and step values for contours
+  If only one value is given, back to default.
+
+Cosmetic options for projections:
+---------------------------------
+
+[-center lon,lat] : longitude and latitude (degrees) of center point
+
+  Default: 
+  For orthographic: 0,40
+  For stereographic: 0,90 (i.e. Northern Hemisphere)
+  To plot Southern Hemisphere, ask for 0,-90 (any other will go back to default)
+  If only one value is given, both are identical.
+  
+[-grid T/F]       : logical to plot the grid or not
+
+  Default: T
+
+[-gcol gridcol]   : color for the grid
+
+  Default: white
+
+[-gspc Dlon,Dlat] : intervals (degrees) for longitude and latitude lines
+
+  Default: 30,20
+  If only one value is given, both are identical.
+

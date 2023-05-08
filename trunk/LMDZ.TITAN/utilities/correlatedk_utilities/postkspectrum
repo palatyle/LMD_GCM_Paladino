@@ -1,0 +1,48 @@
+#!/bin/bash
+
+DWORK_DIR=$RAD/CORRELATEDK/avec_robin_data
+KSPEC_DIR=$KSPECTRUM/kspec_run
+#BANDS_DIR=32x36
+BANDS_DIR=38x36
+
+### if hires_spectrum don't exist then create it, copy data from kspectrum
+DIRCHECK=hires_spectrum
+cd $DWORK_DIR/
+if [ -d $DIRCHECK ]; then
+    echo -en "Directory hires_spectrum already exists.\n"
+else
+    echo -en "Copying kspectrum data to its new home...\n"
+    cd $DWORK_DIR
+    mkdir hires_spectrum
+
+    mv $KSPEC_DIR/results/k* hires_spectrum/
+    cp $KSPEC_DIR/results/calculation_info.txt hires_spectrum/
+    cp $KSPEC_DIR/*in hires_spectrum/
+    cp $KSPEC_DIR/data/composition.in hires_spectrum/
+
+    # removing contents of 'optimizations' folder
+    rm -rf $KSPEC_DIR/optimizations
+    mkdir $KSPEC_DIR/optimizations
+
+    chmod 444 hires_spectrum/*
+fi
+
+cp ~/utilities/run_kmatrix .
+
+echo -en "\nNow you must submit the parallel job (>> llsubmit run_kmatrix)\n"
+
+exit 0
+
+#cp ~/utilities/generate_kmatrix.exe .
+### make kmatrix in the infrared and save it in a GCM-friendly format
+#cp $BANDS_DIR/narrowbands_IR.in narrowbands.in
+#generate_kmatrix.exe
+#mv corrk_gcm.dat $BANDS_DIR/corrk_gcm_IR.dat 
+#rm narrowbands.in
+### make kmatrix in the visible and save it in a GCM-friendly format
+#cp $BANDS_DIR/narrowbands_VI.in narrowbands.in
+#generate_kmatrix.exe
+#mv corrk_gcm.dat $BANDS_DIR/corrk_gcm_VI.dat 
+#rm narrowbands.in
+#rm generate_kmatrix.exe
+#exit 0

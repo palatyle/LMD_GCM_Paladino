@@ -1,0 +1,91 @@
+37a38,43
+> !****MARS
+> ! in the dyn_em folder physics driver are only used here
+> !#ifdef WRF_Mars
+>    USE module_lmd_driver
+> !#endif  
+> !****MARS
+66a73,76
+> !****MARS
+>    INTEGER                         :: ngrid,nlayer,nq
+> !****MARS
+> 
+666a677,678
+> !!****MARS: must set config_flags%bl_pbl_physics to 0
+> 
+798a811,871
+> 
+> !****MARS
+> !!!!!!!!!!!!!!!!!!!!!!!
+> ! call to LMD physics !
+> !!!!!!!!!!!!!!!!!!!!!!!
+> 
+>           CALL wrf_debug ( 200 , ' call lmd_driver' )
+> 
+> !BENCH_START(lmd_driver_tim)
+> 
+>          CALL lmd_driver(                                                 &
+>            ! structure
+>      &         DT=grid%dt,HBOT=grid%hbot,HTOP=grid%htop                   &
+>      &        ,ITIMESTEP=grid%itimestep                                   &
+>            ! position
+>      &        ,XLAT=grid%xlat,XLONG=grid%xlong                            &
+>      &        ,DX=grid%dx         ,DY=grid%dy                             &
+>      &        ,MSFT=grid%msft,MSFU=grid%msfu,MSFV=grid%msfv               &
+>            ! indexes
+>      &        ,IDS=ids,IDE=ide, JDS=jds,JDE=jde, KDS=kds,KDE=kde          &
+>      &        ,IMS=ims,IME=ime, JMS=jms,JME=jme, KMS=kms,KME=kme          &
+>      &        ,i_start=grid%i_start,i_end=min(grid%i_end, ide-1)          &
+>      &        ,j_start=grid%j_start,j_end=min(grid%j_end, jde-1)          &
+>      &        ,kts=k_start, kte=min(k_end,kde-1)                          &
+>      &        ,num_tiles=grid%num_tiles                                   &
+>            ! time variables
+>      &        ,GMT=grid%gmt       ,JULYR=grid%julyr   ,JULDAY=grid%julday &
+>            ! output from phy_prep
+>      &        ,P8W=p8w            ,DZ8W=dz8w          ,T8W=t8w            &
+>            ! Prognostic variables at p points
+>      &        ,Z=grid%em_z                                                &
+>                         ! z is the geopotential height at p points 
+>                         ! ... (cf phy_prep in module_big_step_utilities_em)
+>      &        ,HT=grid%ht                                                 &
+>      &        ,U=u_phy            ,V=v_phy                                &
+>      &        ,TH=th_phy          ,T=t_phy                                &
+>      &        ,P=p_phy            ,EXNER=pi_phy               ,RHO=rho    &
+>            ! flags
+> !     &       ,LW_PHYSICS=config_flags%ra_lw_physics                      &
+> !     &       ,SW_PHYSICS=config_flags%ra_sw_physics                      &
+>      &        ,ICLOUD=config_flags%icloud                                 &
+>            ! radiation
+>      &        ,EMISS=grid%emiss,GLW=grid%glw,GSW=grid%gsw                 &
+>      &        ,ALBEDO=grid%albedo,RADT=grid%radt,SWDOWN=grid%swdown       &
+>            ! surface temperature and surface pressure
+>      &        ,TSK=grid%tsk,PSFC=grid%psfc                                &
+>            ! tendencies for the dynamics
+>      &        ,RTHRATEN=grid%rthraten                                     &
+> !    &        ,RTHRATENLW=grid%rthratenlw,RTHRATENSW=grid%rthratensw &
+>      &        ,RQCBLTEN=grid%rqcblten,RQIBLTEN=grid%rqiblten,RQVBLTEN=grid%rqvblten  &
+>      &        ,RTHBLTEN=grid%rthblten  ,RUBLTEN=grid%rublten,RVBLTEN=grid%rvblten    &
+>            ! added variables
+> !     &        ,MARS_ALB=grid%mars_alb,MARS_TI=grid%mars_ti	&
+> !     &        ,MARS_ALB=grid%em_al_gc,THERM_INERT=grid%em_ti_gc  &
+>      &        ,MARS_ALB=grid%u10,MARS_TI=grid%v10  &
+> !     &        ,MARS_ALB=grid%st000010,MARS_TI=grid%st010040	&
+>            ! end
+>      &                                                              )
+> !BENCH_END(lmd_driver_tim)
+> !****MARS
+> 
+1020c1093,1095
+<       IF ( config_flags%bl_pbl_physics .ge. 1 ) THEN
+---
+> 
+> !!****MARS: you never know ...
+> !      IF ( config_flags%bl_pbl_physics .ge. 1 ) THEN
+1022c1097,1099
+<       ENDIF
+---
+> !      ENDIF
+> 
+> 
+1097a1175
+> !****MARS: OK if diff_opt ne 2

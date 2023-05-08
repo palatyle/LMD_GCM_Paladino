@@ -1,0 +1,40 @@
+CC            %C_COMPILER
+CPP_INCLUDE   -I
+MIRROR        rsync
+FC_DEFINE     -D
+LD_LIBLINK    -l
+FFLAGS        -c -fdefault-real-8 -fdefault-double-8 -fcray-pointer -frecursive -ffree-line-length-0 -fno-align-commons -g  -I/home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libf/aeronostd -I/apps/local/netcdf/netcdff/include
+GRAPHIC_DIFF  xxdiff
+LD            mpif90
+FPP           cpp
+GENINTERFACE  none
+LDFLAGS       -Wl,-rpath=/apps/local/netcdf/netcdff/lib  -L/apps/local/netcdf/netcdff/lib -lnetcdf -lnetcdff
+FPP_DEFINE    -D
+MAKE_SILENT   -s
+CFLAGS        %C_OPTIM %INCDIR
+FC_INCLUDE    -I
+FPPFLAGS      -P -traditional -I/home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libf/aeronostd -I/apps/local/netcdf/netcdff/include
+FPP_INCLUDE   -I
+FPPKEYS       CPP_PHYS CPP_PARA CPP_MPI NC_DOUBLE
+FC_OUTPUT     -o
+MAKE          gmake
+REMOTE_SHELL  remsh
+LD_OUTPUT     -o
+CC_INCLUDE    -I
+MAKEFLAGS     
+INTERFACE     file
+FC            mpif90
+CPPKEYS       CPP_PHYS CPP_PARA CPP_MPI %CPP_DEF
+CPP_DEFINE    -D
+ARFLAGS       rs
+CPP           cpp
+LD_LIBSEARCH  -L
+CC_DEFINE     -D
+MAKE_JOB      -j
+FC_COMPILE    -c
+FFLAGS__muphy -c -I/home/palatyle/LMD_gen/trunk/LMDZ.COMMON/libf/aeronostd -I/apps/local/netcdf/netcdff/include -g 
+AR            ar
+CC_COMPILE    -c
+CPPFLAGS      %CPP_FLAGS %INCDIR
+SHELL         /bin/bash
+CC_OUTPUT     -o

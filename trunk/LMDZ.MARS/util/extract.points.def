@@ -1,0 +1,20 @@
+diagfi_P.nc
+0.0
+1
+temp
+-20 25 100 35 2
+-20 25 100 35 14
+20 -25 100 35 12
+20 25 50 40 16
+
+
+
+!! in the example above we extract the temperature ("temp" variable) at
+!! lon=-20 lat=25 alt=100  Ls=35  LT=2
+!! lon=-20 lat=25 alt=100  Ls=35  LT=14
+!! lon=20 lat=-25 alt=100  Ls=35  LT=12
+!! lon=20 lat=25 alt=50  Ls=40  LT=16
+!! from a file which "starts" (has time=0.0) at Ls=30 (so we have to
+!! add an offset of 193 sols).
+!! Note that since the input file vertical coordinate is pressure,
+!! specifying alt=100 implies that we seek data at 100Pa.

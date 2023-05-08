@@ -1,0 +1,30 @@
+>> GENERAL INFORMATION
+This directory contains examples of "def" files that are inputs for GCM runs,
+along with sample scripts to run the model (in serial, on a Linux system).
+Subdirectories ciclad, occigen, etc. contain scripts specific to these
+machines and their job schedulers; check the README there.
+
+>> DEF FILES
+To run the GCM needs (see documentation) "run.def", "callphys.def",
+"traceur.def" and "z2sig.def" input files.
+Files stored here are suffixed for different "GCM configurations"
+(e.g. *.def.watercycle to run simulations with the dust and water
+cycles); rename (and adapt) them for your usage.
+Miscelaneous comments:
+- run.def.1d is an example specific for the 1D testphys1d model
+- run.def.lonxlatxalt illustrate cases for different spatial grids
+  (typically the GCM is run at 64x48 horizontal resolution)
+- z2sig.def is the current standard vertical grid definition (use 54 layers
+  if running up to ~100km, e.g. water & dust cycle simulations, 73 layers
+  if including chemistry and thermosphere up to ~300km)
+- *.MCD5 files correspond to what was used to generate MCDv5.x simulations 
+
+>> XML FILES
+These are required when running with the XIOS library
+- iodef.xml : general settings
+- context_lmdz_physics.xml : definition of variables, grids, output files, etc.
+
+>> SCRIPTS
+- "run0" is a script to run (once or nummax times) chained simulations
+- "run_mcd" is a script that uses "run0" and runs simulations taking
+  into account the change of number of sols every Martian month.

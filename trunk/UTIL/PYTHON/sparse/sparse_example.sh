@@ -1,0 +1,11 @@
+sparse.py \
+ -f "/planeto/lmlmd/TESdata/TES_MY25_180_210.sav" \
+ -X lon -Y lat \
+ -C coldust -p ortho \
+ --blon 90 -m 0. -M 1. \
+ -c spectral \
+ -w "areoc>180,areoc<182" \
+ -w "areoc>182,areoc<184" \
+ -w "areoc>184,areoc<186" \
+ -w "areoc>186,areoc<188" \
+ -b molabw -S png 

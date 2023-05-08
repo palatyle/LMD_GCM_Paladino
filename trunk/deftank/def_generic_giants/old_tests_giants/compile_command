@@ -1,0 +1,22 @@
+
+GNOMEp pour parallle avec FFT
+GNOMEs pour sequentiel sans FFT
+
+
+makelmdz_fcm -arch GNOME -parallel mpi -d 256x128x30 gcm
+
+makelmdz_fcm -arch GNOME -parallel mpi -d 320x480x15 gcm
+...pb relocation fit
+
+
+makelmdz_fcm -arch AMD64_CICLAD -parallel mpi -d 80x120x15 -p lmd gcm
+
+
+makelmdz_fcm -arch AMD64_CICLAD -dev -parallel mpi -d 80x120x15 gcm
+
+
+
+
+---- test
+makelmdz_fcm -arch GNOME -d 32x24x11 gcm > makelmdz_fcm_seq.out 2>&1
+

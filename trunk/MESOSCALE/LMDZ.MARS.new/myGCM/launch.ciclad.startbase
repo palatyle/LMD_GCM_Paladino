@@ -1,0 +1,8 @@
+#PBS -S  /bin/bash
+#PBS -j  oe
+#PBS -q  infini
+#PBS -N  startbase
+#PBS -l "nodes=1:ppn=1"
+cd $PBS_O_WORKDIR
+ulimit -s unlimited
+./run_mcd_3days > log_run_mcd_3days

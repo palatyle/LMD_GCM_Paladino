@@ -1,0 +1,84 @@
+{\footnotesize
+\begin{verbatim}
+#-----------------------------------------------------------------------
+# Run parameters for the rcm1d.e model
+#-----------------------------------------------------------------------
+
+#### Time integration parameters
+#
+# Initial date (in martian sols ; =0 at Ls=0)
+day0=0
+# Initial local time (in hours, between 0 and 24)
+time=0
+# Number of time steps per sol
+day_step=48
+# Number of sols to run
+ndt =400
+
+#### Physical parameters
+#
+# Surface pressure (Pa)
+psurf=7000.
+# Gravity (ms^-2)
+g=3.72
+# Molar mass of atmosphere (g)
+mugaz=43.49
+# Specific heat capacity of atmosphere?
+cpp=744.5
+# latitude (in degrees)
+latitude=0.0
+# orbital distance at perihelion (AU)
+periastr=1.558
+# orbital distance at aphelion (AU)
+apoastr=1.558
+# obliquity (degrees)
+obliquit=0.0
+# Solar zenith angle (degrees)
+szangle=60.0
+
+# Albedo of bare ground
+albedo=0.2
+# Emissivity of bare ground
+emis=1.0
+# Soil thermal inertia (SI)
+inertia=400
+# zonal eastward component of the geostrophic wind (m/s)
+u=10.
+# meridional northward component of the geostrophic wind (m/s)
+v=0.
+# Initial CO2 ice on the surface (kg.m-2)
+co2ice=0
+# hybrid vertical coordinate ? (.true. for hybrid and .false. for sigma levels)
+hybrid=.false.
+# autocompute vertical discretisation? (useful for exoplanet runs)
+autozlevs=.false.
+% pressure ceiling
+pceil=40.0
+
+###### Initial atmospheric temperature profile
+#
+# Type of initial temperature profile
+#         ichoice=1   Constant Temperature:  T=tref
+#         ichoice=2   Savidjari profile (as Seiff but with dT/dz=cte)
+#         ichoice=3   Lindner (polar profile)
+#         ichoice=4   inversion
+#         ichoice=5   Seiff  (standard profile, based on Viking entry)
+#         ichoice=6   constant T  +  gaussian perturbation (levels)
+#         ichoice=7   constant T  + gaussian perturbation (km)
+#         ichoice=8   Read in an ascii file "profile"
+ichoice=5
+# Reference temperature tref (K)
+tref=200
+# Add a perturbation to profile if isin=1
+isin=0
+# peak of gaussian perturbation (for ichoice=6 or 7)
+pic=26.522
+# width of the gaussian perturbation (for ichoice=6 or 7)
+largeur=10
+# height of the gaussian perturbation (for ichoice=6 or 7)
+hauteur=30.
+
+# some definitions for the physics, in file 'callphys.def'
+INCLUDEDEF=callphys.def
+\end{verbatim}
+}

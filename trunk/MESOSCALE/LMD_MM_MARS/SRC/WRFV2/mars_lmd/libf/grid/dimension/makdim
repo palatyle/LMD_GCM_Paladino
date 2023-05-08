@@ -1,0 +1,66 @@
+nqmx=$1
+shift
+for i in $* ; do
+   list=$list.$i
+done
+fichdim=dimensions${list}.t${nqmx}
+
+
+if [ ! -f $fichdim ] ; then
+# si le fichier de dimensions n'existe pas, on le cree
+
+ if [ $# -ge 3 ] ; then
+   im=$1
+   jm=$2
+   lm=$3
+   n2=$1
+   ndm=1
+
+#  while [ "$n2" -gt 2 ]; do
+#      n2=`expr $n2 / 2`
+#     ndm=`expr $ndm + 1`
+#   done
+#   if [ "$n2" != 2 ] ; then
+#      echo le nombre de longitude doit etre une puissance de 2
+#      exit
+#   fi
+
+ else if [ $# -ge 2 ] ; then
+      im=1
+       jm=$1
+      lm=$2
+      ndm=1
+ else if [ $# -ge 1 ] ; then
+         im=1
+         jm=1
+         lm=$1
+         ndm=1
+ else
+         echo il faut au moins une dimension
+         exit
+ fi
+fi
+fi
+
+cat << EOF > $fichdim
+!-----------------------------------------------------------------------
+!   INCLUDE 'dimensions.h'
+!
+!   dimensions.h contient les dimensions du modele
+!   ndm est tel que iim=2**ndm
+!   nqmx est la dimension de la variable traceur q
+!-----------------------------------------------------------------------
+
+      INTEGER, parameter :: iim= $im
+      INTEGER, parameter :: jjm=$jm
+      INTEGER, parameter :: llm=$lm
+      INTEGER, parameter :: ndm=$ndm
+
+      integer, parameter :: nqmx=$nqmx
+
+!-----------------------------------------------------------------------
+EOF
+fi
+
+\rm ../dimensions.h
+tar cf - $fichdim | ( cd .. ; tar xf - ; mv $fichdim dimensions.h )

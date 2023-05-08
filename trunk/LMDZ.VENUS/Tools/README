@@ -1,0 +1,15 @@
+Please refer to the documentation on the SVN trunk, 
+DOC/documentation/vt-tools.pdf
+
+List of tools:
+(zrecast is now common to everybody, in UTIL/)
+angmom
+energy
+fft 
+psi
+stability
+tem
+tmc
+
+Known bugs:
+

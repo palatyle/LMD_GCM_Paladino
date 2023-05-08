@@ -1,0 +1,12 @@
+NETCDF_INCDIR=""
+NETCDF_LIBDIR=""
+NETCDF_LIB="-lnetcdf -lnetcdff"
+
+HDF5_INCDIR=""
+HDF5_LIBDIR=""
+HDF5_LIB=""
+
+MPI_INCDIR=""
+MPI_LIBDIR=""
+MPI_LIB=""
+

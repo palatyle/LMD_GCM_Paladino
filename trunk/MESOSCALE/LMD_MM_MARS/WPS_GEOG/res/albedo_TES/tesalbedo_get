@@ -1,0 +1,6 @@
+#! /bin/bash
+
+echo get TES albedo
+wget http://pds-geosciences.wustl.edu/geo/mgs-m-tes-special-v1/global_albedo_8ppd.img . > /dev/null 2>&1
+wget http://pds-geosciences.wustl.edu/geo/mgs-m-tes-special-v1/global_albedo_8ppd.lbl . > /dev/null 2>&1
+

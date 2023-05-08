@@ -1,0 +1,99 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+nlev=61
+altmax=120.    ;; altitude maximale en km
+;;
+epsilon=30.    ;; augmentation totale en pourcentage de l'ecart max (modifie inflexion)
+               ;; -- epsilon = 0   : point d'inflexion parfaitement plat
+               ;; -- epsilon = 100 : pas de point d'inflexion
+elong_cos=2./3.  ;; plus petit rapproche l'inflexion du sol ;; 2/3 parfait pour un nlev divisible par 3
+elong_cos=0.64
+;; plus petit ajoute des inflexions...
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;nlev=61
+;altmax=150.
+;epsilon=30.
+;elong_cos=2./3.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+nlev=61
+altmax=150.
+epsilon=100.
+elong_cos=2.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+nlev=201
+altmax=150.
+epsilon=0.
+elong_cos=2.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+nlev=101
+altmax=80. ;;100.
+epsilon=100.
+elong_cos=60.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+nlev=201
+altmax=150.
+epsilon=0.
+elong_cos=2. ;; pas inflexion  
+elong_cos=2.5
+elong_cos=3.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;nlev=201
+;altmax=220.
+;epsilon=0.
+;elong_cos=2. ;; pas inflexion
+;elong_cos=2.5
+;elong_cos=3.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+nlev=61
+altmax=60.
+epsilon=0.
+elong_cos=2. ;; pas inflexion
+elong_cos=2.5
+elong_cos=3.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+epsilon=100.
+elong_cos=60.
+
+;altmax=100.
+altmax=130.
+altmax=150.
+
+;;; ici OK avec simu
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+nlev=201
+altmax=150.
+epsilon=0.
+elong_cos=3.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+nlev=151
+altmax=150.
+epsilon=100.
+elong_cos=60.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;nlev=61
+nlev = 181
+altmax = 180.
+
+
+
+nlev=61
+altmax=25.
+epsilon=100
+elong_cos=100.
+
+nlev=21
+altmax=15.
+epsilon=100
+elong_cos=100.
+
+;nlev=21
+;altmax=40.
+;epsilon=100
+;elong_cos=100.
+

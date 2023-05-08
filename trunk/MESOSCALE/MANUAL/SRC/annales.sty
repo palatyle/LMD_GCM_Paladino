@@ -1,0 +1,4448 @@
+%%%
+% Ami lecteur, bonjour !
+%
+% Ce fichier regroupe les commandes utilisées par les Éditions H&K pour
+% l'élaboration des Annales des Concours. Si vous êtes auteur dans cette
+% collection, vous trouverez de nombreuses explications dans la documentation
+% que vous avez téléchargée par ftp, ou sur www.h-k.fr/annales.
+%
+% Les auteurs des Annales des Concours sont explicitement autorisés à
+% réutiliser tout ou partie de ce fichier pour leurs travaux personnels 
+% à but non commercial (mémoire, rapport, thèse, etc.).
+% 
+% Si vous n'avez pas participé aux Annales des Concours, veuillez contacter
+% directement les Éditions H&K (contact@h-k.fr) si vous souhaitez utiliser
+% ce fichier.
+%
+% Les macros proposées ci-dessous ont nécessité des centaines d'heures de
+% travail. Elles ne sont pas dans le domaine public, hormis l'environnement
+% \breakbox.
+%
+%                                                         Seb.
+%
+%
+% Le mainteneur du fichier peut toujours être joint à l'adresse
+% annales.sty@H-K.fr
+%
+% 2001.11.03:	* Migration de certains \mathop vers \DeclareMathOperator.
+%               * Ajout des symboles chimiques à deux lettres (\Al, etc.).
+%               * Ajout de [t] et d'une option dans {rcl}.
+% 2001.11.27:	* Correction d'un bug dans \leftcentersright.
+% 2001.12.06:	* Ajout de \Me, \liq, \sol, \gaz et \Equilibre.
+% 2001.12.07: 	* Ajout de l'option [t] dans \leqsystsimple.
+%               * Ajout de \Image.
+% 2001.12.08:	* Changement de police pour \apriori et ses amis.
+% 2001.12.11:	* Ajout de \abs pour les valeurs absolues.
+% 2002.02.21:	* Ajout de \Dpc et \DPC (Teteph)
+% 2002.04.19:	* Ajout de \note
+% 2002.04.20:	* Passage de fancyheadings à fancyhdr (suggestion de JJ).
+% 2002.04.21:	* Création \(leftcenters|centers|ref)numero (JJ).
+% 2002.04.22:	* Ajout de \accolades et \paa (David Chapot, JJ).
+% 2002.05.12:	* Retrait d'un espace dans \cf.
+%               * Retrait des \left et \right dans \intn (Walter).
+% 2002.05.16:	* Correction de \RX et \CX (Jean).
+% 2002.05.17:	* Ajout du package {tabularx} (JJ).
+% 2002.05.24:	* Retrait de {tabularx}.
+% 2002.05.31:	* Correction de \ANcenters et \ANencadre (JJ).
+% 2002.06.14:	* Modification de \enonce pour faire des hachures.
+% 2002.06.19:	* Modification de \celsius (BBR).
+%               * Création de la commande \angstrom (BBR, Teteph).
+% 2002.06.24:	* Modification de \Star (Alex).
+% 2002.06.25:	* Création de \conc et \Kzero (Alex).
+% 2002.06.26:	* Création de \serie (Walter).
+% 2002.06.27:	* Création de \butyl et \Bu (Alex).
+% 2002.06.28:	* Modification de \ANcenters et \ANencadre (Alex).
+% 2002.06.30:	* Modification de \degres (BBR).
+% 2002.07.04:	* Modification de \celsius (Nico).
+% 2002.07.08:	* Modification de \etc (JJ).
+% 2002.07.08:	* Modification de \cf: droit, point (Émilia).
+% 2002.07.12:	* Ajout de \intnn (Mathieu).
+% 2002.07.16:	* Abandon de fancyhdr pour fancyheadings à cause des titres
+%                 courants dans les annexes (JJ).
+% 2002.08.14:	* Découpage du fichier en trois morceaux indépendants:
+%                 déclarations, mise en page et commandes scientifiques.
+%               * Réécriture de la plupart des commentaires contextuels.
+% 2003.02.12:	* Cas des arguments vides dans \intff et al (Walter).
+% 2003.03.05:	* Modification de la commande \partie (Paul).
+% 2003.03.10:	* Remplacement des \mathbb par des \mathBB (Paul).
+% 2003.03.18:   * Ajout de la commande \reperes (VF).
+% 2003.05.05:	* Passage à des titres courants centrés (Paul).
+% 2003.05.11:	* Ajout de \mathaccent"17E (JJ).
+% 2003.05.21:	* Ajout de \ir, \jr, \ex et \exi (Paul et VF).
+% 2003.05.26:	* Ajout de \OIInt (TTF, ST) et de \sulfate (Manu).
+% 2003.05.27:	* Ajout de \vectux, \vectuy, \vectuz, \vectex, \vectey,
+%                 \vectez, \vux, \vuy, \vuz, \vex, \vey et \vez.
+% 2003.06.01:	* Ajout de \suite et \liste (Paul).
+% 2003.06.06:	* Ajout de dsfont.sty pour \mathds{1}.
+% 2003.06.28:	* Création de \petito et \grando (JJ, Walter, Paul).
+% 2003.06.29:	* Ajout de \pmgras (Mike).
+% 2003.06.30:	* Création de \Sumt (Walter).
+% 2003.10.16:	* Ajout de \NoAutoSpaceBeforeFDP dans \codesource (Walter).
+% 2003.10.23:	* Ajout de \NoAutoSpaceBeforeFDP dans \web.
+% 2003.12.07:	* Ajout de \encadreminipage (Aurélien).
+% 2003.12.08:	* Ajout de \graphicspath
+% 2004.02.19:	* Ajout de \Produit (Paul, Céline).
+% 2004.02.21:	* Ajout de \scalar (Céline).
+% 2004.02.27:	* Amélioration de \intff et ses amis (Céline).
+% 2004.03.06:	* Redéfinition de \bs (Seb, Céline).
+% 2004.03.08:	* Amélioration de \leftcentersright et ses dérivés: l'argument
+%                 du milieu est maintenant centré dans la page, pas dans
+%                 l'environnement (Céline, Paul).
+% 2004.03.09:	* Bug-fix dans \Sum (portée de \ensuremath) (Céline).
+% 2004.03.15:   * Ajout de \ofg pour les guillemets français (Manu).
+% 2004.03.16:   * Passage de fancyheadings à fancyhdr.
+% 2004.03.18:   * Ajout des environnements {egalites}, {inegalites:leq}, 
+%                 {inegalites:geq}, {calculs}, {calculs:rcl}, 
+%                 {calculs:rcl:extracol} et {calculs:latotale}
+%                 (Céline, Paul, Seb, JB)
+% 2004.03.20:   * Modification de la commande \note; par défaut, elle
+%                 rajoute un numéro à l'endroit où on l'appelle et avec
+%                 l'option 0 ou simple elle reprend son ancien
+%                 comportement (JJ)
+%               * Amélioration de \Sum, \SUM et \Int (JJ)
+%               * Modification des commandes \partie, \Partie et
+%                 \Indications pour pouvoir obtenir les petites
+%                 capitales même avec aeguill (JJ)
+% 2004.03.22:   * Changement de l'option d'alignement par défaut dans
+%                 les environnements {systsimple} et dérivés
+%               * \finalementcenters donne désormais « Finalement, » au 
+%                 lieu de « Finalement: » .
+%               * Modification des tailles du papier et des marges (Seb).
+% 2004.03.25:	* Modification de la légende des sommaires croisés.
+% 2004.03.29:	* Ajout de \Rdeux, \Rtrois, \Cdeux et \Ctrois.
+% 2004.04.01:	* Ajout de \centersminipage (Seb).
+% 2004.04.03:   * Transfert des commandes pour les sommaires croisés
+%                 vers les fichiers concernés.
+% 2004.04.04:	* Retrait de {aeguill}.
+% 2004.04.08:   * Bug-fix dans un commentaire (Seb).
+% 2004.04.09:   * Suppression du commentaire sur l'installation TeX
+%                 d'Ulm (FX).
+% 2004.04.18:	* Ajout de \notemark et \notetext pour pouvoir utiliser
+%                 \note dans n'importe quel environnement.
+%               * Ajout de \arraybox pour remplacer \EncadreDansTableau.
+% 2004.04.20:   * Ajout de \typeout dans \EncadreDansTableau (Teteph).
+% 2004.04.23:	* Abandon de la police Times dans \partie.
+%               * Ajout de l'option dans \donccenters et ses amis.
+% 2004.04.30:	* Ajout de \DecimalMathComma (Paul).
+% 2004.05.04:	* Passage à \StandardMathComma par défaut (Teteph).
+% 2004.05.05:	* Correction d'un bug dans \leftcentersright.
+% 2004.05.08:	* Ajout de \aq (FX).
+% 2004.05.14:	* Ajout de \null dans les \qetq.
+%               * Modification de \leftcentersright: l'argument est
+%                 toujours centré dans la page, sauf dans les
+%                 {remarque} (Manu).
+%               * Ajout de \textegras, \textgras, \gras, \nongras,
+%                 modification de \mathBB, \mathscr, 
+%                 \partie et \Partie (Walter).
+% 2004.05.15:   * Ajout de \thallium et \Tl (Alex).
+%               * Ajout de \Pzero et \czero (FX).
+%               * Ajout de \base.
+% 2004.05.16:   * Ajout de \Rb et \rubidium (Tiphaine).
+% 2004.05.17:	* \mathscr renommé en \mathscrchoice (Seb).
+% 2004.05.18:	* Ajout de \Iint et \IInt. Modification des longueurs
+%                 dans \oiint et \OIInt (Marc, Paul).
+% 2004.05.19:	* Ajout de \deltar et \deltaf (Alex).
+% 2004.05.20:	* Ajout de \Avogadro et \avogadro (JJ).
+% 2004.05.21:	* Retrait de \Avogadro et \avogadro pour ne pas
+%                 privilégier de notation.
+% 2004.05.22:	* Ajout de \exmi (Aurélien).
+%               * Ajout de \Ce et \cerium (Alex).
+% 2004.05.26:	* Redéfinition de \venonce (Alex).
+% 2004.05.27:	* Ajout de \uvect (Aurélien).
+%               * Ajout de \encadrenumero et \leftencadrenumero (Aurélien).
+% 2004.05.28:	* Ajout de \vectu (Aurélien).
+% 2004.05.31:	* Ajout de \Zr et \zirconium (Nicolas).
+% 2004.06.09:	* Amélioration de \simple, \double, \triple (FX).
+% 2004.06.11:   * Amélioration de \pm et \pmgras (Vincent).
+% 2004.06.14:   * Retrait de \typeout dans \EncadreDansTableau.
+% 2004.06.17:   * Ajout de \indenter (Teteph).
+%               * Modification de \centers pour proteger l'argument central
+%                 (Teteph).
+% 2004.07.01:   * Ajout d'une option à \titre (Teteph).
+% 2004.07.02:   * Modification de \petito et \grando (David, Seb).
+% 2004.07.03:   * Ajout de \ajusterletitrecourant.
+% 2004.07.05:   * Remplacement de \LeTitre par \LeTitreCourant dans les
+%                 commandes \titresommaire, \JusteNumeroPage, \mkTitreCourant.
+% 2004.11.02:   * Amélioration de \pm et \pmgras (Emmanuel).
+%               * Changement du \renewcommand en \def dans la définition de
+%                 \degres car la commande \degres n'existe plus sur clipper
+%                 à l'ENS.
+% 2004.12.09:   * Ajout de \xspace dans les définitions des raccourcis
+%                 \droite, \plan, \cercle, etc (Seb).
+%               * Ajout d'une bascule (\CentersOnPage (défaut) et 
+%                 \CentersOnItems) pour que \centers centre soit par rapport à
+%                 la page soit par rapport à l'{itemize}. Cette bascule est
+%                 remise à sa valeur par défaut dans la commande \titre (Seb). 
+% 2004.12.17:   * Ajout de \arcdecercle (JJ).
+% 2005.01.02:   * Ajout de \email (Seb).
+% 2005.05.06:   * Ajout de \partieentieresup (Sam).
+% 2005.05.07:   * Ajout de \oeuf et \oeufs (Seb).
+% 2005.05.24:   * Ajout de \maitre (Seb).
+%               * Amélioration de \madame, \mademoiselle, \docteur, \maitre.
+% 2005.05.30:   * Ajout de \Iiint et \IIInt (Teteph).
+% 2005.06.05:   * Ajout de \matricedd.
+% 2005.06.07:   * Ajout des \xspace dans \R, \C et commandes similaires.
+% 2005.06.28:   * Amélioration de \pa (Vincent).
+% 2005.06.29:   * Amélioration de \pac et \paa (Teteph).
+% 2005.07.08:   * Ajout de \Sm, \samarium, \Eu, \europium (Alex).
+% 2005.07.12:   * Ajout de \tdemi, \ttiers, \tquart (Alex).
+%               * Mise à jour de la légende des sommaires croisés.
+% 2005.07.15:   * Modification des commandes à base de \mathBB: l'ajout de
+%                 \xspace faisait buguer la version étoilée (David).
+%				* Ajout du package longtable et modification du sommaire
+%                 (JJ).
+% 2006.03.28:   * Modification des marges due au changement de format (pas de 
+%                 changement de la taille du texte) (JJ).
+% 2006.05.12:   * Ajout de \dessinpgf pour les courbes créées avec les 
+%                 extensions LaTeX PGF et TikZ (Teteph).
+% 2006.05.14:   * Ajout de \indicatrice.
+%               * Changement de la définition de \ronde et \angstrom (Seb, 
+%                 JJ).
+% 2006.05.16:   * Ajout de \soeur, \soeurs, \Soeur, \Soeurs (Sattisvar).
+% 2006.05.23:   * Ajout de \vcol (Aurélien, Frédéric).
+%               * Amélioration de \moyenne (Teteph).
+% 2006.05.25:   * Ajout de \souspartie (Teteph, Seb).
+% 2006.05.31:   * Ajout de \transp (Aurélien, Seb).
+% 2006.06.02:   * Ajout de \fem et \AO (Aurélien, Seb).
+%               * Modification de \transp (qui devient synonyme de \trans).
+% 2006.06.06:   * Modification de \f@thousandsep, utilisée dans \nombre.
+%               * Ajout de \nb, raccourci pour \nombre.
+% 2006.06.12:   * Modification des tailles des marges (Alex).
+% 2006.06.14:   * Bug-fix de l'alignement de {QCM} (Aurélien).
+% 2006.06.18:   * Ajout du test sur les . et - dans \souspartie.
+% 2006.06.27:   * Ajout d'un argument optionnel à \norme (Teteph).
+% 2006.07.07:   * Modification de \partie et \Partie.
+% 2006.07.08:   * Annulation de la modification de \partie et \Partie 
+%                 (Teteph).
+% 2006.07.08:   * Amélioration de \dessinpgf (Teteph).
+% 2006.07.09:   * Ajout de \kdonne (Alex).
+% 2006.07.11:   * Modification des commandes pour les sommaires: ajout de 
+%                 \tdmtabular, \tdmoutils, \tdmtitresommaire et \tdmConcours.
+% 2006.07.11:   * Modification de la légende des sommaires croisés.
+%%%
+
+%\documentclass[twoside]{article}
+%\documentclass[twoside]{report}
+
+
+%!!!!!!!!!!!!!!!!!!!!!!!!!!                  !!!!!!!!!!!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!!!!!!!!!!   Les packages   !!!!!!!!!!!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!!!!!!!!!!                  !!!!!!!!!!!!!!!!!!!!!!!!!!
+
+%% Les packages à charger en standard.
+
+
+
+\usepackage[utf8]{inputenc}
+\usepackage[english,french]{babel}
+
+%\usepackage{times}
+
+%\usepackage[frenchb]{babel}	% Typo francaise.
+%\FrenchItemizeSpacingfalse	% Pour avoir des \bullet dans les {itemize}
+            				% et ne pas dérégler les espaces verticaux.
+\usepackage[OT1]{fontenc}	% Accents codés dans la fonte.
+%\usepackage[T1]{fontenc}	% Accents codés dans la fonte.
+%\usepackage[latin1]{inputenc}	% Accents 8 bits dans le fichier.
+\usepackage{vmargin}		% Régler la taille de la feuille.
+\usepackage{fancyhdr}		% Régler le titre courant et le bas de page.
+%\usepackage{fancyheadings}
+\usepackage{calc}	    	% Faire des calculs sur les longueurs.
+\usepackage{ifthen}		    % Faire des tests if/then/else.
+\usepackage{pifont}		    % La police \ding.
+\usepackage{supertabular}	% Les grands tableaux.
+\usepackage{longtable}
+\usepackage{multicol}		% Plusieurs colonnes.
+\usepackage{wrapfig}		% Dessins dans le texte.
+\usepackage{fancybox}		% Boîtes avec une ombre pour les parties.
+\usepackage{rotating}		% Pour tourner un texte.
+\usepackage{xspace}		    % Ajuster l'espace après des mots.
+
+
+
+%% Les packages pour les maths.
+
+\usepackage{amsmath}	% Les symboles les plus fréquents.
+\usepackage{amssymb}	% Des symboles.
+\usepackage{amsfonts}	% Des fontes, eg pour \mathbb.
+\usepackage{verbatim}	% Pour les codes sources en informatique.
+\usepackage{mathrsfs}	% Des lettres majuscules cursives (\mathscr).
+%\usepackage{dsfont}
+
+%% Les packages pour les dessins.
+
+\usepackage{array}
+\usepackage{curves}
+\usepackage{epic}
+\usepackage{eepic}
+\usepackage{epsfig}
+\usepackage{graphics}
+\graphicspath{{PS/}}
+
+
+
+
+
+%!!!!!!!!!!!!!!!!!!!!!!                          !!!!!!!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!!!!!!   Présentation globale   !!!!!!!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!!!!!!                          !!!!!!!!!!!!!!!!!!!!!!
+
+%% Une taille standard pour le texte.
+
+%        % Pour centrer le texte sur la page (utilisation courante).
+%\setpapersize{custom}{21.5cm}{26.5cm}
+%\setmarginsrb{43mm}{10mm}{43mm}{15mm}{10mm}{6mm}{0mm}{10mm}
+
+		% Pour envoyer à l'imprimeur.
+		% Nouveau format 17x25, sans changement de la taille du texte
+		% Rajout des 5mm à l'extérieur (13.5 -> 18.5mm),
+		% en haut (1 -> 3.5mm) et en bas (4 -> 6.5mm).
+		% Attention, lors de l'export en postscript, il faut alors passer
+		% l'option -T17cm,25cm à dvips.
+		% En TeTeX 3, il faut également l'option -tunknown pour dvips.
+%\setpapersize{custom}{17cm}{25cm}
+%\setmarginsrb{22.5mm}{3.5mm}{18.5mm}{6.5mm}{10mm}{6mm}{0mm}{10mm}
+
+        % Pour pouvoir utiliser un zoom=3 dans xdvi.
+        % Couplé à l'option -rv de xdvi, cela permet d'éviter les migraines
+        % après $n$ heures devant l'écran.
+%\setpapersize{custom}{12.9cm}{24.5cm}
+%\setmarginsrb{0mm}{1mm}{0mm}{4mm}{10mm}{6mm}{0mm}{10mm}
+
+%%		% Obsolète.
+%%      % Pour envoyer à l'imprimeur.
+%%      % Attention, lors de l'export en postscript, il faut alors passer
+%%      % l'option -T16.5cm,24.5cm à dvips.
+%%\setpapersizeobsolete{custom}{16.5cm}{24.5cm}
+%%\setmarginsrbobsolete{22.5mm}{1mm}{13.5mm}{4mm}{10mm}{6mm}{0mm}{10mm}
+		
+
+\newcommand{\latex}{\LaTeX}
+
+%% Pour que la virgule devienne un séparateur décimal.
+\providecommand\DecimalMathComma{\iflanguage{frenchb}%
+                                 {\mathcode`\,="013B}{}%
+   \addto\extrasfrenchb{\mathcode`\,="013B}}
+
+\providecommand\StandardMathComma{\mathcode`\,="613B%
+   \addto\extrasfrenchb{\mathcode`\,="613B}}
+
+\StandardMathComma
+
+%% Un hack pour que l'espace avant les doubles ponctuations soit un demi-espace.
+
+\makeatletter
+\declare@shorthand{frenchb}{:}{%
+    \ifhmode
+      \ifdim\lastskip>\z@
+        \unskip\penalty\@M\thinspace
+      \else
+        \FDP@thinspace
+      \fi
+    \fi
+    \string:}
+\makeatother
+
+
+
+%!!!!!!!!!!!!!!!!!!!!!!                          !!!!!!!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!!!!!!   Présentation globale   !!!!!!!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!!!!!!                          !!!!!!!!!!!!!!!!!!!!!!
+
+%% Les notes dans la marge.
+
+\newcounter{ifnote}
+\setcounter{ifnote}{1}		% Accepter les notes dans la marge
+%\setcounter{ifnote}{0}		% Refuser  les notes dans la marge
+
+%% Les traits horizontaux pour l'alignement horizontal des énoncés.
+
+\newcounter{IfAlignementEnonces}
+%\setcounter{IfAlignementEnonces}{1}	% Mettre les hachures
+\setcounter{IfAlignementEnonces}{0}	% Ne pas mettre les hachures
+
+%% Les équations numérotées.
+
+\newcounter{Corrige}
+%\newcounter{Chapter}
+\newcounter{Equation}[Corrige]
+%\newcounter{Equation}[Chapter]
+
+
+%%%%%%%%%
+%% AYM %%
+%%%%%%%%%
+
+%%%%% debut macro %%%%
+\makeatletter
+\@addtoreset{Equation}{chapter}
+\renewcommand\theEquation{\thechapter.\arabic{Equation}}
+\makeatother
+%%%%%% fin macro %%%%
+
+
+
+%!!!!!!!!!!!!!!!!!!!!                               !!!!!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!!!!   Mise en page d'un corrigé   !!!!!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!!!!                               !!!!!!!!!!!!!!!!!!!!
+
+%% Le titre courant.
+
+\pagestyle{fancy}
+%\lhead[\thepage]{\footnotesize\LeTitre}
+%\chead[]{}
+%\rhead[\footnotesize\LeTitre]{\thepage}
+\lhead[\thepage]{}
+\chead[\footnotesize\LeTitreCourant]{\footnotesize\LeTitreCourant}
+\rhead[]{\thepage}
+\lfoot[]{}
+\cfoot[]{}
+\rfoot[]{}
+
+%% Le titre du corrigé.
+
+% La variable dans laquelle est stockée le titre
+\newcommand{\LeTitre}{} % Redéfini dans \titre
+\newcommand{\LeTitreCourant}{CHANGER LE TITRE !!!}
+
+% Afficher le titre.
+\newcommand{\Titre}{
+	\begin{center}
+	{\bfseries\Large \LeTitre}
+	\end{center}
+	\vskip 1 cm
+	}
+
+% Synthèse : on n'appelle qu'une seule commande.
+%\newcommand{\titre}[1]{
+%	\renewcommand{\LeTitre}{#1}
+%	\Titre
+%	\stepcounter{Corrige}	% pour \centersnumero
+%        \renewcommand{\labelitemi}{\ensuremath{\bullet}}
+%	}
+
+\newcommand{\titre}[2][]{%
+    \ifthenelse{\equal{#1}{}}{%
+        \renewcommand{\LeTitreCourant}{#2}%
+    }{%
+        \renewcommand{\LeTitreCourant}{#1}%
+    }%
+    \renewcommand{\LeTitre}{#2}%
+    \Titre%
+	\CentersOnPage
+    \stepcounter{Corrige}%   % pour \centersnumero
+        \renewcommand{\labelitemi}{\ensuremath{\bullet}}%
+    }
+
+\newcommand{\ajusterletitrecourant}[1]{%
+	\renewcommand{\LeTitreCourant}{#1}%
+}
+
+%% Quelques commandes de mise en forme.
+
+% Des parties qui se voient bien.
+% Exemple: 
+%	\partie{
+%		Première partie\\[4mm]
+%		Les pincettes optiques
+%	}
+\newcommand{\partie}[1]{%
+	\vspace*{\smallskipamount}%
+	\begin{center}\large\textegras{\scshape #1}\end{center}%
+}
+%\newcommand{\partie}[1]{%
+%	\null\vspace*{\smallskipamount}%
+%	\nopagebreak[4]%
+%	\begin{center}\large\textegras{\scshape #1}\end{center}%
+%}
+
+% Lorsque le titre comporte un numéro (II. \quad Mon titre), on ne peut pas
+% facilement combiner « \partie » et « \\ » à cause de l'alignement vertical.
+% En pareil cas, on peut utiliser \Partie, qui prend deux arguments:
+%	* le numéro de la partie
+%	* le texte
+% Exemple:
+%	\Partie{I}{Mon titre}
+% Bonus: si le titre est long, il sera automatiquement coupé pour passer à
+% la ligne. On peut bien sûr toujours forcer le passage à la ligne à un
+% endroit précis en utilisant « \\ ».
+% Enfin, on peut passer un argument optionnel spécifiant la largeur souhaitée
+% pour le texte: \Partie[6cm]{I}{Mon titre}. Veillez à ne pas utiliser des
+% longueurs trop grandes.
+\newlength{\PartieWidth}
+\newcommand{\Partie}[3][8cm]{%
+    \settowidth{\PartieWidth}{{\large\textegras{\scshape #3}}}%
+    \ifthenelse{\lengthtest{\PartieWidth > #1}}{%
+        \setlength{\PartieWidth}{#1}%
+    }{}%
+    \vspace*{\smallskipamount}%
+    \begin{center}%
+    {\large\textgras{#2.}}{\normalsize\quad}%
+    \begin{minipage}[t]{\PartieWidth}%
+    {\large\textgras{\scshape #3}}%
+    \end{minipage}%
+    \end{center}%
+}
+%\newcommand{\Partie}[3][8cm]{%
+%    \settowidth{\PartieWidth}{{\large\textegras{\scshape #3}}}%
+%    \ifthenelse{\lengthtest{\PartieWidth > #1}}{%
+%        \setlength{\PartieWidth}{#1}%
+%    }{}%
+%    \null\vspace*{\smallskipamount}%
+%	\nopagebreak[4]%
+%    \begin{center}%
+%    {\large\textgras{#2.}}{\normalsize\quad}%
+%    \begin{minipage}[t]{\PartieWidth}%
+%    {\large\textgras{\scshape #3}}%
+%    \end{minipage}%
+%    \end{center}%
+%}
+
+% Des sous-parties standardisées.
+% Si le premier argument contient un point ou un tiret, il est écrit tel quel,
+% sinon il est suivi d'un point.
+% Exemples:
+% \souspartie{1}{Étude d'une fonction}
+%   1. Étude d'une fonction
+% \souspartie{1.2}{Étude d'une fonction}
+%   1.2 Étude d'une fonction
+% \souspartie{1-2}{Étude d'une fonction}
+%   1-2 Étude d'une fonction
+
+\newif\iftiret
+\newif\ifpoint
+
+\def\testtiret{%
+    \futurelet\next\testtiretsuivant%
+}
+\def\testtiretbis#1{%
+    \testtiret%
+}
+\def\testtiretsuivant{%
+    \ifx\next\endoftesttiret\def\endoftesttiret{}%
+    \else\if\next-\tirettrue%
+         \fi%
+         \expandafter\testtiretbis%
+    \fi%
+}
+
+\def\testpoint{%
+    \futurelet\next\testpointsuivant%
+}
+\def\testpointbis#1{%
+    \testpoint%
+}
+\def\testpointsuivant{%
+    \ifx\next\endoftestpoint\def\endoftestpoint{}%
+    \else\if\next.\pointtrue%
+         \fi%
+         \expandafter\testpointbis%
+    \fi%
+}
+
+
+\def\souspartie#1#2{%
+    \vskip\bigskipamount%
+    \ifthenelse{\equal{#1}{}}{%
+        \centers{\textbf{{#1}\quad {#2}}}%
+    }{%
+        \tiretfalse\pointfalse%
+        \testtiret#1\endoftesttiret%
+        \testpoint#1\endoftestpoint%
+        \iftiret \centers{\textbf{{#1}\quad {#2}}}%
+        \else \ifpoint \centers{\textbf{{#1}\quad {#2}}}%
+              \else \centers{\textbf{{#1}.\quad {#2}}}%
+              \fi%
+        \fi%
+        \tiretfalse%
+        \pointfalse%
+    }%
+    \vskip\bigskipamount%
+}
+
+%\newcommand{\souspartie}[2]{%
+%        \vskip\bigskipamount%
+%        \centers{\textbf{{#1}.\quad {#2}}}
+%%        \centers{\textbf{{#1}\quad {#2}}}
+%        \vskip\medskipamount%
+%}
+
+% Pour le cas particulier des indications, il est souhaitable de limiter
+% l'espace avant et après \partie. La commande \Indications est là pour ça.
+\newcommand{\Indications}{% 
+	\vspace{-2mm}% 
+	\centers[0]{{\large\textbf{\scshape Indications}}}% 
+	\medskip 
+}      
+
+% Numéroter les questions.
+\newcommand{\question}[1]{\noindent\fbox{\bfseries#1}}
+
+% Les QCM de l'ENAC.
+%
+% À l'ENAC, le candidat doit répondre à un QCM; pour chaque question, il doit
+% noircir, sur sa feuille de réponse, les rectangles qui correspondent aux
+% affirmations exactes. Les commandes ci-dessous permettent de simuler la
+% feuille de réponse au sein du corrigé.
+%
+% Exemple (les réponses 1 et 4 sont exactes):
+%	\begin{QCM}
+%	\vrai{1}
+%	\vrai{4}
+%	\end{QCM}
+
+\newenvironment{QCM}
+        {
+        \begin{center}
+        \setlength{\unitlength}{1pt}
+%        \begin{picture}(190,15)(0,-15)
+        \begin{picture}(180,15)(0,-15)
+        \allinethickness{0.5pt}
+        \multiput(0,0)(40,0){5}{\line(1,0){20}}
+        \multiput(0,-5)(40,0){5}{\line(1,0){20}}
+        \multiput(0,0)(20,0){10}{\line(0,-1){5}}
+        \put(10,-15){\makebox[0pt]{A}}
+        \put(50,-15){\makebox[0pt]{B}}
+        \put(90,-15){\makebox[0pt]{C}}
+        \put(130,-15){\makebox[0pt]{D}}
+        \put(170,-15){\makebox[0pt]{E}}
+        }
+        {
+        \end{picture} 
+        \end{center}
+        }
+\newcounter{lareponse}
+\newcommand{\vrai}[1]{
+        \setcounter{lareponse}{#1}
+        \addtocounter{lareponse}{-1}  
+        \setcounter{lareponse}{\value{lareponse}*40}
+        \put(\thelareponse,0){\rule[-5pt]{20pt}{5pt}}
+        }
+
+%!!!!!!!!!!!!                                              !!!!!!!!!!!!
+%!!!!!!!!!!!!   Les pages de présentation et les annexes   !!!!!!!!!!!!
+%!!!!!!!!!!!!                                              !!!!!!!!!!!!
+
+% Insérer une page d'énoncé scannée.
+\newcommand{\enonce}[2][0]{%
+        \noindent%
+        \epsfig{file=#2,angle=#1,width=\linewidth,clip=}%
+        \ifthenelse{\value{IfAlignementEnonces} = 1}{%   
+                \begin{picture}(0,0)%
+                \multiput(-400,600)(0,-9){70}{\line(1,0){500}}%
+                \end{picture}%
+        }%
+        {}%
+}
+%\newcommand{\venonce}[2][20.3]{\noindent\centers{\epsfig{file=#2,%
+%	height=#1cm,clip=}}}
+
+% Lorsque les pages d'énoncé ont un rapport hauteur/largeur supérieur à
+% celui d'une page d'Annales, l'utilisation de \enonce entraîne un
+% overfull vbox. Pour éviter cela on utilise \venonce qui fixe la hauteur
+% de la figure incluse et non la largeur. C'est moche mais on n'a pas le
+% choix.
+
+\newcommand{\venonce}[2][21.25]{%
+    \ifthenelse{\value{IfAlignementEnonces} = 1}{%
+        \noindent\centers{\epsfig{file=#2, height=20.8  cm, clip=}}%
+        \begin{picture}(0,0)%
+        \multiput(-50,600)(0,-9){70}{\line(1,0){500}}%
+        \end{picture}%
+    }{%
+        \noindent\centers{\epsfig{file=#2, height=#1cm, clip=}}%
+    }%
+}
+
+
+%% Pour le sommaire.
+\newlength{\Sujet}
+\newlength{\Resume}
+\newlength{\Enonces}
+\newlength{\Corriges}
+\setlength{\Enonces}{7mm} 
+\setlength{\Corriges}{7mm}
+
+\newcommand{\tdmtitresommaire}[1]{
+%	\renewcommand{\LeTitre}{#1}
+	\renewcommand{\LeTitreCourant}{#1}
+	\stepcounter{Corrige}	% pour \centersnumero
+        \renewcommand{\labelitemi}{\ensuremath{\bullet}}
+	\begin{tdmtabular}
+		\mbox{}&\mbox{}\hfill{\bfseries\Large 
+			Sommaire}\hfill\mbox{}&\mbox{}&\mbox{}\\ \\
+	\end{tdmtabular}
+	}
+
+\newenvironment{tdmtabular}{%
+    \begin{tabular}{
+            p{\Sujet}     % Le sujet
+            p{\Resume}       % Les infos
+            p{\Enonces}      % Les pages des énoncés
+            p{\Corriges}}     % Les pages des corrigés
+    }{%
+    \end{tabular}%
+}
+
+% L'espace entre chaque épreuve d'un concours se règle via la commande
+% \tdmspace. Elle vaut 0pt par défaut (et peut devenir négative).
+\newlength{\tdmspace}
+\setlength{\tdmspace}{0pt}
+
+% L'espace entre le résumé et les outils se règle via la longueur suivante,
+% valant \sk par défaut:
+\newlength{\tdmintraspace}
+\setlength{\tdmintraspace}{3pt plus 1pt minus 1pt}
+
+% L'espace avant le titre des concours se règle via
+% \tdmEspaceAvantTitreConcours et vaut 1mm par défaut.
+\newlength{\tdmEspaceAvantTitreConcours}
+\setlength{\tdmEspaceAvantTitreConcours}{1mm}
+
+% De même pour l'espace après les titres des concours, avec 2mm comme valeur
+% par défaut.
+\newlength{\tdmEspaceApresTitreConcours}
+\setlength{\tdmEspaceApresTitreConcours}{2mm}
+
+\newcommand{\tdmoutils}[1]{\par\vskip\tdmintraspace{{\small\slshape#1}}}
+
+\newcommand{\tdmConcours}[1]{%
+    &\mbox{}\hfill{\bfseries\textsc{#1}}\hfill\mbox{}%
+    &&\\[\tdmEspaceApresTitreConcours]%
+}
+
+\newcommand{\tdmPolytechnique}{\tdmConcours{Polytechnique}}
+\newcommand{\tdmXENS}{\tdmConcours{X\ensuremath{\mathgras{/}}ENS}}
+\newcommand{\tdmPetitesMines}{\tdmConcours{Mines}}
+\newcommand{\tdmMines}{\tdmConcours{Mines-Ponts}}
+\newcommand{\tdmENAC}{\tdmConcours{E.N.A.C.}}
+\newcommand{\tdmCentrale}{\tdmConcours{Centrale-Supélec}}
+\newcommand{\tdmCCP}{
+	&\mbox{}\hfill{\bfseries\textsc{Concours Communs}}\hfill\mbox{}&&
+		\\[0.5mm]
+	&\mbox{}\hfill{\bfseries\textsc{Polytechniques}}\hfill\mbox{}%
+		&&\\[\tdmEspaceApresTitreConcours]
+}
+
+\newcommand{\PagesEnoncesCorriges}{
+        && \mbox{}\hfill \begin{sideways}Énoncé\end{sideways}
+        &  \mbox{}\hfill \begin{sideways}Corrigé\end{sideways}
+	\\
+	}
+
+%\newcommand{\Annexes}{\Concours{Annexes}}
+\newcommand{\Annexes}{\Concours{Formulaires}}
+
+% Les commandes obsolètes.
+\newcommand{\outils}[1]{\sk\newline{\small\slshape#1}}
+
+\newenvironment{sommaire}
+%	{\begin{supertabular}{
+	{\begin{longtable}{
+			p{\Sujet}     % Le sujet
+			p{\Resume}       % Les infos
+			p{\Enonces}      % Les pages des énoncés
+			p{\Corriges}     % Les pages des corrigés
+	        }
+	}
+%	{\end{supertabular}}
+	{\end{longtable}}
+
+\newcommand{\titresommaire}[1]{
+%	\renewcommand{\LeTitre}{#1}
+	\renewcommand{\LeTitreCourant}{#1}
+	\stepcounter{Corrige}	% pour \centersnumero
+        \renewcommand{\labelitemi}{\ensuremath{\bullet}}
+	\begin{sommaire}
+		\mbox{}&\mbox{}\hfill{\bfseries\Large 
+			Sommaire}\hfill\mbox{}&\mbox{}&\mbox{}\\ \\
+	\end{sommaire}
+	}
+
+%\newlength{\ConcoursSkip}
+%\newcommand{\Concours}[1]
+%	{&\mbox{}\hskip\ConcoursSkip{\bfseries\textsc{#1}}&&\\ \\}
+\newcommand{\Concours}[1]
+	{&\mbox{}\hfill{\bfseries\textsc{#1}}\hfill\mbox{}&&\\ \\}
+
+\newcommand{\Polytechnique}{\Concours{Polytechnique}}
+\newcommand{\XENS}{\Concours{X\ensuremath{\mathgras{/}}ENS}}
+\newcommand{\PetitesMines}{\Concours{Mines}}
+\newcommand{\Mines}{\Concours{Mines-Ponts}}
+\newcommand{\ENAC}{\Concours{E.N.A.C.}}
+\newcommand{\Centrale}{\Concours{Centrale-Supélec}}
+%\newcommand{\CCP}{\Concours{
+%	\mbox{}\hskip-3mm
+%	\begin{minipage}[t]{4cm}
+%	Concours Communs\newline Polytechniques
+%	\end{minipage}
+%	}}
+\newcommand{\CCP}{
+	&\mbox{}\hfill{\bfseries\textsc{Concours Communs}}\hfill\mbox{}&&
+		\\[0.5mm]
+	&\mbox{}\hfill{\bfseries\textsc{Polytechniques}}\hfill\mbox{}&&\\ \\
+}
+
+%% Pour le sommaire croisé.
+\newlength{\TitreCouche}
+
+% Pour 2004
+\newcommand{\LegendeSommaire}{\begin{turn}{270}%
+        \raisebox{2.6cm}{%
+                \begin{tabular}{@{}c@{\,}l@{\quad}l@{}}
+                \raisebox{0pt}{\scriptsize\ding{172}}
+                                &:& 1 fois depuis 1999          \\[-2mm]
+                \raisebox{-1pt}{\ding{173}}
+                                &:& 2 fois depuis 1999          \\[-2mm]
+                \vdots          &&                              \\[-2mm]
+                \raisebox{-4pt}{\LARGE\ding{176}}
+                                &:& 5 fois depuis 1999          \\
+                \raisebox{0pt}{\scriptsize\ding{182}}
+                               &:& 1 fois depuis 1999 dont 2004
+							        \\[-2mm]
+                \raisebox{-1pt}{\ding{183}}
+                                &:& 2 fois depuis 1999 dont 2004          
+                                                                \\[-2mm]
+                \vdots          &&                              \\[-2mm]
+                \raisebox{-5.5pt}{\huge\ding{187}}
+                                &:& 6 fois depuis 1999 dont 2004
+                \end{tabular}%
+        }
+        \end{turn}%
+        }
+
+% Pour 2005
+\newcommand{\LegendeSommaireCinq}{\begin{turn}{270}%
+        \raisebox{2.6cm}{%
+                \begin{tabular}{@{}c@{\,}l@{\quad}l@{}}
+                \raisebox{0pt}{\scriptsize\ding{172}, \scriptsize\ding{173}}
+                                &:& 1 ou 2 fois depuis 1999          \\[-2mm]
+                \raisebox{-1pt}{\ding{174}}
+                                &:& 3 fois depuis 1999          \\[-2mm]
+                \vdots          &&                              \\[-2mm]
+                \raisebox{-4pt}{\LARGE\ding{177}}
+                                &:& 6 fois depuis 1999          \\
+                \raisebox{0pt}{\scriptsize\ding{182}, \scriptsize\ding{183}}
+                               &:& 1 ou 2 fois depuis 1999 dont 2005
+                                    \\[-2mm]
+                \raisebox{-1pt}{\ding{184}}
+                                &:& 3 fois depuis 1999 dont 2005
+                                                                \\[-2mm]
+                \vdots          &&                              \\[-2mm]
+                \raisebox{-5.5pt}{\huge\ding{188}}
+                                &:& 7 fois depuis 1999 dont 2005
+                \end{tabular}%
+        }
+        \end{turn}%
+		}
+
+% Pour 2006
+% On cesse d'utiliser les commandes \scriptsize, ..., \huge, et on utilise une 
+% échelle linéaire.
+% Le plus petit rond mesure 1mm, le plus grand 3mm: on place les autres 
+% à intervalles réguliers entre les deux.
+
+% La valeur de 1/(annee-1999+1) pour déterminer les intervalles.
+\newlength{\tailleminsommairecroise}
+\newlength{\taillemaxsommairecroise}
+\newlength{\intervallesommairecroise}
+\newlength{\hauteursommairecroise}
+\newlength{\grandehauteursommairecroise}
+\newlength{\longueursommairecroise}
+
+\setlength{\tailleminsommairecroise}{1mm}
+\setlength{\taillemaxsommairecroise}{2mm}
+
+\newcommand{\LegendeSommaireCroise}[1]{%
+	\ifthenelse{\equal{#1}{2006}}{%
+		\begin{turn}{270}%
+        \raisebox{2.6cm}{%
+        	\begin{tabular}{@{}c@{\,}l@{\quad}l@{}}
+            \raisebox{0pt}{\resizebox{%
+			\tailleminsommairecroise+\intervallesommairecroise}{!}{%
+			\ding{172}}}
+                                &:& 1 fois depuis 1999          \\[-2mm]
+            \raisebox{-1pt}{\resizebox{%
+			\tailleminsommairecroise+2\intervallesommairecroise}{!}{%
+			\ding{173}}}%
+                                &:& 2 fois depuis 1999          \\[-2mm]
+                \vdots          &&                              \\[-2mm]
+                \raisebox{-4pt}{\resizebox{%
+				\tailleminsommairecroise+7\intervallesommairecroise}{!}{%
+				\ding{178}}}%
+                                &:& 7 fois depuis 1999          \\
+                \raisebox{0pt}{\resizebox{%
+				\tailleminsommairecroise+\intervallesommairecroise}{!}{%
+				\ding{182}}}
+                               &:& 1 fois depuis 1999 dont 2006
+                                    \\[-2mm]
+                \raisebox{-1pt}{\resizebox{%
+				\tailleminsommairecroise+2\intervallesommairecroise}{!}{%
+				\ding{183}}}
+                                &:& 2 fois depuis 1999 dont 2006
+                                                                \\[-2mm]
+                \vdots          &&                              \\[-2mm]
+                \raisebox{-5.5pt}{\resizebox{%
+				\tailleminsommairecroise+8\intervallesommairecroise}{!}{%
+				\ding{189}}}
+                                &:& 8 fois depuis 1999 dont 2006
+                \end{tabular}%
+        }
+        \end{turn}%
+	}{%
+	% else: l'an prochain
+	}
+}
+
+\newcommand{\presentation}[1]{ 
+        \mbox{}
+        \thispagestyle{empty}
+        \vfill
+        \centers{{\bfseries\Huge #1}}
+        \mbox{}
+        \vskip2cm
+        \mbox{}
+        \vfill
+        \mbox{}
+        \newpage
+}
+\newcommand{\formulaires}{\presentation{Formulaires}}
+
+\newcommand{\presentationCCP}[1]{
+        \mbox{}
+        \thispagestyle{empty}
+        \vfill
+        \centers{{\bfseries\Huge Concours Communs}}
+        \centers{{\bfseries\Huge Polytechniques}}
+        \mbox{}
+        \vskip2cm
+        \mbox{}
+        \vfill
+        \mbox{}
+        \newpage
+}
+
+% L'ISBN.
+\newcommand{\ISBN}{XXXXXXXXXXXX}
+
+% Aligner dans les annexes de maths.
+\newlength{\alignelength}
+\newcommand{\aligne}[3]{%
+        \settowidth{\alignelength}{#2}%
+        #2%
+        \hskip-\alignelength%  
+        \hskip #1 cm%
+        #3%
+        }
+
+% N'indiquer que le numéro de page dans le titre courant (annexes).
+\newcommand{\JusteNumeroPage}{
+%	\renewcommand{\LeTitre}{}
+	\renewcommand{\LeTitreCourant}{}
+	\renewcommand{\headrulewidth}{0pt}
+%	\setlength{\headrulewidth}{0pt}
+	}
+
+% Utiliser à nouveau un titre courant complet (annexes).
+\newcommand{\mkTitreCourant}[1]{
+%	\renewcommand{\LeTitre}{#1}
+	\renewcommand{\LeTitreCourant}{#1}
+	\renewcommand{\headrulewidth}{0.5pt}
+%	\setlength{\headrulewidth}{0.5pt}
+	}
+
+% « Insérer une page blanche. » Plus utile depuis 1999...
+\newcommand{\pageblanche}[1][\thepage]{\thispagestyle{empty}  
+        \mbox{} \vskip 2 cm%
+        \Centers{{\bfseries\huge Ne pas imprimer}}\par%
+        \Centers{{\bfseries\huge Insérer une page blanche}}%
+        \vskip 3 cm%
+        \Centers{{\bfseries\huge Page #1}}%
+        \clearpage
+        }
+
+
+%!!!!!!!!!!!!!!!!!!!!!                             !!!!!!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!!!!!   Des commandes pratiques   !!!!!!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!!!!!                             !!!!!!!!!!!!!!!!!!!!!
+
+%% On ne veut pas que les lettres majuscules soient inclinées dans les
+%% formules mathématiques.
+
+\mathcode`A="7041 \mathcode`B="7042 \mathcode`C="7043 \mathcode`D="7044
+\mathcode`E="7045 \mathcode`F="7046 \mathcode`G="7047 \mathcode`H="7048
+\mathcode`I="7049 \mathcode`J="704A \mathcode`K="704B \mathcode`L="704C
+\mathcode`M="704D \mathcode`N="704E \mathcode`O="704F \mathcode`P="7050
+\mathcode`Q="7051 \mathcode`R="7052 \mathcode`S="7053 \mathcode`T="7054
+\mathcode`U="7055 \mathcode`V="7056 \mathcode`W="7057 \mathcode`X="7058
+\mathcode`Y="7059 \mathcode`Z="705A
+
+
+%% Rendre les guillemets ('«' et '»') actifs.
+%%
+%% Attention, cela implique de ne pas mettre d'espace après '«'
+%% ni avant '»' dans le code source.
+%%
+%% Exemple de composition correcte: «comme ceci».
+
+%\catcode`\«=\active
+%\catcode`\»=\active
+%\def«{\og\ignorespaces}
+%\def»{{\fg}}
+
+\newcommand{\ofg}[1]{\og{}#1\fg{}}
+
+% L'environnement {remarque}.
+
+% Le test \ifremarque est utile pour \leftcentersright.
+\newif\ifremarque
+
+\newenvironment{remarque}
+        {\remarquetrue\bigskip\noindent\begin{filet}}   % Voir plus bas.
+        {\end{filet}\bigskip\remarquefalse}
+
+% L'environnement {indications}. Le nom « custom-itemize » est plus 
+% « générique »...
+\newenvironment{custom-itemize}[1]%
+	{%
+	\begin{list}{}%
+		{%
+		\settowidth{\labelwidth}{#1}%
+		\setlength{\leftmargin}{\labelwidth+\labelsep}%
+		}%
+        }%
+        {\end{list}}
+\newenvironment{indications}[1]{\begin{custom-itemize}{#1}}%
+	{\end{custom-itemize}}
+
+% Insérer une ligne de séparation horizontale.
+\newcommand{\separation}{\begin{center}\rule{3 cm}{1 pt}\end{center}}
+\newcommand{\Separation}{\separation}
+
+% Indenter les paragraphes dans une minipage.
+
+\newlength{\longueurindentation}
+\setlength{\longueurindentation}{\parindent}
+
+\newcommand{\indenter}{\hskip\longueurindentation}
+
+
+
+% La communication entre auteurs et relecteurs est un facteur très
+% important dans la qualité finale des Annales. Les commandes suivantes
+% servent à la faciliter.
+%
+% Lorsque l'auteur souhaite poser une question à ses relecteurs
+% scientifiques, ou leur expliquer pourquoi il n'est pas d'accord avec
+% telle ou telle proposition, ou encore pour dialoguer avec le relecteur
+% typographique, le moyen « immédiat » est d'écrire, dans un courrier
+% électronique, quelque chose comme « page 7, question I.4.b, paragraphe
+% 2, ligne 7, je pense que ··· ». Ce n'est pas très ergonomique !
+%
+% La commande \note permet d'ajouter un commentaire directement dans le
+% corrigé ou, plutôt, dans la marge du corrigé. De la sorte, la question
+% ou le commentaire est vu par le relecteur (scientifique ou typo)
+% directement dans le contexte: finis les allers et retours entre le
+% corrigé et le mail. C'est bien plus pratique pour tout le monde.
+%
+% L'équipe des Annales a défini deux manières de présenter les notes.
+% La commande \notesimple met le commentaire dans la marge; \notenumero
+% indique en outre un numéro bien visible. Si vous écrivez toutes vos
+% remarques avec \note, vous obtenez par défaut l'effet de \notenumero,
+% mais vous pouvez obtenir le même rendu que par \notesimple avec
+% l'option 0 ou simple.
+%
+% Exemple:
+% [···] ce qui se résout\notenumero{résoud ou résout?} en [···]
+%
+% Un inconvénient de ces différentes commandes est qu'elles ne peuvent
+% pas s'écrire dans certains environnements. Pour pallier ce
+% problème, vous disposez des commandes \notemark et \notetext. Elles
+% s'utilisent sur le même modèle que \footnotemark et \footnotetext.
+% Pour repérer un endroit dans un environnement, il suffit d'utiliser 
+% \notemark qui place le numéro dans le texte (de la même manière que
+% \notenumero). Pour ensuite écrire la note correspondante, il faut
+% utiliser la commande \notetext en dehors de l'environnement, soit
+% avant soit après; elle comportera le même numéro. 
+%
+% Vous pouvez utiliser plusieurs \notemark dans le même environnement.
+% La numérotation sera respectée à condition d'écrire les \notetext
+% dans le même ordre (mais certains peuvent être avant l'environnement 
+% et les suivants après, cela n'a pas d'importance).
+%
+% Vous pouvez utiliser dans votre corrigé à la fois des \note et
+% \notetext; la numérotation sera correcte sous réserve que vous
+% preniez garde à ce qu'il y ait autant de \notemark que de \notetext
+% entre deux occurences de \note.
+%
+% Exemple : 
+% [...]\notetext{résoud ou résout ?}
+% \begin{remarque}
+% [···] ce qui se résout\notemark en [···] 
+% \end{remarque}
+%
+% Dans quelques rares cas (\partie, \Partie, \arraybox, \vect, \rest
+% principalement), lors d'une utilisation de \notemark, le compteur
+% sera incrémenté d'une unité de trop. Ceci est dû aux \settowidth ou
+% \settoheight de ces commandes. Il faut donc éviter d'utiliser
+% \notemark dans ces circonstances.
+%
+% Important : pour toutes ces commandes, il ne faut pas laisser d'espace
+% avant le '\' sinon l'espace final sera trop grand.
+
+
+\reversemarginpar
+\marginparwidth 3.1cm
+
+
+\newcounter{Note}[page]
+\setcounter{Note}{0}
+
+\newcounter{notesimple}
+\setcounter{notesimple}{0}
+
+% Pour les environnements hostiles
+\newcounter{notemark}
+\setcounter{notemark}{0}
+\newcounter{notemarkref}
+\setcounter{notemarkref}{0}
+\newcounter{notetext}
+\setcounter{notetext}{0}
+\newcounter{notetextref}
+\setcounter{notetextref}{0}
+
+% Les compteurs \*ref servent à se rappeler où on en est, par exemple
+% dans le cas où plusieurs \notemark se suivent avant l'apparition du
+% premier \notetext; il faut en effet que le numéro de celui-ci
+% corresponde au numéro du premier \notemark.
+
+\newcommand{\notemark}{%
+	\ifthenelse{\equal{\value{notemark}}{\value{notemarkref}}}{%
+        		%on est au debut de l'environnement (premiere note)
+        	\refstepcounter{notemark}%
+        	\refstepcounter{notemarkref}%
+        	\setcounter{Note}{\value{notemark}}%
+       }{%
+        		%notes suivantes
+        	\refstepcounter{notemark}%
+        	\setcounter{Note}{\value{notemark}}%
+	}%
+			%on prepare la suite
+	\setcounter{notetextref}{\value{notemarkref}}%
+			%on écrit le numéro
+	\begin{picture}(0,0)%
+        	\put(-3,-3){\LARGE\theNote}
+	\end{picture}\xspace
+}
+
+\newcommand{\notetextbase}[1]{%
+        \ifthenelse{\value{ifnote} = 1}{%
+        \marginpar{\notedebasenumero{#1}}%
+        }{}%
+}
+
+\newcommand{\notetext}[1]{
+	\ifthenelse{\equal{\value{notetext}}{\value{notetextref}}}{%
+        		%on est a la première note
+        	\refstepcounter{notetext}%
+        	\refstepcounter{notetextref}%
+        	\setcounter{Note}{\value{notetext}}
+        }{
+       			 %notes suivantes
+        	\refstepcounter{notetext}%
+        	\setcounter{Note}{\value{notetext}}
+	}%
+			%on prepare la suite
+\setcounter{notemarkref}{\value{notetextref}}%
+\notetextbase{#1}%
+}
+
+
+
+\newcommand{\notedebase}[1]{%
+	\raggedright%
+        \footnotesize%
+        \vskip-0.5\baselineskip
+        \rule[-1.4mm]{\linewidth}{0.5pt}
+        \rule[1.4mm]{\linewidth}{0.5pt} \\%
+        \vskip-0.5\baselineskip
+        #1 \\%
+        \vskip-\baselineskip
+        \rule[-1.4mm]{\linewidth}{0.5pt}
+        \rule[1.4mm]{\linewidth}{0.5pt} \\%
+}
+
+\newcommand{\notedebasenumero}[1]{%
+	{\LARGE\theNote}
+	\notedebase{#1}%
+}
+
+\newcommand{\notesimple}[1]{%
+	\ifthenelse{\value{ifnote} = 1}{%
+	\marginpar{\notedebase{#1}}%	
+	}{}%
+}
+
+\newcommand{\notenumero}[1]{%
+        \ifthenelse{\value{ifnote} = 1}{%
+        \refstepcounter{Note}%
+        \setcounter{notemarkref}{\value{Note}}%
+        \setcounter{notetextref}{\value{Note}}%
+        \setcounter{notemark}{\value{Note}}%
+        \setcounter{notetext}{\value{Note}}%
+        \begin{picture}(0,0)%
+        \put(-3,-3){\LARGE\theNote}
+        \end{picture}%
+        \ifthenelse{\isodd{\value{Note}}}{%
+        	\protect\reversemarginpar%
+	      	\marginpar[{\notedebasenumero{#1}}]{\notedebasenumero{#1}}}{%
+           	\protect\normalmarginpar%
+       		\marginpar[{\notedebasenumero{#1}}]{\notedebasenumero{#1}}}%
+        }{}%
+}
+
+\newcommand{\typo}[1]{\notenumero{#1}}
+
+\newcommand{\note}[2][1]{%
+	\ifthenelse{\equal{#1}{0} \or \equal{#1}{simple}}{%
+                \setcounter{notesimple}{1}%
+        }{}%
+	%
+	\ifthenelse{\value{notesimple} = 0}{%
+		\notenumero{#2}%
+	}{%
+		\notesimple{#2}%
+	}
+}
+
+
+
+%!!!!!!!!!!!!!!!!!!!                                 !!!!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!!!   Petits raccourcis pratiques   !!!!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!!!                                 !!!!!!!!!!!!!!!!!!!
+
+% Les espaces verticaux et horizontaux.
+\newcommand{\sk}{\smallskip}
+\newcommand{\mk}{\medskip}
+\newcommand{\bk}{\bigskip}
+\newcommand{\vk}{\vskip 1.5 cm}
+\newcommand{\hk}{\hskip 1 cm\relax}
+\newcommand{\marge}{\noindent}
+\newcommand{\dquad}{\hskip.5em\relax}
+
+% Quelques raccourcis pour des expressions, en italique ou pas.
+\newcommand{\mkemph}[1]{\text{\emph{#1}}\xspace}
+\newcommand{\etc}{etc.\xspace}
+\newcommand{\apriori}{a priori\xspace}
+\newcommand{\afortiori}{a fortiori\xspace}
+\newcommand{\ie}{\mkemph{ie}}
+\newcommand{\infine}{in fine\xspace}
+\newcommand{\ssi}{\mkemph{ssi}}
+\newcommand{\cf}{cf.\xspace}
+\newcommand{\tiret}{\textbf{--}\xspace} % plus épais que la normale
+
+% Mettre du texte en \texttt.
+\newcommand{\ttt}[1]{\texttt{#1}}
+\newcommand{\web}[1]{%
+    \NoAutoSpaceBeforeFDP%  Pas d'espace avant les ':' et ';'
+	\makeatletter%
+	\texttt{#1}%
+	\makeatother%
+    \AutoSpaceBeforeFDP%
+} % Gère '@'.
+
+% Pour les adresses email.
+% Exemple: \email{contact}{H-K.fr}
+\newcommand{\email}[2]{%
+    \texttt{#1}%
+    {\fontfamily{ptm}\selectfont\at}%
+    \texttt{#2}%
+    }
+
+% Quelques raccourcis.
+\newcommand{\mbx}[1]{\mbox{#1}}	% Anti-goliotages...
+\newcommand{\unentoure}{\ding{172}}
+\newcommand{\deuxentoure}{\ding{173}}
+\newcommand{\troisentoure}{\ding{174}}
+\newcommand{\quatreentoure}{\ding{175}}
+\newcommand{\cinqentoure}{\ding{176}}
+
+% Les « e dans l'o » de merde et autres raccourcis standards.
+\newcommand{\coeur}{c{\oe}ur\xspace}
+\newcommand{\Coeur}{C{\oe}ur\xspace}
+\newcommand{\coeurs}{c{\oe}urs\xspace}
+\newcommand{\Coeurs}{C{\oe}urs\xspace}
+\newcommand{\choeur}{ch{\oe}ur\xspace}
+\newcommand{\Choeur}{Ch{\oe}ur\xspace}
+\newcommand{\choeurs}{ch{\oe}urs\xspace}
+\newcommand{\Choeurs}{Ch{\oe}urs\xspace}
+\newcommand{\oeuvre}{{\oe}uvre\xspace}
+\newcommand{\Oeuvre}{{\OE}uvre\xspace}
+\newcommand{\oeuvres}{{\oe}uvres\xspace}
+\newcommand{\Oeuvres}{{\OE}uvres\xspace}
+\newcommand{\oeil}{{\oe}il\xspace}
+\newcommand{\Oeil}{{\OE}il\xspace}
+\newcommand{\oeuf}{{\oe}uf\xspace}
+\newcommand{\oeufs}{{\oe}ufs\xspace}
+\newcommand{\noeud}{n{\oe}ud\xspace}
+\newcommand{\noeuds}{n{\oe}uds\xspace}
+\newcommand{\Noeud}{N{\oe}ud\xspace}
+\newcommand{\Noeuds}{N{\oe}uds\xspace}
+\newcommand{\soeur}{s{\oe}ur\xspace}
+\newcommand{\soeurs}{s{\oe}urs\xspace}
+\newcommand{\Soeur}{S{\oe}ur\xspace}
+\newcommand{\Soeurs}{S{\oe}urs\xspace}
+\newcommand{\voeu}{v{\oe}u\xspace}
+\newcommand{\Voeu}{V{\oe}u\xspace}
+\newcommand{\voeux}{v{\oe}ux\xspace}
+\newcommand{\Voeux}{V{\oe}ux\xspace}
+%\newcommand{\madame}{M${}^{{\rm me}}$\xspace}   
+\newcommand{\madame}{M\textsuperscript{me}\xspace}   
+\newcommand{\Mme}{\madame}
+%\newcommand{\mademoiselle}{M${}^{{\rm lle}}$\xspace}
+\newcommand{\mademoiselle}{M\textsuperscript{lle}\xspace}
+\newcommand{\mamzelle}{\mademoiselle}   
+\newcommand{\Melle}{\mademoiselle}   
+%\newcommand{\docteur}{D${}^{{\rm r}}$\xspace}
+\newcommand{\docteur}{D\textsuperscript{r}\xspace}
+\newcommand{\Dr}{\docteur}
+\newcommand{\HK}{H{\footnotesize\&}K\xspace}
+	% Attention, cela ne marche que pour la taille standard.
+%\newcommand{\maitre}{M${}^{{\rm e}}$\xspace}
+\newcommand{\maitre}{M\textsuperscript{e}\xspace}
+
+%!!!!!!!!!!!!!!                                           !!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!   Commandes spécifiques de mise en page   !!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!                                           !!!!!!!!!!!!!!
+
+% Faire des tableaux dans lesquels les lignes sont bien espacées.
+% Cet environnement « éloigne » toutes les lignes d'un tableau, ce qui peut
+% être utile lorsque les lignes sont systématiquement séparées par des traits.
+%
+% L'argument optionnel permet d'adapter le taux d'éloignement.
+%
+% Pour écarter les lignes horizontales autour d'une ligne particulière du
+% tableau, plutôt que pour tout le tableau, on utilisera plutôt \vphantom,
+% comme dans les exemples ci-dessous:
+%	\vphantom{$\Sum{}{}$}
+%	\vphantom{$\Int{}{}$}
+%	\vphantom{$\Sum{0}{1}$}
+%	\vphantom{\rule{1cm}{1cm}}
+%
+% Exemple :	\begin{ltab}
+%		\begin{tabular}···\end{tabular}
+%		\end{ltab}
+
+\newenvironment{ltab}[1][2]{%
+        \renewcommand{\arraystretch}{#1}}{%
+        \renewcommand{\arraystretch}{1}}
+
+% Pour placer deux {minipage} côte à côte de manière à optimiser l'espace
+% horizontal disponible, il faut spécifier des largeurs dont la somme fait
+% la largeur de la page. Une manière plus pratique est de ne spécifier que
+% la largeur de la première {minipage} et d'utiliser \complete comme 
+% ci-dessous pour spécifier la largeur de la deuxième.
+%
+% Attention à ne pas oublier le \noindent, sinon LaTeX vous avertira d'un
+% 'Overfull hbox'.
+%
+% Exemple:	\noindent
+%		\begin{minipage}{5cm}···\end{minipage}
+%		\begin{minipage}{\complete{5}}···\end{minipage}
+%
+% Exemple:	\noindent
+%		\begin{minipage}{5cm}···\end{minipage}
+%		\hskip1cm
+%		\begin{minipage}{\complete{6}}···\end{minipage}
+
+\newcommand{\complete}[1]{\linewidth - #1 cm - 3 pt}
+
+% Pour les dessins avec LaTeX.
+%
+% Cet environnement permet d'augmenter proprement la taille des traits
+% dans un dessin fait avec latex. Le paramètre à passer peut prendre n'importe
+% quelle valeur positive. Une valeur de 0.5 correspond à ne rien changer à 
+% l'épaisseur des traits. Une valeur de 2.5 correspond à multiplier
+% l'épaisseur des traits par 5, etc.
+%
+% ATTENTION: le positionnement des figures dépend de la version de LaTeX
+% lorsque \allinethickness est utilisé. Autrement dit, n'utilisez JAMAIS cet
+% environnement pour des traits qui doivent être placés finement, comme des
+% axes d'un repère, des hachures ou encore en chimie organique.
+%
+% Exemple:	\begin{epaisseur}{1}	% Doubler l'épaisseur des traits
+%		\begin{picture}(0,0)···\end{picture}
+%		\end{epaisseur}
+
+\newenvironment{epaisseur}[1]
+        {\allinethickness{#1 pt}}
+        {\allinethickness{0.5 pt}}
+
+% On souhaite parfois ajouter des annotations sur une courbe réalisée avec
+% gnuplot (par exemple). Une solution pratique est d'inclure cette courbe
+% (au format postscript) avec \epsfig puis de créer un dessin de taille
+% nulle (\begin{picture}(0,0)), dans lequel on ajoute les éléments souhaités
+% (comme un vecteur (\vector) ou une valeur, $\pi$, etc.) grâce à la commande
+% \put de LaTeX. Le problème avec cette méthode est qu'il faut deviner les
+% « bonnes coordonnées » du point en lequel on souhaite placer un élément.
+% Pour faciliter cette recherche des coordonnées, la commande \reperes dessine
+% des graduations sur un repère virtuel. Ces graduations sont espacées de
+% 10 points en 10 points, avec des traits plus grands pour les cinquantaines
+% et les centaines. La commande \reperes prend un argument optionnel, qui est
+% le nombre de graduations souhaité. La valeur par défaut est 20.
+%
+% Exemple:	\begin{picture}(0,0)
+%		\reperes[15]
+%		\put(37,48){$\f{\pi}{2}$}	% Comment trouver (37,48) ?
+%		\end{picture}
+%
+% Attention, cette commande a vocation à être temporaire, elle ne sert qu'à
+% trouver des coordonnées. N'oubliez pas de l'effacer de votre fichier une
+% fois votre dessin terminé.
+
+\newcounter{cinquantaine}
+\newcounter{centaine}
+\newcommand{\reperes}[1][20]{
+	\ifthenelse{\value{ifnote} = 1}{%
+		\setcounter{cinquantaine}{#1/5+1}%
+		\setcounter{centaine}{#1/10+1}%
+		\multiput(0,0)(10,0){#1}{\line(0,1){1}}%
+		\multiput(0,0)(10,0){#1}{\line(0,-1){1}}%
+		\multiput(0,0)(0,10){#1}{\line(1,0){1}}%
+		\multiput(0,0)(0,10){#1}{\line(-1,0){1}}%
+		\multiput(0,0)(-10,0){#1}{\line(0,1){1}}%
+		\multiput(0,0)(-10,0){#1}{\line(0,-1){1}}%
+		\multiput(0,0)(0,-10){#1}{\line(1,0){1}}%
+		\multiput(0,0)(0,-10){#1}{\line(-1,0){1}}%
+		\multiput(0,0)(50,0){\thecinquantaine}{\line(0,1){3}}%
+		\multiput(0,0)(50,0){\thecinquantaine}{\line(0,-1){3}}%
+		\multiput(0,0)(0,50){\thecinquantaine}{\line(1,0){3}}%
+		\multiput(0,0)(0,50){\thecinquantaine}{\line(-1,0){3}}%
+		\multiput(0,0)(-50,0){\thecinquantaine}{\line(0,1){3}}%
+		\multiput(0,0)(-50,0){\thecinquantaine}{\line(0,-1){3}}%
+		\multiput(0,0)(0,-50){\thecinquantaine}{\line(1,0){3}}%
+		\multiput(0,0)(0,-50){\thecinquantaine}{\line(-1,0){3}}%
+		\multiput(0,0)(100,0){\thecentaine}{\line(0,1){5}}%
+		\multiput(0,0)(100,0){\thecentaine}{\line(0,-1){5}}%
+		\multiput(0,0)(0,100){\thecentaine}{\line(1,0){5}}%
+		\multiput(0,0)(0,100){\thecentaine}{\line(-1,0){5}}%
+		\multiput(0,0)(-100,0){\thecentaine}{\line(0,1){5}}%
+		\multiput(0,0)(-100,0){\thecentaine}{\line(0,-1){5}}%
+		\multiput(0,0)(0,-100){\thecentaine}{\line(1,0){5}}%
+		\multiput(0,0)(0,-100){\thecentaine}{\line(-1,0){5}}%
+	}%
+	{}%
+}
+
+% Pour créer des courbes, vous pouvez utiliser les extensions LaTeX PGF et
+% TikZ (à la manière de l'environnement {picture}, mais beaucoup plus 
+% puissantes). Attention, ce cas est un peu particulier, car il vous est 
+% impossible de les utiliser directement dans le corrigé, il vous faut créer 
+% un fichier à part que vous placerez ensuite dans le sous-répertoire PS/ de 
+% votre corrigé.
+%
+% Pour plus d'informations, consultez la Doc à ce sujet:
+% http://auteurs.h-k.fr/annales/Doc/Graphique/Utiliser_l_extension_PGF_Ti.html
+%
+% Voici un exemple minimal:
+%
+% \input{annales.sty}
+% \usepackage{tikz}
+% \pagestyle{empty}
+% \begin{document}
+% 
+% \begin{dessinpgf}{1cm}{.05cm}
+%	\draw [->] (-2,0) -- (2,0) node [pos=1, below] {$\log x$};
+%	\draw [->] (0,-50) -- (0,20) node [pos=1, left] {$G$};
+%	\draw [dashed] (-2,12) -- (0,12) -- (1.5,-48) node
+%		[pos=.65,above,sloped] {$-40\U{dB/dec}$};
+%	\draw (0,12) node [right] {$G_0 $};
+%	\draw plot [samples=200,id=exp1,domain=-2:1.5] function {12.0 -10.0*
+%		log10((1.0-10.**(2.*x))**2 + 22.47*10.**(2.*x))};
+% \end{dessinpgf}
+%
+% \end{document}
+
+\newenvironment{dessinpgf}[3][]{%
+		\begin{tikzpicture}[#1]%
+		\pgfsetxvec{\pgfpoint{#2}{0pt}}%
+		\pgfsetyvec{\pgfpoint{0pt}{#3}}%
+	}{%
+		\end{tikzpicture}%
+}
+
+
+% \mathbf ne suffit pas toujours à mettre en gras. En pareil cas, on peut
+% avoir recours à \mathgras. Il ne vaut toutefois mieux pas l'utiliser
+% systématiquement, car il ralentit la compilation du corrigé.
+%
+% Exemple : $a \mathgras{=} b$.
+% 
+% Deux autres avantages: d'une part, tout texte en indice ou en exposant
+% est automatiquement en gras; d'autre part, la police reste la même (ce
+% qui n'est pas le cas avec \mathbf).  
+
+\newcommand{\mathgras}[1]{\grastrue\ensuremath{%
+	{\text{\mathversion{bold}\ensuremath{#1}}}%
+	}\grasfalse}
+
+% Pour tout mettre en gras, on peut aussi utiliser \textegras ou \gras
+% et \nongras, qui présentent l'avantage d'obtenir les lettres
+% n'existant pas en gras.
+%
+% Exemple: \textegras{On a $a = b$.}
+% 	   \gras On a $a = b$. \nongras
+%
+% Ces commandes sont dues à Walter et présentes dans la définition de
+% \partie, \Partie et des commandes à base de \mathBB.
+
+\newcommand{\textegras}[1]{\grastrue\textbf{\mathversion{bold}#1}\grasfalse}%
+\newcommand{\textgras}[1]{\textegras{#1}}
+\newcommand{\gras}{\grastrue\bfseries\mathversion{bold}}%
+\newcommand{\nongras}{\grasfalse\mathversion{normal}\normalfont}
+
+\newif\ifgras
+
+% Numéroter les parties et sous-parties (annexes).
+\renewcommand{\thesection}{\Roman{section}}
+\renewcommand{\thesubsection}{\arabic{subsection}}
+
+% Pour commencer sur une page de droite et laisser proprement une page
+% blanche en cas de besoin.
+\newcommand{\clearemptydoublepage}{\newpage{\pagestyle{empty}\cleardoublepage}}
+
+% Des points de suspension sans limite de longueur.
+\def\leaderfill{\leaders\hbox to 1ex{\hss.\hss}\hfill}
+
+% Un peu spécieux, mais en fait pratique pour les annexes de maths.
+\newcommand{\es}[1]{\ensuremath{#1}}
+
+% Insérer une page de séparation, qui contient par exemple « Annexes » en
+% énorme centré sur la page.
+\newcommand{\pageseparation}[1]{%   
+	\thispagestyle{empty}
+        \mbox{}\vfill
+        \begin{center}
+        {\bfseries\Huge #1}
+        \end{center}\vfill
+        }
+
+% Pour le tableau des constantes en chimie.
+\newenvironment{deuxcolonnes}%
+        {\setlength{\columnsep}{8 mm}%
+        \setlength{\columnseprule}{0.5 pt}%
+        \begin{multicols}{2}}%
+        {\end{multicols}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%                                     %%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%   Pour l'environnement {remarque}   %%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%                                     %%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\makeatletter
+
+\newbox\bk@bxb
+\newbox\bk@bxa
+\newif\if@bkcont 
+\newif\ifbkcount
+\newcount\bk@lcnt
+
+\def\breakboxskip{2pt}
+\def\breakboxparindent{1.8em}
+\def\margesep{1cm}	% Écart entre la marge de gauche et le filet.
+\def\intervalle{1mm}	% Écart supplémentaire entre le filet et le texte.
+
+\def\filet{\vskip\breakboxskip\relax
+\setbox\bk@bxb\vbox\bgroup
+\advance\linewidth -\fboxrule
+\advance\linewidth -\margesep
+\advance\linewidth -\intervalle
+\advance\linewidth -\fboxsep
+\hsize\linewidth\@parboxrestore
+\parindent\breakboxparindent\relax}
+
+% \@tempdimb: amount of vertical skip 
+% between the first line (\bk@bxa) and the rest (\bk@bxb)
+\def\bk@split{%
+\@tempdimb\ht\bk@bxb % height of original box
+\advance\@tempdimb\dp\bk@bxb 
+\setbox\bk@bxa\vsplit\bk@bxb to\z@ % split it
+\setbox\bk@bxa\vbox{\unvbox\bk@bxa}% recover height & depth of \bk@bxa
+\setbox\@tempboxa\vbox{\copy\bk@bxa\copy\bk@bxb}% naive concatenation
+\advance\@tempdimb-\ht\@tempboxa 
+\advance\@tempdimb-\dp\@tempboxa}% gap between two boxes
+ 
+
+% \@tempdima: height of the first line (\bk@bxa) + fboxsep
+\def\bk@addfsepht{%
+     \setbox\bk@bxa\vbox{\vskip\fboxsep\box\bk@bxa}}
+
+\def\bk@addskipht{%
+     \setbox\bk@bxa\vbox{\vskip\@tempdimb\box\bk@bxa}}
+
+% \@tempdima: depth of the first line (\bk@bxa) + fboxsep
+\def\bk@addfsepdp{%
+     \@tempdima\dp\bk@bxa
+%     \advance\@tempdima\fboxsep
+     \dp\bk@bxa\@tempdima}
+
+% \@tempdima: depth of the first line (\bk@bxa) + vertical skip
+\def\bk@addskipdp{%
+     \@tempdima\dp\bk@bxa
+     \advance\@tempdima\@tempdimb
+     \dp\bk@bxa\@tempdima}
+
+\def\bk@line{%
+    \hbox to \linewidth{\ifbkcount\smash{\llap{\the\bk@lcnt\ }}\fi
+    \hskip\margesep
+    \vrule \@width\fboxrule\hskip\fboxsep
+    \hskip\intervalle
+    \box\bk@bxa\hfil
+%    \hskip\fboxsep
+	}}
+
+\def\endfilet{\egroup
+\ifhmode\par\fi{\noindent\bk@lcnt\@ne 
+\@bkconttrue\baselineskip\z@\lineskiplimit\z@
+\lineskip\z@\vfuzz\maxdimen
+\bk@split\bk@addfsepht\bk@addskipdp
+\ifvoid\bk@bxb      % Only one line
+\def\bk@fstln{\bk@addfsepdp
+%\vbox{\hrule\@height\fboxrule\bk@line\hrule\@height\fboxrule}}%
+\vbox{\bk@line}}%
+\else               % More than one line
+%\def\bk@fstln{\vbox{\hrule\@height\fboxrule\bk@line}\hfil
+\def\bk@fstln{\vbox{\bk@line}\hfil
+\advance\bk@lcnt\@ne
+\loop 
+ \bk@split\bk@addskipdp\leavevmode
+\ifvoid\bk@bxb      % The last line
+ \@bkcontfalse\bk@addfsepdp
+% \vtop{\bk@line\hrule\@height\fboxrule}%
+ \vtop{\bk@line}%
+\else               % 2,...,(n-1)
+ \bk@line
+\fi
+ \hfil\advance\bk@lcnt\@ne
+\if@bkcont\repeat}%
+\fi
+\leavevmode\bk@fstln\par}\vskip\breakboxskip\relax}
+
+\bkcountfalse
+
+\makeatother
+
+
+%!!!!!!!!!!!!!!!!!!!!!!!!!!!!!             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!!!!!!!!!!!!!   Centrer   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!!!!!!!!!!!!!             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+% LaTeX prévoit un mécanisme pour centrer les équations: $$···$$ (ou, de 
+% manière équivalente, \[···\]). Ces commandes doivent être proscrites dans un
+% travail en commun, parce que l'espace vertical placé avant et après 
+% ces environnements change d'un site à l'autre, de sorte qu'il n'est pas 
+% possible de préserver une mise en page soignée.
+%
+% En remplacement, voici une série de commandes plus générales (elles 
+% permettent de centrer n'importe quoi: texte, formule, tableau, dessin, etc.).
+%
+% Supposons que l'on veuille simplement centrer une formule sur la page, comme
+% ceci:
+%
+%				x_0 = 7
+%
+% On pourra utiliser la commande \centers.
+%
+% Exemple: \centers{$ x_0 = 7 $}
+%	   \centers{Ceci est un texte centré}
+%
+% On peut vouloir y ajouter un petit mot de liaison en début de ligne, collé
+% à la marge, en particulier dans une suite de calculs, comme ceci:
+%
+% d'où				x_0 = 7
+%
+% On pourra alors utiliser \leftcenters.
+%
+% Exemple: \leftcenters{ d'où }{ $x_0 = 7$ }
+%
+% Il est aussi parfois utile de placer du texte à droite de la ligne, collé
+% à la marge, comme ceci:
+%
+% d'où				x_0 = 7					(2)
+%
+% On utilisera dans ce cas \leftcentersright.
+%
+% Exemple: \leftcentersright{ d'où }{ $x_0 = 7$ }{ \deux }
+%
+% Et si l'on ne souhaite rien placer à gauche, on dispose de \centersright.
+%
+% Pour toutes ces commandes, le texte du milieu est parfaitement centré sur
+% la page quels que soient les deux autres arguments de \leftcentersright.
+%
+% Attention dès lors au risque de chevauchement: puisque le texte à gauche ne
+% « pousse » pas celui du milieu vers la droite, ces deux textes peuvent très
+% bien se chevaucher s'ils sont tous deux suffisamment longs. LaTeX ne vous
+% préviendra pas, il faudra le déceler vous-même en regardant une version
+% compilée. Cela ne devrait en général poser aucun problème.
+%
+% Les trois commandes précédentes admettent une variante en remplaçant
+% 'centers' par 'encadre'; dans ce cas, le texte à centrer sera encadré.
+%
+% Exemple: \leftencadre{ En conclusion, }{ $A=0$ }
+%
+% Enfin, tous ces environnements (aussi bien avec 'centers' qu'avec 'encadre'
+% laissent un espace vertical avant et après eux. Cet espace est, par défaut,
+% équivalent à un \medskip. Mais vous pouvez le changer en passant un argument
+% optionnel.
+%
+% Exemple:	\centers[0]	<==> 	Pas d'espace
+%		\centers[1]	<==>	Laisser un \smallskip
+%		\centers[2]	<==>	Laisser un \medskip
+%		\centers[3]	<==>	Laisser un \bigskip
+%		\centers[4]	<==>	Laisser 1 cm
+%
+% L'espace laissé avant et l'espace laissé après sont toujours identiques.
+
+% L'ancienne commande \centers centrait par rapport à l'{itemize} (ou 
+% l'environnement en cours) plutôt que par rapport à la page. On dispose
+% d'une bascule pour passer d'un mode à l'autre.
+
+\newcounter{Centers}
+\setcounter{Centers}{0}
+
+\newcommand{\CentersOnPage}{\setcounter{Centers}{0}}
+\newcommand{\CentersOnItems}{\setcounter{Centers}{1}}
+
+\newcommand{\leftcentersright}[4][2]{%
+	\ifthenelse{\equal{\value{Centers}}{0}}{%
+		\leftcentersrightonpage[#1]{#2}{#3}{#4}%
+	}{
+		\leftcentersrightonitems[#1]{#2}{#3}{#4}%		
+	}
+}
+
+\newcounter{vcenterstest}
+\newlength{\leftlength}
+\newlength{\rightlength}
+\newlength{\vcentersskip}
+\newcommand{\leftcentersrightonitems}[4][2]{%
+	\settowidth{\leftlength}{#2}%
+	\settowidth{\rightlength}{#4}%
+	\setcounter{vcenterstest}{#1}%
+	\ifthenelse{\value{vcenterstest} = 0}
+		{\setlength{\vcentersskip}{0pt}}{}%
+	\ifthenelse{\value{vcenterstest} = 1}
+		{\setlength{\vcentersskip}{\smallskipamount}}{}%
+	\ifthenelse{\value{vcenterstest} = 2}
+		{\setlength{\vcentersskip}{\medskipamount}}{}%
+	\ifthenelse{\value{vcenterstest} = 3}
+		{\setlength{\vcentersskip}{\bigskipamount}}{}%
+	\ifthenelse{\value{vcenterstest} = 4}
+		{\setlength{\vcentersskip}{1cm}}{}%
+		% On laisse un espace vertical défini par l'argument
+		% optionnel #1
+	\vskip\vcentersskip
+		% On place #2 et on recule de sa longueur
+	\noindent#2\hskip-\leftlength%
+		% On centre #3
+	\hfill#3\hfill%
+		% On va au bout de la ligne, on recule de la longueur de #4 et
+		% on place #4
+	\mbox{}\hskip-\rightlength#4%
+		% On laisse un espace vertical défini par l'argument
+		% optionnel #1
+	\vskip\vcentersskip%
+}
+
+%\newlength{\leftlength}
+%\newlength{\rightlength}
+\newlength{\calculskip}
+\newcommand{\calculvskip}[1]{% 
+  \ifthenelse{#1 = 0}{\setlength{\calculskip}{0pt}}{}%
+  \ifthenelse{#1 = 1}{\setlength{\calculskip}{\smallskipamount}}{}%
+  \ifthenelse{#1 = 2}{\setlength{\calculskip}{\medskipamount}}{}%
+  \ifthenelse{#1 = 3}{\setlength{\calculskip}{\bigskipamount}}{}%
+  \ifthenelse{#1 = 4}{\setlength{\calculskip}{1cm}}{}%
+  \vskip\calculskip
+} 
+
+\newcommand{\leftcentersrightonpage}[4][2]{%
+	\settowidth{\leftlength}{#2}%
+	\settowidth{\rightlength}{#4}%
+		% On laisse un espace vertical défini par l'argument
+		% optionnel #1
+	\calculvskip{#1}
+        % On place #2 et on recule de sa longueur
+		% Amélioration par Céline: la ligne suivante fait en sorte
+		% que l'argument du milieu soit toujours bien centré sur la
+		% page, plutôt que centré dans l'environnement (sauf
+		% dans une {remarque}, à la demande de Manu).
+	\noindent#2\hskip-\leftlength%
+%	\hskip\linewidth\hskip-\textwidth%
+	\ifremarque{}\else\hskip\linewidth\hskip-\textwidth\fi%
+		% On centre #3
+	\hfill{#3}\hfill
+		% On va au bout de la ligne, on recule de la longueur de #4 et
+		% on place #4
+	\mbox{}\hskip-\rightlength#4%
+		% On laisse un espace vertical défini par l'argument
+		% optionnel #1
+	\vskip\calculskip%
+}
+
+\newcommand{\centers}[2][2]{\leftcentersright[#1]{}{#2}{}}
+\newcommand{\leftcenters}[3][2]{\leftcentersright[#1]{#2}{#3}{}}
+\newcommand{\centersright}[3][2]{\leftcentersright[#1]{}{#2}{#3}}
+\newcommand{\leftencadreright}[4][2]{\leftcentersright[#1]{#2}{\fbox{#3}}{#4}}
+\newcommand{\encadre}[2][2]{\leftcentersright[#1]{}{\fbox{#2}}{}}
+\newcommand{\leftencadre}[3][2]{\leftcentersright[#1]{#2}{\fbox{#3}}{}}
+\newcommand{\encadreright}[3][2]{\leftcentersright[#1]{}{\fbox{#2}}{#3}}
+\newcommand{\remandcenters}[3][2]{\leftcentersright[#1]{#2}{#3}{}} % Synonyme
+\newcommand{\centrer}[2][2]{\leftcentersright[#1]{}{#2}{}}	% Synonyme
+\newcommand{\Centers}[2][2]{\leftcentersright[#1]{}{#2}{}}	% Synonyme
+
+
+
+% Pour encadrer un texte trop long pour tenir sur une seule ligne, il faut
+% inclure ce texte dans une {minipage}. La commande \encadreminipage prend
+% deux arguments: la largeur de la {minipage}, puis le texte. On peut
+% également inclure un argument optionnel pour régler l'espace avant et après
+% la {minipage}.
+%
+% Exemple:	\encadreminipage{8cm}{texte ··· texte}
+
+\newcommand{\encadreminipage}[3][2]{%
+	\leftcentersright[#1]{}{\fbox{%
+		\begin{minipage}{#2} #3 \end{minipage}%
+	}}{}%
+}
+
+\newcommand{\centersminipage}[3][2]{%
+        \leftcentersright[#1]{}{%
+                \begin{minipage}{#2} #3 \end{minipage}%
+        }{}%
+}
+
+%!!!!!!!!!!!!!!!!!!!!                              !!!!!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!!!!   Raccourcis de correction   !!!!!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!!!!                              !!!!!!!!!!!!!!!!!!!!
+
+% Les raccourcis ci-dessous sont surtout utiles pour corriger le travail
+% d'une tierce personne. Rien ne vous empêche néanmoins de les utiliser.
+
+\newcommand{\donccenters}[2][2]{\leftcenters[#1]{donc}{#2}}
+\newcommand{\doucenters}[2][2]{\leftcenters[#1]{d'où}{#2}}
+\newcommand{\carcenters}[2][2]{\leftcenters[#1]{car}{#2}}
+\newcommand{\cadcenters}[2][2]{\leftcenters[#1]{c'est-à-dire}{#2}}
+\newcommand{\puiscenters}[2][2]{\leftcenters[#1]{puis}{#2}}
+\newcommand{\ainsicenters}[2][2]{\leftcenters[#1]{Ainsi,}{#2}}
+\newcommand{\depluscenters}[2][2]{\leftcenters[#1]{De plus,}{#2}}
+\newcommand{\aveccenters}[2][2]{\leftcenters[#1]{avec}{#2}}
+\newcommand{\soitcenters}[2][2]{\leftcenters[#1]{soit}{#2}}
+\newcommand{\alorscenters}[2][2]{\leftcenters[#1]{alors}{#2}}
+\newcommand{\maiscenters}[2][2]{\leftcenters[#1]{mais}{#2}}
+\newcommand{\commecenters}[2][2]{\leftcenters[#1]{Comme}{#2}}
+\newcommand{\ailleurscenters}[2][2]{\leftcenters[#1]{Par ailleurs,}{#2}}
+\newcommand{\orcenters}[2][2]{\leftcenters[#1]{Or,}{#2}}
+\newcommand{\etcenters}[2][2]{\leftcenters[#1]{et}{#2}}
+\newcommand{\deduitcenters}[2][2]{\leftcenters[#1]{On en déduit}{#2}}
+\newcommand{\parsuitecenters}[2][2]{\leftcenters[#1]{Par suite,}{#2}}
+\newcommand{\parcsqcenters}[2][2]{\leftcenters[#1]{Par conséquent,}{#2}}
+\newcommand{\ilvientcenters}[2][2]{\leftcenters[#1]{Il vient}{#2}}
+\newcommand{\conclusioncenters}[2][2]{\leftcenters[#1]{Conclusion :}{#2}}
+\newcommand{\finalementcenters}[2][2]{\leftcenters[#1]{Finalement,}{#2}}
+\newcommand{\ANcenters}[2][2]{\leftcenters[#1]{\textit{Application
+	numérique\/}\,:}{#2}}
+%
+\newcommand{\doncencadre}[2][2]{\leftencadre[#1]{donc}{#2}}
+\newcommand{\douencadre}[2][2]{\leftencadre[#1]{d'où}{#2}}
+\newcommand{\carencadre}[2][2]{\leftencadre[#1]{car}{#2}}
+\newcommand{\cadencadre}[2][2]{\leftencadre[#1]{c'est-à-dire}{#2}}
+\newcommand{\puisencadre}[2][2]{\leftencadre[#1]{puis}{#2}}
+\newcommand{\ainsiencadre}[2][2]{\leftencadre[#1]{Ainsi,}{#2}}
+\newcommand{\deplusencadre}[2][2]{\leftencadre[#1]{De plus,}{#2}}
+\newcommand{\avecencadre}[2][2]{\leftencadre[#1]{avec}{#2}}
+\newcommand{\soitencadre}[2][2]{\leftencadre[#1]{soit}{#2}}
+\newcommand{\alorsencadre}[2][2]{\leftencadre[#1]{alors}{#2}}
+\newcommand{\maisencadre}[2][2]{\leftencadre[#1]{mais}{#2}}
+\newcommand{\ailleursencadre}[2][2]{\leftencadre[#1]{Par ailleurs,}{#2}}
+\newcommand{\orencadre}[2][2]{\leftencadre[#1]{Or}{#2}}
+\newcommand{\etencadre}[2][2]{\leftencadre[#1]{et}{#2}}
+\newcommand{\deduitencadre}[2][2]{\leftencadre[#1]{On en déduit}{#2}}
+\newcommand{\parsuiteencadre}[2][2]{\leftencadre[#1]{Par suite,}{#2}}
+\newcommand{\parcsqencadre}[2][2]{\leftencadre[#1]{Par conséquent,}{#2}}
+\newcommand{\ilvientencadre}[2][2]{\leftencadre[#1]{Il vient}{#2}}
+\newcommand{\conclusionencadre}[2][2]{\leftencadre[#1]{Conclusion :}{#2}}
+\newcommand{\finalementencadre}[2][2]{\leftencadre[#1]{Finalement,}{#2}}
+\newcommand{\ANencadre}[2][2]{\leftencadre[#1]{\textit{Application
+	numérique\/}\,:}{#2}}
+
+% Les exposants.
+\newcommand{\moinsun}{\ensuremath{{}^{-1}}}
+\newcommand{\moinsdeux}{\ensuremath{{}^{-2}}}
+\newcommand{\moinstrois}{\ensuremath{{}^{-3}}}
+
+
+
+%!!!!!!!!!!!!!!!!!!!!!                             !!!!!!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!!!!!   Calculs et commentaires   !!!!!!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!!!!!                             !!!!!!!!!!!!!!!!!!!!!
+
+% Les outils de cette section sont une généralisation de \leftcentersright
+% et des environnements du type {systsimple}. L'idée est de pouvoir:
+%
+%       * centrer des calculs sur la page
+%       * écrire un commentaire spécifique à une ligne, collé à la marge gauche
+%       * écrire un commentaire spécifique à une ligne, collé à la marge droite
+%
+% Visuellement, le rendu pourrait ressembler à ceci:
+%
+% On sait que                    a = b
+% et                             b = c              d'après la question IV.2.c
+% donc                           a = c                        par transitivité
+% En outre,                      d = c
+% c'est-à-dire                   c = d
+% d'où                           a = d              en rassemblant les calculs
+%
+% On ne peut pas se contenter d'utiliser \leftcentersright à chaque ligne,
+% car les signes '=' ne seraient alors pas alignés. Il est nécessaire
+% d'utiliser un tableau ({array}) pour garantir leur alignement.
+%
+% Nous allons voir plusieurs environnements, du plus simple au plus général.
+%
+% Les commandes de cette section ont été écrites par Céline.
+
+% D'abord, quelques routines et déclarations.
+
+\newsavebox{\boite}
+\def\debutcom{\begin{lrbox}{\boite}}
+\def\fincomg{\end{lrbox}\makebox[0cm][l]{\usebox{\boite}}%
+             \hskip\linewidth\hskip-\textwidth}
+\def\fincomd{\end{lrbox}\makebox[0cm][r]{\usebox{\boite}}}
+
+
+% L'environnement {egalites} réalise l'illustration donnée en préambule.
+% Voici un exemple d'utilisation :
+%
+% \begin{egalites}
+%     On a   & a & b &              \\
+%     et     & b & c & (question 3) \\
+%     donc   & a & c &              \\
+% \end{egalites}
+%
+% ce qui produit:
+%
+% On a                            a = b
+% et                              b = c                           (question 3)
+% donc                            a = c
+%
+% Remarquez que l'environnement {egalites} utilise un tableau à 4 colonnes.
+% La première et la dernière sont réservées aux commentaires: on peut donc
+% y écrire du texte en français. En revanche, la deuxième et la troisième
+% servent pour les mathématiques: il n'est pas besoin de préciser les $ du
+% mode maths, ils sont inclus pour vous. (Plus précisément, il ne faut pas
+% les indiquer dans votre code, sinon vous annulez leur effet.)
+%
+% {egalites}, comme tous les autres environnements de cette section, possède
+% une propriété bien sympathique: les colonnes collées à la marge sont
+% « infiniment extensibles », c'est-à-dire que contrairement à la coutume,
+% elles ne réservent pas une place fixe calculées sur la largeur de l'élément
+% le plus large. Ainsi, on peut tout à fait obtenir:
+%
+% On a               a = b + c + d + e + f + g + h + i + j + k + l
+% et             u + v = x + y                  d'après la question précédente
+% donc  age(capitaine) = 30                          (même si ça dépend quand)
+%
+% (Ce qu'il faut remarquer, c'est que la colonne comportant le paquet
+% d'additions « mord » sur la colonne des commentaires sans que cela gêne
+% cette dernière.)
+%
+% Tout comme \leftcentersright et ses dérivés (\centers, \leftcenters, etc.),
+% l'environnement {egalites} accepte un argument optionnel, qui permet de
+% régler les espaces verticaux avant et après. Pour laisser un argument plus
+% grand que la normale, on écrirait donc:
+%
+% \begin{egalites}[3]   % Valeur par défaut: 2.
+%                       % Valeur maximale: 4.
+%
+% Et pour ne laisser aucun espace avant ni après:
+%
+% \begin{egalites}[0]
+%
+% L'espace entre les lignes du calcul peut en outre être géré très finement,
+% ligne par ligne, en utilisant l'argument optionnel de '\\', selon la
+% procédure classique:
+%
+% \begin{egalites}
+%     On a   & a & b &              \\[2mm]
+%     et     & b & c & (question 3) \\[4mm]
+%     donc   & a & c &              \\
+% \end{egalites}
+%
+% Enfin, sachez que l'environnement {egalites} (comme les suivants) n'est
+% pas compatible avec \leftcentersright ou l'un de ses dérivés. On ne peut
+% donc _pas_ écrire \centers{\begin{egalites} ··· \end{egalites}}.
+% Ce serait d'ailleurs tout à fait inutile. Si vous pensez en avoir
+% véritablement besoin un jour, utilisez simplement une {minipage}.
+
+\newenvironment{calculs:base}[2][2]{%
+	% On laisse un espace vertical défini par l'argument optionnel #1
+  	\calculvskip{#1}
+  	\noindent
+  	\begin{tabular*}{\linewidth}[t]%
+    		{@{}>{\debutcom}l<{\fincomg}@{\extracolsep{\fill}}%
+      		>{$}r<{$}%
+      		@{$\ #2\ $}%
+      		@{\extracolsep{0pt}}>{$}l<{$}%
+      		@{\extracolsep{\fill}}>{\debutcom}r<{\fincomd}@{}}
+	}{%
+  	\end{tabular*}%
+  	\vskip\calculskip
+}
+
+\newenvironment{egalites}[1][2]{%
+	\begin{calculs:base}[#1]{=}}{%
+	\end{calculs:base}
+}
+
+% Autre cas fréquent: le symbole de relation entre les membres de gauche et
+% de droite n'est pas '=', mais '\leq', ou '\geq'. On dispose de deux
+% environnements pour répondre à ce besoin:
+%
+% \begin{inegalites:leq}
+%     On a   & a & b &              \\[2mm]
+%     et     & b & c & (question 3) \\[2mm]
+%     donc   & a & c &              \\
+% \end{inegalites:leq}
+%
+% \begin{inegalites:geq}
+%     On a   & a & b &              \\[2mm]
+%     et     & b & c & (question 3) \\[2mm]
+%     donc   & a & c &              \\
+% \end{inegalites:geq}
+%
+% Le premier cas étant de loin le plus fréquent, il est également accessible
+% par la version abrégée {inegalites}:
+%
+% \begin{inegalites}
+%     On a   & a & b &              \\[2mm]
+%     et     & b & c & (question 3) \\[2mm]
+%     donc   & a & c &              \\
+% \end{inegalites}
+
+\newenvironment{inegalites}{%
+	\begin{inegalites:leq}}{%
+	\end{inegalites:leq}
+}
+
+\newenvironment{inegalites:leq}[1][2]{%
+	\begin{calculs:base}[#1]{\leq}}{%
+	\end{calculs:base}
+}
+
+\newenvironment{inegalites:geq}[1][2]{%
+	\begin{calculs:base}[#1]{\geq}}{%
+	\end{calculs:base}
+}
+
+% Les environnements précédents sont pratiques, mais ils sont loin de couvrir
+% tous les cas. Bien souvent, le symbole de relation change en cours de
+% calcul, ce qui nécessite un environnement plus général: {calculs}.
+%
+% Dans cet environnement, vous devez préciser le symbole de relation à chaque
+% ligne, dans une colonne à part:
+%
+% \begin{calculs}
+%     On a   & a &  =   & b &              \\
+%     et     & b & \leq & c & (question 3) \\
+%     donc   & a & \leq & c &              \\
+% \end{calculs}
+%
+% Le principe est inchangé pour les autres colonnes.
+
+\newenvironment{calculs}[1][2]%
+        {\begin{calculs:rcl}[#1]{r}{c}{l}}%
+        {\end{calculs:rcl}}
+
+% Lorsque les calculs se compliquent, il est parfois souhaitable de ne pas
+% suivre les consignes générales d'alignement, qui veulent que la colonne
+% de gauche (dans les calculs, ie celle qui précède le symbole de relation)
+% soit justifiée à droite, et la colonne de droite justifiée à gauche.
+%
+% LaTeX utilise les lettres
+%   * l (left)
+%   * c (center)
+%   * r (right)
+% pour classer les types d'alignements. La règle classique est donc
+% r (colonne de gauche) puis c (symbole de relation) puis l (colonne de droite).
+%
+% L'environnement {calculs:rcl} fonctionne comme {calculs}, hormis qu'il
+% exige trois paramètres, en plus de l'argument optionnel; ces paramètres
+% règleront pour vous la justification des colonnes.
+%
+% \begin{calculs:rcl}{c}{c}{l}
+%     On a   & a & = & b &              \\[2mm]
+%     et     & b & = & c & (question 3) \\[2mm]
+%     donc   & a & = & c &              \\
+% \end{calculs:rcl}
+%
+% Remarquez qu'il n'est pas possible de changer l'alignement des colonnes
+% ligne par ligne: ceci est une limitation de LaTeX.
+
+\newenvironment{calculs:rcl}[4][2]{%
+	% On laisse un espace vertical défini par l'argument
+        % optionnel #1
+	\calculvskip{#1}
+  	\noindent
+  	\begin{tabular*}{\linewidth}[t]%
+  		{@{}>{\debutcom}l<{\fincomg}@{\extracolsep{\fill}}
+		>{$}#2<{$}@{\extracolsep{0pt}}%
+		>{$\ }#3<{\ $}%
+      		@{\extracolsep{0pt}}>{$}#4<{$}%
+      		@{\extracolsep{\fill}}>{\debutcom}r<{\fincomd}@{}}%
+	}{%
+  	\end{tabular*}%
+  	\vskip\calculskip
+}
+
+% Occasionnellement, il arrive que l'on ait besoin de séparer en deux morceaux
+% la colonne de droite dans un calcul. Cela peut avoir lieu dans deux cas:
+%
+%   1° lorsqu'une ligne est trop longue;
+%   2° lorsque le membre de droite comporte deux termes bien distincts.
+%
+% Le premier cas n'est pas traité ici. En revanche, pour le deuxième, c'est
+% simple: il suffit de diviser la colonne de droite en deux colonnes ou, ce
+% qui revient au même, à introduire une colonne supplémentaire entre la
+% colonne des relations et la colonne des commentaires collés à la marge de
+% droite.
+%
+% Voici un exemple d'utilisation:
+%
+% \begin{calculs:rcl:extracol}{r}{c}{l}{l}
+%     On a   & a   &  =   & b_1 & + b_2 &               \\[2mm]
+%     et     & b_1 & \leq & c   &       & (question 3a) \\[2mm]
+%            & b_2 & \leq & d   &       & (question 3b) \\[2mm]
+%     donc   & a   & \leq & c   & + d   &               \\
+% \end{calculs:rcl:extracol}
+%
+% Dans cet exemple, imaginez bien sûr que b_1, b_2, c et d sont des
+% expressions plutôt complexes: il va de soi que vous n'avez pas besoin
+% de cet environnement pour additionner des termes de petite taille.
+
+\newenvironment{calculs:rcl:extracol}[5][2]{%
+	\calculvskip{#1}
+ 	\noindent
+	\begin{tabular*}{\linewidth}[t]%
+                {@{}>{\debutcom}l<{\fincomg}@{\extracolsep{\fill}}%
+		>{$}#2<{$}@{\extracolsep{0pt}}%
+		>{$\ }#3<{\ $}@{\extracolsep{0pt}}%
+		>{$}#4<{$}@{\extracolsep{0pt}}%
+      		>{$\null}#5<{$}%
+      		@{\extracolsep{\fill}}>{\debutcom}r<{\fincomd}@{}}%
+}{%
+  	\end{tabular*}%
+  	\vskip\calculskip
+}
+
+% Aucun des environnements précédents ne répond pleinement à vos besoins ?
+% Vos calculs sont abominables au-delà de toute norme ?
+% Nous avons la solution.
+%
+% L'environnement {calculs:rcl:extracol} vous ouvrait une colonne
+% supplémentaire mais imposait encore que le symbole se trouve dans la
+% deuxième (sans compter celle des commentaires collés à la marge de gauche).
+%
+% Avec {calculs:latotale}, vous disposez de 5 colonnes garanties sans
+% restriction, en plus des deux colonnes qui servent aux commentaires collés
+% aux marges. Vous pouvez les utiliser comme bon vous semble pour créer
+% des dispositions adaptées à vos besoins.
+%
+% Attention, le corollaire de cette liberté est que les espaces autour des
+% relations (=, \leq, etc.) ne sont plus réglés pour vous, vous allez devoir
+% les placer à la main en les faisant précéder et suivre d'un espace
+% (remplacer '=' par '\ =\ \null'). Voici un exemple d'utilisation:
+%
+% \begin{calculs:latotale}[3]{c}{l}{c}{l}{l}
+%     On a   & a & + b & \ = \    \null & c & + d &               \\[2mm]
+%     et     & a & + c & \ = \    \null & e & + d & (question 3a) \\[4mm]
+%     donc   & a & - b & \ \leq \ \null & f &     &               \\
+% \end{calculs:latotale}
+%
+% Plus simplement, vous pouvez aussi régler ces espaces pour toute la
+% colonne d'un coup à l'aide de '<' et '>'. Dans l'exemple précédent,
+% cela donnerait:
+%
+% \begin{calculs:latotale}[3]{c}{l}{>{\ }c<{\ }}{l}{l}
+%     On a   & a & + b & =    & c & + d &               \\[2mm]
+%     et     & a & + c & =    & e & + d & (question 3a) \\[4mm]
+%     donc   & a & - b & \leq & f &     &               \\
+% \end{calculs:latotale}
+
+\newenvironment{calculs:latotale}[6][2]{%
+  	\calculvskip{#1}
+  	\noindent
+  	\begin{tabular*}{\linewidth}[t]%
+    	        {@{}>{\debutcom}l<{\fincomg}@{\extracolsep{\fill}}%
+      		>{$\null}#2<{$}@{\extracolsep{0pt}}%
+      		>{$\null}#3<{$}@{\extracolsep{0pt}}%
+      		>{$\null}#4<{$}%
+      		@{\extracolsep{0pt}}>{$\null}#5<{$}%
+     		@{\extracolsep{0pt}}>{$\null}#6<{$}%
+      		@{\extracolsep{\fill}}>{\debutcom}r<{\fincomd}@{}}%
+}{%
+  	\end{tabular*}%
+  	\vskip\calculskip
+}
+
+% Bravo d'avoir lu jusque-là ! Pour vous en remercier, voici une petite
+% astuce: les séparateurs '&' n'ont pas besoin d'être précisés lorsqu'ils
+% précèdent immédiatement le retour à la ligne '\\'. Autrement dit, si
+% vous ne collez pas de commentaire à la marge de droite, vous pouvez
+% vous éviter de taper un '&' et, surtout, vous éviter de compter ces
+% symboles.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%                                  %%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%   Le langage des mathématiques   %%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%                                  %%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%!!!!!!!!!!!!!!!!!!!!!!!!!!                   !!!!!!!!!!!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!!!!!!!!!!   Les fractions   !!!!!!!!!!!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!!!!!!!!!!                   !!!!!!!!!!!!!!!!!!!!!!!!!!
+
+% La taille des fractions doit s'adapter au contexte: grandes dans une 
+% équation, petites en exposant ou en indice. La commande \f gère pour vous
+% tous les cas.
+%
+% Exemple : $ \f{1}{2} $
+%	    $ x^{\f{3}{2}} $
+%	    $ \Int{0}{ \f{pi}{2} } \cos²t \dt $
+\newcommand{\f}[2]{{\ensuremath{%
+	\mathchoice%
+	{\dfrac{#1}{#2}}
+    {\dfrac{#1}{#2}}
+	{\frac{#1}{#2}}
+	{\frac{#1}{#2}}
+}}}
+
+% Dans le texte, on a souvent envie d'écrire 1/2 plutôt que \f{1}{2}.
+% La macro \tf permet de corriger rapidement un \f malheureux.
+% Exemple: $ \tf{1}{\sqrt{2}} $  <==>  $1 / \sqrt{2}$
+\newcommand{\tf}[2]{\ensuremath{#1/#2}}
+
+% Quelques raccourcis pour les infortunés qui utilisent un clavier azerty.
+\newcommand{\demi}{\ensuremath{\f{1}{2}}\xspace}
+\newcommand{\tdemi}{\ensuremath{1/2}\xspace}
+\newcommand{\tiers}{\ensuremath{\f{1}{3}}\xspace}
+\newcommand{\ttiers}{\ensuremath{1/3}\xspace}
+\newcommand{\quart}{\ensuremath{\f{1}{4}}\xspace}
+\newcommand{\tquart}{\ensuremath{1/4}\xspace}
+
+%!!!!!!!!!!!!!!!!!!!!!!!!!                     !!!!!!!!!!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!!!!!!!!!   Les parenthèses   !!!!!!!!!!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!!!!!!!!!                     !!!!!!!!!!!!!!!!!!!!!!!!!
+
+% Pour indiquer des parenthèses autour d'une grosse expression, il peut
+% parfois être utile d'utiliser une macro plutôt que la commande explicite,
+% qui est \left(···\right).
+%
+% Exemple: $ \pa{ \Int{0}{1} f(t) \dt }^{\f{1}{2}} $
+%
+% Attention, il ne faut pas utiliser cette macro dans les deux cas suivants:
+%
+% * Autour d'une lettre seule, comme dans $f\pa(x)$: l'espace après
+%   le $f$ ne serait pas bon. Utiliser simplement $f(x)$.
+%
+% * Autour d'un vecteur seul, comme dans $\pa{\vect{E}}$. Il est
+%   normal et souhaitable que la flèche dépasse des parenthèses.
+%   Utiliser simplement $(\vect{E})$. S'il y a une fraction,
+%   préférez $ \pa{ \f{1}{2} \vect{E} } $ à
+%            $ \pa{ \f{\vect{E}}{2} $.
+%
+% En résumé, n'utilisez \pa que lorsque vous en avez vraiment besoin, ce qui
+% n'est pas le cas courant.
+%
+% La commande \pa possède une option pour corriger facilement des
+% parenthèses trop grandes:
+% \pa[0] supprime les parenthèses
+% \pa[1] les transforme en parenthèses simples
+% \pa[2-5] les transforme en parenthèses de plus en plus grandes 
+
+%\newcommand{\pa}[1]{\ensuremath{\left(#1\right)}}
+\newcommand{\pa}[2][9]{%
+	\ifthenelse{#1 = 0}
+		{\ensuremath{#2}}{}%
+	\ifthenelse{#1 = 1}
+		{\ensuremath{(#2)}}{}%
+	\ifthenelse{#1 = 2}
+		{\ensuremath{\big(#2\big)}}{}%
+	\ifthenelse{#1 = 3}
+		{\ensuremath{\Big(#2\Big)}}{}%
+	\ifthenelse{#1 = 4}
+		{\ensuremath{\bigg(#2\bigg)}}{}%
+	\ifthenelse{#1 = 5}
+		{\ensuremath{\Bigg(#2\Bigg)}}{}%
+	\ifthenelse{#1 = 9}
+		{\ensuremath{\left(#2\right)}}{}%
+}
+
+% Des parenthèses autour d'une fraction (très très pratique !).
+% Exemple: $ \paf{1}{2} $
+\newcommand{\paf}[2]{\ensuremath{\left(\f{#1}{#2}\right)}}
+
+% Et l'analogue de \tf pour les parenthèses autour d'une fraction:
+\newcommand{\patf}[2]{\ensuremath{\left({#1}/{#2}\right)}}
+
+% On peut aussi vouloir des crochets de la bonne taille plutôt que des 
+% parenthèses (analogue de \pa: mêmes recommandations).
+% Exemple: $\crochets{ \f{1}{2} x \ln x }$
+%\newcommand{\crochets}[1]{\ensuremath{\left[#1\right]}}
+%\newcommand{\pac}[1]{\ensuremath{\crochets{#1}}}		% Synonyme
+\newcommand{\crochets}[2][9]{%
+	\ifthenelse{#1 = 0}
+		{\ensuremath{#2}}{}%
+	\ifthenelse{#1 = 1}
+		{\ensuremath{[#2]}}{}%
+	\ifthenelse{#1 = 2}
+		{\ensuremath{\big[#2\big]}}{}%
+	\ifthenelse{#1 = 3}
+		{\ensuremath{\Big[#2\Big]}}{}%
+	\ifthenelse{#1 = 4}
+		{\ensuremath{\bigg[#2\bigg]}}{}%
+	\ifthenelse{#1 = 5}
+		{\ensuremath{\Bigg[#2\Bigg]}}{}%
+	\ifthenelse{#1 = 9}
+		{\ensuremath{\left[#2\right]}}{}%
+}
+\newcommand{\pac}[2][9]{\ensuremath{\crochets[#1]{#2}}}		% Synonyme
+
+% Ou pourquoi pas des accolades (analogue de \pa: mêmes recommandations).
+%\newcommand{\accolades}[1]{\ensuremath{\left\{#1\right\}}}
+%\newcommand{\paa}[1]{\ensuremath{\accolades{#1}}}		% Synonyme
+\newcommand{\accolades}[2][9]{%
+	\ifthenelse{#1 = 0}
+		{\ensuremath{#2}}{}%
+	\ifthenelse{#1 = 1}
+		{\ensuremath{\{#2\}}}{}%
+	\ifthenelse{#1 = 2}
+		{\ensuremath{\big\{#2\big\}}}{}%
+	\ifthenelse{#1 = 3}
+		{\ensuremath{\Big\{#2\Big\}}}{}%
+	\ifthenelse{#1 = 4}
+		{\ensuremath{\bigg\{#2\bigg\}}}{}%
+	\ifthenelse{#1 = 5}
+		{\ensuremath{\Bigg\{#2\Bigg\}}}{}%
+	\ifthenelse{#1 = 9}
+		{\ensuremath{\left\{#2\right\}}}{}%
+}
+\newcommand{\paa}[2][9]{\ensuremath{\accolades[#1]{#2}}}		% Synonyme
+
+% Ou encore des barres pour les valeurs absolues (analogue de \pa: mêmes
+% recommandations).
+%\newcommand{\abs}[1]{\ensuremath{\left|#1\right|}}
+\newcommand{\abs}[2][9]{%
+	\ifthenelse{#1 = 0}
+		{\ensuremath{#2}}{}%
+	\ifthenelse{#1 = 1}
+		{\ensuremath{|#2|}}{}%
+	\ifthenelse{#1 = 2}
+		{\ensuremath{\big|#2\big|}}{}%
+	\ifthenelse{#1 = 3}
+		{\ensuremath{\Big|#2\Big|}}{}%
+	\ifthenelse{#1 = 4}
+		{\ensuremath{\bigg|#2\bigg|}}{}%
+	\ifthenelse{#1 = 5}
+		{\ensuremath{\Bigg|#2\Bigg|}}{}%
+	\ifthenelse{#1 = 9}
+		{\ensuremath{\left|#2\right|}}{}%
+}
+
+% Pour virer des parenthèses quand on corrige un fichier.
+\newcommand{\nopa}[1]{\ensuremath{#1}}
+
+% Pour transformer \pa en parenthèses simples.
+\newcommand{\cpa}[1]{\ensuremath{(#1)}}
+
+%!!!!!!!!!!!!!!!                                        !!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!   Quelques conventions et raccourcis   !!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!                                        !!!!!!!!!!!!!!!
+
+% Les constantes.
+\newcommand{\cte}{\ensuremath{C^{\mbox{\scriptsize{te}}}}}
+\newcommand{\Cte}{\cte}						% Synonyme
+
+% La force électromotrice.
+\newcommand{\fem}{f.é.m.\xspace}
+
+% L'amplificateur opérationnel.
+\newcommand{\AO}{AO\xspace}
+
+% La fonction indicatrice.
+\newcommand{\indicatrice}{\ensuremath{\mathds{1}}}
+
+% Les espaces de séparation pour les milliers.
+% Exemple:
+% $\nombre{1234567}$ a le même effet que $1\,234\,567$.
+\makeatletter
+\def\f@thousandsep{\ifmmode\mskip3mu\else\penalty\@M\kern.3em\fi}
+\makeatother
+\newcommand{\nb}[1]{\nombre{#1}}
+
+% « Grand O » et « petit o » sont dans un bateau.
+% 
+% Exemples:
+%       En 0, $\sin x = x + \petito(x)$.
+% 
+%       $f(x) = x + \petito[x\to0](x)$.
+%
+% La première forme est celle recommandée, mais lorsque le contexte est
+% flou, on peut utiliser l'argument optionnel pour préciser comment il faut
+% entendre le « o ».
+%
+% Dans tous les cas, n'écrivez pas « x \to 0 » sous un signe égal.
+
+%\newcommand{\petito}[1][]{\ensuremath{\underset{#1}{\text{o}}}}
+%\newcommand{\grando}[1][]{\ensuremath{\underset{#1}{\text{O}}}}
+
+\newcommand{\petito}[1][]{%
+    \ifthenelse{%
+        \equal{#1}{}%
+    }{%
+        \ensuremath{\text{o}}%
+    }{%
+        \ensuremath{\underset{#1}{\text{o}}}%
+    }%
+}
+
+\newcommand{\grando}[1][]{%
+    \ifthenelse{%
+        \equal{#1}{}%
+    }{%
+        \ensuremath{\text{O}}%
+    }{%
+        \ensuremath{\underset{#1}{\text{O}}}%
+    }%
+}
+
+% Les deux commandes suivantes sont obsolètes; elles ne sont laissées que pour
+% la compatibilité ascendante. Veuillez ne pas les utiliser.
+\newcommand{\pto}[1]{\ensuremath{\text{o}\left ( #1 \right )}}
+\newcommand{\gdo}[1]{\ensuremath{O\left ( #1 \right )}}
+
+% La probabilité d'un événement.
+% Exemple: $ \proba{X} $
+\newcommand{\proba}[1]{\ensuremath{\text{Pr}\left(#1\right)}}
+
+% Les chapeaux et les tildes doivent avoir une bonne taille pour être bien
+% visibles et éviter ainsi les confusions.
+\renewcommand{\hat}[1]{\ensuremath{\widehat{#1}}}
+\renewcommand{\tilde}[1]{\ensuremath{\widetilde{#1}}}
+
+% Dessiner un arrondi au-dessus d'un groupe de lettres, disons 'AB',
+% pour signifier que l'on considère un arc de cercle d'extrémités A et B.
+% Exemple: \arcdecercle{AB}
+
+\newlength{\longueurarcdecercle}
+\newcommand{\arcdecercle}[1]{\ensuremath{%
+    \settowidth{\longueurarcdecercle}{\ensuremath{#1}}%
+    \overset{%
+        \mbox{%
+                \resizebox{\longueurarcdecercle}{4pt}{%
+                        \rotatebox{90}{\ensuremath{\hskip-1pt)}}%
+                }%
+        }%
+    }{#1}%
+}}
+
+% Plus et moins l'infini.
+%
+% Lorsque l'on écrit $+\infty$, le plus est trop gros. On fait la même 
+% remarque avec $-\infty$. Pour contourner ce problème, vous pouvez utiliser
+% des macros spécifiques à ces cas-là.
+%
+% Exemple: $ \sqrt{n} \tvn \pinf $
+%
+% Attention, n'utilisez jamais \plus et \moins dans vos corrigés.
+% Ces macros n'existent que pour définir \pinf et \minf et quelques autres
+% bidouilles comme \Rplus.
+% Ne les utilisez pas à la place de + et - dans les opérations courantes !
+
+\newcommand{\plus}{\mbox{\protect\raisebox{.2mm}{\tiny{\ensuremath{+}}}}}
+\newcommand{\moins}{\mbox{\protect\raisebox{.2mm}{\tiny{\ensuremath{-}}}}}
+\newcommand{\pinf}{\plus\ensuremath{\infty}}
+\newcommand{\minf}{\moins\ensuremath{\infty}}
+
+% Le « plus ou moins » (\pm) de LaTeX est vraiment trop laid.
+\newlength{\pmlength} 
+\settowidth{\pmlength}{{\scriptsize$+$}}
+\newlength{\pmsmalllength}
+\settowidth{\pmsmalllength}{{\tiny$+$}}
+%\renewcommand{\pm}{%
+%        \mathop{\raisebox{0.8mm}{{\scriptsize\ensuremath{+}}}%
+%        \hskip-\pmlength%
+%        \raisebox{-0.4mm}{{\scriptsize\ensuremath{-}}}}%
+%}
+\renewcommand{\pm}{%
+    \mathchoice{%
+            \mathop{\raisebox{0.528ex}{{\scriptsize\ensuremath{+}}}%
+            \hskip-\pmlength%
+            \raisebox{-0.264ex}{{\scriptsize\ensuremath{-}}}}%
+    }{%
+            \mathop{\raisebox{0.528ex}{{\scriptsize\ensuremath{+}}}%
+            \hskip-\pmlength%
+            \raisebox{-0.264ex}{{\scriptsize\ensuremath{-}}}}%
+    }{%
+            \mathop{\raisebox{0.528ex}{{\tiny\ensuremath{+}}}%
+            \hskip-\pmsmalllength\hskip-0.035ex%
+            \raisebox{-0.14ex}{{\tiny\ensuremath{-}}}}%
+    }{%
+            \mathop{\raisebox{0.528ex}{{\tiny\ensuremath{+}}}%
+            \hskip-\pmsmalllength\hskip-0.035ex%
+            \raisebox{-0.14ex}{{\tiny\ensuremath{-}}}}%
+    }
+}
+
+% La commande \pm précédente ne passe pas bien en \mathgras... En voici
+% une version spécialement prévue dans ce cas.
+\newlength{\pmgraslength} 
+\settowidth{\pmgraslength}{{\scriptsize\ensuremath{\mathgras{$+$}}}}
+\newlength{\pmgrassmalllength}
+\settowidth{\pmgrassmalllength}{{\tiny\ensuremath{\mathgras{$+$}}}}
+%\newcommand{\pmgras}{%
+%        \mathop{\raisebox{0.8mm}{{\scriptsize\ensuremath{\mathgras{+}}}}%
+%        \hskip-\pmgraslength%
+%		\hskip-0.9pt%
+%        \raisebox{-0.6mm}{{\scriptsize\ensuremath{\mathgras{-}}}}}%
+%}
+\newcommand{\pmgras}{%
+    \mathchoice{%
+        \mathop{\raisebox{0.528ex}{{\scriptsize\ensuremath{\mathgras{+}}}}%
+            \hskip-\pmgraslength%
+            \hskip-0.9pt%
+        \raisebox{-0.396ex}{{\scriptsize\ensuremath{\mathgras{-}}}}}%
+    }{%
+        \mathop{\raisebox{0.528ex}{{\scriptsize\ensuremath{\mathgras{+}}}}%
+            \hskip-\pmgraslength%
+            \hskip-0.9pt%
+        \raisebox{-0.396ex}{{\scriptsize\ensuremath{\mathgras{-}}}}}%
+    }{%
+        \mathop{\raisebox{0.528ex}{{\tiny\ensuremath{\mathgras{+}}}}%
+            \hskip-\pmgrassmalllength%
+            \hskip-0.739pt%
+        \raisebox{-0.22ex}{{\tiny\ensuremath{\mathgras{-}}}}}%
+    }{%
+        \mathop{\raisebox{0.528ex}{{\tiny\ensuremath{\mathgras{+}}}}%
+            \hskip-\pmgrassmalllength%
+            \hskip-0.739pt%
+        \raisebox{-0.22ex}{{\tiny\ensuremath{\mathgras{-}}}}}%
+    }
+}
+
+
+% Idéalement, le « e » de l'exponentielle et le « i » des complexes devraient
+% être composés en romain (« droit »). Ceci est facultatif dans les Annales,
+% parce que la composition est rendue moins intuitive.
+% Toutefois, pour simplifier la composition des auteurs qui souhaitent suivre
+% cette louable convention, les commandes suivantes peuvent être utiles.
+%
+% Exemples: 	La fonction $f \colon x \mapsto \ex{x+1}$ etc.
+%		La «racine carrée» de $-1$ est notée \ir.
+%		La racine troisième de l'unité est notée $\jr$.
+%		$1 + \ir = \sqrt{2} \: \exi{\pi / 4}$.
+
+\newcommand{\ir}{\ensuremath{\mathrm{i}}\xspace}	% « i romain »
+\newcommand{\jr}{\ensuremath{\mathrm{j}}\xspace}	% « j romain »
+\newcommand{\ex}[1]{\ensuremath{\mathrm{e}^{\,#1}}\xspace}
+\newcommand{\exi}[1]{\ensuremath{\mathrm{e}^{\,\mathrm{i}\,#1}}\xspace}
+\newcommand{\exmi}[1]{\ensuremath{\mathrm{e}^{\,-\mathrm{i}\,#1}}\xspace}
+
+% Le principe de récurrence est un outil puissant pour résoudre de nombreux
+% problèmes. Parfois, il suffit de l'invoquer pour conclure: « On en déduit,
+% par une récurrence immédiate, que tous les chats sont gris. » 
+% Toutefois, dès lors que la récurrence doit être explicitement déroulée, il
+% faut mettre ses étapes en valeur, avec {itemize} et les commandes 
+% ci-dessous.
+%
+% Exemple:
+%	Montrons que la propriété:
+%
+%	\centers{$
+%		\PP(n): \quad u_n \geq 0
+%		$}
+%
+%	\marge est vraie pour tout $n \geq 0$.
+%
+%	\begin{itemize}
+%
+%	\item $\recz$ est vraie par hypothèse.
+%	\item $\rec{n}{n+1}$: blabla
+%	\item \leftcenters{\underline{Conclusion}:}{$
+%		\forall n \geq 0    \qquad    u_n \geq 0
+%		$}
+%
+%	\end{itemize}
+
+\newcommand{\PP}{\ensuremath{\mathscrchoice{P}}}
+\newcommand{\QQ}{\ensuremath{\mathscrchoice{Q}}}
+	% Quand \PP est déjà utilisé, ou pour une famille de polynômes...
+\newcommand{\rec}[2]{\underline{\ensuremath{\mathscrchoice{P}(#1) \imply%
+        \mathscrchoice{P}(#2)}}}
+	% $\rec{n}{n+1}$ <==> \underline{$\PP{n}\imply\PP{n+1}$}
+\newcommand{\recz}[1][0]{\underline{\ensuremath{\mathscrchoice{P}(#1)}}\xspace}
+	% L'initialisation de la récurrence.
+	% On écrit $\recz[2]$ pour partir de $n=2$.
+	% Si on ne précise pas d'argument optionnel, la valeur 0 est utilisée.
+
+% Donner la bonne tête aux symboles courants: sacrés amerloques !
+\renewcommand{\leq}{\ensuremath{\leqslant}}
+\renewcommand{\geq}{\ensuremath{\geqslant}}
+\renewcommand{\le}{\ensuremath{\leq}}				% Synonyme
+\renewcommand{\ge}{\ensuremath{\geq}}				% Synonyme
+\renewcommand{\epsilon}{\ensuremath{\varepsilon}}
+\newcommand{\eps}{\epsilon}
+\renewcommand{\setminus}{\smallsetminus}	% $\R \setminus \Q$
+%\newcommand{\bs}{\ensuremath{\backslash}}	% Quand \setminus est trop petit
+\newcommand{\bs}{\texttt{\symbol{92}}}
+
+
+% \phi et \varphi.
+% Neuf fois sur dix, c'est \varphi que l'on veut dessiner, ce qui mérite un
+% raccourci.
+\newcommand{\ph}{\ensuremath{\varphi}}
+
+% Une moyenne bien présentée.
+% Exemple: $ \moyenne{ \vectE } $
+%\newcommand{\moyenne}[1]{\ensuremath{\left\langle#1\right\rangle}}
+\newcommand{\moyenne}[2][9]{%
+	\ifthenelse{#1 = 0}
+		{\ensuremath{#2}}{}%
+	\ifthenelse{#1 = 1}
+		{\ensuremath{\langle#2\rangle}}{}%
+	\ifthenelse{#1 = 2}
+		{\ensuremath{\big\langle#2\big\rangle}}{}%
+	\ifthenelse{#1 = 3}
+		{\ensuremath{\Big\langle#2\Big\rangle}}{}%
+	\ifthenelse{#1 = 4}
+		{\ensuremath{\bigg\langle#2\bigg\rangle}}{}%
+	\ifthenelse{#1 = 5}
+		{\ensuremath{\Bigg\langle#2\Bigg\rangle}}{}%
+	\ifthenelse{#1 = 9}
+		{\ensuremath{\left\langle#2\right\rangle}}{}%
+}
+
+% Pour placer une conjonction entre deux termes dans une formule centrée.
+\newcommand{\qetq}{\quad\text{et}\quad\null}
+\newcommand{\qqetqq}{\qquad\text{et}\qquad\null}
+\newcommand{\qcarq}{\quad\text{car}\quad\null}
+\newcommand{\qqcarqq}{\qquad\text{car}\qquad\null}
+\newcommand{\qavecq}{\quad\text{avec}\quad\null}
+\newcommand{\qqavecqq}{\qquad\text{avec}\qquad\null}
+
+% Lorsque l'on définit une fonction, on a besoin de:
+%	* son nom
+%	* l'ensemble de départ
+%	* l'ensemble d'arrivée
+%	* le nom de la variable
+%	* l'expression de la fonction
+% On veut alors obtenir un tableau dont la première ligne concerne les
+% ensembles, la deuxième les transformations de la variable, une accolade
+% à gauche et le nom de la variable devant. C'est ce que fait \fonction.
+%
+% Exemple: $ \fonction{f}{ \R }{ \Z }{ x }{ \partieentiere{x} } $
+
+\newcommand{\fonction}[5]{%
+        \ensuremath{#1\colon
+        \left\{\hskip -1.5 mm
+        \begin{array}{c@{\ }c@{\ }l}
+        \medskip #2 & \longrightarrow & #3 \\
+        #4 & \longmapsto & #5 \\
+        \end{array}
+        \right .
+        }}
+
+% Pour dessiner la restriction d'une fonction à un ensemble, la coutume est
+% de placer le nom de la fonction, une barre verticale et en indice, 
+% l'ensemble dans lequel on fait vivre la restriction. C'est l'objet de cette 
+% commande.
+%
+% Exemple: $ \rest{f}{ \Z } $
+
+\newlength{\restsubwidth}
+\newlength{\restsubheight}
+\newlength{\restsubmoreheight}
+\setlength{\restsubmoreheight}{4 pt}
+\newcommand{\rest}[2]{%
+        \settowidth{\restsubwidth}{\ensuremath{#2}}
+        \settoheight{\restsubheight}{\ensuremath{{}_{#2}}}
+        \ensuremath{{#1\hskip 0.5 pt}_{\vrule\kern2pt\parbox[b][%
+        \the\restsubheight +
+                \the\restsubmoreheight][b]{\the\restsubwidth}{%
+                        \ensuremath{{}_{#2}}}}}
+        }
+
+% Les combinaisons peuvent être notées à la française ou à l'anglaise.
+% Le mérite de cette dernière apparaît lorsque les arguments sont trop
+% grands pour une simple lettre C. 
+%
+% Rappel: à la française, on indique le 'n' (nombre total d'éléments) en bas 
+% et le 'p' (nombre d'éléments à choisir) en haut. À l'anglaise, c'est 
+% l'inverse.
+%
+% Exemple: $ \Comb{n}{p} $	À la française
+%	   $ \comb{n}{p} $	À l'anglaise
+
+\newcommand{\Comb}[2]{\ensuremath{C_{#1}^{#2}}}
+\newcommand{\comb}[2]{\ensuremath{\begin{pmatrix}#1\\#2\\\end{pmatrix}}}
+
+% La partie entière peut être écrite à l'américaine plutôt qu'avec 
+% l'énigmatique fonction 'E'. C'est efficace...
+\newcommand{\partieentiere}[1]{\ensuremath{\left\lfloor#1\right\rfloor}}
+\newcommand{\partieentieresup}[1]{\ensuremath{\left\lceil#1\right\rceil}}
+
+%!!!!!!!!!!!!!!!!!                                    !!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!   Intégrales, sommes et produits   !!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!                                    !!!!!!!!!!!!!!!!!
+
+% À la main, on dessine toujours des intégrales ayant la même taille.
+% Dans l'édition française, c'est assez standard; ce sont les anglo-saxons
+% qui adaptent la taille de leurs intégrales au contexte (leurs intégrales
+% sont plus petites dans le texte). Pour avoir toujours une intégrale de 
+% taille standard, on dispose de la commande \Int, qui prend deux arguments:
+% ses bornes.
+%
+% Exemple: $ \Int{0}{\f \pi 2} \sin t \dt $
+%
+% Exemple: $ \Int{}{} \ln t \dt $
+%
+% Attention, il ne faut jamais utiliser \int dans les Annales.
+
+\newcommand{\Int}[2]{\ensuremath{\mathchoice%
+	{{\displaystyle\int_{#1}^{#2}}}
+	{{\displaystyle\int_{#1}^{#2}}}
+	{\int_{#1}^{#2}}
+	{\int_{#1}^{#2}}
+	}}
+
+% Les éléments différentiels.
+%
+% Ils doivent être composés avec un 'd' droit. On dispose pour cela de la 
+% commande \dd.
+%
+% Exemple: $ \dd x $
+%
+% Cette commande convient parfaitement à une dérivée temporelle, par exemple.
+%
+% Exemple: $ \f{\dd f}{\dd t} $
+%
+% Dans les intégrales, il faut aussi laisser un peu d'espace avant l'élément
+% différentiel; les commandes suivantes (\dx, \dt, etc.) incluent cet espace.
+%
+% Exemple: $ \Int{0}{1} f(t) \dt $
+%
+% Attention toutefois, il ne faut pas les utiliser lorsque l'élément 
+% différentiel fait partie d'une fraction. En pareil cas on en revient à '\:'
+% pour l'espace et à \dd pour le 'd' droit.
+%
+% Exemple: $ \Int{0}{1} f(t) \: \f{\dd t}{2} $
+
+\newcommand{\dd}{\ensuremath{\mathrm{d}}}
+\newcommand{\dt}{\ensuremath{\:\dd t}}
+\newcommand{\dx}{\ensuremath{\:\dd x}}
+\newcommand{\dy}{\ensuremath{\:\dd y}}
+\newcommand{\dz}{\ensuremath{\:\dd z}}
+\newcommand{\du}{\ensuremath{\:\dd u}}
+\newcommand{\dv}{\ensuremath{\:\dd v}}
+\newcommand{\dr}{\ensuremath{\:\dd r}}
+\newcommand{\dS}{\ensuremath{\,\dd\!\vect{S}}}		% Élément de surface
+\newcommand{\dl}{\ensuremath{\,\dd\!\vect{\ell}}}	% Élément de longueur
+\newcommand{\dT}{\ensuremath{\:\dd T}}			% Températures
+\newcommand{\dtheta}{\ensuremath{\:\dd \theta}}
+\newcommand{\dphi}{\ensuremath{\:\dd \varphi}}
+\newcommand{\dtau}{\ensuremath{\:\dd \tau}}
+\newcommand{\dV}{\ensuremath{\:\dd V}}
+
+% Les sommes.
+%
+% De même que \Int doit être préférée à \int, \Sum doit être préférée à \sum.
+% Cette commande dessine un 'sigma' qui est presque toujours de la bonne
+% taille.
+% 
+% Exemple:  $ \Sum{k=1}{n} \f{1}{k} = \ln n + \gamma + \petito(1) $
+%
+% Pour les séries (« la série 'sigma' u_n converge »), dans lesquelles on ne
+% précise pas les bornes, l'utilisation de \Sum avec des arguments vides
+% (c'est-à-dire \Sum{}{}) ne donne pas un bon rendu en mode texte car cette
+% commande laisse inévitablement un espace vertical au-dessus et en dessous
+% d'elle. On préfèrera alors la commande \serie, qui est faite pour cela, et
+% pour cela uniquement.
+%
+% Exemple: La série $ \serie u_n $ converge.
+%
+% Enfin, bien que ce ne soit pas recommandé par H&K (car cela rend confus la
+% distinction entre une série et une somme partielle), vous pouvez être amené
+% à préciser l'indice de sommation dans la série; vous seriez alors tenté
+% d'écrire quelque chose comme $\Sum{k \geq 0}{} u_k$. L'ennui, c'est que,
+% comme précédemment, \Sum laissera au-dessus d'elle un espace indésirable.
+% Vous pouvez l'éliminer grâce à la commande \smash.
+%
+% Exemple: La série $\smash[t]{ \Sum{k \geq 0}{} u_k }$ converge.
+%
+% Attention, la commande \serie doit être proscrite dès que vous souhaitez
+% utiliser un indice ou un exposant.
+
+\newcommand{\Sum}[2]{\ensuremath{\textstyle{\sum\limits_{#1}^{#2}}}}
+\newcommand{\serie}{\ensuremath{\smash{\Sum{}{}}}}
+
+\newcommand{\Sumt}[2]{\protect\Sumtproto{#1}{#2}}
+\newcommand{\Sumtproto}[2]{%
+        \ifthenelse{%
+                \equal{#1}{}
+        }{%
+                \ifthenelse{%
+                        \equal{#2}{}%
+                }{%
+                        \ensuremath{\sum}%
+                }{%
+                        \smash[b]{\ensuremath{\sum\limits_{#1}^{#2}}}%
+                }
+        }{%
+                \ensuremath{\sum\limits}_{#1}^{#2}%
+        }%
+}
+
+% Il y a quelques cas où l'on souhaite dessiner un symbole de sommation plus
+% grand que la normale, par exemple s'il est suivi d'une intégrale.
+%
+% Exemple: $ \SUM{k=1}{n}   \f{1}{k}   \Int{}{} f_n(t) \dt $
+
+\newcommand{\SUM}[2]{\ensuremath{{\displaystyle\sum\limits_{#1}^{#2}}}}
+
+% Dans la même veine que « \Sum vs \sum » et « \Int vs \int », on peut vouloir
+% écrire un produit autrement qu'avec \prod (commande prédéfinie), qui ne se
+% comporte pas comme on l'attend.
+%
+% Exemple: $ \Prod{k=1}{n} k = n\,! $
+
+\newcommand{\PI}[2]{\ensuremath{%
+	\mathop{\mbox{\Large\ensuremath{\Pi}}}\limits_{#1}^{#2}}}
+\newcommand{\Prod}[2]{\PI{#1}{#2}}			% Synonyme préférable
+
+% La commande précédente produit un symbole dont le bas est aligné sur la       
+% ligne de référence; or, on s'attend d'habitude à ce que les symboles          
+% mathématiques soient centrés sur cette ligne. Si c'est ce deuxième            
+% comportement qui est souhaité, c'est la commande suivante qu'il faut          
+% utiliser.                                                                     
+                                                                                
+\newcommand{\Produit}[2]{\ensuremath{\prod\limits_{#1}^{#2}}}
+
+%!!!!!!!!!!!!!!!!!!!!!                            !!!!!!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!!!!!   Limites et équivalents   !!!!!!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!!!!!                            !!!!!!!!!!!!!!!!!!!!!
+
+% Les limites.
+%
+% Pour indiquer qu'une variable tend vers une valeur, on peut utiliser \to,
+% comme dans $ x \to x_0$. Pour indiquer ensuite que f(x) tend vers \ell 
+% lorsque x tend vers x_0, on a envie de représenter une longue flèche portant
+% en dessous la mention $x \to x_0$.
+%
+% Exemple: $ f(x)  \tv{x \to x_0}  \ell $
+%
+% Lorsque la variable est $n$ est tend vers l'infini, on a un raccourci.
+%
+% Exemples: 	$ u_n \tvn \ell $
+%		$ u_k \tvn[k] \ell $
+
+\newcommand{\tv}[1]{\ensuremath{\xrightarrow[#1]{}}}
+\newcommand{\tvn}[1][n]{\ensuremath{\tv{#1 \to \infty}}}
+
+% Indiquer une limite avec « lim » pose un problème car, par défaut, la 
+% commande prédéfinie \lim ne met pas bien en dessous ce que l'on aimerait
+% qui soit en dessous. On utilise plutôt \limt.
+%
+% Exemple: $ \limt_{x \to 0} \f{\sin x}{x} = 1 $
+\newcommand{\limt}{\ensuremath{\lim\limits}}
+
+% De même, on veut pouvoir, au besoin préciser quelque chose comme $x \to 0$
+% en dessous du symbole « équivalent ».
+% Exemple: $ \f{\sin x}{x} \Sim_{x \to 0} 1 $
+\newcommand{\Sim}{\ensuremath{\mathop{\sim}\limits}}
+
+%!!!!!!!!!!!!!!!!!!!!!                            !!!!!!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!!!!!   Ensembles et relations   !!!!!!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!!!!!                            !!!!!!!!!!!!!!!!!!!!!
+
+% Pour l'intersection de deux ensembles, LaTeX fournit la commande \cap, comme 
+% dans $A \cap B$. Pour dessiner l'intersection d'une famille d'ensembles, on
+% a envie de placer un indice et un exposant; c'est ce que permettent les 
+% commandes \inter et \Inter.
+%
+% Exemple: $ \inter{k=1}{n} A_k $
+% 	   $ \Inter{k=1}{n} A_k $
+%
+% Le premier s'utilise plutôt dans le texte et le deuxième plutôt dans les
+% formules centrées, mais cela dépend aussi du contexte, c'est-à-dire des
+% ensembles considérés. \inter peut très bien être utilisé dans une équation
+% centrée.
+%
+% Les remarques et exemples précédents s'appliquent directement à \union et
+% \Union, qui généralisent la commande prédéfinie \cup (comme dans $A \cup B$).
+
+\newcommand{\inter}[2]{\ensuremath{\bigcap\limits_{#1}^{#2}}}
+\newcommand{\Inter}[2]{\ensuremath{\displaystyle\bigcap_{#1}^{#2}}}
+\newcommand{\union}[2]{\ensuremath{\bigcup\limits_{#1}^{#2}}}
+\newcommand{\Union}[2]{\ensuremath{\displaystyle\bigcup_{#1}^{#2}}}
+
+% Le complémentaire d'un ensemble (sans préciser l'ensemble de référence)
+% peut être noté par \compl.
+% Exemple: $ \compl{A} $
+\newcommand{\compl}[1]{\ensuremath{\sideset{^{\text{c}}}{}%
+        {\mathop{#1}\nolimits}}}
+
+% Quand on écrit un ensemble en extension, il faut préciser le domaine 
+% d'existence de la variable, en séparant cette précision de ce qui précède
+% au moyen d'une barre verticale. Il est alors bon de laisser un espace avant
+% et après cette barre: c'est ce que fait la commande \|.
+%
+% Exemple: $ \{ x\in\R    \|    \sin x = 0}    =    \pi\Z $
+%
+% Lorsque la hauteur de la barre doit s'adapter à des accolades de grande 
+% taille, on ne peut pas utiliser \|. Il faut alors procéder à la main.
+%
+% Exemple: 	$\left\{ 
+%			\left. \Sum{k=1}{n} (-1)^k/k \ \right|\ 
+%		        n \in \Nstar 
+%		\right\}$ 
+%
+% ce qui peut également s'écrire:
+%
+%		$\left\{ \Sum{k=1}{n} (-1)^k/k 	\ \right|\
+% 		n \in \Nstar \left.\vphantom{\Sum{k=1}{n}} \right\}$
+%
+% On peut aussi utiliser directement le constructeur \Big pour imposer la
+% taille des délimiteurs.
+%
+% Exemple: $\Big\{ \Sum{k=1}{n} (-1)^k/k   \ \Big|\    n \in \Nstar   \Big\} $
+
+\renewcommand{\|}{\ensuremath{\:|\:}}   
+
+% Les mathématiques utilisent beaucoup les listes, en particulier en algèbre
+% linéaire, par exemple pour décrire une base. Composer ces listes peut être
+% automatisé, puisque l'on n'a en général besoin que du nom de la famille 
+% ('e'), et éventuellement des indices de début et de fin, comme dans
+% (e_1 , ... , e_n).
+%
+% Exemples: 	
+%		\liste{x}	-> (x_1,x_2,...,x_n)
+%		\liste[p]{x}	-> (x_1,x_2,...,x_p)
+%		\liste*{x}	-> (x_0,x_1,...,x_n)
+%		\liste*[p]{x}	-> (x_0,x_1,...,x_p)
+%
+% Remarque: d'un point de vue sémantique, il serait plus logique d'utiliser
+% la forme étoilée pour les listes qui commencent à 1, mais comme ce sont
+% ces dernières qui sont les plus fréquentes, on leur réserve la commande
+% la plus simple.
+
+\makeatletter
+\newif\if@ListeStar
+\global\@ListeStartrue
+
+\newcommand{\liste}{%
+	\@ifstar{\global\@ListeStartrue\@liste}%
+		{\global\@ListeStarfalse\@liste}%
+}
+
+\newcommand{\@liste}[2][n]{%
+	\if@ListeStar%
+		\left({#2}_0,{#2}_1,\ldots,{#2}_{#1}\right)%
+	\else%
+		\left({#2}_1,{#2}_2,\ldots,{#2}_{#1}\right)%
+	\fi\@ListeStarfalse%
+}
+\makeatother
+
+% Les commandes suivantes ne sont gardées que pour la compatibilité
+% ascendante. Elles sont néanmoins fonctionnelles, mais n'acceptent pas
+% de forme étoilée.
+\newcommand{\xlist}[2]{\ensuremath{\left({#1}_1,\ldots,{#1}_{#2}\right)}}
+\newcommand{\xliste}[2]{\xlist{#1}{#2}}				% Synonyme
+\newcommand{\nlist}[1]{\xlist{#1}{n}}
+\newcommand{\mlist}[1]{\xlist{#1}{m}}
+\newcommand{\plist}[1]{\xlist{#1}{p}}
+\newcommand{\rlist}[1]{\xlist{#1}{r}}
+\newcommand{\nliste}[1]{\nlist{#1}}				% Synonyme
+\newcommand{\mliste}[1]{\mlist{#1}}				% Synonyme
+\newcommand{\pliste}[1]{\plist{#1}}				% Synonyme
+\newcommand{\rliste}[1]{\rlist{#1}}				% Synonyme
+
+% Les deux grandes manières utilisées en prépa pour noter les suites sont de
+% la forme $(u_n)$ et $(u_n)_{n\in\N}$. La première (sans les indices) est 
+% généralement préférable, tant que le contexte permet de lever toute
+% ambiguïté sur ce qui serait en indice dans la notation complète.
+% Toutefois, il est parfois utile de préciser les indices, par exemple dans
+% les résultats encadrés. On pourra alors soit composer les indices
+% « à la main », soit avec la commande \suite.
+%
+% Exemples:	\suite{u}	-> (u_n)_{n\in\N}
+%		\suite*{u}	-> (u_n)_{n\in\N^*}
+%		\suite[k]{u}	-> (u_k)_{k\in\N}
+%		\suite*[k]{u}	-> (u_k)_{k\in\N^*}
+
+\makeatletter
+\newif\if@SuiteStar
+\global\@SuiteStartrue
+
+\newcommand{\suite}{%
+	\@ifstar{\global\@SuiteStartrue\@suite}%
+		{\global\@SuiteStarfalse\@suite}%
+}
+
+\newcommand{\@suite}[2][n]{%
+	\if@SuiteStar%
+		\left(#2_{#1}\right)_{#1\in\N^*}%
+	\else%
+		\left(#2_{#1}\right)_{#1\in\N}%
+	\fi\@SuiteStarfalse%
+}
+\makeatother
+
+
+%% Quelques ensembles classiques.
+
+% On n'utilise pas cette commande, elle pose problème avec le \xspace: \N*
+% renvoie N* et non N^*.
+
+% La commande \mathBB est proposée par Paul; elle est construite sur la base
+% de la commande usuelle \mathbb, mais pour obtenir la version étoilée 
+% (« R étoile »), il suffit de placer une étoile après le symbole, sans
+% chapeau. 
+% Exemple:	\N*	est équivalent à \mathbb{N}^{*}
+
+\makeatletter
+\newif\if@laststared
+\global\@laststaredtrue
+\newcommand{\mathBB}[1]{%
+        \@ifstar%
+        {\global\@laststaredtrue\m@thBB{#1}}%
+        {\global\@laststaredfalse\m@thBB{#1}}% 
+}
+\newcommand{\m@thBB}[1]{%
+	\if@laststared{\ensuremath{%
+		{\ifgras\pmb{\mathbb{#1}^{*}}\else\mathbb{#1}^{*}\fi}}\xspace}%
+	\else{\ensuremath{%
+		{\ifgras\pmb{\mathbb{#1}}\else\mathbb{#1}\fi}}\xspace}% 
+	\fi%
+	\@laststaredfalse% 
+}
+\makeatother
+
+\renewcommand{\emptyset}{\ensuremath{\varnothing}\xspace}	% L'ensemble vide
+
+\makeatletter
+%\newcommand{\N}{\ensuremath{\mathBB{N}}\xspace}        % Entiers
+\newcommand{\N}{%
+    \@ifnextchar*%
+        {\ensuremath{\mathBB{N}}}%
+        {\ensuremath{\mathbb{N}}\xspace}
+}
+%\newcommand{\Z}{\ensuremath{\mathBB{Z}}\xspace}        % Entiers relatifs
+\newcommand{\Z}{%
+    \@ifnextchar*%
+        {\ensuremath{\mathBB{Z}}}%
+        {\ensuremath{\mathbb{Z}}\xspace}
+}
+%\newcommand{\Q}{\ensuremath{\mathBB{Q}}\xspace}        % Rationnels
+\newcommand{\Q}{%
+    \@ifnextchar*%
+        {\ensuremath{\mathBB{Q}}}%
+        {\ensuremath{\mathbb{Q}}\xspace}
+}
+%\newcommand{\R}{\ensuremath{\mathBB{R}}\xspace}        % Réels
+\newcommand{\R}{%
+    \@ifnextchar*%
+        {\ensuremath{\mathBB{R}}}%
+        {\ensuremath{\mathbb{R}}\xspace}
+}
+%\newcommand{\C}{\ensuremath{\mathBB{C}}\xspace}        % Complexes
+\newcommand{\C}{%
+    \@ifnextchar*%
+        {\ensuremath{\mathBB{C}}}%
+        {\ensuremath{\mathbb{C}}\xspace}
+}
+\newcommand{\Nstar}{\ensuremath{\N*}\xspace}
+\newcommand{\Zstar}{\ensuremath{\Z*}\xspace}
+\newcommand{\Zdeux}{\ensuremath{\Z^2}\xspace}
+\newcommand{\Ztrois}{\ensuremath{\Z^3}\xspace}
+\newcommand{\Qstar}{\ensuremath{\Q*}\xspace}
+\newcommand{\Rstar}{\ensuremath{\R*}\xspace}
+\newcommand{\Rdeux}{\ensuremath{\R^2}\xspace}
+\newcommand{\Rtrois}{\ensuremath{\R^3}\xspace}
+\newcommand{\Cstar}{\ensuremath{\C*}\xspace}
+\newcommand{\Cdeux}{\ensuremath{\C^2}\xspace}
+\newcommand{\Ctrois}{\ensuremath{\C^3}\xspace}
+\newcommand{\Rplus}{\ensuremath{\R_{\plus}}\xspace}
+\newcommand{\Rmoins}{\ensuremath{\R_{\moins}}\xspace}
+\newcommand{\Rplusstar}{\ensuremath{\Rplus^*}\xspace}
+\newcommand{\Rmoinsstar}{\ensuremath{\Rmoins^*}\xspace}
+\newcommand{\Rplusetoile}{\ensuremath{\Rplusstar}\xspace}
+\newcommand{\Rmoinsetoile}{\ensuremath{\Rmoinsstar}\xspace}
+
+% Les nombres complexes de module 1 (Groupe Unimodulaire)
+%\newcommand{\GU}{\mathBB{U}}
+\newcommand{\GU}{%
+    \@ifnextchar*%
+        {\ensuremath{\mathBB{U}}}%
+        {\ensuremath{\mathbb{U}}\xspace}
+}
+
+% Un corps quelconque.
+%\newcommand{\K}{\mathBB{K}}
+\newcommand{\K}{%
+    \@ifnextchar*%
+        {\ensuremath{\mathBB{K}}}%
+        {\ensuremath{\mathbb{K}}\xspace}
+}
+\newcommand{\corps}{\K}                 % Synonyme
+
+% Les anneaux cycliques.
+\newcommand{\ZZ}[1][\ensuremath{n}]{\ensuremath{\mathBB{Z}/#1\mathBB{Z}}}
+
+    % \ZZ[n] --> Z/nZ
+    % \ZZ[2] --> Z/2Z
+    % \ZZ    --> Z/nZ
+\newcommand{\zpz}{\ensuremath{\ZZ[p]}}
+\newcommand{\znz}{\ensuremath{\ZZ[n]}}
+\newcommand{\zpzstar}{\ensuremath{\zpz^*}}
+
+% Les anneaux de polynômes.
+% Exemple: $ P \in \CX    \implique    P \in \RX $
+\newcommand{\RX}{\ensuremath{\mathBB{R}[X]}}
+\newcommand{\CX}{\ensuremath{\mathBB{C}[X]}}
+\newcommand{\zpzx}{\ensuremath{\zpz[X]}}
+
+% Le groupe symétrique.
+%\newcommand{\sym}{\ensuremath{\mathBB{S}}}         % Au choix
+\newcommand{\sym}{%
+    \@ifnextchar*%
+        {\ensuremath{\mathBB{S}}}%
+        {\ensuremath{\mathbb{S}}\xspace}
+}
+\newcommand{\GS}{\ensuremath{\mathfrak{S}}}         % Au choix
+\newcommand{\SG}{\ensuremath{\mathfrak{S}}}         % Synonyme
+
+% Une notation affreuse parfois rencontrée pour l'ensemble des nombres
+% premiers.
+%\renewcommand{\P}{\ensuremath{\mathBB{P}}}
+\renewcommand{\P}{%
+    \@ifnextchar*%
+        {\ensuremath{\mathBB{P}}}%
+        {\ensuremath{\mathbb{P}}\xspace}
+}
+\makeatother
+
+% L'anneau des matrices.
+% Exemple: $ A \in \M_n(\R) $
+\newcommand{\M}{\ensuremath{\mathscrchoice{M}}}
+
+%% Des symboles d'ensemble avec des lettres rondes.
+
+\DeclareSymbolFont{rsfs}{U}{rsfs}{m}{n}
+\DeclareSymbolFontAlphabet{\tmpmathscr}{rsfs}
+\newcommand{\mathscrchoice}[1]{%
+        \ifgras\pmb{\tmpmathscr{#1}}\else\tmpmathscr{#1}\fi}
+
+\newcommand{\aire}{\ensuremath{\mathcal{A}}\xspace}
+\newcommand{\alphabet}{\ensuremath{\mathcal{A}}\xspace}
+\newcommand{\arbre}{\ensuremath{\mathcal{A}}\xspace}
+\newcommand{\base}{\ensuremath{\mathscrchoice{B}}\xspace}
+\newcommand{\courbe}{\ensuremath{\mathscrchoice{C}}\xspace}
+\newcommand{\cercle}{\ensuremath{\mathscrchoice{C}}\xspace}
+\newcommand{\Cun}{\ensuremath{\mathscrchoice{C}^1}\xspace}	% $f$ est de classe \Cun
+\newcommand{\Cinfini}{\ensuremath{\mathscrchoice{C}^{\infty}}\xspace}
+\newcommand{\classe}{\ensuremath{\mathscrchoice{C}}\xspace}	% $f$ est de classe $\classe^4$
+\newcommand{\courbef}{\ensuremath{\mathscrchoice{C}_f}\xspace} % La courbe représentative
+\newcommand{\domaine}{\ensuremath{\mathscrchoice{D}}\xspace}
+\newcommand{\droite}{\ensuremath{\mathscrchoice{D}}\xspace}
+\newcommand{\Def}{\ensuremath{\mathscrchoice{D}}\xspace}	% \def est réservé par TeX
+\newcommand{\deff}{\ensuremath{\mathscrchoice{D}_f}\xspace}	% $ \deff = \intoo{0}{1} $
+\newcommand{\ens}{\ensuremath{\mathscrchoice{E}}\xspace}	% Un ensemble
+\newcommand{\G}{\ensuremath{\mathscrchoice{G}}\xspace}	% La constante de gravitation
+\newcommand{\Lin}{\ensuremath{\mathscrchoice{L}}\xspace}	% $ u \in \Lin(E,F) $
+\newcommand{\mixte}{\ensuremath{\mathscrchoice{M}}\xspace}	% Le produit mixte
+\newcommand{\plan}{\ensuremath{\mathscrchoice{P}}\xspace}
+\newcommand{\II}{\ensuremath{\mathscrchoice{I}}\xspace}	% Pour les idéaux
+\newcommand{\solset}{\ensuremath{\mathscrchoice{S}}\xspace}	% Ensemble des solutions
+\newcommand{\volume}{\ensuremath{\mathscrchoice{V}}\xspace}  % Volumes
+
+% Des droites parallèles.
+% Exemple: $\droite_1 \parallele \droite_2$
+\newcommand{\parallele}{{\ensuremath{/ \hskip -1mm /}}}
+\renewcommand{\parallel}{\parallele}
+
+% Les intervalles.
+%
+% Bien composer un intervalle n'est pas facile: il faut adapter la taille des
+% crochets et bien espacer le délimiteur central, qui doit être un 
+% point-virgule. On dispose de commandes qui prennent tout cela en charge.
+% On précise si les intervalles sont Ouverts ou Fermés à gauche et à droite,
+% puis les valeurs des bornes.
+%
+% Exemple:	\intff{0}{1}	<==>	[0;1]
+% 		\intof{0}{1}	<==>	]0;1]
+% 		\intfo{0}{1}	<==>	[0;1[
+% 		\intoo{0}{1}	<==>	]0;1[
+%
+% Si le membre de gauche (resp. de droite) est omis, il est remplacé par
+% -\infty (resp. +\infty).
+%
+% Pour les intervalles d'entiers, on peut ajouter une barre verticale dans les
+% crochets, et les bornes doivent alors être incluses dans l'ensemble. La 
+% taille de ces crochets modifiés ne dépend pas des arguments; en cas de 
+% besoin, utiliser la notation ensembliste.
+%
+% Exemple: $ \forall k \in \intn{0}{n-1}    \quad    |u_k| < 1 $
+
+\newcommand{\TestGauche}[1]{\ifthenelse{\equal{#1}{}}{\minf}{#1}}
+\newcommand{\TestDroite}[1]{\ifthenelse{\equal{#1}{}}{\pinf}{#1}}
+\newcommand{\intff}[2]{\ensuremath{\left [ \, \protect\TestGauche{#1} \,;%
+	\protect\TestDroite{#2} \, \right ] }}
+\newcommand{\intof}[2]{\ensuremath{\left ] \, \protect\TestGauche{#1} \,;%
+	\protect\TestDroite{#2} \, \right ] }}
+\newcommand{\intfo}[2]{\ensuremath{\left [ \, \protect\TestGauche{#1} \,;%
+	\protect\TestDroite{#2} \, \right [ }}
+\newcommand{\intoo}[2]{\ensuremath{\left ] \, \protect\TestGauche{#1} \,;%
+	\protect\TestDroite{#2} \, \right [ }}
+
+%\newcommand{\intff}[2]{\ensuremath{\left [ \, #1 \,; #2 \, \right ] }}
+%\newcommand{\intfo}[2]{\ensuremath{\left [ \, #1 \,; #2 \, \right [ }}
+%\newcommand{\intof}[2]{\ensuremath{\left ] \, #1 \,; #2 \, \right ] }}
+%\newcommand{\intoo}[2]{\ensuremath{\left ] \, #1 \,; #2 \, \right [ }}
+
+\newcommand{\intn}[2]{\ensuremath{[\![ \, #1 \,;\, #2 \,]\!]}}
+\newcommand{\intnn}[2]{\intn{#1}{#2}}				% Synonyme
+
+% L'intérieur d'un ensemble est noté avec \ronde ou \interieur.
+% Exemple: $ \ronde{A} $
+%\newcommand{\ronde}[1]{\ensuremath{\overset{\circ}{#1}}}
+\newcommand{\ronde}[1]{\ensuremath{\mathring{#1}}}
+\newcommand{\interieur}[1]{\ronde{#1}}				% Synonyme
+% Une alternative pour les ensembles notés par une lettre minuscule:
+% \mathaccent0023{a}
+
+%!!!!!!!!!!!!!!!!!!!!!!!!!!                  !!!!!!!!!!!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!!!!!!!!!!   Numérotation   !!!!!!!!!!!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!!!!!!!!!!                  !!!!!!!!!!!!!!!!!!!!!!!!!!
+
+% Il peut être très utile de numéroter une équation pour y faire aisément 
+% référence ensuite, soit explicitement avec les commandes ci-dessous, soit
+% avec la commande \centersnumero (décrite juste après).
+%
+% Exemple : \leftcentersright{par suite}{$
+%		f = g² + h²
+%		$}{\deux}.
+%
+% La commande de base est \numero; elle accepte un argument.
+%
+% Exemple: $ \numero{17} $
+%
+% Pour faire simple, des raccourcis qui utilisent cette macro sont déjà prévus
+% (\un <==> \numero{1}).
+
+\newcommand{\numero}[1]{\ensuremath{\mathbf{(#1)}}\xspace}
+\newcommand{\un}{\numero{1}}
+\newcommand{\deux}{\numero{2}}
+\newcommand{\trois}{\numero{3}}
+\newcommand{\quatre}{\numero{4}} 
+\newcommand{\cinq}{\numero{5}}   
+\newcommand{\E}{\numero{E}}
+\newcommand{\F}{\numero{F}}
+\newcommand{\Star}{\ensuremath{(\mathgras{*})}\xspace}
+\newcommand{\sys}{\numero{S}}
+
+% Les commandes à base de \numero, pour simples et pratiques qu'elles soient,
+% posent un problème lorsque les équations sont nombreuses car les relectures
+% scientifiques viendront peut-être tout chambouler. Il peut dont être 
+% pratique d'utiliser une numérotation automatique.
+%
+% Dans une copie, ceci est toujours fait en mettant un numéro à droite d'une
+% équation centrée. C'est ce que font les commandes ci-dessous, en étendant
+% les commandes comme \centers et en reprenant les mêmes idées que dans les
+% \label et \ref de LaTeX.
+%
+% Exemple: \centersnumero{$f=g$}{petit:nom}
+% 	(···)
+% 	Or, d'après l'équation \numeroref{petit:nom}, blablabla.
+%
+% Exemple: \leftcentersnumero{d'où}{$f=g$}{deuxieme:nom}
+%	(···)
+%	Or, d'après l'équation \numeroref{deuxieme:equation}, blablabla.
+%
+% Notez que l'on ne peut pas utiliser d'accent dans le petit nom que l'on 
+% affecte ('petit:nom' ou 'deuxieme:nom').
+
+\newcommand{\centersnumero}[3][2]{%
+	\refstepcounter{Equation}%
+	\centersright[#1]{#2}{\numero{\theEquation}\label{\theCorrige:#3}}%
+	}
+\newcommand{\leftcentersnumero}[4][2]{%
+	\refstepcounter{Equation}%
+	\leftcentersright[#1]{#2}{#3}{%
+		\numero{\theEquation}\label{\theCorrige:#4}%
+	}%
+}
+\newcommand{\encadrenumero}[3][2]{%
+    \refstepcounter{Equation}%
+    \encadreright[#1]{#2}{\numero{\theEquation}\label{\theCorrige:#3}}%
+    }
+\newcommand{\leftencadrenumero}[4][2]{%
+    \refstepcounter{Equation}%
+    \leftencadreright[#1]{#2}{#3}{%
+        \numero{\theEquation}\label{\theCorrige:#4}%
+    }%
+}
+\newcommand{\numeroref}[1]{\numero{\ref{\theCorrige:#1}}}
+
+
+%!!!!!!!!!!!!!!!!!!!!                              !!!!!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!!!!   Logique et mathématiques   !!!!!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!!!!                              !!!!!!!!!!!!!!!!!!!!
+
+% Les symboles qui peuvent être utiles à tout le monde sont \implique et \eq.
+% Exemple: $ \PP(n)    \implique    \PP(n+1) $
+% Exemple: On a montré $(i) \implique (ii)$ et $(ii) \implique (i)$,
+%	   donc $(i) \eq (ii)$.
+\newcommand{\implique}{\ensuremath{\Longrightarrow}}
+\newcommand{\imply}{\implique}					% Synonyme
+\newcommand{\eq}{\ensuremath{\Longleftrightarrow}}
+\newcommand{\SSI}{\ensuremath{\Longleftrightarrow}}		% Synonyme
+
+% « Être en relation avec » se note « A \mathscrchoice{R} B ».
+% Exemple: $ A \relation B $
+\newcommand{\relation}{\ensuremath{\mathscrchoice{R}}}
+
+% Enfin, les symboles logiques classiques sont utiles pour les épreuves
+% d'informatique. Partout ailleurs, il faut leur préférer les expressions
+% rédigées complètes, en particulier dans les ensembles.
+% Exemple: $ A \implique B    \qquad \eq \qquad    \non B \ou A $
+% Exemple: $ \{ \pgcd(i,j) \| i \in A \text{ et } i \in B \} $
+\newcommand{\ou}{\ensuremath{\vee}}
+\newcommand{\et}{\ensuremath{\wedge}}
+\newcommand{\non}{\ensuremath{\neg}}
+\newcommand{\donne}{\ensuremath{\longrightarrow}}
+\newcommand{\tauto}{\ensuremath{\vdash}}
+
+%!!!!!!!!!!!!!!!!!                                    !!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!   Algèbre linéaire et bilinéaire   !!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!                                    !!!!!!!!!!!!!!!!!
+
+% Quelques raccourcis pour manipuler les nombres complexes.
+\newcommand{\barre}[1]{\ensuremath{\overline{#1}}}		% Conjugué
+\newcommand{\Arg}{\ensuremath{\mathop{\rm Arg\,}\nolimits}}	% Argument
+\renewcommand{\Re}{\ensuremath{\mathop{\text{Re}\,}\nolimits}}
+\renewcommand{\Im}{\ensuremath{\mathop{\text{Im}\,}\nolimits}}
+\newcommand{\Rez}{\ensuremath{\Re}}  				% Synonyme
+\newcommand{\Imz}{\ensuremath{\Im}} 				% Synonyme
+\newcommand{\im}{\ensuremath{\Imz}} 				% Synonyme
+
+% Les produits scalaires.
+%
+% Ils doivent être notés avec la même convention que dans l'énoncé.
+% Les deux notations les plus répandues utilisent des parenthèses et des
+% délimiteurs en coin:
+%
+% (u|v), (\vect{AB}|\vect{CD}).
+% <u|v>, <\vect{AB}|\vect{CD}>.
+%
+% Vous disposez de deux commandes pour les composer rapidement et proprement:
+%
+%   $\scalaire{u}{v}$                     pour (u|v)
+%   $\scalaire{ \vect{AB} }{ \vect{CD} }$
+%
+%   $\scalar{u}{v}$                       pour <u|v>
+%   $\scalar{ \vect{AB} }{ \vect{CD} }$
+%
+% Ne changez pas de notation au fil de votre corrigé !
+%
+% NB: dans la majorité des cas, il ne faut pas adapter la taille
+% des parenthèses à leur argument. En particulier, il est normal
+% que les flèches des vecteurs dépassent des parenthèses du produit scalaire.
+% Si toutefois vous avez besoin d'adapter la taille des parenthèses,
+% utilisez une syntaxe de ce genre:
+%
+%   \left(
+%       \left. \f{1}{2} u \:\right| v
+%   \right)
+%
+% ce qui peut aussi s'écrire:
+%
+%   \left( \f{1}{2} u \:\right|
+%   \left . \vphantom{\f{1}{2}} v \right)
+%
+% Si vous trouvez que ces parenthèses sont trop grandes, utilisez le
+% constructeur \Big:
+%
+% Exemple: $ \Big(    \Sum{k=0}{n} e_k    \:\Big|\:    e_{i_0}    \Big) $
+
+\newcommand{\scalaire}[2]{\ensuremath{(#1\|#2)}}
+\newcommand{\scalar}[2]{\ensuremath{\langle #1\|#2 \rangle}}
+
+% Les normes.
+%
+% La commande standard est \norme, qui doit être utilisée dans pratiquement
+% tous les cas. Il est normal et souhaitable que la flèche déborde des barres
+% verticales.
+%
+% Exemple: $ \norme{ \vect{AB} } $
+%
+% Il y a toutefois quelques cas pour lesquels on a vraiment besoin de barres
+% plus grandes, qui couvrent tout l'argument. On utilise alors \bignorme.
+%
+% Exemple: $ \bignorme{    \f{1}{2}   \vect{u}    } $
+%
+% Évitez de diviser un vecteur par un scalaire, comme dans $\f{\vect u}{2}$.
+%
+% Enfin, le sup d'un endomorphisme sur la boule unité se note avec trois 
+% barres verticales.
+%
+% Exemple: $ \trinorme{u} $
+
+%\newcommand{\norme}[1]{\ensuremath{\Arrowvert #1 \Arrowvert}}
+
+\newcommand{\norme}[2][1]{%
+    \ifthenelse{#1 = 0}
+        {\ensuremath{#2}}{}%
+    \ifthenelse{#1 = 1}
+        {\ensuremath{\Arrowvert #2\Arrowvert}}{}%
+    \ifthenelse{#1 = 2}
+        {\ensuremath{\big\Arrowvert#2\big\Arrowvert}}{}%
+    \ifthenelse{#1 = 3}
+        {\ensuremath{\Big\Arrowvert#2\Big\Arrowvert}}{}%
+    \ifthenelse{#1 = 4}
+        {\ensuremath{\bigg\Arrowvert#2\bigg\Arrowvert}}{}%
+    \ifthenelse{#1 = 5}
+        {\ensuremath{\Bigg\Arrowvert#2\Bigg\Arrowvert}}{}%
+    \ifthenelse{#1 = 9}
+        {\ensuremath{\left\Arrowvert#2\right\Arrowvert}}{}%
+}
+
+
+\newcommand{\bignorme}[1]{\ensuremath{\left\Arrowvert #1 \right\Arrowvert}}
+\newcommand{\trinorme}[1]{\ensuremath{|\hskip -1 pt|\hskip -1 pt| #1%
+	|\hskip -1 pt|\hskip -1 pt|}}
+
+% Dessiner une matrice ou un déterminant peut se faire avec les environnements
+% {matrice} et {determinant}.
+%
+% Exemple: $\begin{matrice}	$\begin{determinant}
+%		1 & 0 \\ 		1 & 0 \\
+%		0 & 1 \\		0 & 1 \\
+%	    \end{matrice}$	 \end{determinant}$
+%
+% La transposée d'une matrice nommée par une lettre se note avec \trans.
+%
+% Exemple: $ \trans{A} $
+%
+% Pour indiquer des points de suspension qui descendent la première diagonale,
+% LaTeX fournir \ddots (down dots). Il fournit également \cdots pour les 
+% points de suspension horizontaux et \vdots pour les points de 
+% suspension verticaux. Pour indiquer des points de suspension qui remontent 
+% la deuxième diagonale, on peut utiliser \udots.
+%
+% Exemple: $\begin{matrice}
+%		   0   & \cdots &    0   &    1   \\
+%		\vdots & \udots & \udots &    0   \\
+%		   0   & \udots & \udots & \vdots \\
+%		   1   &    0   & \cdots &    0   \\
+%	    \end{matrice}$
+
+\newenvironment{matrice}%
+	{\begin{pmatrix}}%
+	{\end{pmatrix}}
+\newenvironment{determinant}%
+	{\begin{vmatrix}}%
+	{\end{vmatrix}}
+
+% La commande \matricedd simplifie la composition de matrices (2,2). Elle
+% prend quatre arguments qui sont les quatre coefficients de la matrice, lus
+% ligne par ligne.
+%
+% Exemple: \matricedd{\exi{\theta}}{0}{0}{\exmi{\theta}}
+%
+\newcommand{\matricedd}[4]{%
+        \ensuremath{\begin{matrice}
+                #1 & #2 \\
+                #3 & #4 \\
+        \end{matrice}}
+}
+
+% Le raccourci \vcol permet de dessiner facilement un vecteur colonne.
+%
+% Exemple:
+%   \vcol{ x \\ y \\ z } produit: / x \
+%                                 | y |
+%                                 \ z /
+%
+% On peut placer un nombre quelconque de lignes: \vcol{x\\ y} fait un
+% vecteur à deux lignes, tandis que \vcol{x\\ y\\ z\\ t} utilise quatre 
+% lignes.
+%
+% Enfin, on peut espacer les lignes en utilisant l'argument optionnel de
+% '\\':
+% $\vcol{\f{1}{2}(X+1)\\[2mm] X²}$
+
+\newcommand{\vcol}[1]{\ensuremath{\begin{pmatrix}#1\end{pmatrix}}}
+
+%% Pour les matrices
+\newcommand{\udots}{\ensuremath{\hskip 2pt \raisebox{1pt}{.} \hskip 1pt%
+        \raisebox{4pt}{.} \hskip 1pt \raisebox{7pt}{.} \hskip 2pt}}
+	% up-dots, le symérique de \ddots sur la diagonale.
+%\newcommand{\transp}[1]{%
+%    \ensuremath{%
+%        {\vphantom{#1}}^t #1%
+%    }%
+%}
+\newcommand{\trans}[1]{\ensuremath{\sideset{^t}{}%
+        {\mathop{\mathstrut #1}}}}
+\newcommand{\transp}[1]{\trans{#1}}
+	% La transposée d'une matrice : $\trans{A}$.
+
+
+%!!!!!!!!!!!!!!!!!!!!!                            !!!!!!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!!!!!   Analyse différentielle   !!!!!!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!!!!!                            !!!!!!!!!!!!!!!!!!!!!
+
+% Les physiciens et les chimistes ont besoin de beaucoup de dérivées 
+% partielles ou totales, avec la notation par les éléments différentiels.
+% Toutes les commandes ci-dessous s'utilisent de la même manière, en donnant
+% en premier argument la fonction à dériver et en deuxième argument la 
+% variable par rapport à laquelle on dérive. Je représente les « d rond » par 
+% un ð, faute de mieux sur le clavier; l'apparence sera toutefois correcte
+% dans LaTeX.
+
+% Commençons par un synonyme.
+\newcommand{\drond}{\ensuremath{\partial}}
+
+% df
+% --	Exemple: $ \ddf{f}{x} $
+% dx
+\newcommand{\ddf}[2]{\ensuremath{\f{\dd#1}{\dd#2}}}
+
+% df
+% --	Exemple: $ \ddt{f} $		On dérive par rapport à t.
+% dt
+\newcommand{\ddt}[1]{\ddf{#1}{t}}
+
+% d²f
+% --	Exemple: $ \ddxx{f}{x} $
+% dx²
+\newcommand{\ddxx}[2]{\ensuremath{\f{\dd^2{}#1}{\dd{}{#2}^2}}}
+
+% d²f
+% --	Exemple: $ \ddtt{f} $		On dérive 2 fois par rapport à t.
+% dt²
+\newcommand{\ddtt}[1]{\ensuremath{\ddxx{#1}{t}}}
+
+% ðf
+% --	Exemple: $ \Dp{f}{x} $
+% ðx
+\newcommand{\Dp}[2]{\ensuremath{\f{\partial#1}{\partial#2}}} 
+
+% ðf
+% --	Exemple: $ \Dpt{f} $		On dérive par rappor à t.
+% ðt
+\newcommand{\Dpt}[1]{\ensuremath{\Dp{#1}{t}}}
+
+% ð²f
+% ---	Exemple: $ \DDp{f}{x} $
+% ðx²
+\newcommand{\DDp}[2]{\ensuremath{\f{\partial^2#1}{\partial{#2}^2}}}
+
+% / ðf \
+%|  --  |	Exemple: $ \DP{f}{x} $
+% \ ðx /	Ces parenthèses peuvent être utiles pour placer des indices.
+\newcommand{\DP}[2]{\ensuremath{\left(\f{\partial#1}{\partial#2}\right)}}
+
+% ð² f
+% ----	Exemple: $\Dpc{f}{x}{y}$	Dérivée partielle croisée.
+% ðxðy
+\newcommand{\Dpc}[3]{\ensuremath\f{\partial^2#1}{\partial#2\,\partial#3}}
+\newcommand{\DCP}[3]{\ensuremath{\Dpc{#1}{#2}{#3}}}		% Synonyme
+
+%  / ð² f \
+% |  ----  |	Exemple: $\DPC{f}{x}{y}$
+%  \ ðxðy /
+\newcommand{\DPC}[3]{\ensuremath{\left(\Dpc{#1}{#2}{#3}\right)}}
+
+% Les intégrales de contour doivent être « grandes », comme \Int, même dans le
+% texte. Au lieu de préciser '\displaystyle' à chaque occurrence, on peut
+% profiter de la commande \Oint.
+\newcommand{\Oint}{\displaystyle\oint}
+
+% Bizarrement, il n'y a pas de symbole prédéfini pour les intégrales de 
+% surface.
+\newcommand{\oiint}{\ensuremath{\mathop{{\displaystyle%
+%        \int \hskip -3 mm \int%
+%        \hskip -4.7 mm \bigcirc\ }}\limits}}
+        \int\mkern -15.37mu \int%
+        \mkern -24.08mu \bigcirc\ }}\limits}}
+
+% La même chose, mais avec un indice à l'intégrale ($\OIInt{\Sigma}$).
+\newcommand{\OIInt}[1]{\ensuremath{\mathop{{%
+	\displaystyle%
+	\bigcirc%
+%	 \hskip -4.7 mm \int%
+%        \hskip -3 mm \int_{#1}%
+	\mkern -24.08mu \int%
+        \mkern -15.37mu \int_{#1}%
+}}}}%
+
+\newcommand{\Iint}{\ensuremath{\mathop{{\displaystyle%
+        \int \mkern -15.37mu \int}}\limits}}
+
+% La même chose, mais avec un indice à l'intégrale ($\IInt{\Sigma}$).
+\newcommand{\IInt}[1]{\ensuremath{\mathop{{%
+        \displaystyle%
+        \int\mkern -15.37mu \int_{#1}%
+}}}}%
+
+\newcommand{\Iiint}{\ensuremath{\mathop{{\displaystyle%
+        \int \mkern -15.37mu \int \mkern -15.37mu \int}}\limits}}
+
+% La même chose, mais avec un indice à l'intégrale ($\IIInt{\Sigma}$).
+\newcommand{\IIInt}[1]{\ensuremath{\mathop{{%
+        \displaystyle%
+        \int\mkern -15.37mu \int \mkern -15.37mu \int_{#1}%
+}}}}%
+
+%!!!!!!!!!!!!!!!!!!!!!!!!!!!!               !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!!!!!!!!!!!!   Géométrie   !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!!!!!!!!!!!!               !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+% Dessiner des vecteurs est très difficile. La commande LaTeX standard, 
+% \overrightarrow, ne produit pas un résultat satisfaisant sur les lettres 
+% majuscules. Pour pallier ce manque, on peut utiliser la commande \vect.
+%
+% Exemple: $\vect{AB}$
+%	   $\vect{u}$
+%
+% Ce type de flèche doit être utilisé en toute circonstance, sauf une: lorsque
+% le vecteur est placé en exposant (notamment en optique), on utiliser plutôt
+% \svect, qui sert précisément et uniquement à cela.
+%
+% Exemple pour les vecteurs en exposant: $e^{ i\,\svect{k} \cdot \svect{r} }$
+
+\newlength{\moreinterligne}
+\setlength{\moreinterligne}{5.5 pt}
+\newlength{\letterarrowvskip}
+\setlength{\letterarrowvskip}{-1.5 pt}
+\newlength{\vectlength}
+\newlength{\vectheight}
+\newlength{\boxlength}
+\newcommand{\vect}[1]{%
+        \settowidth{\vectlength}{\ensuremath{#1}}%
+        \settoheight{\vectheight}{\ensuremath{#1}}%
+        \settowidth{\boxlength}{%
+	        \ensuremath{%
+        	\overrightarrow{%
+		        \parbox[b][\the\vectheight + \letterarrowvskip][b]{%
+				\the\vectlength%
+			}{\ensuremath{#1}}%
+		}%
+		}%
+        }
+        \parbox[b][\the\vectheight + \moreinterligne][b]{\the\boxlength}{%
+	        \ensuremath{%
+		        \overset{\hbox to \the\boxlength{\rightarrowfill}}{%
+	        	\parbox[b][\the\vectheight + \letterarrowvskip][b]{
+				\the\vectlength%
+			}{\ensuremath{#1}}%
+			}%
+		}%
+        }
+}
+
+\newlength{\smoreinterligne}
+\setlength{\smoreinterligne}{5.5 pt}
+\newlength{\sletterarrowvskip}
+\setlength{\sletterarrowvskip}{0 pt}
+\newlength{\svectlength}
+\newlength{\svectheight}
+\newlength{\sboxlength}
+\newlength{\sebtemp}
+\newcommand{\svect}[1]{% 
+        \settowidth{\svectlength}{\mbox{\scriptsize{\ensuremath{#1}}}}%
+        \settoheight{\svectheight}{\mbox{\scriptsize{\ensuremath{#1}}}}%
+        \settowidth{\sboxlength}{%
+	        \ensuremath{%
+	        \overrightarrow{%
+		        \parbox[b][\the\svectheight + \sletterarrowvskip][b]{%
+				\the\svectlength%
+			}%
+        		{\mbox{\scriptsize{\ensuremath{#1}}}}%
+		}%
+		}%
+        }
+	\parbox[b][\the\svectheight + \smoreinterligne][b]{\the\sboxlength}{%
+	        \ensuremath{%
+		\overrightarrow{%
+		        \parbox[b][\the\svectheight + \sletterarrowvskip][b]{%
+				\the\svectlength%
+			}%
+	        	{\mbox{\scriptsize{\ensuremath{#1}}}}%
+		}%
+		}%
+	}
+}
+
+% \vec (pour les petits arguments) est remplacé par \vect.
+\renewcommand{\vec}[1]{\ensuremath{\vect{#1}}}
+
+% Pour les vecteurs complexes 
+\newcommand{\uvect}[1]{\ensuremath{\underline{\vect{#1}}}}
+\newcommand{\vectu}[1]{\ensuremath{\vect{\underline{#1}}}}
+
+% Exceptionnellement, on peut vouloir utiliser \vec pour les *indices*.
+\newcommand{\oldvec}{\mathaccent"17E }
+
+% Les vecteurs usuels ont un petit nom.
+%	\vecti, \vectj, \vectk: la base usuelle de \R³
+%	\vectE: le champ électrique
+%	\vectB: le champ magnétique
+\newcommand{\vecti}{\ensuremath{\vect{\imath}}}
+\newcommand{\vectj}{\ensuremath{\vect{\jmath}}}
+\newcommand{\vectk}{\ensuremath{\vect{k}}}
+\newcommand{\vectux}{\ensuremath{\vect{u_x}}}
+\newcommand{\vectuy}{\ensuremath{\vect{u_y}}}
+\newcommand{\vectuz}{\ensuremath{\vect{u_z}}}
+\newcommand{\vectex}{\ensuremath{\vect{e_x}}}
+\newcommand{\vectey}{\ensuremath{\vect{e_y}}}
+\newcommand{\vectez}{\ensuremath{\vect{e_z}}}
+\newcommand{\vux}{\ensuremath{\vect{u_x}}}
+\newcommand{\vuy}{\ensuremath{\vect{u_y}}}
+\newcommand{\vuz}{\ensuremath{\vect{u_z}}}
+\newcommand{\vex}{\ensuremath{\vect{e_x}}}
+\newcommand{\vey}{\ensuremath{\vect{e_y}}}
+\newcommand{\vez}{\ensuremath{\vect{e_z}}}
+\newcommand{\vectE}{\ensuremath{\vect{E}}}
+\newcommand{\vectB}{\ensuremath{\vect{B}}}
+
+% Le produit vectoriel
+% Exemple: $ \vecti \vectoriel \vectj = \vectk $
+\newcommand{\vectoriel}{\ensuremath{\wedge}}
+
+% Les mesures algébriques, par exemple pour compter si une distance doit être
+% considérée comme positive ou négative. Utile en optique.
+% Exemple: $ \alg{AB} $
+\newcommand{\alg}[1]{\ensuremath{\overline{#1}}}
+
+
+%!!!!!!!!!!!!!!!!!!!!!!!!!                    !!!!!!!!!!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!!!!!!!!!   Les opérateurs   !!!!!!!!!!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!!!!!!!!!                    !!!!!!!!!!!!!!!!!!!!!!!!!
+
+% Les ensembles.
+\newcommand{\card}{\ensuremath{\mathop{\rm Card\,}\nolimits}}
+\newcommand{\Min}{\ensuremath{\mathop{\,\rm Min\,}\limits}}  
+\newcommand{\Max}{\ensuremath{\mathop{\,\rm Max\,}\limits}}
+\newcommand{\Maj}{\ensuremath{\mathop{\,\rm Maj\,}\limits}}
+\newcommand{\Inf}{\ensuremath{\mathop{\,\rm Inf\,}\limits}}
+\newcommand{\Sup}{\ensuremath{\mathop{\,\rm Sup\,}\limits}}  
+
+% Arithmétique.
+\newcommand{\pgcd}{\ensuremath{\mathop{\rm pgcd\,}\nolimits}}
+\renewcommand{\gcd}{\pgcd}
+\newcommand{\ppcm}{\ensuremath{\mathop{\rm ppcm\,}\nolimits}}
+\newcommand{\ord}{\ensuremath{\mathop{\rm ord\,}\nolimits}} % Ordre d'un groupe
+
+% L'identité.
+\newcommand{\id}{\ensuremath{\mathop{\rm id\,}\nolimits}}
+\newcommand{\Id}{\ensuremath{\mathop{\rm Id\,}\nolimits}}
+
+% Les opérateurs vectoriels.
+\renewcommand{\div}{\ensuremath{\mathop{\rm div\,}\nolimits}}
+\newcommand{\rot}{\ensuremath{\mathop{\vect{\rm rot}\,}\nolimits}} 
+\newcommand{\grad}{\ensuremath{\mathop{\vect{\rm grad}\,}\nolimits}}
+
+% Polynômes,
+\DeclareMathOperator{\val}{val\,}	% \deg est prédéfini
+
+% Algèbre.
+\DeclareMathOperator{\Ker}{Ker\,}
+\renewcommand{\ker}{\Ker}					% Synonyme
+\DeclareMathOperator{\Image}{Im\,}
+\DeclareMathOperator{\spectre}{sp\,}
+
+\DeclareMathOperator{\Vect}{Vect\,}	% Ne pas confondre avec \vect
+\DeclareMathOperator{\rg}{rg\,}		% Le rang
+\DeclareMathOperator{\tr}{Tr\,}		% La trace
+\DeclareMathOperator{\trace}{Tr\,}	% La trace aussi
+\DeclareMathOperator{\Mat}{Mat\,}	% Uniquement pour les expressions 
+					% comme $\Mat_{\nliste{e}}(u)$.
+\DeclareMathOperator{\Pass}{Pass\,}	% Matrice de passage
+\newcommand{\orthogonal}[1]{\ensuremath{{#1}^{\perp}}}	% $ \orthogonal{E} $
+
+% Fonctions trigonométrique et réciproques
+\DeclareMathOperator{\sh}{sh\,}
+\DeclareMathOperator{\ch}{ch\,}
+\renewcommand{\sinh}{\sh}					% Synonyme
+\renewcommand{\cosh}{\ch}					% Synonyme
+\renewcommand{\th}{\ensuremath{\mathop{\rm th\,}\nolimits}}
+\renewcommand{\coth}{\ensuremath{\mathop{\rm coth\,}\nolimits}}
+%
+\DeclareMathOperator{\argsh}{Argsh\,}
+\DeclareMathOperator{\argch}{Argch\,}
+\DeclareMathOperator{\argth}{Argth\,}
+\DeclareMathOperator{\argcoth}{Argcoth\,}
+\newcommand{\Argsh}{\argsh}					% Synonyme
+\newcommand{\Argch}{\argch}					% Synonyme
+\newcommand{\Argth}{\argth}					% Synonyme
+\newcommand{\Argcoth}{\argcoth}					% Synonyme
+%
+\DeclareMathOperator{\cotan}{cotan\,}
+\renewcommand{\arcsin}{\ensuremath{\mathop{\rm Arcsin\,}\nolimits}}
+\renewcommand{\arccos}{\ensuremath{\mathop{\rm Arccos\,}\nolimits}}
+\renewcommand{\arctan}{\ensuremath{\mathop{\rm Arctan\,}\nolimits}}
+\DeclareMathOperator{\arccot}{Arccot\,}
+\newcommand{\arccotan}{\arccot}					% Synonyme
+	% Rien n'est prévu si vous ne prenez pas l'argument *principal*.
+	% Si vous tenez absolument à chercher les ennuis, utilisez \text...
+\newcommand{\Arcsin}{\arcsin}					% Synonyme
+\newcommand{\Arccos}{\arccos}					% Synonyme
+\newcommand{\Arctan}{\arctan}					% Synonyme
+\newcommand{\Arccot}{\arccot}					% Synonyme
+\newcommand{\Arccotan}{\arccotan}				% Synonyme
+%
+\DeclareMathOperator{\sinc}{sinc\,}
+
+%!!!!!!!!!!!!!!!!!!!!!!!!!!                  !!!!!!!!!!!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!!!!!!!!!!   Les tableaux   !!!!!!!!!!!!!!!!!!!!!!!!!!
+%!!!!!!!!!!!!!!!!!!!!!!!!!!                  !!!!!!!!!!!!!!!!!!!!!!!!!!
+
+% Dessiner des équations alignées, un système, un tableau de variation, etc., 
+% c'est plutôt difficile. À la base, tout est construit sur l'environnement
+% standard {array}. Les environnement ci-dessous lui passent des options pour
+% traiter la plupart des cas courants.
+%
+% Exemple: $\begin{syst}
+%		a & b+2 \\	Dessine un système avec une grande accolade
+%		b &  1  \\	à gauche. Le '&' est remplacé par un '='.
+%	    \end{syst}$	
+%
+% Exemple: $\begin{systsimple}
+%		a & b+2 \\	Comme le précédent, mais sans l'accolade
+%		b &  1  \\	à gauche.
+%	    \end{systsimple}$
+%
+% Exemple: $\begin{varsyst}		Comme {syst}, sauf que le '=' est 
+%		3   & \leq & \pi \\	remplacé par ce qui est entre les '&',
+%		\pi & \leq &  4  \\	soit, dans l'exemple, le symbole 
+%	    \end{varsyst}$		« inférieur ou égal ».
+%
+% Exemple: $\begin{leqsystsimple}
+%		a & b+2 \\	Comme {systsimple}, mais en remplaçant le signe
+%		b &  1  \\	'=' par un « inférieur ou égal ».
+%	    \end{leqsystsimple}$
+%
+% Exemple : $f(x) = 
+%		\begin{accolade}
+%		\f{\sin x}{x} & \text{si }   x\neq 0 \\[3mm]
+%		       1      & \text{sinon}         \\
+%		\end{accolade}$
+%		On pourrait aussi utiliser l'environnement standard {cases}.
+%
+% Exemple: $\begin{rcl}
+% 		|f| &   =  & |g + h|             \\
+% 		|f| & \leq & |g| + |h|           \\
+% 		|f| & \leq & \Max |g| + \Max |h| \\
+%	    \end{rcl}$
+% À utiliser lorsque le symbole central change à chaque ligne.
+%
+% Lorsqu'aucun de ces environnements ne peut vous satisfaire, il faut créer
+% un tableau {array} en lui passant des arguments: une lettre par colonne
+% ('c' pour centrer, 'l' pour aligner à gauche et 'r' pour aligner à droite)
+% et on peut remplacer l'espace intercolonnes par un argument entre @{···}.
+%
+% Exemple: $\begin{array}{r @{\ \geq\ } l}
+%		a & b \\	Dessine un tableau dans lequel on insère entre
+%		c & d \\	la première et la deuxième colonne le symbole
+%	    \end{array}$	« supérieur ou égal ».
+
+\newenvironment{syst}[1][r]%
+	{\ensuremath{\left \{ \hskip -1.5 mm \begin{array}{#1@{\ =\ }l}}}%
+	{\end{array}\right.}
+\newenvironment{systsimple}[1][r]%
+	{\ensuremath{\begin{array}[t]{#1@{\ =\ }l}}}%
+	{\end{array}}
+\newenvironment{varsyst}[1][r]%
+	{\ensuremath{\left \{ \hskip -1.5 mm%
+	 \begin{array}{#1@{\ }c@{\ }l}}}%
+	{\end{array}\right.}
+\newenvironment{accolade}[1][r]%
+	{\ensuremath{\left \{ \hskip -1.5 mm \begin{array}{#1@{\quad}l}}}%
+	{\end{array}\right.}
+\newenvironment{leqsystsimple}[1][r]%
+	{\ensuremath{\begin{array}[t]{#1@{\ \leq\ }l}}}%
+	{\end{array}}
+\newenvironment{rcl}[1][r]%
+	{\ensuremath{\begin{array}[t]{#1@{\ }c@{\ }l}}}%
+	{\end{array}}
+
+% Dans les tableaux de variation, on a souvent besoin d'insérer deux barres
+% verticales pour indiquer les « zones interdites ».
+\newcommand{\barres}{\ensuremath{\vline\:\vline}}
+
+% Lorsque l'on réalise un long calcul, il est parfois souhaitable d'encadrer
+% sa dernière ligne. Un cas fréquent est celui des équation-bilan. 
+% La commande suivante permet de réaliser cela. Son premier (resp.
+% dernier) argument est la première (resp. dernière) colonne qui doit
+% être encadrée. Elle dispose également de trois arguments optionnels
+% entre ces deux arguments qui permettent d'encadrer plus de deux
+% colonnes.
+%
+% Exemple: $\begin{array}{r @{\ =\ } l}
+%		a + 1 & 7 - 3 \\
+%		  a   & 4 - 1 \\
+%		\arraybox{a}{3} \\
+%	    \end{array}$
+%
+% Exemple: $\begin{array}{r @{\ } = @{\ } l}
+%               a + 1 & = & 7 - 3 \\
+%                 a   & = & 4 - 1 \\
+%               \arraybox{a}[=]{3} \\
+%           \end{array}$
+
+\newlength{\boxrulewidth}
+\setlength{\boxrulewidth}{.4pt}
+\newlength{\boxrulesep}
+\setlength{\boxrulesep}{1mm}
+
+\newlength{\gauchelong}
+\newlength{\droitelong}
+\newlength{\colonnealong}
+\newlength{\colonneblong}
+\newlength{\colonneclong}
+
+\newlength{\maxhaut}
+\newlength{\maxbas}
+
+\newcommand{\writeifexist}[1]{%
+        \ifthenelse{\equal{#1}{\null}}{\null}{#1&}%
+}
+
+\newcommand{\lengthifexist}[2]{%
+       \ifthenelse{\not\equal{#1}{\null}}{%
+                \settowidth{#2}{$#1$}
+                }{\setlength{#2}{0cm}}%
+}
+
+\makeatletter
+
+\def\arraybox#1{
+    \@ifnextchar[%]
+    	{\iarraybox{#1}}%
+    	{\ivarraybox{#1}{\null}{\null}[\null]}}
+
+\def\iarraybox#1[#2]{%
+    \@ifnextchar[%]
+    	{\iiarraybox{#1}{#2}}%
+    	{\ivarraybox{#1}{#2}{\null}[\null]}}
+
+\def\iiarraybox#1#2[#3]{%
+    \@ifnextchar[%]
+  	  {\iiiarraybox{#1}{#2}{#3}}%
+    	{\ivarraybox{#1}{#2}{#3}[\null]}}
+
+\def\iiiarraybox#1#2#3[#4]{%
+    \@ifnextchar[%]
+  	  {\ivarraybox{#1}{#2}{#3}[#4]\relax}%
+    	{\ivarraybox{#1}{#2}{#3}[#4]}}%
+
+\def\ivarraybox#1#2#3[#4]#5{%
+        \settowidth{\gauchelong}{$#1\ $}%
+        \settoheight{\maxhaut}{$#1#2#3#4#5$}
+        \settodepth{\maxbas}{$#1#2#3#4#5$}
+        \lengthifexist{#2}{\colonnealong}%
+        \lengthifexist{#3}{\colonneblong}%
+        \lengthifexist{#4}{\colonneclong}%
+%
+        \raisebox{-\maxbas-\boxrulewidth-\boxrulesep}{%
+                \rule{\boxrulewidth}{%
+                \maxbas+\maxhaut+2\boxrulewidth+2\boxrulesep}}%
+        \raisebox{\maxhaut+\boxrulesep}{%
+                \makebox[0cm][l]{\rule{%
+                \gauchelong+\colonnealong+\colonneblong+\colonneclong}{%
+                \boxrulewidth}}}%
+        \raisebox{-\maxbas-\boxrulewidth-\boxrulesep}{%
+                \makebox[0cm][l]{\rule{%
+                \gauchelong+\colonnealong+\colonneblong+\colonneclong}{%
+                \boxrulewidth}}}%
+        \hskip\boxrulesep%
+        #1&%
+   		\writeifexist{#2}%
+		\writeifexist{#3}%
+        \writeifexist{#4}%
+%
+        #5%
+				% il faut les remettre apres le & il semblerait...
+        \settowidth{\droitelong}{$#5\ \eq $}
+        \settoheight{\maxhaut}{$#1#2#3#4#5$}
+        \settodepth{\maxbas}{$#1#2#3#4#5$}
+%
+        \hskip\boxrulesep%
+        \hskip-\droitelong%
+        \raisebox{\maxhaut+\boxrulesep}{%
+                \makebox[0cm][l]{\rule{\droitelong}{\boxrulewidth}}}
+        \raisebox{-\maxbas-\boxrulesep-\boxrulewidth}{%
+                \makebox[0cm][l]{\rule{\droitelong}{\boxrulewidth}}}
+        \hskip\droitelong%
+        \raisebox{-\maxbas-\boxrulesep-\boxrulewidth}{%
+                \rule{\boxrulewidth}{%
+                \maxbas+\maxhaut+2\boxrulesep+2\boxrulewidth}}
+}
+
+\makeatother
+
+% La commande \arraybox comporte un bug connu mais que nous ne savons pas
+% résoudre. Il est possible de remplacer dans un tableau l'espace entre les
+% colonnes par n'importe quoi d'autre à l'aide de '@'. Or, lorsqu'on remplace
+% dans un tableau de plus de trois colonnes cet espace par quelque chose de
+% plus grand, par exemple « @{\ =\ } », la boîte produite par \arraybox
+% ne ferme pas bien, il reste un « jour » horizontal. (Si vous avez une
+% idée pour corriger ce problème, envoyez-nous un mail à annales.sty@H-K.fr !)
+%
+% Si vous rencontrez ce cas, vous pouvez utiliser la commande suivante,
+% \EncadreDansTableau, qui marche toujours (mais qui est moins
+% ergonomique). 
+%
+% Son premier argument est une longueur, en points, dont il faut 
+% décaler le cadre vers la gauche. Son deuxième argument est le même code 
+% que celui de la dernière ligne du tableau, en changeant les '&' par ce
+% qu'ils sont censés représenter. Il faut placer cette commande avant le
+% code qui correspond à la dernière ligne du tableau.
+%
+% Exemple: $\begin{array}{r @{\ =\ } l}
+%               a + 1 & 7 - 3 \\
+%                 a   & 4 - 1 \\
+%               \EncadreDansTableau{5}{a \ =\  3} a & 3 \\
+%           \end{array}$
+
+\newcommand{\EncadreDansTableau}[2]{%
+%	\typeout{^^JEncadreDansTableau est obsolete, veuillez
+%	utiliser arraybox SVP.^^J}
+        \begin{picture}(0,0)%
+        \put(-#1,0){\fbox{\ensuremath{\hphantom{#2}\vphantom{#2}}}}%
+        \end{picture}%
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%                 %%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%   La physique   %%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%                 %%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Les unités.
+
+% Présenter les unités correctement peut être pénible sans une macro 
+% appropriée car d'un côté il faut que les lettres (m, kg, etc.) apparaissent
+% comme dans le texte, et de l'autre on souhaite utiliser des exposants.
+% La macro \U est faite pour cela.
+%
+% Exemple: $ g = 9,81 \U{m^2 s^{-1}} $
+
+\newcommand{\U}[1]{\ensuremath{\mathrm{~#1}}}
+
+% Le cas particulier des Angström doit être traité à part pour avoir un
+% bon rendu.
+%
+% Exemple: $ \ell = 2 \U{\Angstrom} $
+%\newlength{\angstromlength}
+%\settowidth{\angstromlength}{A}
+%\setlength{\angstromlength}{\angstromlength / 2 + 0.003mm}
+%\newcommand{\angstrom}{%
+%	\hskip\angstromlength
+%	\makebox[0pt]{%
+%		\ensuremath{%
+%		\overset{\text{\tiny$\circ$}}{\rule{0pt}{2.2mm}}%
+%		}%
+%	}%
+%	\hskip-\angstromlength A%
+%}
+\newcommand{\angstrom}{\ensuremath{\mathring{A}}}
+\newcommand{\Angstrom}{\angstrom}				% Synonyme
+
+% Les degrés.
+% Exemple: $T\e{f} = 10 \celsius$
+% Exemple: $T\e{i} = 10 \U{K}$
+\newcommand{\celsius}{\ensuremath{\text{\degre{}C}}\xspace}
+\renewcommand{\degre}{\ensuremath{{}^{\text{\footnotesize\ensuremath{\circ}}}}}
+%\renewcommand{\degres}{\degre}					% Synonyme
+\def\degres{\degre}
+
+% Les indices
+%
+% Les indices placés à côté d'une lettre peuvent être essentiellement de deux 
+% natures: soit ils désignent un numéro, comme dans 'u_n', soit ils désignent
+% une abréviation, comme dans 'T_\text{f}' (température finale).
+%
+% Les premiers ne posent aucun problème à composer: $u_n$. Les seconds, en 
+% revanche, sont pénibles parce qu'il faudrait en permanence utiliser \text
+% pour les faire apparaître en droit, ce qui est indispensable. La commande
+% \e s'en occupe pour vous.
+%
+% Exemple: $ T\e{finale} = 1 \U{K} $
+%
+% Attention, n'abusez pas non plus de cette commande: il ne serait pas correct
+% d'écrire $u\e{n}$. Il faut alors s'en tenir à la règle habituelle: $u_n$.
+%
+% Les commandes \liq, \sol et \gaz servent à indiquer la phase.
+%
+% Exemple: $ \He\liq $
+
+\newcommand{\e}[1]{\ensuremath{{}_{\text{#1}}}}
+\newcommand{\liq}{\ensuremath{\e{\ensuremath{(\ell)}}}}
+\newcommand{\gaz}{\ensuremath{\e{(g)}}}
+\newcommand{\sol}{\ensuremath{\e{(s)}}}
+\newcommand{\aq}{\ensuremath{\e{(aq)}}}
+
+% On en profite pour la thermochimie. Des combinaisons plus complexes sont
+% aussi possibles avec \e.
+\newcommand{\Deltar}{\ensuremath{\Delta_{\text{r}}}}
+\newcommand{\Deltaf}{\ensuremath{\Delta_{\text{f}}}}
+\newcommand{\deltar}{\Deltar}
+\newcommand{\deltaf}{\Deltaf}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%               %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   La chimie   %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%               %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% La chimie est toujours difficile à composer. Le pire est naturellement la
+% chimie organique, qui exige des dessins. Mais même le simple fait d'utiliser
+% le symbole d'un élément demande du travail, puisque le symbole doit 
+% apparaître en caractères droits. Pour les quelques éléments dont le symbole
+% est réduit à une lettre (B,C,F,I,K,N,O,U), pas de problème. Pour tous les 
+% autres, il faudrait utiliser \text, comme dans $\text{Al}_2 O_3$.
+%
+% Pour simplifier le travail de composition, au moins deux commandes ont été 
+% accordées à chaque élément: l'un avec le nom complet, l'autre avec le 
+% symbole. Pour ce dernier cas, veillez à ne pas oublier les majuscules.
+%
+% Exemple: $ \Al_2 O_3 $
+
+\newcommand{\aluminium}{\ensuremath{\mathrm{Al}}}
+\newcommand{\alu}{\aluminium}
+\newcommand{\Al}{\aluminium}
+\newcommand{\argent}{\ensuremath{\mathrm{Ag}}}   
+\newcommand{\Ag}{\argent}
+\newcommand{\argon}{\ensuremath{\mathrm{Ar}}}
+\newcommand{\Ar}{\argon}
+\newcommand{\arsenic}{\ensuremath{\mathrm{As}}}
+\newcommand{\As}{\arsenic}
+\newcommand{\baryum}{\ensuremath{\mathrm{Ba}}}
+\newcommand{\Ba}{\baryum}
+\newcommand{\beryllium}{\ensuremath{\mathrm{Be}}}
+\newcommand{\Be}{\beryllium}
+\newcommand{\bismuth}{\ensuremath{\mathrm{Bi}}}
+\newcommand{\Bi}{\bismuth}
+\newcommand{\brome}{\ensuremath{\mathrm{Br}}}
+\newcommand{\Br}{\brome}
+\newcommand{\cadmium}{\ensuremath{\mathrm{Cd}}}
+\newcommand{\Cd}{\cadmium}
+\newcommand{\calcium}{\ensuremath{\mathrm{Ca}}}    
+\newcommand{\Ca}{\calcium}
+\newcommand{\cerium}{\ensuremath{\mathrm{Ce}}}
+\newcommand{\Ce}{\cerium}
+\newcommand{\cesium}{\ensuremath{\mathrm{Cs}}}
+\newcommand{\Cs}{\cesium}
+\newcommand{\chlore}{\ensuremath{\mathrm{Cl}}}   
+\newcommand{\Cl}{\chlore}
+\newcommand{\chrome}{\ensuremath{\mathrm{Cr}}}
+\newcommand{\Cr}{\chrome}
+\newcommand{\cobalt}{\ensuremath{\mathrm{Co}}}
+\newcommand{\Co}{\cobalt}
+\newcommand{\cuivre}{\ensuremath{\mathrm{Cu}}}
+\newcommand{\Cu}{\cuivre}
+\newcommand{\etain}{\ensuremath{\mathrm{Sn}}}
+\newcommand{\Sn}{\etain}
+\newcommand{\europium}{\ensuremath{\mathrm{Eu}}}
+\newcommand{\Eu}{\europium}
+\newcommand{\fer}{\ensuremath{\mathrm{Fe}}}  
+\newcommand{\Fe}{\fer}
+\newcommand{\gallium}{\ensuremath{\mathrm{Ga}}} 
+\newcommand{\Ga}{\gallium}
+\newcommand{\germanium}{\ensuremath{\mathrm{Ge}}} 
+\newcommand{\Ge}{\germanium}
+\newcommand{\helium}{\ensuremath{\mathrm{He}}}
+\newcommand{\He}{\helium}
+\newcommand{\krypton}{\ensuremath{\mathrm{Kr}}}
+\newcommand{\Kr}{\krypton}
+\newcommand{\lithium}{\ensuremath{\mathrm{Li}}}
+\newcommand{\Li}{\lithium}
+\newcommand{\magnesium}{\ensuremath{\mathrm{Mg}}}
+\newcommand{\Mg}{\magnesium}
+\newcommand{\manganese}{\ensuremath{\mathrm{Mn}}}
+\newcommand{\Mn}{\manganese}
+\newcommand{\mercure}{\ensuremath{\mathrm{Hg}}}
+\newcommand{\Hg}{\mercure}
+\newcommand{\molybdene}{\ensuremath{\mathrm{Mo}}}
+\newcommand{\Mo}{\molybdene}
+\newcommand{\neon}{\ensuremath{\mathrm{Ne}}}
+\newcommand{\Ne}{\neon}
+\newcommand{\nickel}{\ensuremath{\mathrm{Ni}}}
+\newcommand{\Ni}{\nickel}
+\newcommand{\palladium}{\ensuremath{\mathrm{Pd}}}
+\newcommand{\Pd}{\palladium}
+\newcommand{\platine}{\ensuremath{\mathrm{Pt}}}
+\newcommand{\Pt}{\platine}
+\newcommand{\plomb}{\ensuremath{\mathrm{Pb}}}
+\newcommand{\Pb}{\plomb}
+\newcommand{\polonium}{\ensuremath{\mathrm{Po}}}
+\newcommand{\Po}{\polonium}
+\newcommand{\radon}{\ensuremath{\mathrm{Rn}}}
+\newcommand{\Rn}{\radon}
+\newcommand{\rubidium}{\ensuremath{\mathrm{Rb}}}
+\newcommand{\Rb}{\rubidium}
+\newcommand{\samarium}{\ensuremath{\mathrm{Sm}}}
+\newcommand{\Sm}{\samarium}
+\newcommand{\selenium}{\ensuremath{\mathrm{Se}}}
+\newcommand{\Se}{\selenium}
+\newcommand{\silicium}{\ensuremath{\mathrm{Si}}}
+\newcommand{\Si}{\silicium}
+\newcommand{\sodium}{\ensuremath{\mathrm{Na}}} 
+\newcommand{\Na}{\sodium}
+\newcommand{\strontium}{\ensuremath{\mathrm{Sr}}}  
+\newcommand{\Sr}{\strontium}
+\newcommand{\titane}{\ensuremath{\mathrm{Ti}}}
+\newcommand{\Ti}{\titane}
+\newcommand{\thallium}{\ensuremath{\mathrm{Tl}}}
+\newcommand{\Tl}{\thallium}
+\newcommand{\xenon}{\ensuremath{\mathrm{Xe}}}
+\newcommand{\Xe}{\xenon}
+\newcommand{\zinc}{\ensuremath{\mathrm{Zn}}}   
+\newcommand{\Zn}{\zinc}
+\newcommand{\zirconium}{\ensuremath{\mathrm{Zr}}}                               
+\newcommand{\Zr}{\zirconium}   
+
+% D'autres raccourcis peuvent se révéler pratiques.
+\newcommand{\affinite}{\ensuremath{\mathcal{A}}}
+\newcommand{\cuivreI}{\ensuremath{\mathrm{Cu}^{+}}}
+	\newcommand{\CuI}{\cuivreI}				% Synonyme
+\newcommand{\cuivreII}{\ensuremath{\mathrm{Cu}^{2+}}}
+	\newcommand{\CuII}{\cuivreII}				% Synonyme
+\newcommand{\ferII}{\ensuremath{\mathrm{Fe}^{2+}}}
+	\newcommand{\FeII}{\ferII}				% Synonyme
+\newcommand{\ferIII}{\ensuremath{\mathrm{Fe}^{3+}}}
+	\newcommand{\FeIII}{\ferIII}				% Synonyme
+%
+\newcommand{\elec}{\ensuremath{\mathrm{e}^{-}}} % Pour les ½-équations rédox.
+\newcommand{\methyl}{\ensuremath{\mathrm{Me}}}
+	\newcommand{\Met}{\methyl}				% Synonyme
+	\newcommand{\Me}{\methyl}				% Synonyme
+\newcommand{\ethyl}{\ensuremath{\mathrm{Et}}}
+	\newcommand{\Et}{\ethyl}				% Synonyme
+\newcommand{\butyl}{\ensuremath{\mathrm{Bu}}}
+	\newcommand{\Bu}{\butyl}				% Synonyme
+%
+\newcommand{\pH}{\ensuremath{\mathrm{pH}}}
+\newcommand{\pOH}{\ensuremath{\mathrm{pOH}}}
+\newcommand{\pKa}{\ensuremath{\mathrm{pKa}}}
+\newcommand{\pKb}{\ensuremath{\mathrm{pKb}}}
+\newcommand{\pKe}{\ensuremath{\mathrm{pKe}}}
+\newcommand{\pKd}{\ensuremath{\mathrm{pKd}}}
+\newcommand{\pKs}{\ensuremath{\mathrm{pKs}}}
+\newcommand{\Ka}{\ensuremath{\text{Ka}}}
+\newcommand{\Kb}{\ensuremath{\text{Kb}}}
+\newcommand{\Ke}{\ensuremath{\text{Ke}}}
+\newcommand{\Ks}{\ensuremath{\text{Ks}}}
+\newcommand{\Kd}{\ensuremath{\text{Kd}}}
+%
+\newcommand{\sulfate}{\ensuremath{{SO_4}^{2-}}} 
+\newcommand{\sulfite}{\ensuremath{{SO_3}^{2-}}} 
+\newcommand{\nitrate}{\ensuremath{{NO_3}^{-}}} 
+\newcommand{\nitrite}{\ensuremath{{NO_2}^{-}}} 
+\newcommand{\hydronium}{\ensuremath{{H_3O}^{+}}} 
+\newcommand{\phosphate}{\ensuremath{{PO_4}^{3-}}} 
+\newcommand{\carbonate}{\ensuremath{{CO_3}^{2-}}} 
+\newcommand{\ammonium}{\ensuremath{{NH_4}^{+}}} 
+\newcommand{\bicarbonate}{\ensuremath{{HCO_3}^{-}}} 
+\newcommand{\bichromate}{\ensuremath{{\chrome_2O_7}^{2-}}} 
+\newcommand{\borate}{\ensuremath{{BO_3}^{3-}}} 
+\newcommand{\chlorate}{\ensuremath{{\chlore O_3}^{-}}} 
+\newcommand{\perchlorate}{\ensuremath{{\chlore O_4}^{-}}} 
+\newcommand{\chlorite}{\ensuremath{{\chlore O_2}^{-}}} 
+\newcommand{\chromate}{\ensuremath{{\chrome O_4}^{2-}}} 
+\newcommand{\dithionate}{\ensuremath{{S_4O_6}^{2-}}} 
+\newcommand{\hypochlorite}{\ensuremath{{\chlore O}^{-}}} 
+\newcommand{\permanganate}{\ensuremath{{\manganese O_4}^{-}}} 
+\newcommand{\thiosulfate}{\ensuremath{{S_2O_3}^{2-}}}
+
+% Pour les concentrations, on doit parfois ajuster la taille des crochets.
+\newcommand{\concentration}[1]{\ensuremath{\left[#1\right]}}
+
+% On peut aussi raccourcir l'unité la plus fréquence en chimie.
+% Exemple: $ [\ferII ]\e{finale} = 0,10 \conc $
+\newcommand{\conc}{\ensuremath{\U{mol.L^{-1}}}}
+
+% Le K°.
+\newcommand{\Kzero}{{\ensuremath{K^\circ}}}
+
+% P° et c°.
+\newcommand{\Pzero}{{\ensuremath{P^\circ}}}
+\newcommand{\czero}{{\ensuremath{c^\circ}}}
+
+% Les grandeurs standard.
+% Exemple: $\Deltar H\zero$
+\newcommand{\zero}{\ensuremath{^{\circ}}}
+
+% On est parfois amené à préciser des liaisons d'une molécule qui n'est pas 
+% dessinée mais « décrite » dans le texte, comme $H_3 C - \Cl$ ou 
+% $H_2 C = C H_2$. Pour que le rendu soit correct, on peut utiliser les 
+% commandes suivantes, l'idéal étant d'enrober la molécule dans une \mbox
+% pour s'assurer que LaTeX ne va pas augmenter ou rétrécir l'espace pour faire
+% en sorte que la ligne joigne correctement les deux marges.
+%
+% Exemple: L'éthylène (\mbox{$H_2 C \double C H_2$}) étant toxique, blablabla.
+
+\newcommand{\simple}{{\ensuremath{%
+    \mathchoice%
+        {\mbox{\raisebox{0.232ex}{\ensuremath{-}}}}
+        {\mbox{\raisebox{0.232ex}{\ensuremath{-}}}}
+        {\mbox{\raisebox{-0.05ex}{\ensuremath{-}}}}
+        {\mbox{\raisebox{-0.15ex}{\ensuremath{-}}}}
+}}}
+
+\newcommand{\double}{{\ensuremath{%
+    \mathchoice%
+        {\mbox{\raisebox{0.232ex}{\ensuremath{=}}}}
+        {\mbox{\raisebox{0.232ex}{\ensuremath{=}}}}
+        {\mbox{\raisebox{-0.005ex}{\ensuremath{=}}}}
+        {\mbox{\raisebox{-0.177ex}{\ensuremath{=}}}}
+}}}
+
+\newcommand{\triple}{{\ensuremath{%
+    \mathchoice%
+        {\mbox{\raisebox{0.232ex}{\ensuremath{\equiv}}}}
+        {\mbox{\raisebox{0.232ex}{\ensuremath{\equiv}}}}
+        {\mbox{\raisebox{-0.005ex}{\ensuremath{\equiv}}}}
+        {\mbox{\raisebox{-0.177ex}{\ensuremath{\equiv}}}}
+}}}
+
+%\newcommand{\simple}{\ensuremath{\!-\!}}
+%\newcommand{\double}{\ensuremath{\!=\!}}
+%\newcommand{\triple}{\ensuremath{\!\equiv\!}}
+
+% Les équilibres doivent être dessinés avec des demi-flèches.
+% \Equilibre laisse plus de place (horizontale) autour du symbole que 
+% \equilibre.
+\newcommand{\equilibre}{\ensuremath{\ \rightleftharpoons\ }}
+\newcommand{\Equilibre}{\ensuremath{\ \,\rightleftharpoons\,\ }}
+
+% Une simple flèche pour la cinétique 
+\newcommand{\kdonne}[1]{%
+	\ensuremath{%
+		{\overset{\raisebox{-2pt}{\scriptsize #1}}{\ \,\longrightarrow\,\ }}%
+	}%
+}
+
+%% Les configurations électroniques de quelques éléments.
+
+\newcommand{\ConfigurationAzote}{\ensuremath{%
+	\raisebox{0.5pt}{|}\,%
+        \underset{\text{\normalsize $\cdot$}}%
+        {\overset{\text{\raisebox{-1pt}{\normalsize $\cdot$}}}{N}}%
+        \hskip1pt\cdot%
+	}}
+\newcommand{\ConfigurationOxygene}{\ensuremath{%
+	\cdot\hskip1pt%
+	\underset{\raisebox{2pt}{\text{\normalsize{$-$}}}}%
+	{\overset{\raisebox{-2pt}{\text{\normalsize{$-$}}}}{O}}%
+	\hskip1pt\cdot%
+	}}
+\newcommand{\ConfigurationCarbone}{\ensuremath{%
+	\cdot\hskip1pt%
+	\underset{\raisebox{2pt}{\text{\normalsize{$\cdot$}}}}%
+	{\overset{\raisebox{-2pt}{\text{\normalsize{$\cdot$}}}}{C}}%
+	\hskip1pt\cdot%
+	}}
+\newcommand{\ConfigurationHydrogene}{\ensuremath{H\hskip0.5pt\cdot}}
+
+%% Pour dessiner les spins.
+
+\newcommand{\spinup}{
+        \begin{picture}(10,10)
+        \put(2.5,2.5){$\uparrow$}
+        \path(0,0)(10,0)(10,10)(0,10)(0,0) 
+        \end{picture}
+	}
+\newcommand{\spindown}{
+        \begin{picture}(10,10)
+        \put(2.5,2.5){$\downarrow$}
+        \path(0,0)(10,0)(10,10)(0,10)(0,0) 
+        \end{picture}
+	}
+\newcommand{\spindouble}{
+        \begin{picture}(10,10)
+        \put(1,2.5){$\uparrow\!\downarrow$}
+        \path(0,0)(10,0)(10,10)(0,10)(0,0) 
+        \end{picture}
+	}
+\newcommand{\spinvide}{
+        \begin{picture}(10,10)
+        \path(0,0)(10,0)(10,10)(0,10)(0,0) 
+        \end{picture}
+	}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%                    %%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%   L'informatique   %%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%                    %%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Insérer un code source en précisant le nom de la version et le fichier
+% à inclure.
+% Exemple: \codesource{Version Caml}{PS/MP_INFO_X_1_2002__1.ml}
+%\newcommand{\codesource}[2]{%
+%	\medskip\noindent%
+%	\textbf{#1}%
+%	\verbatiminput{#2}%
+%}
+% Je modifie cette commande car depuis 2003, seules les versions Caml des
+% corrigés sont proposées.
+%\newcommand{\codesource}[1]{\medskip\noindent\verbatiminput{#1}}
+\newcommand{\codesource}[1]{%
+    \medskip\noindent%
+    \NoAutoSpaceBeforeFDP%  Pas d'espace avant les ':' et ';'
+    \verbatiminput{#1}%
+    \AutoSpaceBeforeFDP%
+    }
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%                          %%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%   Les fautes de frappe   %%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%                          %%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\renewcommand{\mp}{\pm}
+\renewcommand{\mp}{\errmessage{Commande interdite: utiliser \string\pm}}
+

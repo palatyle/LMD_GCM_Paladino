@@ -1,0 +1,202 @@
+## Directory where external input files are
+levels## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#datadir      = /d5/aslmd/DATAGENERIC
+datadir      = /planeto/sglmd/datagcm
+
+## Orbit / general options
+## ~~~~~~~~~~~~~~~~~~~~~~~
+# Run with or without tracer transport ?
+tracer       = .false.
+# Diurnal cycle ?  if diurnal=false, diurnally averaged solar heating
+diurnal      = .false.
+# Seasonal cycle ? if season=false, Ls stays constant, to value set in "start"
+season       = .true. 
+# Tidally resonant orbit ? must have diurnal=false, correct rotation rate in newstart
+tlocked      = .false.
+# Tidal resonance ratio ? ratio T_orbit to T_rotation
+nres         = 1
+# Planet with rings?
+rings_shadow = .false.
+# Compute latitude-dependent gravity field??
+oblate = .true.
+# Flattening (a-b)/a
+flatten =  0.06487
+# Needed if oblate=.true.: J2
+J2 = 0.01470
+# Needed if oblate=.true.: Planet mean radius (m)
+Rmean = 69911000.
+# Needed if oblate=.true.: Mass of the planet (*1e24 kg)
+MassPlanet = 1898.3
+# Write some more output on the screen ?
+lwrite       = .false.
+# Save statistics in file "stats.nc" ?
+callstats    = .false.
+# Test energy conservation of model physics ?
+enertest     = .true.
+# Check to see if cpp, mugaz values used match gas mixture defined in gases.def (recommended) ?
+check_cpp_match=.false. 
+#
+## Radiative transfer options
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~
+# call radiative transfer?
+callrad      = .true.
+# the rad. transfer is computed every "iradia" physical timestep
+iradia       =  8
+# call multilayer correlated-k radiative transfer ?
+corrk        = .true.
+# Include continuum absorption in radiative transfer (note CO2 is treated separately) ?
+continuum  = .true.
+# folder in which correlated-k data is stored ?
+corrkdir     = Jupiter_NewMOSES_NH3_HITRAN2012_REY_ISO_ge-12_NoKarko
+# call visible gaseous absorption in radiative transfer ?
+callgasvis   = .true.
+# Include Rayleigh scattering in the visible ?
+rayleigh     = .true.
+# Uniform absorption coefficient in IR ?
+graybody     = .false.
+# Characteristic planetary equilibrium (black body) temperature
+# This is used only in the aerosol radiative transfer setup. (see aerave.F)
+tplanet    = 100.
+# Use Newtonian cooling in place of radiative transfer ?
+newtonian    = .false.
+# Radiative timescale for Newtonian cooling ? [only if newtonian = T]
+tau_relax    = 30.00000
+# Test physics timescale in 1D ?
+testradtimes = .false.
+# Output spectral OLR in 1D/3D?
+specOLR      = .true.
+# Output global radiative balance in file 'rad_bal.out' - slow for 1D!!
+meanOLR      = .false.
+# Variable gas species: Radiatively active ?
+varactive    = .false.
+# Variable gas species: Fixed vertical distribution ?
+varfixed     = .false.
+# Variable gas species: Saturation percentage value at ground ?
+satval       = 0.0
+# Use fixed vertical profile, 1 step, no iteration ?
+kastprof     = .false.
+# Use blackbody for stellar spectrum ?
+stelbbody    = .false.
+# Stellar blackbody temperature ?
+stelTbb      = 5800.000
+# Force specific heat capacity and molecular mass values
+force_cpp      = .true.
+# Specific heat capacity in J K-1 kg-1 [only used if force_cpp = T]
+cpp            = 11500
+# Molecular mass in g mol-1 [only used if force_cpp = T]
+mugaz          = 2.343
+#Call conduction in upper atmosphere?
+callconduc = .false.
+#Flux from thermosphere (if callconduc)?
+phitop = 1.e-3
+
+## Star type
+## ~~~~~~~~~
+startype     = 1
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# The choices are:
+#
+#	startype = 1		Sol        (G2V-class main sequence)
+#	startype = 2		Ad Leo     (M-class, synthetic)
+#       startype = 3            GJ644
+#       startype = 4            HD128167
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Stellar flux at 1 AU. Examples:
+# 1366.0 W m-2                Sol today
+# 1024.5 W m-2                Sol today x 0.75 = weak Sun 3.8 GYa
+# 18.462 W m-2                The feeble GJ581
+# 19.960 W m-2                GJ581 with e=0.38 orbital average
+Fat1AU       = 1366.0
+
+## Tracer and aerosol options 
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Gravitational sedimentation of tracers (KEEP FALSE FOR NOW) ?
+sedimentation = .false.
+
+## Other physics options
+## ~~~~~~~~~~~~~~~~~~~~~
+# call turbulent vertical diffusion ?
+calldifv     = .true.
+# use turbdiff instead of vdifc ?
+UseTurbDiff = .true.
+# call convective adjustment ?
+calladj      = .true.
+# call thermal conduction in the soil ?
+callsoil = .false.
+# Internal heat flux (matters only if callsoil=F)
+intheat =  5.44
+# Remove lower boundary (e.g. for gas giant sims)
+nosurf = .true.
+
+#########################################################################
+## extra non-standard definitions for Gliese 581d / Early Mars
+#########################################################################
+ 
+## Tracer and aerosol options 
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Radiatively active CO2 aerosol?
+aeroco2       = .false.
+
+# Ammonia cloud (Saturn/Jupiter)?
+aeronh3      = .true.
+size_nh3_cloud = 15.e-6 
+pres_nh3_cloud = 80000
+tau_nh3_cloud = 7.0 
+# Radiatively active aerosol (Saturn/Jupiter)?
+aeroback2lay   = .true.
+obs_tau_col_tropo= 2.0 
+size_tropo= 1.e-6 
+pres_bottom_tropo=80000.
+pres_top_tropo=18000.
+obs_tau_col_strato= 0.1D0 
+
+# Auroral aerosols (Saturn/Jupiter)?
+aeroaurora    = .true.
+
+# Fixed CO2 aerosol distribution?
+aerofixco2    = .false.
+# Radiatively active water aerosol?
+aeroh2o       = .false.
+# Fixed water aerosol distribution?
+aerofixh2o  = .false.
+# Varying H2O cloud fraction?
+CLFvarying    = .false.
+# H2O cloud fraction?
+CLFfixval     = 0.0 
+# number mixing ratio of CO2 ice particles
+Nmix_co2      = 100000.
+# number mixing ratio of water ice particles
+Nmix_h2o      = 100000.
+# basic dust opacity
+dusttau       = 0.0
+# water cloud pressure level (norm. by psurf)
+cloudlvl      = 0.0
+
+
+## Water options
+## ~~~~~~~~~~~~~
+# Model water cycle
+water         = .false.
+# Model water cloud formation
+watercond     = .false.
+# Model water precipitation (including coagulation etc.)
+waterrain     = .false.
+# Precipitation threshold (simple scheme only) ?
+rainthreshold = 0.011
+# Surface hydrology?
+hydrology     = .false.
+# H2O snow (and ice) albedo ?
+albedosnow    = 0.6
+# Maximum sea ice thickness (m) ?
+maxicethick   = 2.0
+# Freezing point of seawater (degrees C) ?
+Tsaldiff      = 0.0
+# Evolve surface water sources ?
+sourceevol    = .false.
+
+## CO2 options 
+## ~~~~~~~~~~~
+# call CO2 condensation ?
+co2cond       = .false.
+# Set initial temperature profile to 1 K above CO2 condensation everywhere?
+nearco2cond   = .false.

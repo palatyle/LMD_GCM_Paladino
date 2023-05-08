@@ -1,0 +1,54 @@
+{\footnotesize
+\begin{verbatim}
+c Informations on the physics grid
+      tab_cntrl(1) = float(ngridmx)  ! number of nodes on physics grid
+      tab_cntrl(2) = float(nlayermx) ! number of atmospheric layers
+      tab_cntrl(3) = day_ini + int(time)         ! initial day 
+      tab_cntrl(4) = time -int(time)            ! initiale time of day
+
+c Informations about Mars, used by dynamics and physics
+      tab_cntrl(5) = rad      ! radius of Mars (m) ~3397200
+      tab_cntrl(6) = omeg     ! rotation rate (rad.s-1)
+      tab_cntrl(7) = g        ! gravity (m.s-2) ~3.72
+      tab_cntrl(8) = mugaz    ! Molar mass of the atmosphere (g.mol-1) ~43.49
+      tab_cntrl(9) = rcp      !  = r/cp  ~0.256793 (=kappa dans dynamique)
+      tab_cntrl(10) = daysec  ! length of a sol (s)  ~88775
+
+      tab_cntrl(11) = phystep  ! time step in the physics
+      tab_cntrl(12) = 0.
+      tab_cntrl(13) = 0.
+
+c Informations about Mars, only for physics
+      tab_cntrl(14) = year_day  ! length of year (sols) ~668.6
+      tab_cntrl(15) = periheli  ! min. Sun-Mars distance (Mkm) ~206.66
+      tab_cntrl(16) = aphelie   ! max. SUn-Mars distance (Mkm) ~249.22
+      tab_cntrl(17) = peri_day  ! date of perihelion (sols since N. spring)
+      tab_cntrl(18) = obliquit  ! Obliquity of the planet (deg) ~23.98
+
+c Boundary layer and turbulence
+      tab_cntrl(19) = z0        ! surface roughness (m) ~0.01
+      tab_cntrl(20) = lmixmin   ! mixing length ~100
+      tab_cntrl(21) = emin_turb ! minimal energy ~1.e-8
+
+c Optical properties of polar caps and ground emissivity
+      tab_cntrl(22) = albedice(1)  ! Albedo of northern cap ~0.5
+      tab_cntrl(23) = albedice(2)  ! Albedo of southern cap ~0.5
+      tab_cntrl(24) = emisice(1)   ! Emissivity of northern cap ~0.95
+      tab_cntrl(25) = emisice(2)   ! Emissivity of southern cap ~0.95
+      tab_cntrl(26) = emissiv      ! Emissivity of martian soil ~.95
+      tab_cntrl(31) = iceradius(1) ! mean scat radius of CO2 snow (north)
+      tab_cntrl(32) = iceradius(2) ! mean scat radius of CO2 snow (south)
+      tab_cntrl(33) = dtemisice(1) ! time scale for snow metamorphism (north)
+      tab_cntrl(34) = dtemisice(2) ! time scale for snow metamorphism (south)
+
+c dust aerosol properties
+      tab_cntrl(27) = tauvis      ! mean visible optical depth
+
+      tab_cntrl(28) = 0. 
+      tab_cntrl(29) = 0.
+      tab_cntrl(30) = 0.
+
+! Soil properties:
+      tab_cntrl(35) = volcapa ! soil volumetric heat capacity
+\end{verbatim}
+}

@@ -1,0 +1,69 @@
+\documentclass{report}
+\usepackage{epsf}
+\usepackage{times}
+\usepackage{epsfig}
+\usepackage{pstricks}
+\usepackage[round]{natbib}
+
+\usepackage{makeidx}
+\usepackage{a4}
+\usepackage{graphicx}
+\usepackage[french,english]{babel}
+\scrollmode
+
+\makeindex
+\sloppy
+
+% numero de la derniere section numerotee
+\setcounter{secnumdepth}{3}
+% numero de la derniere section a apparaitre dans la table des matieres
+\setcounter{tocdepth}{3}
+ 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+\input{def}
+
+\sloppy
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\selectlanguage{english}
+
+%\pagedegarde{User Manual for the LMD Martian Atmospheric General Circulation Model }{Ehouarn MILLOUR, Fran\c{c}ois FORGET  \\ \it{Contributors to earlier versions}: Karine Dassas, \\ Christophe HOURDIN, Fr\'ed\'eric HOURDIN, \\  and Yann WANHERDRICK\\
+%\it{initial version translated by Gwen Davis}}{}
+%\def\contracr{ESA contract}
+% For title page
+\title{User Manual for the LMD Martian Atmospheric General Circulation Model}
+\author{Ehouarn MILLOUR, Fran\c{c}ois FORGET  \\ \it{Contributors to earlier versions}: Karine DASSAS, \\ Christophe HOURDIN, Fr\'ed\'eric HOURDIN, \\  and Yann WANHERDRICK}
+%\date{\today}
+\date{June 20, 2018}
+
+\maketitle
+\tableofcontents
+
+\input{intro}
+\input{principe}
+%\input{dynamics}
+\input{phymars}
+\input{run.tex}
+\input{compilation.tex}
+\input{io.tex}
+\input{zoom.tex}
+\input{water.tex}
+\input{photochem.tex}
+\input{thermosphere.tex}
+\input{testphys1d.tex}
+
+\appendix
+
+\input{sol2ls.tex}
+\input{utilities.tex}
+ 
+%\printindex
+
+\bibliography{biblio.bib}
+\bibliographystyle{plain}
+
+\end{document}

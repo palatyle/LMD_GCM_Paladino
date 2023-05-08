@@ -1,0 +1,19 @@
+#! /bin/bash
+
+echo 1/8
+wget http://pds-geosciences.wustl.edu/geo/mgs-m-mola-5-megdr-l3-v1/mgsl_300x/meg064/megt90n000gb.img . > /dev/null 2>&1
+echo 2/8
+wget http://pds-geosciences.wustl.edu/geo/mgs-m-mola-5-megdr-l3-v1/mgsl_300x/meg064/megt90n000gb.lbl . > /dev/null 2>&1
+echo 3/8
+wget http://pds-geosciences.wustl.edu/geo/mgs-m-mola-5-megdr-l3-v1/mgsl_300x/meg064/megt90n180gb.img . > /dev/null 2>&1
+echo 4/8
+wget http://pds-geosciences.wustl.edu/geo/mgs-m-mola-5-megdr-l3-v1/mgsl_300x/meg064/megt90n180gb.lbl . > /dev/null 2>&1
+echo 5/8
+wget http://pds-geosciences.wustl.edu/geo/mgs-m-mola-5-megdr-l3-v1/mgsl_300x/meg064/megt00n000gb.img . > /dev/null 2>&1
+echo 6/8
+wget http://pds-geosciences.wustl.edu/geo/mgs-m-mola-5-megdr-l3-v1/mgsl_300x/meg064/megt00n000gb.lbl . > /dev/null 2>&1
+echo 7/8
+wget http://pds-geosciences.wustl.edu/geo/mgs-m-mola-5-megdr-l3-v1/mgsl_300x/meg064/megt00n180gb.img . > /dev/null 2>&1
+echo 8/8
+wget http://pds-geosciences.wustl.edu/geo/mgs-m-mola-5-megdr-l3-v1/mgsl_300x/meg064/megt00n180gb.lbl . > /dev/null 2>&1
+

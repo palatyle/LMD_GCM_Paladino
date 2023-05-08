@@ -1,0 +1,81 @@
+\chapter{Utilities}
+
+\label{sc:utilities}
+
+A few post-processing tools, which handle GCM outputs (files
+{\tt diagfi.nc} and {\tt stats.nc}) are available on the web at:\\
+\verb+http://www.lmd.jussieu.fr/~forget/datagcm/Utilities/+\\
+The directory contains compiled executables (\verb+*.e+ files) of the tools
+decribed below, along with some examples of input instruction
+(\verb+*.def+ files) and a \verb+README+.\\
+There is also a \verb+SOURCES+ directory which contains the (Fortran)
+sources of the codes, if you should need to recompile them
+on your platform.
+
+\section{concatnc}
+This program concatenates consecutive
+output files ({\tt diagfi.nc} or even {\tt stats.nc} files) for a selection of 
+variable, in order to obtain one single big file.
+The time dimension of the output can
+be "sols" or "Ls" (note that in that latter case, Ls values won't be
+evenly distributed, and
+software like Grads may not be able to use and plot the data).\\
+To obtain an evenly sampled "Ls"
+timescale, you can use the {\tt lslin.e} program (described below).\\
+The output file created by {\tt conctanc.e} is {\tt concat.nc}
+
+\section{lslin}
+
+This program is designed to interpolate data given
+in  irregular Solar Longitude (Ls) into an evenly sampled
+linear time coordinate (usable with Grads).
+Input Netcdf files may be {\tt diagfi.nc} or {\tt concat.nc}  
+files and the resulting
+output file is {\tt lslin.nc}
+lslin also create a {\tt lslin.ctl} file that can be read
+directly by grads (\verb+>xdfopen lslin.ctl+) to plot in Ls coordinate to
+avoid some problem with grads when Grads think that "the time interval
+is too small"...
+
+\section{localtime}
+
+The {\tt localtime.e} program is designed to re-interpolate data in order
+to yield values at the same given local time (useful to mimic satellite
+observations, or analyse day to day variations at given local time).\\
+Input files may be of {\tt diagfi.nc}, {\tt stats.nc} or {\tt concat.nc}
+type and the output file name is build from the input one, to which 
+{\tt \_LT.nc} is appened (e.g. if the input file is {\tt myfile.nc} then
+output file will be {\tt myfile\_LT.nc}).
+
+\section{zrecast}
+With this program you can recast atmospheric (i.e.: 4D-dimentional
+longitude-latitude-altitude-time) data from GCM outputs (e.g. as given in
+{\tt diagfi.nc}, {\tt concat.nc} and {\tt stats.nc} files) onto
+either {\it pressure} or {\it altitude above areoid} vertical coordinates.\\
+Since integrating the hydrostatic equation is required to recast the data,
+the input file must contain surface pressure and atmospheric temperature,
+as well as the ground geopotential.\\
+If recasting data onto {\it pressure} coordinates, then the output file name
+is given by the input file name to which {\tt\_P.nc} will be appened.
+If recasting data onto {\it altitude above areoid} coordinates, then a
+{\tt\_A.nc} will be appened.
+
+
+%\section{How to concat diagfi files?}
+%In the directory concatnc (available on the web at
+%http://www.lmd.jussieu.fr/\verb+~+forget/datagcm/Utilities/),
+%you will find a tool to concat the diagfi files.
+%To compile, juste type "make"
+%(make sure the makefile is updated: FC= pgf90 for PC and FC= f90 for suns).\\ \\
+%run concatnc.e \\ \\ 
+%Your data are in concat.nc
+%
+%\section{How to convert your output in pressure coordinates?} 
+%In your working directory, compile at the correct grid resolution, which is
+%the same as the one of your output files (stats or diagfi).\\ \\
+%makegcm  -d 64x48x32  -p mars anl\_stats-diag \\ \\
+%run anl\_stats-diag.e
+%Your data in pressure coordinate will be in the resuting diagfi.nc
+%(or stats.nc). \\
+%If needed, you can change the source file anl\_stats-diag.F in
+%yourpath/LMDZ.MARS/libf/dyn3d

@@ -1,0 +1,52 @@
+{\footnotesize
+\begin{verbatim}
+ First set of questions:
+ Modifications of variables in tab_cntrl:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ (3)          day_ini : Initial day (=0 at Ls=0)
+ (19)              z0 : default surface roughness (m)
+ (21)       emin_turb :  minimal energy (PBL)
+ (20)         lmixmin : mixing length (PBL)
+ (26)         emissiv : ground emissivity
+ (24 et 25)   emisice : CO2 ice max emissivity 
+ (22 et 23)  albedice : CO2 ice cap albedos
+ (31 et 32) iceradius : mean scat radius of CO2 snow
+ (33 et 34) dtemisice : time scale for snow metamorphism
+ (27)        tauvis : mean dust vis. reference opacity
+ (35)         volcapa : soil volumetric heat capacity
+ (18)        obliquit : planet obliquity (deg)
+ (17)      peri_day : perihelion date (sol since Ls=0)
+ (  )      peri_ls : perihelion date (Ls since Ls=0)
+ (15)      periheli : min. sun-mars dist (Mkm)
+ (16)      aphelie  : max. sun-mars dist (Mkm)
+
+ Second set of questions :
+ List of possible changes :
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~
+ flat         : no topography ("aquaplanet")
+ bilball      : uniform albedo and thermal inertia
+ z0           : set a uniform surface roughness length
+ coldspole    : cold subsurface and high albedo at      S.Pole
+ qname        : change tracer name
+ q=0          : ALL tracer =zero
+ q=x          : give a specific uniform value to one    tracer
+ q=profile    : specify a profile for a tracer
+ freedust     : rescale dust to a true value
+ ini_q        : tracers initialization for chemistry    and water vapour
+ ini_q-h2o    : tracers initialization for chemistry    only
+ composition  : change atm main composition: CO2,N2,Ar, O2,CO
+ ini_h2osurf  : reinitialize surface water ice 
+ noglacier    : Remove tropical H2O ice if |lat|<45
+ watercapn    : H20 ice on permanent N polar cap 
+ watercaps    : H20 ice on permanent S polar cap 
+ wetstart     : start with a wet atmosphere
+ isotherm     : Isothermal Temperatures, wind set to    zero
+ co2ice=0     : remove CO2 polar cap
+ ptot         : change total pressure
+ therm_ini_s  : set soil thermal inertia to reference   surface values
+ subsoilice_n : put deep underground ice layer in       northern hemisphere
+ subsoilice_s : put deep underground ice layer in       southern hemisphere
+ mons_ice     : put underground ice layer according     to MONS derived data
+
+\end{verbatim}
+}

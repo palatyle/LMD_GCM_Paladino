@@ -1,0 +1,1 @@
+/home/palatyle/LMD_gen/trunk/LMDZ.COMMON/makelmdz_fcm -arch local -parallel mpi -p std -d 64x48x20 -full -s 2 -t 6 -b 32x36 -io noioipsl -j 8 -fcm_path /home/palatyle/LMD_gen/trunk/LMDZ.COMMON/ioipsl/modipsl/modeles/IOIPSL/tools/FCM_V1.2/bin gcm

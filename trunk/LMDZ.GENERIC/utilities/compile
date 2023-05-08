@@ -1,0 +1,36 @@
+# The following script can be used to compile one of the utilities
+# program. Example of use :
+# > compile streamfunction
+# > compile extrapol_icefield
+
+# pgf90 -Bstatic   $1.F90 \
+#-I/distrib/local/netcdf/pgi_7.1-6_32/include \
+#-L/distrib/local/netcdf/pgi_7.1-6_32/lib -lnetcdf  -o $1.e
+
+#ifort $1.F90 \
+#pgf90 $1.F90 \
+ifort $1.F90 \
+-I$NETCDF/include \
+-L$NETCDF/lib -lnetcdf -o $1.e
+
+# Before running that on you computer you might want to change :
+# 1) replace "pgf90" with the name of your favorite compiler 
+#    (you may also add some non-agressive optimization options e.g. -O2)
+# 2) replace "/distrib/local/netcdf/pgi_7.1-6_32/lib" with the
+# address of the
+# directory that contains the NetCDF library (file libnetcdf.a that can
+# be obtained for free on
+# http://www.unidata.ucar.edu/packages/netcdf/index.html
+# (see user manual)
+#
+# 3) Replace "/distrib/local/netcdf/pgi_7.1-6_32/lib" with the address of the
+# directory that contains the NetCDF  include file "netcdf.inc"
+# that can be obtained at the web address above.
+# 
+# 4) The "-Bstatic" option is here to ensure that the executable will
+# work on any Linux machine (only necessary if you want to export the
+# executable from a machine to another).
+
+
+
+

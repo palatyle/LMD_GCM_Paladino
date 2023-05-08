@@ -1,0 +1,14 @@
+ROOT=$PWD
+
+NETCDF_LIBDIR="-L/donnees/emlmd/netcdf64-4.0.1_pgi/lib"
+NETCDF_LIB="-lnetcdf"
+NETCDF_INCDIR="-I/donnees/emlmd/netcdf64-4.0.1_pgi/include"
+
+IOIPSL_INCDIR="-I/donnees/emlmd/modipsl64_pgi/modipsl/lib"
+IOIPSL_LIBDIR="-L/donnees/emlmd/modipsl64_pgi/modipsl/lib"
+IOIPSL_LIB="-lioipsl"
+
+XIOS_INCDIR="-I$ROOT/../XIOS/inc"
+XIOS_LIBDIR="-L$ROOT/../XIOS/lib"
+XIOS_LIB="-lxios -lstdc++"
+

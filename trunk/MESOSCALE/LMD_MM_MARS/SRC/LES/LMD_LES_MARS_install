@@ -1,0 +1,114 @@
+#! /bin/bash
+####
+#### A. Spiga -- 2010 -- 
+####
+
+
+\rm -rf WRFV2
+
+
+#
+## WRF modeling system software Version 3.0.1.1 (August 22, 2008)
+#
+
+wget http://www2.mmm.ucar.edu/wrf/src/WRFV3.0.1.1.TAR.gz .
+tar xzvf WRFV3.0.1.1.TAR.gz
+\rm WRFV3.0.1.1.TAR.gz
+#mv WRFV3/* .
+#rmdir WRFV3
+
+  #### faking stuff for copy_model script
+  mv WRFV3 WRFV2
+  touch in_reality_this_is_WRFV3_but_is_named_WRFV2_for_continuity
+  cd WRFV2
+  ln -sf ../../WRFV2/mars_lmd .
+  ln -sf ../../WRFV2/mars_lmd_new .
+  ln -sf ../../WRFV2/venus_lmd_new .
+  ln -sf ../../WRFV2/generic_lmd_new .
+  ln -sf ../modif_mars .
+  ln -sf ../../WRFV2/*.h .
+  ln -sf ../../WRFV2/physics.sed .
+  cp ../../WRFV2/call_meso_inifis?.inc .
+  cp ../../WRFV2/call_meso_physiq?.inc .
+  touch configure.defaults.dummy
+  touch mars.sed.dummy
+  mkdir external/RSL
+  mkdir external/RSL/RSL
+  touch external/RSL/RSL.dummy
+  touch external/RSL/RSL/RSL.dummy
+
+#
+## Replacing Mars files
+#
+
+#tar xzvf LMD_LES_MARS_patches.tar.gz 
+#mv LMD_LES_MARS_patches LMD_LES_MARS/modif_mars
+#cd LMD_LES_MARS
+#ln -sf ../LMD_LES_MARS_patches modif_mars
+
+#cd modif_mars
+#ln -sf ../../LMD_MM_MARS/SRC/WRFV2/phys/module_lmd_driver.F
+#cd ..
+cd arch
+ln -sf ../modif_mars/configure_new.defaults .
+cd ..
+
+cd dyn_em
+ln -sf ../modif_mars/module_big_step_utilities_em.F .
+ln -sf ../modif_mars/module_first_rk_step_part1.F . 
+ln -sf ../modif_mars/module_first_rk_step_part2.F .
+ln -sf ../modif_mars/module_initialize_les.F .
+ln -sf ../modif_mars/solve_em.F .
+ln -sf ../modif_mars/module_em.F .
+ln -sf ../modif_mars/module_diffusion_em.F .
+ln -sf ../modif_mars/Makefile_dyn_em Makefile
+ln -sf ../modif_mars/module_init_utilities.F .
+cd ..
+
+cd frame
+ln -sf ../modif_mars/module_driver_constants.F .
+cd ..
+
+cd Registry
+ln -sf ../modif_mars/Registry.EM .
+ln -sf ../modif_mars/Registry.EM.newphys .
+ln -sf ../modif_mars/Registry.bash .
+cd ..
+
+cd phys
+ln -sf ../modif_mars/Makefile .
+ln -sf ../modif_mars/module_lmd_driver.F .
+ln -sf ../modif_mars/module_physics_addtendc.F .
+ln -sf ../modif_mars/module_physics_init.F .
+ln -sf ../modif_mars/module_lmd_driver.F.new .
+ln -sf ../modif_mars/dynphy_wrf_* .
+cd ..
+
+cd share
+ln -sf ../modif_mars/module_model_constants.F .
+cd ..
+
+
+ln -sf modif_mars/makeles .
+
+
+### create a fake directory
+mkdir -p mars_lmd/libf/phymars
+
+
+
+# M Lefevre: option -C makes things bad in some OS
+cd external
+sed 's/-C//g' esmf_time_f90/Makefile > zolbxs ; mv zolbxs esmf_time_f90/Makefile
+sed 's/-C//g' ioapi_share/makefile > zolbxs ; mv zolbxs ioapi_share/makefile
+sed 's/-C//g' io_esmf/makefile > zolbxs ; mv zolbxs io_esmf/makefile
+sed 's/-C//g' io_grib1/Makefile > zolbxs ; mv zolbxs io_grib1/Makefile
+sed 's/-C//g' io_grib2/Makefile > zolbxs ; mv zolbxs io_grib2/Makefile
+sed 's/-C//g' io_grib_share/Makefile > zolbxs ; mv zolbxs io_grib_share/Makefile
+sed 's/-C//g' io_int/makefile > zolbxs ; mv zolbxs io_int/makefile
+sed 's/-C//g' io_mcel/makefile > zolbxs ; mv zolbxs io_mcel/makefile
+sed 's/-C//g' io_netcdf/makefile > zolbxs ; mv zolbxs io_netcdf/makefile
+sed 's/-C//g' io_phdf5/Makefile > zolbxs ; mv zolbxs io_phdf5/Makefile
+sed 's/-C//g' io_pnetcdf/makefile > zolbxs ; mv zolbxs io_pnetcdf/makefile
+sed 's/-C//g' RSL_LITE/makefile > zolbxs ; mv zolbxs RSL_LITE/makefile
+cd ..

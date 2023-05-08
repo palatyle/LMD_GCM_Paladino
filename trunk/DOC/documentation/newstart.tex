@@ -1,0 +1,139 @@
+\documentclass[a4paper,10pt]{article}
+%\usepackage{graphicx}
+\usepackage{natbib}  % si appel à bibtex
+%\usepackage[francais]{babel}
+%\usepackage[latin1]{inputenc}  % accents directs (é...), avec babel
+%\usepackage{rotating}
+
+\setlength{\hoffset}{-1.in}
+\setlength{\oddsidemargin}{3.cm}
+\setlength{\textwidth}{15.cm}
+\setlength{\marginparsep}{0.mm}
+\setlength{\marginparwidth}{0.mm}
+
+\setlength{\voffset}{-1.in}
+\setlength{\topmargin}{0.mm}
+\setlength{\headheight}{0.mm}
+\setlength{\headsep}{30.mm}
+\setlength{\textheight}{24.cm}
+\setlength{\footskip}{1.cm}
+
+\setlength{\parindent}{0.mm}
+\setlength{\parskip}{1 em}
+\newcommand{\ten}[1]{$\times 10^{#1}$~} 
+\renewcommand{\baselinestretch}{1.}
+
+\begin{document}
+\pagestyle{plain}
+
+\begin{center}
+{\bf \LARGE 
+Documentation for LMDZ, Planets version
+
+\vspace{1cm}
+\Large
+How to modify the initial state: the newstart tool
+}
+
+\vspace{1cm}
+S\'ebastien Lebonnois
+
+\vspace{1cm}
+Latest version: \today
+\end{center}
+
+
+\section{First step: \textsf{start\_archive.nc}}
+
+The initial state of a simulation is read by the GCM in the files \textsf{start.nc} and \textsf{startphy.nc}.
+A first step to change these files is first to change them into a  \textsf{start\_archive.nc} file. This is coming from the Mars GCM, where this file can include all the \textsf{start*.nc} files for the 12 months of one complete Martian Year.
+
+To do this conversion, you need to use the \textsf{start2archive} tool.
+Currently, this tool is well adapted for Venus and Titan, so the corresponding routine is called \textsf{start2archive-VT.F}
+It is located in the \textsf{dyn3d} directory, and compiled the same way as the GCM. As inputs, it will need the same \textsf{*.def} files as those used during the simulation that created the \textsf{start*.nc} files. It then creates the \textsf{start\_archive.nc} file from \textsf{start.nc} and \textsf{startphy.nc}.
+
+\section{Second step: the \textsf{newstart} tool}
+
+This tool allows many changes in the initial state:
+\begin{itemize}
+\item change in resolution
+\item change in zoom characteristics
+\item change in surface characteristics (topography, albedo)
+\item change in planetary constants
+\end{itemize}
+
+Currently, this tool is well adapted for Venus and Titan, so the corresponding routine is called \textsf{newstart-VT.F}, located in the \textsf{dyn3d} directory. As for the \textsf{start2archive} tool, it is compiled the same way as the GCM (in sequential only). 
+
+As inputs, it takes the \textsf{start\_archive.nc} file with the initial state to be modified, and the \textsf{traceur.def} and \textsf{z2sig.def} files.
+It also needs a specific \textsf{run.def} file, taylored to include only the needed changes.
+
+To change the resolution, compile \textsf{newstart-VT} in the new resolution.
+For the topography, the default behaviour will be to use the previous one (from \textsf{start\_archive.nc}) and to interpolate it to the new resolution. 
+You may want to use the highest resolution topography file you have to get a finer topography when increasing the resolution. In that case, you can add the line
+
+\textsf{topoflag=y}
+
+in the taylored \textsf{run.def} file. Your topography file should be called \textsf{Relief.nc}. This file must include the variable \textsf{RELIEF}, which is the topography in meters. It will be read by \textsf{newstart} and the new surface geopotential will be computed. 
+This may also be used to modify the topography the way you want.
+
+One point concerning Venus topography: it should be reversed in the \textsf{Relief.nc} file, so that the GCM runs as if it was looking at Venus with the South pole upward.
+
+\section{Specific \textsf{run.def} file}
+ 
+{\bf Zoom}
+
+To make a simulation with a zoom, the grid has to be altered. This needs to be done through \textsf{newstart}, using zoom parameters that will be read from the
+\textsf{run.def} file. 
+These parameters include (see specific zoom documentation ?):
+\begin{itemize}
+\item {\it clon,clat}: coordinates of the zoom center (in degrees)
+\item {\it grossismx,grossismy}: resolution increase factor within the zoom area
+\item {\it fxyhypb}: logical. If "y" (True) then hyperbolic function for the transition.
+\item {\it dzoomx,dzoomy}: fraction of the total domain used in the zoom area (used only if {\it fxyhypb}=y)
+\item {\it taux,tauy}: zoom stiffness (in the transition area ?) (used only if {\it fxyhypb}=y)
+\item ysinus: logical (used only if {\it fxyhypb}=n). Use sinus of latitude instead of latitude for the transition.
+\end{itemize}
+
+For Venus, the topography being reversed, {\it clat} and {\it clon} must take this into account when targeting a specific feature !
+
+{\bf Albedo}
+
+If you want to change the value of the albedo, you can add the lines
+
+\textsf{albedoflag=y}
+
+\textsf{albedo=$<$value$>$}
+
+in \textsf{run.def} to input the new value.
+
+For the albedo, we may want to use a map. This is not yet implemented. When it will be, the file containing this map can be used to change the albedo (as for the topography).
+ 
+{\bf Other parameters}
+
+It could be possible to include other parameters in the change (, just by adding optional lines in \textsf{run.def}. The reading has to be hardcoded in \textsf{newstart-VT.F} first, but it's easy. 
+
+The specific heat is already implemented ({\it cpp}).
+
+\section{Technical aspects}
+
+The subroutines used for the \textsf{start\_archive.nc} and \textsf{newstart} tools are located in the \textsf{phy$<$planet$>$} directory, since they may slightly vary from one planet to the other.
+
+For \textsf{start\_archive.nc}, these routines are:
+\begin{itemize}
+\item \textsf{ini\_archive.F}
+\item \textsf{readstart.F}
+\item \textsf{readstartphy.F}
+\item \textsf{write\_archive.F}
+\end{itemize}
+
+For \textsf{newstart}, they are:
+\begin{itemize}
+\item \textsf{interp\_vert.F}
+\item \textsf{scal\_wind.F}
+\item \textsf{wind\_scal.F}
+\item \textsf{writerestart.F}
+\item \textsf{writerestartphy.F}
+\item \textsf{startvar.F90} and \textsf{grid\_noro.F}, which are used to read the \textsf{Relief.nc} file and compute the surface geopotential and the parameters needed for the orographic gravity wave drag.
+\end{itemize}
+
+\end{document}

@@ -1,0 +1,9 @@
+drwxr-xr-- 2 aslmd lmdjus  512 Jan 24 13:08 albedo_TES
+-rw-r--r-- 1 aslmd lmdjus 3.2M Oct 13  2009 albedo_TES.tar.gz
+drwxr-xr-- 2 aslmd lmdjus  512 Jan 24 13:08 mola_topo32
+-rw-r--r-- 1 aslmd lmdjus  91M Oct 13  2009 mola_topo32.tar.gz
+drwxr-xr-- 2 aslmd lmdjus  512 Jan 24 13:08 mola_topo64
+-rw-r--r-- 1 aslmd lmdjus 329M Oct 13  2009 mola_topo64.tar.gz
+drwxr-xr-- 2 aslmd lmdjus  512 Jan 24 13:08 thermal_TES
+-rw-r--r-- 1 aslmd lmdjus  27M Oct 13  2009 thermal_TES.tar.gz
+

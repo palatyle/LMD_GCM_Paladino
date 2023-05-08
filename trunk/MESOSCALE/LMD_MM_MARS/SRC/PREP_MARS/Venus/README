@@ -1,0 +1,13 @@
+VENUS CALDENDAR : 
+
+WRF TIME COUNTER 1000-02-01_00:00:00
+                 YYYY-MM-DD_HH:mm:ss
+for Venus        0000-99-23_35:12:8
+                 100 MM = 1 Year = 1 Venus day 
+                 24 DD = 1 MM = 1/100 Venus day
+                 36 HH = 1 DD
+                 13 mm = 1 HH
+                 9 ss = 1 mm
+                 
+If GCM has 1 output each n/100 Venus day set interval (in create_readmeteo) at n*864 hours (n*24*36)
+          

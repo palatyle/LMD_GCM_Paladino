@@ -1,0 +1,25 @@
+\chapter{Introduction}
+
+\selectlanguage{english}
+This document is a user manual for the Generic Climate Model
+developed by the Laboratoire de M\'et\'eorologie
+Dynamique of the CNRS in Paris.
+It corresponds to the version of the model available since January 2011,
+that includes the new dynamic code lmdz3.3
+and input and output data in NetCDF format.
+The physical part includes generalized correlated-k radiative transfer,
+generalized tracer transport, and a water cycle that includes water vapour and ice transport,
+radiative and thermodynamic effects, and simple hydrology.
+
+Chapter~\ref{sc:apercu} of this document, to be read before any of the others,
+describes the main features of the model.
+The model is divided into two relatively independent parts:
+(1) The hydrodynamic code, which integrates the fluid mechanical \emph{primitive equations} in time
+over the globe, and (2) the physical parameterizations, which include the radiative transfer, tracer transport / evolution,
+and surface-atmosphere interaction. It is followed by a list of references for anyone requiring a detailed
+description of the physics and the numerical formulation of the parameterizations (Chapter~\ref{sc:phystd}).
+
+For your {\bf first contact with the model}, Chapter~\ref{loc:contact1} guides the user through a practice simulation
+(choosing the initial states and parameters and  visualizing the output files). The document then describes the code used for the model, including a user computer manual for compiling and running it (Chapter~\ref{sc:info}).
+
+Chapter~\ref{sc:io} describes the input/output data of the model. The input files are the files needed to initialize the model (state of the atmosphere at instant $t0$ as well as a dataset of boundary conditions). The output files are ``historical files", archives of the atmospheric flow history as simulated by the model, the ``diagfi files", the ``stats files'', the daily averages, and so on. Common ways of editing or visualizing these files (editor ``ncdump" and the graphics software ``grads") are also explained.  Chapter~\ref{sc:water} explains how to run a simulation that includes the water cycle. Finally, Chapter~\ref{sc:rcm1d} will help you to use a 1-dimensional version of the model, which may be a simpler tool for some analysis work.

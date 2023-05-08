@@ -1,0 +1,333 @@
+#-
+#- $Id$
+#-
+USER_DIR = $(shell /bin/pwd)
+MAKE_DIR = '??'
+ifneq ($(USER_DIR),$(MAKE_DIR))
+ @$(error You must invoke this Makefile from its directory)
+endif
+#-
+IOIPSL_LIB = -L$(LIBDIR) -lioipsl
+ifeq ($(L_X),1)
+IOIPSL_LIB = -L$(LIBDIR) -lsxioipsl
+endif
+#-
+all: testhist1 testhist2 testrest testopp testcalendar testflio
+	echo don t forget to do : $(M_K) clean !!!
+
+testhist1:
+	$(M_K) libioipsl
+	$(M_K) testhist1.x
+#-Q- sx8brodie	echo cd $(USER_DIR) > Job_testhist1
+#-Q- sx8brodie	echo '\
+#-Q- sx6nec	echo cd $(USER_DIR) > Job_testhist1
+#-Q- sx6nec	echo '\
+#-Q- sx8mercure	echo cd $(USER_DIR) > Job_testhist1
+#-Q- sx8mercure	echo '\
+	./testhist1.x \
+#-Q- sx8brodie ' >> Job_testhist1
+#-Q- sx8brodie	qsub -j o -S /usr/bin/ksh \
+#-Q- sx8brodie	 -o $(USER_DIR)/Out_testhist1 Job_testhist1
+#-Q- sx8brodie	echo job Job_testhist1 has been submitted
+#-Q- sx6nec ' >> Job_testhist1
+#-Q- sx6nec	qsub -j o -S /usr/bin/ksh \
+#-Q- sx6nec	 -o $(USER_DIR)/Out_testhist1 Job_testhist1
+#-Q- sx6nec	echo job Job_testhist1 has been submitted
+#-Q- sx8mercure ' >> Job_testhist1
+#-Q- sx8mercure	qsub -j o -S /usr/bin/ksh \
+#-Q- sx8mercure	 -o $(USER_DIR)/Out_testhist1 Job_testhist1
+#-Q- sx8mercure	echo job Job_testhist1 has been submitted
+
+	@echo ' '
+	@echo 'file testhist1.nc should be created'
+	@echo 'to see it, type : ncdump -h testhist1.nc'
+	@echo ' '
+
+testhist1.x: testhist1.o
+	$(F_L) -o testhist1.x testhist1.o \
+               $(L_O) $(IOIPSL_LIB) $(NCDF_LIB)
+
+testhist2:
+	$(M_K) libioipsl
+	$(M_K) testhist2.x
+#-Q- sx8brodie	echo cd $(USER_DIR) > Job_testhist2
+#-Q- sx8brodie	echo '\
+#-Q- sx6nec	echo cd $(USER_DIR) > Job_testhist2
+#-Q- sx6nec	echo '\
+#-Q- sx8mercure	echo cd $(USER_DIR) > Job_testhist2
+#-Q- sx8mercure	echo '\
+	./testhist2.x \
+#-Q- sx8brodie ' >> Job_testhist2
+#-Q- sx8brodie	qsub -j o -S /usr/bin/ksh \
+#-Q- sx8brodie	 -o $(USER_DIR)/Out_testhist2 Job_testhist2
+#-Q- sx8brodie	echo job Job_testhist2 has been submitted
+#-Q- sx6nec ' >> Job_testhist2
+#-Q- sx6nec	qsub -j o -S /usr/bin/ksh \
+#-Q- sx6nec	 -o $(USER_DIR)/Out_testhist2 Job_testhist2
+#-Q- sx6nec	echo job Job_testhist2 has been submitted
+#-Q- sx8mercure ' >> Job_testhist2
+#-Q- sx8mercure	qsub -j o -S /usr/bin/ksh \
+#-Q- sx8mercure	 -o $(USER_DIR)/Out_testhist2 Job_testhist2
+#-Q- sx8mercure	echo job Job_testhist2 has been submitted
+
+	@echo ' '
+	@echo 'file testhist2.nc should be created'
+	@echo 'to see it, type : ncdump -h testhist2.nc'
+	@echo ' '
+	@echo 'file testhist2_bis.nc should be created'
+	@echo 'to see it, type : ncdump -h testhist2_bis.nc'
+	@echo ' '
+
+testhist2.x: testhist2.o
+	$(F_L) -o testhist2.x testhist2.o \
+               $(L_O) $(IOIPSL_LIB) $(NCDF_LIB)
+
+testrest:
+	$(M_K) libioipsl
+	$(M_K) testrest.x
+	$(RM) restfile.nc restfilebis.nc
+#-Q- sx8brodie	echo cd $(USER_DIR) > Job_testrest
+#-Q- sx8brodie	echo '\
+#-Q- sx6nec	echo cd $(USER_DIR) > Job_testrest
+#-Q- sx6nec	echo '\
+#-Q- sx8mercure	echo cd $(USER_DIR) > Job_testrest
+#-Q- sx8mercure	echo '\
+	./testrest.x \
+#-Q- sx8brodie ' >> Job_testrest
+#-Q- sx8brodie	qsub -j o -S /usr/bin/ksh \
+#-Q- sx8brodie	 -o $(USER_DIR)/Out_testrest Job_testrest
+#-Q- sx8brodie	echo job Job_testrest has been submitted
+#-Q- sx6nec ' >> Job_testrest
+#-Q- sx6nec	qsub -j o -S /usr/bin/ksh \
+#-Q- sx6nec	 -o $(USER_DIR)/Out_testrest Job_testrest
+#-Q- sx6nec	echo job Job_testrest has been submitted
+#-Q- sx8mercure ' >> Job_testrest
+#-Q- sx8mercure	qsub -j o -S /usr/bin/ksh \
+#-Q- sx8mercure	 -o $(USER_DIR)/Out_testrest Job_testrest
+#-Q- sx8mercure	echo job Job_testrest has been submitted
+
+	@echo ' '
+	@echo 'file restfile.nc should be created'
+	@echo 'to see it, type : ncdump -h restfile.nc'
+	@echo ' '
+	@echo 'file restfilebis.nc should be created'
+	@echo 'to see it, type : ncdump -h restfilebis.nc'
+	@echo ' '
+
+testrest.x: testrest.o
+	$(F_L) -o testrest.x testrest.o \
+               $(L_O) $(IOIPSL_LIB) $(NCDF_LIB)
+
+testopp:
+	$(M_K) libioipsl
+	$(M_K) testopp.x
+#-Q- sx8brodie	echo cd $(USER_DIR) > Job_testopp
+#-Q- sx8brodie	echo '\
+#-Q- sx6nec	echo cd $(USER_DIR) > Job_testopp
+#-Q- sx6nec	echo '\
+#-Q- sx8mercure	echo cd $(USER_DIR) > Job_testopp
+#-Q- sx8mercure	echo '\
+	./testopp.x \
+#-Q- sx8brodie ' >> Job_testopp
+#-Q- sx8brodie	qsub -j o -S /usr/bin/ksh \
+#-Q- sx8brodie	 -o $(USER_DIR)/Out_testopp Job_testopp
+#-Q- sx8brodie	echo job Job_testopp has been submitted
+#-Q- sx6nec ' >> Job_testopp
+#-Q- sx6nec	qsub -j o -S /usr/bin/ksh \
+#-Q- sx6nec	 -o $(USER_DIR)/Out_testopp Job_testopp
+#-Q- sx6nec	echo job Job_testopp has been submitted
+#-Q- sx8mercure ' >> Job_testopp
+#-Q- sx8mercure	qsub -j o -S /usr/bin/ksh \
+#-Q- sx8mercure	 -o $(USER_DIR)/Out_testopp Job_testopp
+#-Q- sx8mercure	echo job Job_testopp has been submitted
+
+testopp.x: testopp.o
+	$(F_L) -o testopp.x testopp.o \
+               $(L_O) $(IOIPSL_LIB) $(NCDF_LIB)
+
+testcalendar:
+	$(M_K) libioipsl
+	$(M_K) testcalendar.x
+#-Q- sx8brodie	echo cd $(USER_DIR) > Job_testcalendar
+#-Q- sx8brodie	echo '\
+#-Q- sx6nec	echo cd $(USER_DIR) > Job_testcalendar
+#-Q- sx6nec	echo '\
+#-Q- sx8mercure	echo cd $(USER_DIR) > Job_testcalendar
+#-Q- sx8mercure	echo '\
+	echo; \
+#-Q- sx8brodie ' >> Job_testcalendar
+#-Q- sx8brodie	echo '\
+#-Q- sx6nec ' >> Job_testcalendar
+#-Q- sx6nec	echo '\
+#-Q- sx8mercure ' >> Job_testcalendar
+#-Q- sx8mercure	echo '\
+        ./testcalendar.x; \
+#-Q- sx8brodie ' >> Job_testcalendar
+#-Q- sx8brodie	echo '\
+#-Q- sx6nec ' >> Job_testcalendar
+#-Q- sx6nec	echo '\
+#-Q- sx8mercure ' >> Job_testcalendar
+#-Q- sx8mercure	echo '\
+        echo; \
+#-Q- sx8brodie ' >> Job_testcalendar
+#-Q- sx8brodie	echo '\
+#-Q- sx6nec ' >> Job_testcalendar
+#-Q- sx6nec	echo '\
+#-Q- sx8mercure ' >> Job_testcalendar
+#-Q- sx8mercure	echo '\
+        ./testcalendar.x noleap; \
+#-Q- sx8brodie ' >> Job_testcalendar
+#-Q- sx8brodie	echo '\
+#-Q- sx6nec ' >> Job_testcalendar
+#-Q- sx6nec	echo '\
+#-Q- sx8mercure ' >> Job_testcalendar
+#-Q- sx8mercure	echo '\
+        echo; \
+#-Q- sx8brodie ' >> Job_testcalendar
+#-Q- sx8brodie	echo '\
+#-Q- sx6nec ' >> Job_testcalendar
+#-Q- sx6nec	echo '\
+#-Q- sx8mercure ' >> Job_testcalendar
+#-Q- sx8mercure	echo '\
+        ./testcalendar.x 360d; \
+#-Q- sx8brodie ' >> Job_testcalendar
+#-Q- sx8brodie	qsub -j o -S /usr/bin/ksh \
+#-Q- sx8brodie	 -o $(USER_DIR)/Out_testcalendar Job_testcalendar
+#-Q- sx8brodie	echo job Job_testcalendar has been submitted
+#-Q- sx6nec ' >> Job_testcalendar
+#-Q- sx6nec	qsub -j o -S /usr/bin/ksh \
+#-Q- sx6nec	 -o $(USER_DIR)/Out_testcalendar Job_testcalendar
+#-Q- sx6nec	echo job Job_testcalendar has been submitted
+#-Q- sx8mercure ' >> Job_testcalendar
+#-Q- sx8mercure	qsub -j o -S /usr/bin/ksh \
+#-Q- sx8mercure	 -o $(USER_DIR)/Out_testcalendar Job_testcalendar
+#-Q- sx8mercure	echo job Job_testcalendar has been submitted
+
+testcalendar.x: testcalendar.o
+	$(F_L) -o testcalendar.x testcalendar.o \
+               $(L_O) $(IOIPSL_LIB) $(NCDF_LIB)
+
+testflio:
+	$(M_K) libioipsl
+	$(M_K) testflio.x
+
+#-Q- sx8brodie	echo cd $(USER_DIR) > Job_testflio
+#-Q- sx8brodie	echo '\
+#-Q- sx6nec	echo cd $(USER_DIR) > Job_testflio
+#-Q- sx6nec	echo '\
+#-Q- sx8mercure	echo cd $(USER_DIR) > Job_testflio
+#-Q- sx8mercure	echo '\
+	./testflio.x \
+#-Q- sx8brodie ' >> Job_testflio
+#-Q- sx8brodie	qsub -j o -S /usr/bin/ksh \
+#-Q- sx8brodie	 -o $(USER_DIR)/Out_testflio Job_testflio
+#-Q- sx8brodie	echo job Job_testflio has been submitted
+#-Q- sx6nec ' >> Job_testflio
+#-Q- sx6nec	qsub -j o -S /usr/bin/ksh \
+#-Q- sx6nec	 -o $(USER_DIR)/Out_testflio Job_testflio
+#-Q- sx6nec	echo job Job_testflio has been submitted
+#-Q- sx8mercure ' >> Job_testflio
+#-Q- sx8mercure	qsub -j o -S /usr/bin/ksh \
+#-Q- sx8mercure	 -o $(USER_DIR)/Out_testflio Job_testflio
+#-Q- sx8mercure	echo job Job_testflio has been submitted
+
+	@echo ' '
+	@echo 'file testflio_0001.nc should be created'
+	@echo 'to see it, type : ncdump -h testflio_0001.nc'
+	@echo ' '
+
+testflio.x: testflio.o
+	$(F_L) -o testflio.x testflio.o \
+               $(L_O) $(IOIPSL_LIB) $(NCDF_LIB)
+
+testconfig:
+	$(M_K) libioipsl
+	$(M_K) testconfig.x
+#-Q- sx8brodie	echo cd $(USER_DIR) > Job_testconfig
+#-Q- sx8brodie	echo '\
+#-Q- sx6nec	echo cd $(USER_DIR) > Job_testconfig
+#-Q- sx6nec	echo '\
+#-Q- sx8mercure	echo cd $(USER_DIR) > Job_testconfig
+#-Q- sx8mercure	echo '\
+	./testconfig.x \
+#-Q- sx8brodie ' >> Job_testconfig
+#-Q- sx8brodie	qsub -j o -S /usr/bin/ksh \
+#-Q- sx8brodie	 -o $(USER_DIR)/Out_testconfig Job_testconfig
+#-Q- sx8brodie	echo job Job_testconfig has been submitted
+#-Q- sx6nec ' >> Job_testconfig
+#-Q- sx6nec	qsub -j o -S /usr/bin/ksh \
+#-Q- sx6nec	 -o $(USER_DIR)/Out_testconfig Job_testconfig
+#-Q- sx6nec	echo job Job_testconfig has been submitted
+#-Q- sx8mercure ' >> Job_testconfig
+#-Q- sx8mercure	qsub -j o -S /usr/bin/ksh \
+#-Q- sx8mercure	 -o $(USER_DIR)/Out_testconfig Job_testconfig
+#-Q- sx8mercure	echo job Job_testconfig has been submitted
+
+testconfig.x: testconfig.o
+	$(F_L) -o testconfig.x testconfig.o \
+               $(L_O) $(IOIPSL_LIB) $(NCDF_LIB)
+
+testconfig2:
+	$(M_K) libioipsl
+	$(M_K) testconfig2.x
+#-Q- sx8brodie	echo cd $(USER_DIR) > Job_testconfig2
+#-Q- sx8brodie	echo '\
+#-Q- sx6nec	echo cd $(USER_DIR) > Job_testconfig2
+#-Q- sx6nec	echo '\
+#-Q- sx8mercure	echo cd $(USER_DIR) > Job_testconfig2
+#-Q- sx8mercure	echo '\
+	./testconfig2.x \
+#-Q- sx8brodie ' >> Job_testconfig2
+#-Q- sx8brodie	qsub -j o -S /usr/bin/ksh \
+#-Q- sx8brodie	 -o $(USER_DIR)/Out_testconfig2 Job_testconfig2
+#-Q- sx8brodie	echo job Job_testconfig2 has been submitted
+#-Q- sx6nec ' >> Job_testconfig2
+#-Q- sx6nec	qsub -j o -S /usr/bin/ksh \
+#-Q- sx6nec	 -o $(USER_DIR)/Out_testconfig2 Job_testconfig2
+#-Q- sx6nec	echo job Job_testconfig2 has been submitted
+#-Q- sx8mercure ' >> Job_testconfig2
+#-Q- sx8mercure	qsub -j o -S /usr/bin/ksh \
+#-Q- sx8mercure	 -o $(USER_DIR)/Out_testconfig2 Job_testconfig2
+#-Q- sx8mercure	echo job Job_testconfig2 has been submitted
+
+testconfig2.x: testconfig2.o
+	$(F_L) -o testconfig2.x testconfig2.o \
+               $(L_O) $(IOIPSL_LIB) $(NCDF_LIB)
+
+config: libioipsl
+	(cd ../src; $(M_K) -f Makefile config)
+	$(BINDIR)/Fparser -main -name testconfig testconfig.f90
+	$(SCPDIR)/build_tkmenus
+	./config.tk
+	$(RM) Config.*
+
+libioipsl:
+	(cd ../src; $(M_K) -f Makefile)
+
+clean:
+	$(RM) *.*~ Makefile~ core *.o *.nc Out_t* Job_t* *.x *_run.def
+
+testhist1.o: testhist1.f90
+	$(F_C) $(F_O) testhist1.f90
+
+testhist2.o: testhist2.f90
+	$(F_C) $(F_O) testhist2.f90
+
+testrest.o: testrest.f90
+	$(F_C) $(F_O) testrest.f90
+
+testopp.o: testopp.f90
+	$(F_C) $(F_O) testopp.f90
+
+testcalendar.o: testcalendar.f90
+	$(F_C) $(F_O) testcalendar.f90
+
+testflio.o: testflio.f90
+	$(F_C) $(F_O) testflio.f90
+
+testconfig.o: testconfig.f90
+	$(F_C) $(F_O) testconfig.f90
+
+testconfig2.o: testconfig2.f90
+	$(F_C) $(F_O) testconfig2.f90
+

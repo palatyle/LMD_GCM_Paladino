@@ -1,0 +1,10 @@
+mkdir save/external 
+mkdir save/external/esmf_time_f90
+cp -rf external/esmf_time_f90/diff_ESMF_TimeMgr save/external/esmf_time_f90
+cp -rf external/esmf_time_f90/diff_Meat save/external/esmf_time_f90
+cp -rf external/esmf_time_f90/diff_Test1 save/external/esmf_time_f90
+cp -rf external/esmf_time_f90/ESMF_Calendar.F90 save/external/esmf_time_f90
+cp -rf external/esmf_time_f90/ESMF_TimeMgr.inc save/external/esmf_time_f90
+cp -rf external/esmf_time_f90/Meat.F90 save/external/esmf_time_f90
+cp -rf external/esmf_time_f90/Test1.F90 save/external/esmf_time_f90
+cp -rf external/esmf_time_f90/diff_ESMF_Calendar save/external/esmf_time_f90

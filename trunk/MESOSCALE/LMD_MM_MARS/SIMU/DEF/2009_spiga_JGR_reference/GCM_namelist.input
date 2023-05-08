@@ -1,0 +1,78 @@
+ &time_control
+ start_year       = 2024, 2024
+ start_month      =   07,   04 
+ start_day        =   01,   01
+ start_hour       =   01,   06
+ end_year         = 2024, 2024
+ end_month        =   07,   04
+ end_day          =   11,   05
+ end_hour         =   00,   06
+ history_interval   = 37,   74   ! *100s : 74 is each 2 MH, 37 is each MH  !! attention, compatibilite avec time_step 
+ frames_per_outfile = 24,   12 
+ restart          = .false.
+ restart_interval = 8880,
+ io_form_history  = 2
+ io_form_restart  = 2
+ io_form_input    = 2
+ io_form_boundary = 2
+ debug_level      = 0
+ input_from_file  = T, F     ! F en second pour que d1 init. d2 (smoother)
+ /
+
+ &domains
+ time_step   = 185 
+ max_dz = 4000
+ dx = 296461.63, 20000
+ dy = 296461.63, 20000 
+ e_we   =  74, 211            ! IF YOU CHANGE THIS YOU MUST RECOMPILE THE PHYSICS
+ e_sn   =  50, 211            ! IF YOU CHANGE THIS YOU MUST RECOMPILE THE PHYSICS
+ e_vert =  26,  61            ! IF YOU CHANGE THIS YOU MUST RECOMPILE THE PHYSICS
+ p_top_requested = 1.
+!!!!!! NESTING STUFF
+! max_dom = 2	
+! grid_id                = 1,  2
+! parent_id              = 0,  1
+! i_parent_start         = 0, 69      ! attention au raccord avec WPS !
+! j_parent_start         = 0, 69      ! attention au raccord avec WPS !
+! parent_grid_ratio      = 1,  3 
+! parent_time_step_ratio = 1,  5  !3  !4 !5
+! feedback               = 1
+! smooth_option          = 2
+! blend_width            = 5
+!!!!!! NESTING STUFF
+ /
+
+ &physics
+ radt =  1, !10    ! call each half hour with radt = 1850/dt
+ mars =  1, 1   ! IF YOU CHANGE THIS YOU MUST RECOMPILE THE PHYSICS (AND CHANGE CALLPHYS.DEF)
+ /
+
+ &fdda
+ /
+
+ &dynamics
+ non_hydrostatic = F, T
+ diff_6th_opt = 2,	   !! NECESSAIRE DANS LES ZONES DE VENT FAIBLES !! OPTION 2 SINON PB QH2O
+ diff_6th_factor = 0.5,    !! NECESSAIRE DANS LES ZONES DE VENT FAIBLES !! FAIBLE SINON PB QH2O_ICE (si pas BDY)
+ !!diff_opt = 1,  !! non sinon crash
+ !!km_opt = 4,
+ smdiv = 0.,
+ emdiv = 0.,
+ epssm = 0.,
+ /
+
+ &grib2
+ /
+
+ &bdy_control
+ specified = T, F
+ periodic_x = T, F
+ nested    = F, T
+ /
+
+!! DO NOT MODIFY
+ &namelist_quilt
+ nio_tasks_per_group = 0,
+ nio_groups = 1,
+ /
+!! DO NOT MODIFY

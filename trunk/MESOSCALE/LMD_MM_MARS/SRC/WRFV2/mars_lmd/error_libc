@@ -1,0 +1,50 @@
+L'option static permet de porter l'exécutable, car il contient alors toutes
+les librairies nécessaires !
+
+
+You somehow got incompatible versons of your basic system C libraries on your machine.
+
+The warning messages are just saying that the dynamic libc library must be use for some of the symbols and your application will not be completly static. Since libc must be on every Linux system, I doubt this will cause problems.
+
+For the undefined references, you want to find the library which contains the symbols. In this case, the symbols can be found in "/usr/lib/gcc/i386-redhat-linux/4.0.0/libgcc_eh.a". Using the "nm" utility, followed by a "grep" will show if the symbol is present and an upper case "T" indicates that the symbol is defined. A "U" indicates that the symbol is used but undefined. 
+aymeric@ubuntu:/usr/lib/gcc/i486-linux-gnu/4.1.2$ nm libgcc_eh.a | grep -i "_Unwind_Resume"
+
+adding -lgcc_eh
+
+
+/usr/lib/libc.a(iofclose.o):(.eh_frame+0x11): référence indéfinie vers « __gcc_personality_v0 »
+/usr/lib/libc.a(iofflush.o): In function `fflush':
+(.text+0xdc): référence indéfinie vers « _Unwind_Resume »
+/usr/lib/libc.a(iofflush.o):(.eh_frame+0x12): référence indéfinie vers « __gcc_personality_v0 »
+/usr/lib/libc.a(iofputs.o): In function `fputs':
+(.text+0x105): référence indéfinie vers « _Unwind_Resume »
+/usr/lib/libc.a(iofputs.o):(.eh_frame+0x12): référence indéfinie vers « __gcc_personality_v0 »
+/usr/lib/libc.a(iofwrite.o): In function `fwrite':
+(.text+0x126): référence indéfinie vers « _Unwind_Resume »
+/usr/lib/libc.a(iofwrite.o):(.eh_frame+0x12): référence indéfinie vers « __gcc_personality_v0 »
+/usr/lib/libc.a(wfileops.o): In function `_IO_wfile_underflow':
+(.text+0x125d): référence indéfinie vers « _Unwind_Resume »
+/usr/lib/libc.a(wfileops.o):(.eh_frame+0x12): référence indéfinie vers « __gcc_personality_v0 »
+/usr/lib/libc.a(fileops.o): In function `_IO_file_fopen':
+(.text+0x1f13): référence indéfinie vers « _Unwind_Resume »
+/usr/lib/libc.a(fileops.o): In function `_IO_file_underflow':
+(.text+0x2108): référence indéfinie vers « _Unwind_Resume »
+/usr/lib/libc.a(fileops.o):(.eh_frame+0x12): référence indéfinie vers « __gcc_personality_v0 »
+/usr/lib/libc.a(syslog.o): In function `__vsyslog_chk':
+(.text+0x6dd): référence indéfinie vers « _Unwind_Resume »
+/usr/lib/libc.a(syslog.o): In function `__vsyslog_chk':
+(.text+0x6f2): référence indéfinie vers « _Unwind_Resume »
+/usr/lib/libc.a(syslog.o): In function `openlog':
+(.text+0x803): référence indéfinie vers « _Unwind_Resume »
+/usr/lib/libc.a(syslog.o): In function `closelog':
+(.text+0x874): référence indéfinie vers « _Unwind_Resume »
+/usr/lib/libc.a(syslog.o):(.eh_frame+0x12): référence indéfinie vers « __gcc_personality_v0 »
+/usr/lib/libc.a(backtrace.o): In function `backtrace':
+(.text+0x54): référence indéfinie vers « _Unwind_Backtrace »
+/usr/lib/libc.a(backtrace.o): In function `backtrace_helper':
+(.text+0x10a): référence indéfinie vers « _Unwind_GetIP »
+/usr/lib/libc.a(backtrace.o): In function `backtrace_helper':
+(.text+0x12f): référence indéfinie vers « _Unwind_GetGR »
+/usr/lib/libc.a(backtrace.o): In function `backtrace_helper':
+(.text+0x13a): référence indéfinie vers « _Unwind_GetCFA »
+

@@ -1,0 +1,126 @@
+189a190,195
+> !!!!!!!!!!!!!! TEST NaN: ne fonction qu'avec r4 i4
+> integer :: mask_nan = 2139095040
+> integer :: chuck_norris
+> !!!!!!!!!!!!!! TEST NaN: ne fonction qu'avec r4 i4
+> 
+> 
+207a214,222
+>                          !!!!$OMP PARALLEL DO   &
+>                          !!!!$OMP PRIVATE ( ij ,i,j,k,its,ite,jts,jte)
+>                          !!!DO ij = 1 , num_tiles
+>                          !!!   its = i_start(ij)
+>                          !!!   ite = i_end(ij)
+>                          !!!   jts = j_start(ij)
+>                          !!!   jte = j_end(ij)
+>                          !!!ENDDO
+>                          !!!!$OMP END PARALLEL DO
+249,253d263
+< PRINT *, ips, ipe, jps, jpe
+< PRINT *, ngrid
+< 
+< 
+< 
+333,372c343,360
+< !IF ((MAXVAL(t) > 500).OR.(MINVAL(t,MASK = t > 0) <= 50)) THEN
+< !        PRINT *,'******************   CRASH   *******************'
+< !        PRINT *,'Irrealistic temperature...', MAXLOC(t), MINLOC(t)
+< !PRINT *, t
+< !        PRINT *,'************************************************'
+< !        STOP
+< !ENDIF   
+< !
+< !!! PB SAUF SI debug = 200 ?!!?
+< !IF (float(itimestep) > 200.) THEN        ! to allow initialisation with zero-wind or constant
+< !                                         ! and allow some outputs to locate the NaNs :)
+< !IF (         (abs(MAXVAL(u)) == 0.) &
+< !        .OR. (MINVAL(u) > MAXVAL(u)) &
+< !        .OR. (abs(MAXVAL(v)) == 0.) &
+< !        .OR. (MINVAL(v) > MAXVAL(v)) ) THEN
+< !!IF (          (ANY(isNaN(u)) .EQV. .true.) &
+< !!         .OR. (ANY(isNaN(v)) .EQV. .true.) &  
+< !!         .OR. (ANY(isNaN(t)) .EQV. .true.) ) THEN
+< !IF (         ANY(u*0. /= 0.) &
+< !        .OR. ANY(v*0. /= 0.)        ) THEN
+< !        PRINT *,'******************   CRASH   *******************'
+< !        PRINT *,'************************************************'
+< !        PRINT *,'NaN appeared in the simulation ...'
+< !        PRINT *,'...this may be due to numerical or dynamical instability'
+< !        PRINT *,'************************************************'
+< !        PRINT *,'POSSIBLE SOLUTIONS:'
+< !        PRINT *,'>> IF nonhydrostatic mode,' 
+< !        PRINT *,'   --> check that smdiv, emdiv and epssm are not 0.'
+< !        PRINT *,'>> IF cfl is violated, '
+< !        PRINT *,'   --> try to lower the dynamical timestep'
+< !        PRINT *,'>> IF topographical gradients are high near specified bdy,'
+< !        PRINT *,'   --> try to redefine the domain'
+< !        PRINT *,'************************************************'
+< !        STOP
+< !ENDIF
+< !ENDIF
+<         !IF (          ANY(isNaN(u)) &
+<         !         .OR. ANY(isNaN(v)) &
+<         !         .OR. ANY(isNaN(t)) ) THEN
+<         ! >>> ne marche qu'avec g95
+---
+> chuck_norris = transfer( u(1,1,1),chuck_norris )        !! astuce J. Lefrere - test NaN or Inf 
+> IF ( iand( chuck_norris,mask_nan ) == mask_nan ) THEN   !! astuce J. Lefrere - test NaN or Inf
+>         PRINT *, u(1,1,1)
+>         PRINT *,'******************   CRASH   *******************'
+>         PRINT *,'************************************************'
+>         PRINT *,'NaN or Inf appeared in the simulation ...'
+>         PRINT *,'...this may be due to numerical or dynamical instability'
+>         PRINT *,'************************************************'
+>         PRINT *,'POSSIBLE SOLUTIONS:'
+>         PRINT *,'>> IF nonhydrostatic mode,'
+>         PRINT *,'   --> check that smdiv, emdiv and epssm are not 0.'
+>         PRINT *,'>> IF cfl is violated, '
+>         PRINT *,'   --> try to lower the dynamical timestep'
+>         PRINT *,'>> IF topographical gradients are high near specified bdy,'
+>         PRINT *,'   --> try to redefine the domain'
+>         PRINT *,'************************************************'
+>         STOP
+> ENDIF
+379d366
+< 
+59a60,61
+>    !INTEGER :: grandn !!MARS
+> 
+3238a3241,3277
+> !! pour gagner encore plus de place, puisqu'en LES p et ph varient peu selon le domaine 
+> !! on prend la valeur au point 1,1 car la moyenne impose du jonglage avec calc. parall.
+>      IF ( (ips .eq. 1) .and. (jps .eq. 1) ) THEN
+>        PRINT *, 'save profile'
+>        DO kk = kps, MIN(kpe,kde-1)
+>           grid%pprof(kk) = grid%ptot(ips,kk,jps)
+>           grid%phprof(kk) = grid%phtot(ips,kk,jps)
+>        ENDDO
+>      ENDIF
+>    
+>      !! attention, fonctionne seulement en cas de vent nul !! 
+>      grid%tketot  = 0.5 * (grid%u_2*grid%u_2 + grid%v_2*grid%v_2 + grid%w_2*grid%w_2) + grid%tke_2 
+>      !! attention, fonctionne seulement en cas de vent nul !!
+> 
+>      !grandn = FLOAT(ide-ids-2+1)*FLOAT(jde-jds-2+1)
+>      !DO kk = kps, MIN(kpe,kde-1)
+>      ! grid%thprof(kk) = grid%t_2(ids+1,kk,jds+1) / grandn
+>      ! DO jj = jds+2, jde-1
+>      ! DO ii = ids+2, ide-1
+>      !  grid%thprof(kk) = grid%thprof(kk) + grid%t_2(ii,kk,jj) / grandn
+>      !  IF (grid%t_2(ii,kk,jj) .eq. 0.) print *,'zero t',ii,kk,jj
+>      ! ENDDO
+>      ! ENDDO
+>      !ENDDO
+> 
+> !     DO kk = kps, MIN(kpe,kde-1)
+> !      grid%pprof(kk) = grid%ptot(ips,kk,jps) / FLOAT(MIN(ipe,ide-1) - ips + 1) / FLOAT(MIN(jpe,jde-1) - jps + 1)
+> !      grid%phprof(kk) = grid%phtot(ips,kk,jps) / FLOAT(MIN(ipe,ide-1) - ips + 1) / FLOAT(MIN(jpe,jde-1) - jps + 1)
+> !     DO jj = jps+1, MIN(jpe,jde-1)
+> !     DO ii = ips+1, MIN(ipe,ide-1)
+> !         grid%pprof(kk) = grid%pprof(kk) + grid%ptot(ii,kk,jj) / FLOAT(MIN(ipe,ide-1) - ips + 1) / FLOAT(MIN(jpe,jde-1) - jps + 1)
+> !         grid%phprof(kk) = grid%phprof(kk) + grid%phtot(ii,kk,jj) / FLOAT(MIN(ipe,ide-1) - ips + 1) / FLOAT(MIN(jpe,jde-1) - jps + 1)
+> !         IF (grid%phtot(ii,kk,jj) .eq. 0.) print *,'zero ph',ii,kk,jj
+> !         IF (grid%ptot(ii,kk,jj) .eq. 0.) print *,'zero p',ii,kk,jj
+> !     ENDDO
+> !     ENDDO
+> !     ENDDO

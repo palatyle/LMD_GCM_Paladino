@@ -1,0 +1,15 @@
+%COMPILER            $MPI_BIN/mpif90
+%LINK                $MPI_BIN/mpif90 -mcmodel=large -shared-intel
+%AR                  ar
+%MAKE                make
+%FPP_FLAGS           -P -traditional
+%FPP_DEF             NC_DOUBLE LAPACK BLAS SGEMV=DGEMV SGEMM=DGEMM 
+%BASE_FFLAGS         -real-size 64 -ip -mkl=parallel -fp-model precise -align common -mcmodel=large -shared-intel
+%PROD_FFLAGS         -O2
+%DEV_FFLAGS          -O2
+%DEBUG_FFLAGS        -fpe0 -g -no-ftz -check -traceback -ftrapuv -fp-stack-check -O0
+%MPI_FFLAGS          -I$MPI_INCLUDE
+%OMP_FFLAGS          
+%BASE_LD             -mkl=parallel
+%MPI_LD              -L$MPI_LIB -lmpi -lmkl_core 
+%OMP_LD              

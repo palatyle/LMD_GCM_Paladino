@@ -1,0 +1,14 @@
+ROOT=$PWD
+
+NETCDF_LIBDIR="-L/planeto/emlmd/netcdf64-4.0.1_ifort/lib"
+NETCDF_LIB="-lnetcdf"
+NETCDF_INCDIR="-I/planeto/emlmd/netcdf64-4.0.1_ifort/include"
+
+IOIPSL_INCDIR="-I/u/sllmd/LMDZ5/ioipsl/modipsl/lib-ifort"
+IOIPSL_LIBDIR="-L/u/sllmd/LMDZ5/ioipsl/modipsl/lib-ifort"
+IOIPSL_LIB="-lioipsl"
+
+XIOS_INCDIR="-I$ROOT/../XIOS/inc"
+XIOS_LIBDIR="-L$ROOT/../XIOS/lib"
+XIOS_LIB="-lxios -lstdc++"
+

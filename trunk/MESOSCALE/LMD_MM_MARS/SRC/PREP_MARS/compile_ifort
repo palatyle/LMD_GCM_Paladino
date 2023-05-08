@@ -1,0 +1,23 @@
+#! /bin/bash
+
+\rm fix_no_info.inc 2> /dev/null
+\rm *.o 2> /dev/null
+touch fix_no_info.inc
+
+ifort -convert big_endian readmeteo.F90 \
+-L$NETCDF/lib -lnetcdf \
+-I$NETCDF/include \
+-o readmeteo.exe
+
+ifort -convert big_endian create_readmeteo.F90 \
+-L$NETCDF/lib -lnetcdf \
+-I$NETCDF/include \
+-o create_readmeteo.exe
+
+\rm fix_no_info.inc 2> /dev/null
+\rm *.o 2> /dev/null
+
+#echo I assume input_diagfi is correctly linked
+#echo I assume WPSFEED folder exists or is linked
+#echo 1 | create_readmeteo.exe
+#readmeteo.exe < readmeteo.def

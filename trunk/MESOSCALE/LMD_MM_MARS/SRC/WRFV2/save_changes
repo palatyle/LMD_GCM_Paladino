@@ -1,0 +1,42 @@
+#! /bin/bash
+
+\rm saved 2> /dev/null
+\rm -r save 2> /dev/null
+mkdir save
+
+cp configure.wrf* save/
+cp wash_away save/
+#cp makemeso save/
+cp save_changes save/
+cp *_save save/
+cp meso_*.h* save/
+cp mars.sed save/
+cp configure.defaults.* save/
+cp *.inc save/
+
+./dyn_em_save
+./external_save
+./mars_lmd_save
+./phys_save
+./Registry_save
+./share_save
+
+mkdir save/main
+cp -rf main/real_em.F save/main
+
+mkdir save/frame
+cp -rf frame/module_domain.F save/frame
+
+echo 'BACKUP info:' > saved
+echo '--------------' >> saved
+whoami >> saved
+date >> saved
+echo '--------------' >> saved
+
+tar -cvf sources_Mars.tar save >> saved
+ls -lh sources_Mars.tar
+
+gzip sources_Mars.tar
+ls -lh sources_Mars.tar.gz
+
+rm -rf save

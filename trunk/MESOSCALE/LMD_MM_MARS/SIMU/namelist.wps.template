@@ -1,0 +1,38 @@
+&share				      	
+ wrf_core = 'ARW',                    !!   [do not modify: choice of dynamical core]
+__MAX_DOM__
+ start_date = '0000-00-00_00:00:00','0000-00-00_00:00:00','0000-00-00_00:00:00'   !! YYYY-MM-DD_HH:mm:ss start date
+ end_date   = '1111-11-11_11:11:11','0000-00-00_00:00:00','0000-00-00_00:00:00'   !! YYYY-MM-DD_HH:mm:ss end date
+ __INTERVAL_SECONDS__
+ io_form_geogrid = 2,                 !!   [do not modify: choice of NETCDF outputs]	
+ debug_level = 0,                     !! verbose level of the programs 
+ opt_output_from_geogrid_path='./'    !! location of the geogrid outputs
+/
+
+
+&geogrid
+__PARENT_ID__
+__PARENT_GRID_RATIO__
+__I_PARENT_START__
+__J_PARENT_START__
+__E_WE__
+__E_SN__
+ dx = __DX__,
+ dy = __DY__,
+ geog_data_res     = '__DATA_SOURCE__', '__DATA_SOURCE__', '__DATA_SOURCE__'       !! choice of static data sources
+                                                                                   !! NB: possible: '64ppd', '32ppd', ...
+                                                                                   !! NB: please glance at geogrid/GEOGRID.TBL
+ map_proj = '__PROJ__',           !! map projection: 'mercator', 'lambert' or 'polar'
+ ref_lat   =  __LAT__,            !! north latitude of the center of the domain 
+ ref_lon   =  __LON__,            !! east longitude of the center of the domain
+ truelat1  =  __LAT__,            !! (lambert or polar) lat position of projection cone
+ truelat2  =  0.0,                !!   [do not modify]
+ stand_lon =  __LON__,            !! (lambert or polar) lon position of projection cone
+ geog_data_path = './WPS_GEOG',   !!   [do not modify: symbolic link in the WPS folder]
+/
+
+&metgrid
+ fg_name = './WPSFEED/LMD'        !!   [do not modify: symbolic link in the WPS folder]
+ io_form_metgrid = 2,             !!   [do not modify: choice of NETCDF outputs]
+ opt_output_from_metgrid_path='./WRFFEED/current'  !!   [do not modify: symbolic link]
+/

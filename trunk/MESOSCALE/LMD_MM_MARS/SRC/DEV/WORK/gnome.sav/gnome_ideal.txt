@@ -1,0 +1,4 @@
+jusque 201 OK avec ideal.exe sequentiel
+ensuite il vaut mieux utiliser
+mpirun -n 4 ideal.exe
+le MP_STACK_SIZE est dans le bashrc

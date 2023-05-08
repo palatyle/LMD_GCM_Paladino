@@ -1,0 +1,28 @@
+#!/bin/bash
+
+#DWORK_DIR=$RAD/CORRELATEDK/premier_essai
+
+DWORK_DIR=$PWD
+KSPEC_DIR=$KSPECTRUM/kspec_run
+
+cd $DWORK_DIR
+
+# test for presence of k* in kspec results directory
+FILECHECK=$KSPEC_DIR/results/k001
+if [ -f $FILECHECK ]; then
+    echo -en "There is already k-data in the kspec directory "
+    echo -en $KSPEC_DIR
+    echo -en ", delete or move it before starting!\n"
+    exit 1
+fi
+
+make_composition_gen.exe
+cp composition.in $KSPEC_DIR/data/
+
+echo -en "kspectrum working directory is:\n"
+echo -en $KSPEC_DIR
+echo -en "\nNow you must submit the parallel job (>> llsubmit run_kspec)\n"
+
+cd $KSPEC_DIR
+
+exit 0

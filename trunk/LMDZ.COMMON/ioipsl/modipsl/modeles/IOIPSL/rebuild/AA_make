@@ -1,0 +1,35 @@
+#-
+#- $Id: AA_make 53 2007-06-06 15:27:26Z bellier $
+#-
+#-Q- sxdkrz F_O = $(F_D) $(F_P) -C vsafe -size_t64 -I $(MODDIR)
+#-Q- eshpux F_O = $(F_D) $(F_P) -C vsafe -I $(MODDIR)
+#---------------------------------------------------------------------
+#- Create "rebuild" related to IOIPSL
+#---------------------------------------------------------------------
+
+SXMODEL_LIB = $(MODEL_LIB)
+ifeq ($(L_X),1)
+SXMODEL_LIB = $(LIBDIR)/libsxioipsl.a
+endif
+
+rbld: libioipsl $(BINDIR)/rebuild $(BINDIR)/flio_rbld
+	@echo rebuild is OK
+
+$(BINDIR)/rebuild: ./rebuild
+	cp -p ./rebuild $(BINDIR)/rebuild
+	chmod a+rx $(BINDIR)/rebuild
+
+$(BINDIR)/flio_rbld: $(SXMODEL_LIB) flio_rbld.f90
+	$(F_C) $(F_O) -I$(NCDF_INC) flio_rbld.f90
+	$(F_L) flio_rbld.o -o $(BINDIR)/flio_rbld \
+               $(L_O) $(SXMODEL_LIB) $(NCDF_LIB)
+	chmod a+rx $(BINDIR)/flio_rbld
+	$(RM) flio_rbld.o
+
+libioipsl:
+	(cd ../src; $(M_K) -f Makefile)
+
+clean:
+	$(RM) *.*~ Makefile~ core *.o *.mod i.*.L *.L i.*.f90 *.M
+	$(RM) $(BINDIR)/rebuild $(BINDIR)/flio_rbld
+

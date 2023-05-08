@@ -1,0 +1,794 @@
+######## Abderrahmane le 20 11 08 ########################
+# Niveaux de sorties et nom pour chaque variable dans les#
+# fichiers histmth histday histhf histins histLES        #
+##########################################################
+# Surface geop.height
+flag_phis         =  1, 1, 10, 1, 1    
+name_phis         =  phis
+# Grid area
+flag_aire         =  1, 1, 10,  1, 1    
+name_aire         =  aire
+# Surfac ter+lic
+flag_contfracATM  =  10, 1,  1, 10, 10    
+name_contfracATM  =  contfracATM
+# Surface terre OR  
+flag_contfracOR   =  10, 1,  1, 10, 10    
+name_contfracOR   =  contfracOR
+# Grid area CONT
+flag_aireTER      =  10, 10, 1, 10, 10    
+name_aireTER      =  aireTER
+# Latent heat flux
+flag_flat         =  10, 1, 10, 10, 1    
+name_flat         =  flat
+# Sea Level Pressure
+flag_slp          =  1, 1, 1, 10, 1    
+name_slp          =  slp
+# Surface Temperature
+flag_tsol         =  1, 1, 1, 1, 1    
+name_tsol         =  tsol
+# Temperature 2m
+flag_t2m          =  1, 1, 1, 1, 1    
+name_t2m          =  t2m
+# Temperature min 2m
+flag_t2m_min      =  1, 1, 10, 10, 10    
+name_t2m_min      =  t2m_min
+# Temperature max 2m
+flag_t2m_max      =  1, 1, 10, 10, 10    
+name_t2m_max      =  t2m_max
+# Temperature ter lic oce sic at 2m
+flag_t2m_ter      =  10, 4, 10, 10, 10    
+name_t2m_ter      =  t2m_ter 
+flag_t2m_lic      =  10, 4, 10, 10, 10    
+name_t2m_lic      =  t2m_lic
+flag_t2m_oce      =  10, 4, 10, 10, 10    
+name_t2m_oce      =  t2m_oce
+flag_t2m_sic      =  10, 4, 10, 10, 10    
+name_t2m_sic      =  t2m_sic 
+# 10-m wind speed
+flag_wind10m      =  1, 1, 1, 10, 10    
+name_wind10m      =  wind10m
+# 10-m wind speed max
+flag_wind10max    =  10, 1, 10, 10, 10    
+name_wind10max    =  wind10max
+# Sea-ice fraction
+flag_sicf         =  1, 1, 10, 10, 10    
+name_sicf         =  sicf
+# Specific humidity 2m
+flag_q2m          =  1, 1, 1, 1, 1    
+name_q2m          =  q2m
+# 10m zonal wind
+flag_u10m         =  1, 1, 1, 1, 1    
+name_u10m         =  u10m
+# 10m meridional wind
+flag_v10m         =  1, 1, 1, 1, 1    
+name_v10m         =  v10m
+# Surface Pressure
+flag_psol         =  1, 1, 1, 1, 1    
+name_psol         =  psol
+# Surface Air humidity
+flag_qsurf        =  1, 10, 10, 10, 10    
+name_qsurf        =  qsurf
+# 10m zonal wind (ter lic oce sic)
+flag_u10m_ter     =  10, 4, 10, 10, 10    
+name_u10m_ter     =  u10m_ter
+flag_u10m_lic     =  10, 4, 10, 10, 10    
+name_u10m_lic     =  u10m_lic
+flag_u10m_oce     =  10, 4, 10, 10, 10    
+name_u10m_oce     =  u10m_oce
+flag_u10m_sic     =  10, 4, 10, 10, 10    
+name_u10m_sic     =  u10m_sic
+# 10m meridien  wind (ter oce ice lic)
+flag_v10m_ter     =  10, 4, 10, 10, 10    
+name_v10m_ter     =  v10m_ter
+flag_v10m_lic     =  10, 4, 10, 10, 10    
+name_v10m_lic     =  v10m_lic
+flag_v10m_oce     =  10, 4, 10, 10, 10    
+name_v10m_oce     =  v10m_oce
+flag_v10m_sic     =  10, 4, 10, 10, 10    
+name_v10m_sic     =  v10m_sic
+# Soil watter content
+flag_qsol         =  1, 10, 10, 1, 1    
+name_qsol         =  qsol
+# Number of dayrain(liq+sol)
+flag_ndayrain     =  1, 10, 10, 10, 10    
+name_ndayrain     =  ndayrain
+# Precip Totale liq+sol
+flag_precip       =  1, 1, 1, 1, 1    
+name_precip       =  precip
+# Large-scale Precip
+flag_plul         =  1, 1, 1, 1, 10    
+name_plul         =  plul 
+# Convective Precip
+flag_pluc         =  1, 1, 1, 1, 10    
+name_pluc         =  pluc
+# Snow fall
+flag_snow         =  1, 1, 10, 1, 10    
+name_snow         =  snow
+# Evaporation
+flag_evap         =  1, 1, 10, 1, 10    
+name_evap         =  evap
+# Solar rad. at TOA
+flag_tops         =  1, 1, 10, 10, 10    
+name_tops         =  tops
+# CS Solar rad. at TOA
+flag_tops0        =  1, 5, 10, 10, 10    
+name_tops0        =  tops0
+# IR rad. at TOA
+flag_topl         =  1, 1, 10, 1, 10    
+name_topl         =  topl
+# CR IR rad. at TOA
+flag_topl0        =  1, 5, 10, 10, 10    
+name_topl0        =  topl0
+# SWup at TOA
+flag_SWupTOA      =  1, 4, 10, 10, 10    
+name_SWupTOA      =  SWupTOA
+# CR SWup at TOA
+flag_SWupTOAclr   =  1, 4, 10, 10, 10    
+name_SWupTOAclr   =  SWupTOAclr
+# SWdn at TOA
+flag_SWdnTOA      =  1, 4, 10, 10, 10    
+name_SWdnTOA      =  SWdnTOA
+# CR SWdn at TOA
+flag_SWdnTOAclr   =  1, 4, 10, 10, 10    
+name_SWdnTOAclr   =  SWdnTOAclr
+# SWup at 200hPa
+flag_SWup200      =  1, 10, 10, 10, 10    
+name_SWup200      =  SWup200
+# CR SWup at 200hPa
+flag_SWup200clr   =  10, 1, 10, 10, 10    
+name_SWup200clr   =  SWup200clr
+# SWdn at 200hPa
+flag_SWdn200      =  1, 10, 10, 10, 10    
+name_SWdn200      =  SWdn200
+# CR SWdn at 200hPa
+flag_SWdn200clr   =  10, 1, 10, 10, 10    
+name_SWdn200clr   =  SWdn200clr
+# LWup at 200mb
+flag_LWup200      =  1, 10, 10, 10, 10    
+name_LWup200      =  LWup200
+# CR LWup at 200mb
+flag_LWup200clr   =  1, 10, 10, 10, 10    
+name_LWup200clr   =  LWup200clr
+# LWdn at 200mb
+flag_LWdn200      =  1, 10, 10, 10, 10    
+name_LWdn200      =  LWdn200
+# CR LWdn at 200mb
+flag_LWdn200clr   =  1, 10, 10, 10, 10    
+name_LWdn200clr   =  LWdn200clr
+# Solar rad. at surf
+flag_sols         =  1, 1, 10, 1, 10    
+name_sols         =  sols
+# CR Solar rad. at surf
+flag_sols0        =  1, 5, 10, 10, 10    
+name_sols0        =  sols0
+# IR rad. at surface
+flag_soll         =  1, 1, 10, 1, 10    
+name_soll         =  soll
+# CR IR rad. at surface
+flag_soll0        =  1, 5, 10, 10, 10    
+name_soll0        =  soll0
+# Rayonnement au sol
+flag_radsol       =  1, 1, 10, 10, 10    
+name_radsol       =  radsol
+# SWup at surface
+flag_SWupSFC      =  1, 4, 10, 10, 10    
+name_SWupSFC      =  SWupSFC
+# CR SWup at surface
+flag_SWupSFCclr   =  1, 4, 10, 10, 10    
+name_SWupSFCclr   =  SWupSFCclr
+# SWdn at surface
+flag_SWdnSFC      =  1, 1, 10, 10, 10    
+name_SWdnSFC      =  SWdnSFC
+# CR at surface
+flag_SWdnSFCclr   =  1, 4, 10, 10, 10    
+name_SWdnSFCclr   =  SWdnSFCclr
+# LWup at surface
+flag_LWupSFC      =  1, 4, 10, 10, 10    
+name_LWupSFC      =  LWupSFC
+# CR LWup at surface
+flag_LWupSFCclr   =  1, 4, 10, 10, 10    
+name_LWupSFCclr   =  LWupSFCclr
+# LWdn  at surface
+flag_LWdnSFC      =  1, 4, 10, 10, 10    
+name_LWdnSFC      =  LWdnSFC
+# CR LWdn  at surface
+flag_LWdnSFCclr   =  1, 4, 10, 10, 10    
+name_LWdnSFCclr   =  LWdnSFCclr
+# Surf. total heat flux
+flag_bils         =  1, 2, 10, 1, 10    
+name_bils         =  bils
+# Sensible heat flux
+flag_sens         =  1, 1, 10, 1, 1    
+name_sens         =  sens
+# Heat flux derivation
+flag_fder         =  1, 2, 10, 1, 10    
+name_fder         =  fder
+# Thermal flux for snow melting
+flag_ffonte       =  1, 10, 10, 10, 10    
+name_ffonte       =  ffonte
+# Ice Calving
+flag_fqcalving    =  1, 10, 10, 10, 10    
+name_fqcalving    =  fqcalving
+# Land ice melt
+flag_fqfonte      =  1, 10, 10, 10, 10    
+name_fqfonte      =  fqfonte
+# Zonal wind stress (ter ice liq oce)
+flag_taux_ter     =  1, 4, 10, 1, 10    
+name_taux_ter     =  taux_ter
+flag_taux_lic     =  1, 4, 10, 1, 10    
+name_taux_lic     =  taux_lic                                          
+flag_taux_oce     =  1, 4, 10, 1, 10    
+name_taux_oce     =  taux_oce
+flag_taux_sic     =  1, 4, 10, 1, 10    
+name_taux_sic     =  taux_sic
+# Meridien wind stress (ter ice liq oce)
+flag_tauy_ter     =  1, 4, 10, 1, 10    
+name_tauy_ter     =  tauy_ter
+flag_tauy_lic     =  1, 4, 10, 1, 10    
+name_tauy_lic     =  tauy_lic
+flag_tauy_oce     =  1, 4, 10, 1, 10    
+name_tauy_oce     =  tauy_oce
+flag_tauy_sic     =  1, 4, 10, 1, 10    
+name_tauy_sic     =  tauy_sic
+# % surface (ter ice liq oce)
+flag_pourc_ter    =  1, 4, 10, 1, 10    
+name_pourc_ter    =  pourc_ter  
+flag_pourc_lic    =  1, 4, 10, 1, 10    
+name_pourc_lic    =  pourc_lic
+flag_pourc_oce    =  1, 4, 10, 1, 10    
+name_pourc_oce    =  pourc_oce
+flag_pourc_sic    =  1, 4, 10, 1, 10    
+name_pourc_sic    =  pourc_sic
+# Fraction (ter ice liq oce)
+flag_fract_ter    =  1, 4, 10, 1, 10    
+name_fract_ter    =  fract_ter
+flag_fract_lic    =  1, 4, 10, 1, 10    
+name_fract_lic    =  fract_lic
+flag_fract_oce     =  1, 4, 10, 1, 10    
+name_fract_oce    =  fract_oce
+flag_fract_sic    =  1, 4, 10, 1, 10    
+name_fract_sic    =  fract_sic
+# Surface temperature (ter ice liq oce)
+flag_tsol_ter     =  1, 4, 10, 1, 10    
+name_tsol_ter     =  tsol_ter
+flag_tsol_lic     =  1, 4, 10, 1, 10    
+name_tsol_lic     =  tsol_lic
+flag_tsol_oce     =  1, 4, 10, 1, 10    
+name_tsol_oce     =  tsol_oce
+flag_tsol_sic     =  1, 4, 10, 1, 10    
+name_tsol_sic     =  tsol_sic
+# Sensible heat flux (ter ice liq oce)
+flag_sens_ter     =  1, 4, 10, 1, 10    
+name_sens_ter     =  sens_ter
+flag_sens_lic     =  1, 4, 10, 1, 10    
+name_sens_lic     =  sens_lic
+flag_sens_oce     =  1, 4, 10, 1, 10    
+name_sens_oce     =  sens_oce
+flag_sens_sic     =  1, 4, 10, 1, 10    
+name_sens_sic     =  sens_sic
+# Latent heat flux (ter ice liq oce)
+flag_lat_ter      =  1, 4, 10, 1, 10    
+name_lat_ter      =  lat_ter 
+flag_lat_lic      =  1, 4, 10, 1, 10    
+name_lat_lic      =  lat_lic
+flag_lat_oce      =  1, 4, 10, 1, 10    
+name_lat_oce      =  lat_oce
+flag_lat_sic      =  1, 4, 10, 1, 10    
+name_lat_sic      =  lat_sic 
+# LW (ter ice liq oce)
+flag_flw_ter      =  1, 10, 10, 10, 10    
+name_flw_ter      =  flw_ter
+flag_flw_lic      =  1, 10, 10, 10, 10    
+name_flw_lic      =  flw_lic
+flag_flw_oce      =  1, 10, 10, 10, 10    
+name_flw_oce      =  flw_oce
+flag_flw_sic      =  1, 10, 10, 10, 10    
+name_flw_sic      =  flw_sic
+# SW (ter ice liq oce)
+flag_fsw_ter      =  1, 10, 10, 10, 10    
+name_fsw_ter      =  fsw_ter
+flag_fsw_lic      =  1, 10, 10, 10, 10    
+name_fsw_lic      =  fsw_lic
+flag_fsw_oce      =  1, 10, 10, 10, 10    
+name_fsw_oce      =  fsw_oce
+flag_fsw_sic      =  1, 10, 10, 10, 10    
+name_fsw_sic      =  fsw_sic
+# Bilan sol (ter ice liq oce)
+flag_wbils_ter    =  1, 10, 10, 10, 10    
+name_wbils_ter    =  wbils_ter
+flag_wbils_lic    =  1, 10, 10, 10, 10    
+name_wbils_lic    =  wbils_lic
+flag_wbils_oce    =  1, 10, 10, 10, 10    
+name_wbils_oce    =  wbils_oce
+flag_wbils_sic   =  1, 10, 10, 10, 10    
+name_wbils_sic    =  wbils_sic 
+# Bilan eau (ter ice liq oce)
+flag_wbilo_ter    =  1, 10, 10, 10, 10    
+name_wbilo_ter    =  wbilo_ter
+flag_wbilo_lic    =  1, 10, 10, 10, 10    
+name_wbilo_lic    =  wbilo_lic
+flag_wbilo_oce    =  1, 10, 10, 10, 10    
+name_wbilo_oce    =  wbilo_oce
+flag_wbilo_sic    =  1, 10, 10, 10, 10    
+name_wbilo_sic    =  wbilo_sic
+# Momentum drag coef
+flag_cdrm         =  1, 10, 10, 1, 10    
+name_cdrm         =  cdrm
+# Heat drag coef
+flag_cdrh         =  1, 10, 10, 1, 10    
+name_cdrh         =  cdrh 
+# Low-level cloudiness
+flag_cldl         =  1, 1, 10, 10, 10    
+name_cldl         =  cldl
+# Mid-level cloudiness
+flag_cldm         =  1, 1, 10, 10, 10    
+name_cldm         =  cldm
+# High-level cloudiness
+flag_cldh         =  1, 1, 10, 10, 10    
+name_cldh         =  cldh
+# Total cloudiness
+flag_cldt         =  1, 1, 2, 10, 10    
+name_cldt         =  cldt
+# Cloud liquid water path
+flag_cldq         =  1, 1, 10, 10, 10    
+name_cldq         =  cldq
+# Cloud water path
+flag_lwp          =  1, 5, 10, 10, 10    
+name_lwp          =  lwp
+# Cloud ice water path
+flag_iwp          =  1, 5, 10, 10, 10    
+name_iwp          =  iwp
+# Zonal energy transport
+flag_ue           =  1, 10, 10, 10, 10    
+name_ue           =  ue
+# Merid energy transport
+flag_ve           =  1, 10, 10, 10, 10    
+name_ve           =  ve
+# Zonal humidity transport
+flag_uq           =  1, 10, 10, 10, 10    
+name_uq           =  uq
+# Merid humidity transport
+flag_vq           =  1, 10, 10, 10, 10    
+name_vq           =  vq
+# Conv avlbl pot ener
+flag_cape         =  1, 10, 10, 10, 10    
+name_cape         =  cape
+# Cld base pressure
+flag_pbase        =  1, 10, 10, 10, 10    
+name_pbase        =  pbase
+# Cld top pressure
+flag_ptop         =  1, 4, 10, 10, 10    
+name_ptop         =  ptop
+# Cld base mass flux
+flag_fbase        =  1, 10, 10, 10, 10    
+name_fbase        =  fbase
+# Precipitable water
+flag_prw          =  1, 1, 10, 10, 10    
+name_prw          =  prw
+# Boundary Layer Height
+flag_s_pblh       =  1, 10, 10, 1, 1    
+name_s_pblh       =  pblh
+# t at Boundary Layer Height
+flag_s_pblt       =  1, 10, 10, 1, 1    
+name_s_pblt       =  pblt
+# Condensation level
+flag_s_lcl        =  1, 10, 10, 1, 10    
+name_s_lcl        =  lcl
+# Conv avlbl pot enerfor ABL
+flag_s_capCL      =  1, 10, 10, 1, 10    
+name_s_capCL      =  capCL
+# Liq Water in BL
+flag_s_oliqCL     =  1, 10, 10, 1, 10    
+name_s_oliqCL     =  oliqCL
+# Instability criteria(ABL)
+flag_s_cteiCL     =  1, 10, 10, 1, 1    
+name_s_cteiCL     =  cteiCL
+# Exces du thermique
+flag_s_therm      =  1, 10, 10, 1, 1    
+name_s_therm      =  therm
+# deep_cape(HBTM2)
+flag_s_trmb1      =  1, 10, 10, 1, 10    
+name_s_trmb1      =  trmb1
+# inhibition (HBTM2)
+flag_s_trmb2      =  1, 10, 10, 1, 10    
+name_s_trmb2      =  trmb2
+# Point Omega (HBTM2)
+flag_s_trmb3      =  1, 10, 10, 1, 10    
+name_s_trmb3      =  trmb3
+# Bilan au sol sur ocean slab
+flag_slab_bils    =  1, 1, 10, 10, 10    
+name_slab_bils    =  slab_bils 
+# ALE BL
+flag_ale_bl       =  1, 1, 1, 1, 10    
+name_ale_bl       =  ale_bl 
+# alp_bl
+flag_alp_bl       =  1, 1, 1, 1, 10    
+name_alp_bl       =  alp_bl
+# ale_wk
+flag_ale_wk       =  1, 1, 1, 1, 10    
+name_ale_wk       =  ale_wk
+# alp_wk
+flag_alp_wk       =  1, 1, 1, 1, 10    
+name_alp_wk       =  alp_wk
+# ale
+flag_ale          =  1, 1, 1, 1, 10    
+name_ale          =  ale
+# alp
+flag_alp          =  1, 1, 1, 1, 10    
+name_alp          =  alp
+# Convective INhibition
+flag_cin          =  1, 1, 1, 1, 10    
+name_cin          =  cin
+# WAPE
+flag_wape         =  1, 1, 1, 1, 10    
+name_wape         =  wape
+# u, v w t q et phi aux niveaux 200, 500, 700 et 850 hPa
+flag_u850         =  1, 1, 3, 10, 10    
+name_u850         =  u850 
+flag_u700         =  1, 1, 3, 10, 10    
+name_u700         =  u700
+flag_u500         =  1, 1, 3, 10, 10    
+name_u500         =  u500
+flag_u200         =  1, 1, 3, 10, 10    
+name_u200         =  u200
+flag_v850         =  1, 1, 3, 10, 10    
+name_v850         =  v850 
+flag_v700         =  1, 1, 3, 10, 10    
+name_v700         =  v700
+flag_v500         =  1, 1, 3, 10, 10    
+name_v500         =  v500
+flag_v200         =  1, 1, 3, 10, 10    
+name_v200         =  v200
+flag_w850         =  1, 1, 3, 10, 10    
+name_w850         =  w850
+flag_w700         =  1, 1, 3, 10, 10    
+name_w700         =  w700
+flag_w500         =  1, 1, 3, 10, 10    
+name_w500         =  w500
+flag_w200         =  1, 1, 3, 10, 10    
+name_w200         =  w200
+flag_t850         =  1, 1, 3, 10, 10    
+name_t850         =  t850
+flag_t700         =  1, 1, 3, 10, 10    
+name_t700         =  t700
+flag_t500         =  1, 1, 3, 10, 10    
+name_t500         =  t500
+flag_t200         =  1, 1, 3, 10, 10    
+name_t200         =  t200
+flag_q850         =  1, 1, 3, 10, 10    
+name_q850         =  q850
+flag_q700         =  1, 1, 3, 10, 10    
+name_q700         =  q700
+flag_q500         =  1, 1, 3, 10, 10    
+name_q500         =  q500
+flag_q200         =  1, 1, 3, 10, 10    
+name_q200         =  q200
+flag_phi850       =  1, 1, 3, 10, 10    
+name_phi850       =  phi850 
+flag_phi700       =  1, 1, 3, 10, 10    
+name_phi700       =  phi700
+flag_phi500       =  1, 1, 3, 10, 10    
+name_phi500       =  phi500
+flag_phi200       =  1, 1, 3, 10, 10    
+name_phi200       =  phi200
+# Temp mixte oce-sic
+flag_t_oce_sic    =  1, 10, 10, 10, 10    
+name_t_oce_sic    =  t_oce_sic
+# Weak inversion
+flag_weakinv      =  10, 1, 10, 10, 10    
+name_weakinv      =  weakinv
+# dTheta mini
+flag_dthmin       =  10, 1, 10, 10, 10    
+name_dthmin       =  dthmin
+# 10m zonal and meriden wind (ter sic lic oce)
+flag_u10_ter      =  10, 4, 10, 10, 10    
+name_u10_ter      =  u10_ter 
+flag_u10_lic      =  10, 4, 10, 10, 10    
+name_u10_lic      =  u10_lic
+flag_u10_oce      =  10, 4, 10, 10, 10    
+name_u10_oce      =  u10_oce
+flag_u10_sic      =  10, 4, 10, 10, 10    
+name_u10_sic      =  u10_sic 
+flag_v10_ter      =  10, 4, 10, 10, 10    
+name_v10_ter      =  v10_ter
+flag_v10_lic      =  10, 4, 10, 10, 10    
+name_v10_lic      =  v10_lic
+flag_v10_oce      =  10, 4, 10, 10, 10    
+name_v10_oce      =  v10_oce
+flag_v10_sic      =  10, 4, 10, 10, 10    
+name_v10_sic      =  v10_sic
+# Cloud optical thickness
+flag_cldtau       =  10, 5, 10, 10, 10    
+name_cldtau       =  cldtau
+# Cloud optical emissivity
+flag_cldemi       =  10, 5, 10, 10, 10    
+name_cldemi       =  cldemi
+# Relative humidity at 2m
+flag_rh2m         =  10, 5, 10, 10, 10    
+name_rh2m         =  rh2m
+# Saturant humidity at 2m
+flag_qsat2m       =  10, 5, 10, 10, 10    
+name_qsat2m       =  qsat2m
+# Surface air potential temperature
+flag_tpot         =  10, 5, 10, 10, 10    
+name_tpot         =  tpot
+# Surface air equivalent potential temperature
+flag_tpote        =  10, 5, 10, 10, 10    
+name_tpote        =  tpote
+# TKE, tke max and tke (ter sic lic oce)
+flag_tke          =  4, 10, 10, 10, 10    
+name_tke          =  tke
+flag_tke_max      =  4, 10, 10, 10, 10    
+name_tke_max      =  tke_max
+flag_tke_ter      =  10, 4, 10, 10, 10    
+name_tke_ter      =  tke_ter 
+flag_tke_lic      =  10, 4, 10, 10, 10    
+name_tke_lic      =  tke_lic
+flag_tke_oce      =  10, 4, 10, 10, 10    
+name_tke_oce      =  tke_oce
+flag_tke_sic      =  10, 4, 10, 10, 10    
+name_tke_sic      =  tke_sic
+flag_tke_max_ter  =  10, 4, 10, 10, 10    
+name_tke_max_ter  =  tke_max_ter
+flag_tke_max_lic  =  10, 4, 10, 10, 10    
+name_tke_max_lic  =  tke_max_lic
+flag_tke_max_oce  =  10, 4, 10, 10, 10    
+name_tke_max_oce  =  tke_max_oce
+flag_tke_max_sic  =  10, 4, 10, 10, 10    
+name_tke_max_sic  =  tke_max_sic
+# Kz melange
+flag_kz           =  4, 10, 10, 10, 10    
+name_kz           =  kz
+# Kz max melange
+flag_kz_max       =  4, 10, 10, 10, 10    
+name_kz_max       =  kz_max
+# Sfce net SW radiation OR
+flag_SWnetOR      =  10, 10, 2, 10, 10    
+name_SWnetOR      =  SWnetOR
+# Sfce incident SW radiation OR
+flag_SWdownOR     =  10, 10, 2, 10, 10    
+name_SWdownOR     =  SWdownOR
+# Sfce incident LW radiation OR
+flag_LWdownOR     =  10, 10, 2, 10, 10    
+name_LWdownOR     =  LWdownOR
+# Solid Large-scale Precip
+flag_snowl        =  10, 1, 10, 10, 10    
+name_snowl        =  snowl
+# cape max
+flag_cape_max     =  10, 1, 10, 10, 10    
+name_cape_max     =  cape_max
+# Down. IR rad. at surface
+flag_solldown     =  10, 1, 10, 1, 10    
+name_solldown     =  solldown
+# Boundary-layer dTs(o)
+flag_dtsvdfo      =  10, 10, 10, 1, 10    
+name_dtsvdfo      =  dtsvdfo
+# Boundary-layer dTs(t)
+flag_dtsvdft      =  10, 10, 10, 1, 10    
+name_dtsvdft      =  dtsvdft
+# Boundary-layer dTs(g)
+flag_dtsvdfg      =  10, 10, 10, 1, 10    
+name_dtsvdfg      =  dtsvdfg
+# Boundary-layer dTs(g)
+flag_dtsvdfi      =  10, 10, 10, 1, 10    
+name_dtsvdfi      =  dtsvdfi
+# rugosity
+flag_rugs         =  10, 10, 10, 1, 1    
+name_rugs         =  rugs
+# Cloud liquid water content
+flag_lwcon        =  2, 5, 10, 10, 1    
+name_lwcon        =  lwcon
+# Cloud ice water content
+flag_iwcon        =  2, 5, 10, 10, 10    
+name_iwcon        =  iwcon
+# Air temperature
+flag_temp         =  2, 3, 4, 1, 1    
+name_temp         =  temp
+# Potential air temperature
+flag_theta        =  2, 3, 4, 1, 1    
+name_theta        =  theta
+# Specific humidity
+flag_ovap         =  2, 3, 4, 1, 1    
+name_ovap         =  ovap
+# ?
+flag_ovapinit     =  2, 3, 4, 1, 1
+name_ovapinit     =  ovapinit
+# ?
+flag_wvapp        =  2, 10, 10, 10, 10    
+name_wvapp        =  wvapp
+# Geopotential height
+flag_geop         =  2, 3, 10, 1, 1    
+name_geop         =  geop
+# Zonal wind
+flag_vitu         =  2, 3, 4, 1, 1    
+name_vitu         =  vitu
+# Meridional wind
+flag_vitv         =  2, 3, 4, 1, 1    
+name_vitv         =  vitv
+# Vertical wind
+flag_vitw         =  2, 3, 10, 10, 1    
+name_vitw         =  vitw
+# Air pressure
+flag_pres         =  2, 3, 10, 1, 1    
+name_pres         =  pres
+# Cloud Fraction
+flag_rneb         =  2, 5, 10, 10, 1    
+name_rneb         =  rneb
+# Convective Cloud Fraction
+flag_rnebcon      =  2, 5, 10, 10, 1    
+name_rnebcon      =  rnebcon
+# Relative humidity
+flag_rhum         =  2, 10, 10, 10, 10    
+name_rhum         =  rhum
+# Ozone concentration
+flag_ozone        =  2, 10, 10, 10, 10    
+name_ozone        =  ozone
+# saturated updraft
+flag_upwd         =  2, 10, 10, 10, 10    
+name_upwd         =  upwd
+# Physics dT
+flag_dtphy        =  2, 10, 10, 10, 1    
+name_dtphy        =  dtphy
+# Physics dq
+flag_dqphy        =  2, 10, 10, 10, 1    
+name_dqphy        =  dqphy
+# Convective precipitation lic and ice
+flag_pr_con_l     =  2, 10, 10, 10, 10    
+name_pr_con_l     =  pr_con_l
+flag_pr_con_i     =  2, 10, 10, 10, 10    
+name_pr_con_i     =  pr_con_i
+# Large scale precipitation lic and ice
+flag_pr_lsc_l     =  2, 10, 10, 10, 10    
+name_pr_lsc_l     =  pr_lsc_l
+flag_pr_lsc_i     =  2, 10, 10, 10, 10    
+name_pr_lsc_i     =  pr_lsc_i
+# Albedo surf, Snow age and rugosity (ter sic lic oce)
+flag_albe_ter     =  3, 4, 10, 1, 10    
+name_albe_ter     =  albe_ter 
+flag_albe_lic     =  3, 4, 10, 1, 10    
+name_albe_lic     =  albe_lic
+flag_albe_oce     =  3, 4, 10, 1, 10    
+name_albe_oce     =  albe_oce
+flag_albe_sic     =  3, 4, 10, 1, 10    
+name_albe_sic     =  albe_sic 
+flag_ages_ter     =  3, 10, 10, 10, 10    
+name_ages_ter     =  ages_ter
+flag_ages_lic     =  3, 10, 10, 10, 10    
+name_ages_lic     =  ages_lic
+flag_ages_oce     =  3, 10, 10, 10, 10    
+name_ages_oce     =  ages_oce
+flag_ages_sic     =  3, 10, 10, 10, 10    
+name_ages_sic     =  ages_sic
+flag_rugs_ter     =  3, 4, 10, 1, 10    
+name_rugs_ter     =  rugs_ter 
+flag_rugs_lic     =  3, 4, 10, 1, 10    
+name_rugs_lic     =  rugs_lic
+flag_rugs_oce     =  3, 4, 10, 1, 10    
+name_rugs_oce     =  rugs_oce
+flag_rugs_sic     =  3, 4, 10, 1, 10    
+name_rugs_sic     =  rugs_sic
+# Surface albedo
+flag_albs         =  3, 10, 10, 1, 10    
+name_albs         =  albs
+# Surface albedo LW
+flag_albslw       =  3, 10, 10, 1, 10    
+name_albslw       =  albslw
+# Convective Cloud Liquid water content
+flag_clwcon       =  4, 10, 10, 10, 10    
+name_clwcon       =  clwcon
+# undilute adiab updraft
+flag_Ma           =  4, 10, 10, 10, 10    
+name_Ma           =  Ma
+# saturated downdraft
+flag_dnwd         =  4, 10, 10, 10, 10    
+name_dnwd         =  dnwd
+# unsat. downdraft
+flag_dnwd0        =  4, 10, 10, 10, 10    
+name_dnwd0        =  dnwd0
+# Dynamics dT dQ dU dV, .....
+flag_dtdyn        =  4, 10, 10, 10, 1
+name_dtdyn        =  dtdyn
+flag_dqdyn        =  4, 10, 10, 10, 1    
+name_dqdyn        =  dqdyn
+flag_dudyn        =  4, 10, 10, 10, 1    
+name_dudyn        =  dudyn
+flag_dvdyn        =  4, 10, 10, 10, 1    
+name_dvdyn        =  dvdyn 
+flag_dtcon        =  4, 5, 10, 10, 10    
+name_dtcon        =  dtcon
+flag_ducon        =  4, 10, 10, 10, 10    
+name_ducon        =  ducon
+flag_dqcon        =  4, 5, 10, 10, 10    
+name_dqcon        =  dqcon
+flag_dtwak        =  4, 5, 10, 10, 10    
+name_dtwak        =  dtwak
+flag_dqwak        =  4, 5, 10, 10, 10    
+name_dqwak        =  dqwak
+flag_wake_h       =  4, 5, 10, 10, 10    
+name_wake_h       =  wake_h
+flag_wake_s       =  4, 5, 10, 10, 10    
+name_wake_s       =  wake_s
+flag_wake_deltat  =  4, 5, 10, 10, 10    
+name_wake_deltat  =  wake_deltat
+flag_wake_deltaq  =  4, 5, 10, 10, 10    
+name_wake_deltaq  =  wake_deltaq
+flag_wake_omg     =  4, 5, 10, 10, 10    
+name_wake_omg     =  wake_omg 
+flag_Vprecip      =  10, 10, 10, 10, 10    
+name_Vprecip      =  Vprecip
+flag_ftd          =  4, 5, 10, 10, 10    
+name_ftd          =  ftd
+flag_fqd          =  4, 5, 10, 10, 10    
+name_fqd          =  fqd
+flag_dtlsc        =  4, 10, 10, 10, 10    
+name_dtlsc        =  dtlsc
+flag_dtlschr      =  4, 10, 10, 10, 10    
+name_dtlschr      =  dtlschr
+flag_dqlsc        =  4, 10, 10, 10, 10    
+name_dqlsc        =  dqlsc
+flag_dtvdf        =  4, 10, 10, 1, 10    
+name_dtvdf        =  dtvdf
+flag_dqvdf        =  4, 10, 10, 1, 10    
+name_dqvdf        =  dqvdf
+flag_dteva        =  4, 10, 10, 10, 10    
+name_dteva        =  dteva
+flag_dqeva        =  4, 10, 10, 10, 10    
+name_dqeva        =  dqeva
+flag_ptconv       =  4, 10, 10, 10, 10    
+name_ptconv       =  ptconv
+flag_ratqs        =  4, 10, 10, 10, 10    
+name_ratqs        =  ratqs
+flag_dtthe        =  4, 10, 10, 10, 10    
+name_dtthe        =  dtthe
+flag_f_th         =  4, 10, 10, 10, 10    
+name_f_th         =  f_th
+flag_e_th         =  4, 10, 10, 10, 10    
+name_e_th         =  e_th
+flag_w_th         =  4, 10, 10, 10, 10    
+name_w_th         =  w_th
+flag_lambda_th    =  4, 10, 10, 10, 10    
+name_lambda_th    =  lambda_th
+flag_q_th         =  4, 10, 10, 10, 10    
+name_q_th         =  q_th
+flag_a_th         =  4, 10, 10, 10, 10    
+name_a_th         =  a_th
+flag_d_th         =  4, 10, 10, 10, 10    
+name_d_th         =  d_th
+flag_f0_th        =  4, 10, 10, 10, 10    
+name_f0_th        =  f0_th
+flag_zmax_th      =  4, 10, 10, 10, 10    
+name_zmax_th      =  zmax_th
+flag_dqthe        =  4, 10, 10, 10, 1    
+name_dqthe        =  dqthe
+flag_dtajs        =  4, 10, 10, 10, 10    
+name_dtajs        =  dtajs
+flag_dqajs        =  4, 10, 10, 10, 10    
+name_dqajs        =  dqajs
+flag_dtswr        =  4, 10, 10, 10, 1    
+name_dtswr        =  dtswr
+flag_dtsw0        =  4, 10, 10, 10, 10    
+name_dtsw0        =  dtsw0 
+flag_dtlwr        =  4, 10, 10, 10, 1    
+name_dtlwr        =  dtlwr
+flag_dtlw0        =  4, 10, 10, 10, 10    
+name_dtlw0        =  dtlw0
+flag_dtec         =  4, 10, 10, 10, 10    
+name_dtec         =  dtec
+flag_duvdf        =  4, 10, 10, 10, 10    
+name_duvdf        =  duvdf
+flag_dvvdf        =  4, 10, 10, 10, 10    
+name_dvvdf        =  dvvdf
+flag_duoro        =  4, 10, 10, 10, 10    
+name_duoro        =  duoro
+flag_dvoro        =  4, 10, 10, 10, 10    
+name_dvoro        =  dvoro
+flag_dulif        =  4, 10, 10, 10, 10    
+name_dulif        =  dulif
+flag_dvlif        =  4, 10, 10, 10, 10    
+name_dvlif        =  dvlif
+###! Attention a refaire correctement
+flag_trac01       =  4, 10, 10, 10, 10    
+name_trac01       =  trac01 
+flag_trac02       =  4, 10, 10, 10, 10    
+name_trac02       =  trac02
+

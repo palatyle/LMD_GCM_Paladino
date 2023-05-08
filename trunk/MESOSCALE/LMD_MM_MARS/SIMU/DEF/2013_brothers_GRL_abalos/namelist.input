@@ -1,0 +1,82 @@
+ &time_control
+ start_year          = 2024, 2024, 2024,     !! (p1) Start Martian Year (20XX for MY XX)
+ start_month         =   02,   02,   02,     !! (p1) Start Martian Month
+ start_day           =   23,   23,   23,     !! (p1) Start Martian Day
+ start_hour          =   06,   06,   06,     !! (p1) Start Martian Hour (at longitude 0)
+ end_year            = 2024, 2024, 2024,     !! (p1) Start Martian Year (20XX for MY XX)
+ end_month           =   02,   02,   02,     !! (p1) Start Martian Month
+ end_day             =   60,   60,   60,     !! (p1) Start Martian Day
+ end_hour            =   06,   06,   06,     !! (p1) Start Martian Hour (at longitude 0)
+ history_interval    =   74,   74,   74,      
+ frames_per_outfile  =   12,   12,   12, 
+ restart          = .false.
+ restart_interval = 8880,
+ io_form_history  = 2
+ io_form_restart  = 2
+ io_form_input    = 2
+ io_form_boundary = 2
+ debug_level      = 0
+ !!
+ !! OPTIONAL
+ !!
+ input_from_file  =    T,    T,    T,     ! F en second pour que d1 init. d2 (smoother) -- T par defaut
+ interval_seconds = 14800     !! (p2) Frequency of large-scale fields update (s)
+ /
+
+ &domains
+ time_step         = 60 !74 !40 !10  
+ p_top_requested   = 10.     
+ max_dom           =        2    !!!! PLEASE DO NOT FORGET callphysd*_.def 
+ grid_id           =        1,           2,            3, 
+ parent_id         =        0,           1,            2,      
+ parent_grid_ratio =        1,           3,            3,                  !!! parent_grid_ratio divides (e_we-s_we+1)
+ i_parent_start    =        0,          13,           44,     
+ j_parent_start    =        0,          30,           44,    
+ e_we              =      117,         121,          121,                    !!! nproc divides e_we-1
+ e_sn              =      117,         121,          121,                    !!! nproc divides e_we-1
+ parent_time_step_ratio =   1,           2,            3,       
+! parent_time_step_ratio =   1,           1,            2,
+ e_vert            =       61,          61,           61,             
+ dx                =    20000,    6666.667,     2222.222,
+ dy                =    20000,    6666.667,     2222.222,
+ feedback          = 0
+ smooth_option     = 2    !! 0: no smoothing; 1: 1-2-1 smoothing; 2: smoothing-desmoothing
+ blend_width       = 5
+ !!
+ !! OPTIONAL
+ !!
+ force_sfc_in_vinterp = 5    !! (p3) Number of levels hardwired in the PBL
+                             !!         NB: decrease this parameter when low model top
+ num_metgrid_levels=33
+ /
+
+ &physics
+ init_TI = 300.,               !! Define constant thermal inertia value
+ init_AL = 0.25,               !! Define constant albedo value
+ /
+
+ &fdda
+ /
+
+ &dynamics
+ !!
+ !! OPTIONAL
+ !!
+ tiso = 100. 
+ non_hydrostatic = F, F, F,            !!! OK
+ /
+
+ &grib2
+ /
+
+ &bdy_control
+ specified = T, F, F, 
+ nested    = F, T, T, 
+ /
+
+!! DO NOT MODIFY
+ &namelist_quilt
+ nio_tasks_per_group = 0,
+ nio_groups = 1,
+ /
+!! DO NOT MODIFY

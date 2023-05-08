@@ -1,0 +1,32 @@
+# @ job_name=GW_MARS
+# @ output = $(job_name).$(jobid)
+# @ error = $(output)
+# @ job_type = MPICH
+# @ total_tasks =24
+## @ total_tasks =16
+## @ total_tasks =8
+## @ total_tasks =4
+# @ blocking = unlimited
+# @ class =AP
+## @ class =BP
+## @ class =CP
+# @ environment=tmpdir=$(job_name).$(jobid).results
+# @ queue
+grep "^# @" $0
+set -vx
+####################################################################
+mkdir $LOADL_STEP_INITDIR/${tmpdir}
+\rm GW_MARS_last
+cd $LOADL_STEP_INITDIR
+ln -sf ${tmpdir} GW_MARS_last
+cd ${tmpdir}
+####################################################################
+cp      $LOADL_STEP_INITDIR/*.def      .
+cp      $LOADL_STEP_INITDIR/wrf*       .
+cp      $LOADL_STEP_INITDIR/namelist*  .
+cp      $LOADL_STEP_INITDIR/levels     .
+cp      $LOADL_STEP_INITDIR/input_*    .
+cp      $LOADL_STEP_INITDIR/ze_hill    .
+declare -x MP_STACK_SIZE=64000000
+mpirun /san/home/spiga/trunk//mesoscale//LMD_MM_MARS/mpifort_64/wrf_x121_y121_z181_d1_t1_p24.exe
+####################################################################

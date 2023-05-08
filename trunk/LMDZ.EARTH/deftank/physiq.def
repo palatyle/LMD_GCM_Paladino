@@ -1,0 +1,219 @@
+## $Id: physiq.def 1403 2010-07-01 09:02:53Z fairhead $
+#
+# PARAMETRES ANCIENNEMENT DANS gcm.def
+##  Cycle diurne  ou non                 
+cycle_diurne=y
+##  Soil Model  ou non               
+soil_model=y
+##  Choix ou non  de  New oliq               
+new_oliq=y
+##  Activation ou non de la parametrisation de Hines pour la strato
+ok_hines=n
+##  Orodr  ou  non   pour l orographie              
+ok_orodr=y
+##  Orolf  ou  non   pour l orographie              
+ok_orolf=y
+##   Si = .T. ,  lecture du fichier limit avec la bonne annee             
+ok_limitvrai=n
+## Nombre  d'appels des routines de rayonnements ( par jour)                 
+nbapp_rad=24
+##  Flag  pour la convection : 1 pour LMD, 2 pour Tiedtke, 3 KE(nvlle version JYG), 30 KE(version IPCC AR4), 4 KE vect
+iflag_con=30
+## Facteur multiplication des precip convectives dans KE
+cvl_corr=1.0
+##  Facteur additif pour l'albedo
+pmagic=0.008
+#
+#
+#
+# Parametres fichiers de sortie
+#
+### type_run = type run par rapport aux fichiers et variables de sortie
+# - type_run = CLIM/ENSP (=1)
+# - type_run = AMIP/CFMI (=2)
+type_run=AMIP
+### OK_journe= y sortir fichier journalier histday.nc, =n pas de fichier histday.nc
+OK_journe=n
+### OK_mensuel= y sortir fichier mensuel histmth.nc, =n pas de fichier histmth.nc
+OK_mensuel=y
+### OK_instan=y, ecrire sorties "instantannees" (chaque pas de temps de la  physique)
+OK_instan=n
+### OK_hf=y, ecrire sorties hautes frequence histhf.nc, =n pas de fichier histhf.nc
+ok_hf=n
+#
+# Parametres niveau de sorties differents fichiers 
+#
+### lev_histhf=0-4, niveau de sortie fichier "histhf.nc" 
+# - lev_histhf=0 => pas de sorties histhf.nc
+# - lev_histhf=2 => defaut
+# - lev_histhf=3 => variables sur niveaux standards
+# - lev_histhf=4 => histhf3d.nc champs 3d niveaux modele => fichier. histhf3d.nc
+lev_histhf=2
+### lev_histday=0-5, niveau de sortie fichier "histday.nc"
+# - lev_histday=0 => pas de sorties lev_histday.nc
+# - lev_histday=2 => defaut
+# - lev_histday=3 => + champs 3D => F. Lott
+# - lev_histday=4 => + champs sous-surfaces
+# - lev_histday=5 => + champs F. Aires
+lev_histday=2
+### lev_histmth=0-4, niveau de sortie fichier "histmth.nc"
+# - lev_histmth=0 => pas de sorties lev_histmth.nc
+# - lev_histmth=2 => defaut
+# - lev_histmth=3 => albedo, rugosite sous-surfaces
+# - lev_histmth=4 => champs tendances 3d
+lev_histmth=2
+### ecrit_hf = frequence ecriture fichier histhf.nc en jours
+ecrit_hf=0.250
+### ecrit_day = frequence ecriture fichier histday.nc en jours
+ecrit_day=1.
+### ecrit_mth = frequence ecriture fichier histmth.nc en jours
+ecrit_mth=30
+### freqin_isccp = frequence input en secondes du simulateur ISCCP
+freq_ISCCP=10800.
+### freqout_isccp = frequence output en jours du simulateur ISCCP
+ecrit_ISCCP=30
+### niveau du diagnostique de conservation d energie
+if_ebil=0
+#
+# parametres KE
+#
+### epmax = Efficacite precipitation maximale
+epmax = .999
+### ok_adj_ema = ?? pas utilise
+ok_adj_ema = n
+### iflag_clw Flag calcul eau liquide
+# - iflag_clw=0 : qcond_incld(i,l) = em_qcondc(l)
+# - iflag_clw=1 : qcond_incld(i,l) = em_qcond(l)
+# - iflag_clw=2 : eau liquide diagnostique en fonction de la Precip
+iflag_clw = 1
+# 
+# parametres nuages
+#
+### cld_lc_lsc  contenu en eau liquide des nuages large-scale (fisrtilp) 
+cld_lc_lsc = 4.16e-4
+### cld_lc_con  contenu en eau liquide des nuages convectifs (fisrtilp) 
+cld_lc_con = 4.16e-4
+### cld_tau_lsc cte de temps utilisee pour eliminer l eau large-scale (fisrtilp) 
+cld_tau_lsc = 1800.
+### cld_tau_con cte de temps utilisee pour eliminer l eau convective (fisrtilp) 
+cld_tau_con = 1800.
+### ffallv_lsc  cte utilisee dans calcul vitesse de chute cristaux de glace large-scale (fisrtilp) 
+ffallv_lsc = 0.5
+### ffallv_lsc  cte utilisee dans calcul vitesse de chute cristaux de glace convectifs (fisrtilp) 
+ffallv_con = 0.5
+### coef_eva coef evaporation precips eau/glace (fisrtilp/fisrtilp_tr?/conlmd?)
+coef_eva = 2.e-5
+### reevap_ice  reevaporation de toute la precip dans la couche du dessous pour la glace (fisrtilp) 
+reevap_ice = y
+### iflag_cldcon  flag pour calculer ratqsc=F(ratqsbas,fact_cldcon,q_seri) (physiq) 
+# - iflag_cldcon<=-1 diag. rain_Tiedtke 
+# - iflag_cldcon=1, ratqsc=ratqsbas+fact_cldcon*(q_seri(1)-q_seri(k))/q_seri(k)
+# - iflag_cldcon=1/2, ratqs=max(ratqs,ratqsc)
+# - iflag_cldcon=3,   ratqs=ratqss
+iflag_cldcon = 3
+### iflag_pdf :  flag calcul distribution sous-maille de l eau et des nuages 
+# - iflag_pdf=0, version ratqs, 
+# - iflag_pdf=1, calcul eau condensee, fraction nuageuse, eau nuageuse a partir
+# -              des PDFS de Sandrine Bony 
+iflag_pdf = 1
+### fact_cldcon  constante calcul ratqsc (voir iflag_cldcon) et proprietes nuages convectifs, clwcon0 (physiq.F) 
+fact_cldcon = 1.
+### facttemps=   facteur de relaxation de ratqs (iflag_cldcon=1/2) et rnebcon (iflag_cldcon=3)
+facttemps = 0.
+## ok_newmicro   =y appel newmicro , =n appel nuage (calcul epaisseur optique et emmissivite des nuages) 
+ok_newmicro = y
+### iflag_ratqs=0 correspond a la version IPCC AR4 
+iflag_ratqs=0
+### ratqsbas     ratqs en bas si iflag_cldcon=1 
+ratqsbas = 0.005
+### ratqshaut    ratqs en haut pour ratqss "stables"  
+ratqshaut = 0.33
+### rad_froid    rayon cristaux des nuages de glace "froids" 
+rad_froid = 35
+### rad_chau1    rayon goutelettes d eau chauds", en haut: k=4-klev 
+rad_chau1=12
+### rad_chau2    rayon goutelettes d eau chauds", en bas: k=1-3  
+rad_chau2=11
+# 
+# Coefficient et parametres sur les drags
+#
+f_cdrag_ter=1.
+f_cdrag_stable=1.
+f_cdrag_oce=0.8
+f_rugoro=0.
+### ksta_ter      coef.diffusion minimale sur terre/sic/lic 
+ksta_ter=1.e-7
+### cdmmax =     cdrag maximum pour le moment
+cdmmax = 2.5E-3
+### cdhmax =     cdrag maximum pour l energie
+cdhmax = 2.0E-3
+#
+# Parametres "orbitaux/ ere geologique"
+#
+### R_ecc =      Excentricite
+R_ecc = 0.016715
+### R_peri =     Equinoxe
+R_peri = 102.7
+### R_incl =     Inclinaison
+R_incl = 23.441
+### solaire =    Constante solaire
+solaire = 1361.
+#
+# Taux gaz a effet de serre
+#
+### co2_ppm =    taux CO2 en ppm
+co2_ppm = 367.
+### CH4_ppb =    taux CH4 en ppb
+CH4_ppb = 1760.
+### N2O_ppb =    taux N2O en ppb
+N2O_ppb = 316.
+### CFC11_ppt =  taux CFC11 en ppt
+CFC11_ppt = 741.2
+### CFC12_ppt =  taux CFC12 en ppt
+CFC12_ppt = 535.
+#
+# Parametres effets directs/indirects des "aerosols"
+#
+### ok_ade=y/n   flag Aerosol direct effect
+ok_ade=n
+### ok_aie=y/n   flag Aerosol indirect effect
+ok_aie=n
+### aer_type =   Aerosol variation type : actuel / preind / scenario / annuel
+aer_type=actuel
+###  type of coupled aerosol =1 (default) =2 => bc  only =3 => pom only =4 => seasalt only =5 => dust only =6 => all aerosol
+flag_aerosol=6 
+### bl95_b0 =    Parameter in CDNC-maer link (Boucher&Lohmann 1995)
+bl95_b0=1.7
+### bl95_b1 =    Parameter in CDNC-maer link (Boucher&Lohmann 1995)
+bl95_b1=0.2
+#
+# Parametre de lecture de l'ozone
+#
+# Allowed values are 0, 1 and 2
+# 0: do not read an ozone climatology
+# 1: read a single ozone climatology that will be used day and night
+# 2: read two ozone climatologies, the average day and night climatology and the daylight climatology
+read_climoz=0
+#
+# Parametres simulateur COSP (CFMIP Observational Simulator Package)
+#
+### ok_cosp=y/n flag simulateur COSP
+ok_cosp=n
+## freq_COSP = frequence d'appel de COSP en secondes
+freq_COSP=10800.
+#
+# Parametres simulateur ISCCP
+#
+### ok_isccp=y/n flag simulateur ISCCP
+ok_isccp=n
+### top_height = flag choix calcul nuages par le simulateur en utilisant 
+# -              les donnees IR et/ou VIS et l algorithme ISCCP-D1
+# - top_height = 1 -> algo IR-VIS
+# - top_height = 2 -> identique a 1, mais "ptop(ibox)=pfull(ilev)"
+# - top_height = 3 -> algo IR
+top_height = 1
+### overlap =    Hypothese de Recouvrement (HR) utilisee pour le simulateur ISCCP
+# - overlap=1    Max overlap
+# - overlap=2    Random overlap
+# - overlap=3    Max/Random overlap
+overlap = 3
