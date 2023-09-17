@@ -2,7 +2,7 @@
 
       use surfdat_h, ONLY: dryness, watercaptag
       USE tracer_h
-      USE callkeys_mod, only: water, rho_volc
+      USE callkeys_mod, only: water, rho_volc, input_key
       use ioipsl_getin_p_mod, only: getin_p
       IMPLICIT NONE
 c=======================================================================
@@ -364,6 +364,7 @@ c------------------------------------------------------------
 
 !      call zerophys(nq,rho_q)
       ! Paladino
+      call getin_p("input_ket",input_key)
       write(*,*) "Volcanish Ash Density?"
       rho_volc=1000
       call getin_p("rho_volc",rho_volc)
@@ -381,6 +382,9 @@ c------------------------------------------------------------
         if (noms(iq).eq."volc_1") then
           igcm_volc_1=iq
           radius(igcm_volc_1) = 7.8e-6 ! 7.8 um
+          if (input_key.eq."coarse_tgsd") then
+            radius(igcm_volc_1) = 3.72e-5 
+          endif 
           rho_q(igcm_volc_1) = rho_volc
           count=count+1
         write(*,*) 'VOLCANISM : Initialization'
@@ -391,6 +395,9 @@ c------------------------------------------------------------
         if (noms(iq).eq."volc_2") then
           igcm_volc_2=iq
          radius(igcm_volc_2) = 15.6e-6 ! 15.6 um
+         if (input_key.eq."coarse_tgsd") then
+          radius(igcm_volc_2) = 1.49e-4 
+         endif
          rho_q(igcm_volc_2) = rho_volc
           count=count+1
         endif
@@ -399,6 +406,9 @@ c------------------------------------------------------------
           igcm_volc_3=iq
           rho_q(igcm_volc_3) = rho_volc
           radius(igcm_volc_3) = 125.e-6 ! 125 um
+          if (input_key.eq."coarse_tgsd") then
+            radius(igcm_volc_3) = 5.95e-4
+          endif
           count=count+1
         endif
 
@@ -406,6 +416,9 @@ c------------------------------------------------------------
           igcm_volc_4=iq
           rho_q(igcm_volc_4) = rho_volc
           radius(igcm_volc_4) = 1.e-3 ! 1 mm 
+          if (input_key.eq."coarse_tgsd") then
+            radius(igcm_volc_4) = 8.41-4
+          endif
           count=count+1
         endif
 
